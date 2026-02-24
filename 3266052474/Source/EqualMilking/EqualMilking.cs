@@ -83,6 +83,7 @@ public static class EqualMilking
         EventHelper.OnPostLoadLong += Init;
         // Patch vanilla
         EqualMilkingMod.Harmony.PatchAll();
+        CumpilationIntegration.ApplyPatches(EqualMilkingMod.Harmony);
     }
     public static void Init()
     {

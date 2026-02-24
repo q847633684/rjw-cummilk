@@ -2,7 +2,7 @@
     <PropertyGroup>
         <!-- Prevent dumping garbage into the output directory -->
         <BaseIntermediateOutputPath>..\..\Build\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
-        <Configurations>1.5;1.6</Configurations>
+        <Configurations>1.6</Configurations>
         <Platforms>AnyCPU</Platforms>
         <TargetFramework>net481</TargetFramework>
         <LangVersion>10.0</LangVersion>
@@ -18,9 +18,6 @@
         <!-- Custom Macros -->
         <OutDirBase>../../Versions/$(Configuration)</OutDirBase>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)' == '1.5'">
-        <DefineConstants>$(DefineConstants);v1_5</DefineConstants>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == '1.6'">
         <DefineConstants>$(DefineConstants);v1_6</DefineConstants>
     </PropertyGroup>
@@ -32,10 +29,6 @@
         </PackageReference>
         <!-- DLLs -->
         <!-- Harmony -->
-        <Reference Include="Harmony" Condition="'$(Configuration)' == '1.5'">
-            <HintPath>../../Libs/Workshop/2009463077/1.5/Assemblies/0Harmony.dll</HintPath>
-            <Private>False</Private>
-        </Reference>
         <Reference Include="Harmony" Condition="'$(Configuration)' == '1.6'">
             <HintPath>../../Libs/Workshop/2009463077/Current/Assemblies/0Harmony.dll</HintPath>
             <Private>False</Private>

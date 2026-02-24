@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -12,27 +12,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipeSystem", "Source\PipeSy
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		1.5|Any CPU = 1.5|Any CPU
 		1.6|Any CPU = 1.6|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FC1C463E-E5F3-4D74-BC7E-59058A0F4B37}.1.5|Any CPU.ActiveCfg = 1.5|Any CPU
-		{FC1C463E-E5F3-4D74-BC7E-59058A0F4B37}.1.5|Any CPU.Build.0 = 1.5|Any CPU
 		{FC1C463E-E5F3-4D74-BC7E-59058A0F4B37}.1.6|Any CPU.ActiveCfg = 1.6|Any CPU
 		{FC1C463E-E5F3-4D74-BC7E-59058A0F4B37}.1.6|Any CPU.Build.0 = 1.6|Any CPU
-		{9C190A42-7CF6-46C7-B663-CA442AAF478A}.1.5|Any CPU.ActiveCfg = 1.5|Any CPU
-		{9C190A42-7CF6-46C7-B663-CA442AAF478A}.1.5|Any CPU.Build.0 = 1.5|Any CPU
 		{9C190A42-7CF6-46C7-B663-CA442AAF478A}.1.6|Any CPU.ActiveCfg = 1.6|Any CPU
 		{9C190A42-7CF6-46C7-B663-CA442AAF478A}.1.6|Any CPU.Build.0 = 1.6|Any CPU
-		{945A3269-C441-46AE-B022-95932607CA2E}.1.5|Any CPU.ActiveCfg = 1.5|Any CPU
-		{945A3269-C441-46AE-B022-95932607CA2E}.1.5|Any CPU.Build.0 = 1.5|Any CPU
 		{945A3269-C441-46AE-B022-95932607CA2E}.1.6|Any CPU.ActiveCfg = 1.6|Any CPU
 		{945A3269-C441-46AE-B022-95932607CA2E}.1.6|Any CPU.Build.0 = 1.6|Any CPU
-		{3BB94862-329A-458E-9EC9-0A31FDC7850B}.1.5|Any CPU.ActiveCfg = 1.5|Any CPU
-		{3BB94862-329A-458E-9EC9-0A31FDC7850B}.1.5|Any CPU.Build.0 = 1.5|Any CPU
 		{3BB94862-329A-458E-9EC9-0A31FDC7850B}.1.6|Any CPU.ActiveCfg = 1.6|Any CPU
 		{3BB94862-329A-458E-9EC9-0A31FDC7850B}.1.6|Any CPU.Build.0 = 1.6|Any CPU
 	EndGlobalSection

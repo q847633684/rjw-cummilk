@@ -7,7 +7,6 @@
 
   <!-- Game versions this mod supports. More on game versions later. -->
   <supportedVersions>
-    <li>1.5</li>
     <li>1.6</li>
   </supportedVersions>
   <modDependencies>
@@ -30,6 +29,7 @@
     <li>oskarpotocki.vanillafactionsexpanded.core</li>
     <li>rim.job.world</li>
     <li>c0ffee.rimworld.animations</li> <!-- Prevents crash on game start -->
+    <li>vegapnk.cumpilation</li> <!-- Optional: producer restriction for cum when both mods loaded -->
   </loadAfter>
   <incompatibleWith>
     <li>rjw.milk.humanoid</li>

@@ -17,14 +17,16 @@
     <EM.MilkProductConsumptionRestriction_3>Lovers or family only</EM.MilkProductConsumptionRestriction_3>
     <EM.MilkProductConsumptionRestriction_4>Same as "Who can suckle"</EM.MilkProductConsumptionRestriction_4>
     <EM.FedByColumnTip>For the pawn being fed: choose which lactating pawns are allowed to feed this one. Empty list = any; non-empty = only listed.</EM.FedByColumnTip>
-    <EM.ProducerRestrictionsColumn>Who can suckle / use my milk</EM.ProducerRestrictionsColumn>
-    <EM.ProducerRestrictionsColumnTip>For the lactating pawn only: who can suckle from me (default: children + partner) and who can use my milk/products (default: only me). Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>
+    <EM.ProducerRestrictionsColumn>Who can suckle / eat my milk or cum products</EM.ProducerRestrictionsColumn>
+    <EM.ProducerRestrictionsColumnTip>Female (lactating): who can suckle from me, who can eat my milk products. Male (when Cumpilation active): who can eat my cum products. Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>
     <EM.ProducerRestrictionsTitle>{0}'s restrictions</EM.ProducerRestrictionsTitle>
     <EM.WhoCanSuckleFromMe>Who can suckle from me</EM.WhoCanSuckleFromMe>
     <EM.WhoCanSuckleFromMeDefault>Default: my children and partner. Add pawns to restrict to only them; leave empty for default.</EM.WhoCanSuckleFromMeDefault>
-    <EM.WhoCanUseMyMilk>Who can use my milk / milk products</EM.WhoCanUseMyMilk>
-    <EM.WhoCanUseMyMilkDefault>Default: only me. Add pawns to also allow them to eat my milk or food made from my milk.</EM.WhoCanUseMyMilkDefault>
-    <EM.ProducerRestrictionsHint>Who can suckle / who can use milk: set per producer in the Milk table — click "Specify" (…) on a lactating pawn's row.</EM.ProducerRestrictionsHint>
+    <EM.WhoCanUseMyMilkProducts>Who can eat my milk products</EM.WhoCanUseMyMilkProducts>
+    <EM.WhoCanUseMyMilkProductsDefault>Default: only me. Add pawns to also allow them to eat my milk or food made from my milk.</EM.WhoCanUseMyMilkProductsDefault>
+    <EM.WhoCanUseMyCumProducts>Who can eat my cum products</EM.WhoCanUseMyCumProducts>
+    <EM.WhoCanUseMyCumProductsDefault>Default: only me. Add pawns to also allow them to eat my cum or cum-based products.</EM.WhoCanUseMyCumProductsDefault>
+    <EM.ProducerRestrictionsHint>Female: who can suckle, who can eat milk products. Male: who can eat cum products. Set per producer in the Milk table — click "Specify" (…) on the row.</EM.ProducerRestrictionsHint>
     <EM.RJWSection>--- RJW (when rim.job.world active) ---</EM.RJWSection>
     <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>When lactating, temporarily increase RJW breast size.</EM.RjwBreastSizeDesc>

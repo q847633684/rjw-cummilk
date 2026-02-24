@@ -46,24 +46,28 @@ public class Window_ProducerRestrictions : Window
         Text.Font = GameFont.Small;
 
         float y = inRect.y;
-        // 谁可以吸我的奶
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), "EM.WhoCanSuckleFromMe".Translate());
+        // 女性（泌乳者）：谁可以吸我的奶
+        if (producer.IsLactating())
+        {
+            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), "EM.WhoCanSuckleFromMe".Translate());
+            y += EntryHeight;
+            GUI.color = Color.gray;
+            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f), "EM.WhoCanSuckleFromMeDefault".Translate());
+            GUI.color = Color.white;
+            y += EntryHeight;
+            DrawListSection(inRect, ref y, comp.allowedSucklers, Allow, Forbid, ColonyPawns().ToList(), null);
+            y += SeparatorHeight * 2;
+            Widgets.DrawLineHorizontal(inRect.x, y, inRect.width);
+            y += SeparatorHeight * 2;
+        }
+
+        // 女性（泌乳者）：谁可以吃我的奶制品
+        // 男性（非泌乳，Cumpilation 时）：谁可以吃我的精液制品
+        bool forCumProducts = !producer.IsLactating();
+        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), forCumProducts ? "EM.WhoCanUseMyCumProducts".Translate() : "EM.WhoCanUseMyMilkProducts".Translate());
         y += EntryHeight;
         GUI.color = Color.gray;
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f), "EM.WhoCanSuckleFromMeDefault".Translate());
-        GUI.color = Color.white;
-        y += EntryHeight;
-        DrawListSection(inRect, ref y, comp.allowedSucklers, Allow, Forbid, ColonyPawns().ToList(), null);
-
-        y += SeparatorHeight * 2;
-        Widgets.DrawLineHorizontal(inRect.x, y, inRect.width);
-        y += SeparatorHeight * 2;
-
-        // 谁可以使用我产出的奶/奶制品（自己始终可以，此处为“额外允许”）
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), "EM.WhoCanUseMyMilk".Translate());
-        y += EntryHeight;
-        GUI.color = Color.gray;
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f), "EM.WhoCanUseMyMilkDefault".Translate());
+        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f), forCumProducts ? "EM.WhoCanUseMyCumProductsDefault".Translate() : "EM.WhoCanUseMyMilkProductsDefault".Translate());
         GUI.color = Color.white;
         y += EntryHeight;
         DrawListSection(inRect, ref y, comp.allowedConsumers, Allow, Forbid, ColonyPawns().ToList(), null);
