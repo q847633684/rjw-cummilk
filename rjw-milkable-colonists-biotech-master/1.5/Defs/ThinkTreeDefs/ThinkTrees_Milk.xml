@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+
+	<ThinkTreeDef>
+		<defName>MilkSelf</defName>
+		<insertTag>Humanlike_PostMentalState</insertTag>
+		<insertPriority>11</insertPriority>
+		<thinkRoot Class="ThinkNode_Priority">
+			<subNodes>
+				<li Class="Milk.ThinkNode_MilkSelfChecks">
+					<subNodes>
+						<li Class="Milk.JobGiver_MilkSelf"/>
+					</subNodes>
+				</li>
+			</subNodes>
+		</thinkRoot>
+	</ThinkTreeDef>
+
+	<ThinkTreeDef>
+		<defName>MilkSelfAtMachineAuto</defName>
+		<insertTag>Humanlike_PostMentalState</insertTag>
+		<insertPriority>11</insertPriority>
+		<thinkRoot Class="ThinkNode_Priority">
+			<subNodes>
+				<li Class="Milk.ThinkNode_MilkSelfAtMachineAutomaticChecks">
+					<subNodes>
+						<li Class="Milk.JobGiver_MilkSelfAtMachineAutomatic"/>
+					</subNodes>
+				</li>
+			</subNodes>
+		</thinkRoot>
+	</ThinkTreeDef>
+
+
+</Defs>

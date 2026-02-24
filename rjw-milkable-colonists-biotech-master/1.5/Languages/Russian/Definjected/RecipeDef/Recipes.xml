@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+ <Make_HumanMilkBulk.label>Перелить грудное молоко в бутылку.</Make_HumanMilkBulk.label>
+  <Make_HumanMilkBulk.description>Перелить грудное молоко в бутылку.</Make_HumanMilkBulk.description>
+  <Make_HumanMilkBulk.jobString>Переливает грудное молоко в бутылку.</Make_HumanMilkBulk.jobString>
+
+  <Make_HumanoidMilkBulk.label>Перелить гуманоидное молоко в бутылку.</Make_HumanoidMilkBulk.label>
+  <Make_HumanoidMilkBulk.description>Перелить гуманоидное молоко в бутылку.</Make_HumanoidMilkBulk.description>
+  <Make_HumanoidMilkBulk.jobString>Переливает гуманоидное молоко в бутылку.</Make_HumanoidMilkBulk.jobString>
+
+  <Make_HumanMilkSmall.label>Перелить грудное молоко в маленькие баночки.</Make_HumanMilkSmall.label>
+  <Make_HumanMilkSmall.description>Перелить грудное молоко в маленькие баночки.</Make_HumanMilkSmall.description>
+  <Make_HumanMilkSmall.jobString>Переливает грудное молоко в маленькие баночки.</Make_HumanMilkSmall.jobString>
+
+  <Make_HumanoidMilkSmall.label>Перелить гуманоидное молоко в маленькие баночки. </Make_HumanoidMilkSmall.label>
+  <Make_HumanoidMilkSmall.description>Перелить гуманоидное молоко в маленькие баночки.</Make_HumanoidMilkSmall.description>
+  <Make_HumanoidMilkSmall.jobString>Переливает гуманоидное молоко в маленькие баночки.</Make_HumanoidMilkSmall.jobString>
+</LanguageData>

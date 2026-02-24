@@ -1,0 +1,9 @@
+<Defs>
+    <ThingDef ParentName="FoodBitBase">
+        <defName>Mote_MilkBit</defName>
+        <graphicData>
+            <texPath>Things/Mote/MilkBit</texPath>
+            <shaderType>Mote</shaderType>
+        </graphicData>
+    </ThingDef>
+</Defs>

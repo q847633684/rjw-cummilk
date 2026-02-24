@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <EM_MilkingSpot.description>Designate a spot to milk oneself</EM_MilkingSpot.description>
+    <EM_MilkingPump.description>Hand pump for milking, can increase milking speed and yield</EM_MilkingPump.description>
+    <EM_MilkingElectric.description>Electric pump for milking. When powered, it can increase milking speed, and will always yield products. Can be used by non-humans</EM_MilkingElectric.description>
+
+</LanguageData>

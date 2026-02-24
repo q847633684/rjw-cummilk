@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<MilkableColonists.breastGrowthDisabled>Отключить рост груди</MilkableColonists.breastGrowthDisabled>
+	<MilkableColonists.breastGrowthDisabledDesc>По умолчанию: выключено. Включить, чтобы предотвратить увеличение груди из-за выработки молока или доения.</MilkableColonists.breastGrowthDisabledDesc>
+	<MilkableColonists.flatChestGivesMilk>Плоская грудь производит молоко</MilkableColonists.flatChestGivesMilk>
+	<MilkableColonists.flatChestGivesMilkDesc>По умолчанию: выключено (плоская грудь не имеет места для выработки молока); Включить, чтобы иметь минимальную выработку молока.</MilkableColonists.flatChestGivesMilkDesc>
+	<MilkableColonists.ignoreReproductiveStage>ОТЛАДКА: Игнорировать стадию репродукции</MilkableColonists.ignoreReproductiveStage>
+	<MilkableColonists.ignoreReproductiveStageDesc>По умолчанию: выключено. Включать только если у вас есть расы, в которых репродуктивная стадия не установлена должным образом.</MilkableColonists.ignoreReproductiveStageDesc>
+</LanguageData>

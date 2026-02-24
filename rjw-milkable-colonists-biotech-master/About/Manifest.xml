@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Manifest>
+	<identifier>RimJobWorld Milkable Colonists</identifier>
+	<version>1.4.0</version>
+	<dependencies>
+		<li>RimJobWorld</li>
+	</dependencies>
+	<loadAfter>
+		<li>RimJobWorld</li>
+	</loadAfter>
+	<manifestUri>https://gitgud.io/Onslort/rjw-milkable-colonists-biotech/raw/master/About/Manifest.xml</manifestUri>
+	<downloadUri>https://gitgud.io/Onslort/rjw-milkable-colonists-biotech</downloadUri>
+</Manifest>

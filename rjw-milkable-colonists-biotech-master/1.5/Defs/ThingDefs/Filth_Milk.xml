@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+	<ThingDef ParentName="BaseFilth">
+		<defName>FilthMilkLeak</defName>
+		<label>milk</label>
+		<statBases>
+			<Beauty>-25</Beauty>
+			<Cleanliness>-10</Cleanliness>
+		</statBases>
+		<graphicData>
+			<texPath>Things/Filth/Spatter</texPath>
+			<color>(220, 220, 220, 100)</color>
+		</graphicData>
+		<filth>
+			<disappearsInDays>2~4</disappearsInDays>
+			<rainWashes>true</rainWashes>
+			<cleaningWorkToReduceThickness>25</cleaningWorkToReduceThickness>
+			<canFilthAttach>true</canFilthAttach>
+			<allowsFire>false</allowsFire>
+		</filth>
+	</ThingDef>
+
+</Defs>

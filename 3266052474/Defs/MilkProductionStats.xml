@@ -1,0 +1,24 @@
+<Defs>
+    <StatDef>
+        <defName>EM_Lactating_Efficiency_Factor</defName>
+        <label>Lactating Efficiency Factor</label>
+        <category>AnimalProductivity</category>
+        <defaultBaseValue>1.0</defaultBaseValue>
+        <hideAtValue>1.0</hideAtValue>
+        <toStringStyle>PercentZero</toStringStyle>
+        <showOnAnimals>true</showOnAnimals>
+        <minValue>0</minValue>
+        <displayPriorityInCategory>3500</displayPriorityInCategory>
+    </StatDef>
+    <StatDef>
+        <defName>EM_Milk_Amount_Factor</defName>
+        <label>Milk Amount Factor</label>
+        <category>AnimalProductivity</category>
+        <defaultBaseValue>1.0</defaultBaseValue>
+        <hideAtValue>1.0</hideAtValue>
+        <toStringStyle>PercentZero</toStringStyle>
+        <showOnAnimals>true</showOnAnimals>
+        <minValue>0</minValue>
+        <displayPriorityInCategory>3500</displayPriorityInCategory>
+    </StatDef>
+</Defs>

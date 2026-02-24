@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loadFolders>
+	<v1.5>
+		<li></li>
+		<li>Versions/1.5</li>
+		<li IfModActive="DRILLEDHEAD.MILKEXPANDED">Versions/1.5/Integrations/VME_HarmonyPatch</li>
+		<li IfModActive="rim.job.world">Versions/1.5/Integrations/RJW</li>
+		<li IfModActive="oskarpotocki.vanillafactionsexpanded.core">Versions/1.5/Integrations/PipeSystem</li>
+	</v1.5>
+	<v1.6>
+		<li></li>
+		<li>Versions/1.6</li>
+		<li IfModActive="DRILLEDHEAD.MILKEXPANDED">Versions/1.6/Integrations/VME_HarmonyPatch</li>
+		<li IfModActive="rim.job.world">Versions/1.6/Integrations/RJW</li>
+		<li IfModActive="oskarpotocki.vanillafactionsexpanded.core">Versions/1.6/Integrations/PipeSystem</li>
+	</v1.6>
+</loadFolders>

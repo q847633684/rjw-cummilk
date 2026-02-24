@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<MilkableColonists.breastGrowthDisabled>Disable Breast Growth</MilkableColonists.breastGrowthDisabled>
+	<MilkableColonists.breastGrowthDisabledDesc>Default: off. Enable to prevent breasts from growing due to milk production or milking.</MilkableColonists.breastGrowthDisabledDesc>
+	<MilkableColonists.flatChestGivesMilk>Flat chest produces milk</MilkableColonists.flatChestGivesMilk>
+	<MilkableColonists.flatChestGivesMilkDesc>Default: off (flat chest has no room for milk production); Enable to have a minimum milk production.</MilkableColonists.flatChestGivesMilkDesc>
+	<MilkableColonists.ignoreReproductiveStage>DEBUG: Ignore Reproductive Stage</MilkableColonists.ignoreReproductiveStage>
+	<MilkableColonists.ignoreReproductiveStageDesc>Default: off. Only enable if you have races where reproductive stage isn't set properly.</MilkableColonists.ignoreReproductiveStageDesc>
+</LanguageData>

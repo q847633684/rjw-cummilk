@@ -1,0 +1,91 @@
+<Defs>
+    <ThingDef Name="EM_DrugBase" ParentName="DrugBase" Abstract="True">
+        <graphicData>
+            <graphicClass>Graphic_StackCount</graphicClass>
+            <drawSize>0.8</drawSize>
+        </graphicData>
+        <statBases>
+            <Mass>0.025</Mass>
+            <MaxHitPoints>60</MaxHitPoints>
+            <DeteriorationRate>0</DeteriorationRate>
+        </statBases>
+        <ingestible>
+            <drugCategory>Medical</drugCategory>
+            <ingestHoldOffsetStanding>
+                <northDefault>
+                    <offset>(0.18,0,0)</offset>
+                </northDefault>
+            </ingestHoldOffsetStanding>
+            <preferability>NeverForNutrition</preferability>
+            <foodType>Processed,Fluid</foodType>
+            <baseIngestTicks>90</baseIngestTicks>
+            <ingestSound>Ingest_Inject</ingestSound>
+            <ingestCommandString>Inject {0}</ingestCommandString>
+            <ingestReportString>Injecting {0}.</ingestReportString>
+            <chairSearchRadius>0</chairSearchRadius>
+        </ingestible>
+        <recipeMaker>
+            <workSpeedStat>DrugSynthesisSpeed</workSpeedStat>
+            <workSkill>Intellectual</workSkill>
+            <bulkRecipeCount>4</bulkRecipeCount>
+            <recipeUsers>
+                <li>DrugLab</li>
+            </recipeUsers>
+            <soundWorking>Recipe_Drug</soundWorking>
+        </recipeMaker>
+        <comps>
+            <li Class="CompProperties_Drug">
+              <addictiveness>0</addictiveness>
+              <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
+            </li>
+          </comps>
+    </ThingDef>
+
+    <ThingDef ParentName="EM_DrugBase">
+        <defName>EM_Prolactin</defName>
+        <label>Prolactin</label>
+        <techLevel>Medieval</techLevel>
+        <graphicData>
+            <texPath>Things/Item/Ingestible/Prolactin</texPath>
+        </graphicData>
+        <statBases>
+            <MarketValue>50</MarketValue>
+        </statBases>
+        <ingestible>
+            <outcomeDoers>
+                <li Class="IngestionOutcomeDoer_GiveHediff">
+                    <hediffDef>Lactating</hediffDef>
+                    <severity>0.5</severity>
+                </li>
+            </outcomeDoers>
+        </ingestible>
+        <costList>
+            <Neutroamine>2</Neutroamine>
+            <MedicineHerbal>1</MedicineHerbal>
+        </costList>
+    </ThingDef>
+
+    <ThingDef ParentName="EM_DrugBase">
+        <defName>EM_Lucilactin</defName>
+        <label>Lucilactin</label>
+        <techLevel>Industrial</techLevel>
+        <graphicData>
+            <texPath>Things/Item/Ingestible/Lucilactin</texPath>
+        </graphicData>
+        <statBases>
+            <MarketValue>400</MarketValue>
+        </statBases>
+        <ingestible>
+            <outcomeDoers>
+                <li Class="IngestionOutcomeDoer_GiveHediff">
+                    <hediffDef>Lactating</hediffDef>
+                    <severity>1</severity>
+                </li>
+            </outcomeDoers>
+        </ingestible>
+        <costList>
+            <EM_Prolactin>1</EM_Prolactin>
+            <Luciferium>2</Luciferium>
+        </costList>
+    </ThingDef>
+</Defs>

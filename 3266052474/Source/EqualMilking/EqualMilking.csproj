@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutDir>$(OutDirBase)/Assemblies/</OutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ITab_Pawn_Feeding -->
+    <Publicize Include="Assembly-CSharp" MemberPattern="^RimWorld\.ITab_Pawn_Feeding\..*" />
+    <Publicize Include="Assembly-CSharp:RimWorld.ITab_Pawn_Feeding+BabyFeederPair" />
+    <!-- Pawn_MindState -->
+    <Publicize Include="Assembly-CSharp:Verse.AI.Pawn_MindState.autoFeeders" />
+    <!-- JobDriver_Breastfeed.Breastfeed -->
+    <Publicize Include="Assembly-CSharp:RimWorld.JobDriver_Breastfeed.Breastfeed" />
+    <Publicize Include="Assembly-CSharp:RimWorld.JobDriver_FeedBaby.Baby" />
+    <!-- WorkGiver_FeedBabyManually -->
+    <Publicize Include="Assembly-CSharp:RimWorld.WorkGiver_FeedBabyManually.CanCreateManualFeedingJob" />
+    <!-- FloatMenuMakerMap -->
+    <Publicize Include="Assembly-CSharp:RimWorld.FloatMenuMakerMap.AddHumanlikeOrders" />
+    <!-- Need-->
+    <Publicize Include="Assembly-CSharp:RimWorld.Need.pawn" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Need_MechEnergy.BaseFallPerDay" />
+  </ItemGroup>
+</Project>

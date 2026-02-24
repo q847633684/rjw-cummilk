@@ -1,0 +1,15 @@
+<Defs>
+  <EffecterDef>
+    <defName>EM_Milk</defName>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerContinuous</subEffecterClass>
+        <scale>0.3~0.7</scale>
+        <ticksBetweenMotes>20</ticksBetweenMotes>
+        <positionLerpFactor>0.6</positionLerpFactor>
+        <positionRadius>0.6</positionRadius>
+        <moteDef>Mote_MilkBit</moteDef>
+      </li>
+    </children>
+  </EffecterDef>
+</Defs>

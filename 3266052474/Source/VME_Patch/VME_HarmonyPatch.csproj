@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>$(SolutionName)_$(MSBuildProjectName)</AssemblyName>
+    <OutDir>$(OutDirBase)/Integrations/$(MSBuildProjectName)/Assemblies</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EqualMilking\EqualMilking.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <Reference Include="Building_Milk">
+      <HintPath>../../Libs/Building_Milk.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

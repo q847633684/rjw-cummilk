@@ -1,0 +1,58 @@
+<Patch>
+    <Operation Class="PatchOperationFindMod">
+        <mods>
+            <li>Vanilla Chemfuel Expanded</li>
+            <li>Vanilla Nutrient Paste Expanded</li>
+        </mods>
+        <match Class="PatchOperationSequence">
+            <operations>
+                <li Class="PatchOperationReplace">
+                    <xpath>Defs/ThingDef[defName="EM_MilkPipe"]/designationCategory</xpath>
+                    <value>
+                        <designationCategory>VCHE_PipeNetworks</designationCategory>
+                    </value>
+                </li>
+                <li Class="PatchOperationReplace">
+                    <xpath>Defs/ThingDef[defName="EM_UndergroundMilkPipe"]/designationCategory</xpath>
+                    <value>
+                        <designationCategory>VCHE_PipeNetworks</designationCategory>
+                    </value>
+                </li>
+                <li Class="PatchOperationReplace">
+                    <xpath>
+                        Defs/PipeSystem.PipeNetDef[defName="EM_MilkNet"]/designator/designationCategoryDef</xpath>
+                    <value>
+                        <designationCategoryDef>VCHE_PipeNetworks</designationCategoryDef>
+                    </value>
+                </li>
+                <li Class="PatchOperationReplace">
+                    <xpath>Defs/ThingDef[defName="EM_MilkContainer"]/designationCategory</xpath>
+                    <value>
+                        <designationCategory>VCHE_PipeNetworks</designationCategory>
+                    </value>
+                </li>
+                <li Class="PatchOperationReplace">
+                    <xpath>Defs/ThingDef[defName="EM_MilkValve"]/designationCategory</xpath>
+                    <value>
+                        <designationCategory>VCHE_PipeNetworks</designationCategory>
+                    </value>
+                </li>
+                <li Class="PatchOperationReplace">
+                    <xpath>Defs/ThingDef[defName="EM_MilkTap"]/designationCategory</xpath>
+                    <value>
+                        <designationCategory>VCHE_PipeNetworks</designationCategory>
+                    </value>
+                </li>
+                <li Class="PatchOperationReplace">
+                    <xpath>Defs/ThingDef[defName="EM_HumanMilkTap"]/designationCategory</xpath>
+                    <value>
+                        <designationCategory>VCHE_PipeNetworks</designationCategory>
+                    </value>
+                </li>
+                <li Class="PatchOperationRemove">
+                    <xpath>Defs/DesignationCategoryDef[defName="EM_PipeNetworks"]</xpath>
+                </li>
+            </operations>
+        </match>
+    </Operation>
+</Patch>

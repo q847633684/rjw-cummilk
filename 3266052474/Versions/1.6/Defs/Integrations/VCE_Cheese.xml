@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+	<ThingDef ParentName="MealBase" MayRequire="vanillaexpanded.vcooke">
+		<defName>VCE_HumanMilkCheese</defName>
+		<label>human milk cheese</label>
+		<description>Cheese is a dairy product, derived from milk and produced in a wide range of
+			flavors, textures and forms by coagulation of the milk protein casein. Cheese is valued
+			for its portability, long life, and high content of fat, protein, calcium, and
+			phosphorus. It is more compact and has a longer shelf life than milk.</description>
+		<graphicData>
+			<texPath>Things/Items/Cheese/VCE_Cheese</texPath>
+			<graphicClass>Graphic_StackCount</graphicClass>
+			<color>(1, 0.8, 0.8, 1)</color>
+		</graphicData>
+		<tradeability>Sellable</tradeability>
+		<stackLimit>75</stackLimit>
+		<statBases>
+			<MarketValue>10</MarketValue>
+			<Nutrition>0.15</Nutrition>
+		</statBases>
+		<thingCategories>
+			<li>VCE_Cheese</li>
+		</thingCategories>
+		<ingestible>
+			<preferability>MealSimple</preferability>
+			<ingestEffect>EatMeat</ingestEffect>
+			<ingestSound>Meal_Eat</ingestSound>
+			<maxNumToIngestAtOnce>7</maxNumToIngestAtOnce>
+		</ingestible>
+		<comps>
+			<li Class="CompProperties_Rottable">
+				<daysToRotStart>120</daysToRotStart>
+				<rotDestroys>true</rotDestroys>
+			</li>
+			<li Class="CompProperties_Ingredients" />
+			<li>
+				<compClass>CompQuality</compClass>
+			</li>
+			<li Class="VEF.Cooking.CompProperties_StackByQuality" />
+			<li Class="VEF.Cooking.CompProperties_IngestedThoughtFromQuality">
+				<ingestedThought>VCE_AteCheese</ingestedThought>
+			</li>
+			<li Class="VEF.Things.CompProperties_LabelByIngredients">
+				<overrides>
+					<li>
+						<key>InsectJelly</key>
+						<value>Insect</value>
+					</li>
+				</overrides>
+				<exclusions>
+					<li>Milk</li>
+				</exclusions>
+			</li>
+		</comps>
+	</ThingDef>
+	<PipeSystem.ProcessDef MayRequire="vanillaexpanded.vcooke">
+		<defName>VCE_HumanMilkIntoCheese</defName>
+		<label>Human milk into cheese</label>
+		<description>Turns 50 human milk into 25 cheese.</description>
+		<labelOverride>Turn 50 human milk into 25 cheese.</labelOverride>
+		<priorityInBillList>0</priorityInBillList>
+		<spawnOnInteractionCell>true</spawnOnInteractionCell>
+		<useIngredients>true</useIngredients>
+		<ingredients>
+			<li>
+				<thing>EM_HumanMilk</thing>
+				<countNeeded>50</countNeeded>
+			</li>
+		</ingredients>
+		<ticksQuality>
+			<li>600000</li>
+			<li>900000</li>
+			<li>1500000</li>
+			<li>2100000</li>
+			<li>2400000</li>
+			<li>2700000</li>
+			<li>4500000</li>
+		</ticksQuality>
+		<results>
+			<li>
+				<thing>VCE_HumanMilkCheese</thing>
+				<count>25</count>
+			</li>
+		</results>
+		<stopAtQuality>true</stopAtQuality>
+		<allowExtractAtCurrentQuality>true</allowExtractAtCurrentQuality>
+		<autoExtract>false</autoExtract>
+	</PipeSystem.ProcessDef>
+	<!-- <ItemProcessor.CombinationDef MayRequire="vanillaexpanded.vcooke,oskarpotocki.vfe.mechanoid">
+		<defName>VFEM_IndustrialCheesePress_HumanMilkCheese</defName>
+		<building>VFEM_IndustrialCheesePress</building>
+		<items>
+			<li>EM_HumanMilk</li>
+		</items>
+		<amount>
+			<li>50</li>
+		</amount>
+		<outputLimitControlled>true</outputLimitControlled>
+		<maxTotalOutput>300</maxTotalOutput>
+		<result>VCE_HumanMilkCheese</result>
+		<yield>25</yield>
+		<useQualityIncreasing>true</useQualityIncreasing>
+		<awfulQualityAgeDaysThreshold>5</awfulQualityAgeDaysThreshold>
+		<poorQualityAgeDaysThreshold>7</poorQualityAgeDaysThreshold>
+		<normalQualityAgeDaysThreshold>12</normalQualityAgeDaysThreshold>
+		<goodQualityAgeDaysThreshold>17</goodQualityAgeDaysThreshold>
+		<excellentQualityAgeDaysThreshold>20</excellentQualityAgeDaysThreshold>
+		<masterworkQualityAgeDaysThreshold>22</masterworkQualityAgeDaysThreshold>
+		<legendaryQualityAgeDaysThreshold>38</legendaryQualityAgeDaysThreshold>
+	</ItemProcessor.CombinationDef> -->
+</Defs>

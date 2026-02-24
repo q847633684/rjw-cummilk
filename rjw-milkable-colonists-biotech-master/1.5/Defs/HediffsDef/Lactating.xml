@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+	<HediffDef>
+		<defName>Lactating_Drug</defName>
+		<hediffClass>HediffWithComps</hediffClass>
+		<description>Drugs can force creatures to produce milk even if they would not under normal conditions. Over time, the effects of those drugs will fade, and milk production will cease.</description>
+		<defaultLabelColor>(1, 0.41, 0.81)</defaultLabelColor>
+		<isBad>false</isBad>
+		<label>lactating (drug)</label>
+		<initialSeverity>0.3</initialSeverity>
+		<comps>
+			<li Class="HediffCompProperties_SeverityPerDay">
+				<severityPerDay>-0.1</severityPerDay>
+			</li>
+		</comps>
+		<stages>
+			<li>
+				<statFactors>
+					<MilkProductionSpeed>1.1</MilkProductionSpeed>
+					<MilkProductionYield>1.1</MilkProductionYield>
+				</statFactors>
+			</li>
+		</stages>
+	</HediffDef>
+
+	<HediffDef>
+		<defName>Lactating_Natural</defName>
+		<hediffClass>HediffWithComps</hediffClass>
+		<description>Creatures will naturally begin producing milk during and after pregnancy. Over time, milk production will cease.</description>
+		<defaultLabelColor>(1, 0.41, 0.81)</defaultLabelColor>
+		<isBad>false</isBad>
+		<label>lactating (natural)</label>
+		<initialSeverity>0.3</initialSeverity>
+		<comps>
+			<li Class="HediffCompProperties_SeverityPerDay">
+				<severityPerDay>-0.1</severityPerDay>
+			</li> 
+		</comps>
+	</HediffDef>
+	
+	<HediffDef>
+		<defName>Lactating_Permanent</defName>
+		<hediffClass>HediffWithComps</hediffClass>
+		<description>Certain kinds of drugs can force creatures to produce milk forever by altering body chemistry. Milk production will never cease without some further outside influence. Doubles production. Increases hunger.</description>
+		<defaultLabelColor>(1, 0.41, 0.81)</defaultLabelColor>
+		<isBad>false</isBad>
+		<label>lactating (permanent)</label>
+		<stages>
+			<li>
+				<hungerRateFactorOffset>0.4</hungerRateFactorOffset> <!--default, also now modifiable by an in game option-->
+				<statFactors>
+					<MilkProductionSpeed>1.5</MilkProductionSpeed>
+					<MilkProductionYield>1.5</MilkProductionYield>
+				</statFactors>
+				<!--
+				<capMods>
+					<li>
+						<capacity>Consciousness</capacity>
+						<offset>0.10</offset>
+					</li>
+					<li>
+						<capacity>Manipulation</capacity>
+						<setMax>0.80</setMax>
+					</li>
+					<li>
+						<capacity>Moving</capacity>
+						<setMax>0.80</setMax>
+					</li>
+				</capMods> -->
+			</li>
+		</stages>
+	</HediffDef>
+	
+	<HediffDef>
+		<defName>Heavy_Lactating_Permanent</defName>
+		<hediffClass>HediffWithComps</hediffClass>
+		<description>Certain kinds of drugs can force creatures to produce milk forever by altering body chemistry. Milk production will never cease without some further outside influence. Quadruples production. Greatly increases hunger.</description>
+		<defaultLabelColor>(1, 0.41, 0.81)</defaultLabelColor>
+		<isBad>false</isBad>
+		<label>lactating heavily (permanent)</label>
+		<stages>
+			<li>
+				<hungerRateFactorOffset>0.8</hungerRateFactorOffset> <!--default, also now modifiable by an in game option-->
+				<statFactors>
+					<MilkProductionSpeed>2</MilkProductionSpeed>
+					<MilkProductionYield>2</MilkProductionYield>
+				</statFactors>
+				<!--
+				<capMods>
+					<li>
+						<capacity>Consciousness</capacity>
+						<setMax>0.50</setMax>
+					</li>
+					<li>
+						<capacity>Manipulation</capacity>
+						<setMax>0.50</setMax>
+					</li>
+					<li>
+						<capacity>Moving</capacity>
+						<setMax>0.50</setMax>
+					</li>
+				</capMods> -->
+			</li>
+		</stages>
+	</HediffDef>
+
+</Defs>

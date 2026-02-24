@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+	<PawnColumnDef>
+		<defName>Milk_WillManual</defName>
+		<headerTip>This pawn will manually milk others when they are full</headerTip>
+		<headerIcon>UI/Commands/MilkOther</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkWillManual</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	<PawnColumnDef>
+		<defName>Milk_AllowManual</defName>
+		<headerTip>This pawn will allow others to manually milk them when full</headerTip>
+		<headerIcon>UI/Commands/MilkAllowed</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkAllowManual</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	
+	<PawnColumnDef>
+		<defName>Milk_WillBfAdult</defName>
+		<headerTip>This pawn will try and breastfeed from others</headerTip>
+		<headerIcon>UI/Commands/MilkOther</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkWillBfAdult</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	<PawnColumnDef>
+		<defName>Milk_AllowBfAdult</defName>
+		<headerTip>This pawn will allow others to breastfeed from them</headerTip>
+		<headerIcon>UI/Commands/MilkAllowed</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkAllowBfAdult</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
+		<defName>Milk_AllowSelf</defName>
+		<headerTip>This pawn will milk themselves when full</headerTip>
+		<headerIcon>Things/Item/Food/MilkBottle/MilkBottle_a</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkAllowSelf</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	
+ 	<PawnColumnDef>
+		<defName>Milk_AllowMachine</defName>
+		<headerTip>This pawn will milk themselves at a milking station when full</headerTip>
+		<headerIcon>Things/Building/Furniture/Stool_north</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkAllowMachine</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
+		<defName>Milk_AllowBfBaby</defName>
+		<headerTip>This pawn will breastfeed babies (Applies the Biotech hediff when lactating)</headerTip>
+		<headerIcon>UI/Commands/BfBaby</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkAllowBfBaby</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+<!--
+	<PawnColumnDef>
+		<defName>Milk_ShouldProduce</defName>
+		<headerTip>This pawn should be able to lactate</headerTip>
+		<headerIcon>UI/Commands/MilkAllowed</headerIcon>
+		<workerClass>Milk.MainTab.Checkbox.PawnColumnWorker_MilkShouldProduce</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	-->
+	
+	<!--
+	<PawnColumnDef>
+		<defName>Milk_Type</defName>
+		<headerTip>The type of lactation this pawn performs.</headerTip>
+		<headerIcon>UI/Commands/BfBaby</headerIcon>
+		<workerClass>Milk.PawnColumnWorker_MilkPolicy</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>300</width>
+	</PawnColumnDef>	
+	-->
+</Defs>

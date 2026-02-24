@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+	<Lact-XHigh.stages.0.label>под кайфом от лакт-Х</Lact-XHigh.stages.0.label>
+  <Lact-XHigh.stages.0.description>Я чувствую, что могу летать.</Lact-XHigh.stages.0.description>
+
+	<Lact-XWithdrawal.stages.1.label>синдром отмены лакт-Х</Lact-XWithdrawal.stages.1.label>
+  <Lact-XWithdrawal.stages.1.description>Я постоянно чувствую тяжесть и холод.</Lact-XWithdrawal.stages.1.description>
+
+
+  <wasBreastfedAdult.stages.0.label>Питается грудным молоком</wasBreastfedAdult.stages.0.label>
+  <wasBreastfedAdult.stages.0.description>Это было вкусно. Ням!</wasBreastfedAdult.stages.0.description>
+
+  <didBreastfeedAdultGood.stages.0.label>Кормит грудью</didBreastfeedAdultGood.stages.0.label>
+  <didBreastfeedAdultGood.stages.0.description>Я помогла нуждающемуся своим молоком.</didBreastfeedAdultGood.stages.0.description>
+
+  <didBreastfeedAdultBad.stages.0.label>Принудительно кормит грудью</didBreastfeedAdultBad.stages.0.label>
+  <didBreastfeedAdultBad.stages.0.description>Не могу поверить, что кто-то сделал это со мной.</didBreastfeedAdultBad.stages.0.description>
+
+
+  <MilkFullness.stages.0.label>Кормящая</MilkFullness.stages.0.label>
+  <MilkFullness.stages.0.description>Я вырабатываю молоко.</MilkFullness.stages.0.description>
+  <MilkFullness.stages.1.label>Кормящая</MilkFullness.stages.1.label>
+  <MilkFullness.stages.1.description>Я вырабатываю молоко.</MilkFullness.stages.1.description>
+  <MilkFullness.stages.2.label>Кормление (полное)</MilkFullness.stages.2.label>
+  <MilkFullness.stages.2.description>Мне нужно что-то сделать со всем молоком.</MilkFullness.stages.2.description>
+  <MilkFullness.stages.3.label>Кормящая (Переполненная)</MilkFullness.stages.3.label>
+  <MilkFullness.stages.3.description>Ох.  Мне нужно выпустить это!</MilkFullness.stages.3.description>
+
+  <MilkFullnessMasochist.stages.0.label>Кормящая</MilkFullnessMasochist.stages.0.label>
+  <MilkFullnessMasochist.stages.0.description>Я вырабатываю молоко.</MilkFullnessMasochist.stages.0.description>
+  <MilkFullnessMasochist.stages.1.label>Кормящая</MilkFullnessMasochist.stages.1.label>
+  <MilkFullnessMasochist.stages.1.description>Я вырабатываю молоко.</MilkFullnessMasochist.stages.1.description>
+  <MilkFullnessMasochist.stages.2.label>Кормящий (полный)</MilkFullnessMasochist.stages.2.label>
+  <MilkFullnessMasochist.stages.2.description>Это начинает болеть.  Как приятно !</MilkFullnessMasochist.stages.2.description>
+  <MilkFullnessMasochist.stages.3.label>Кормящая (Переполненная)</MilkFullnessMasochist.stages.3.label>
+  <MilkFullnessMasochist.stages.3.description>Уф.  Мне нужно больше молока!</MilkFullnessMasochist.stages.3.description>
+
+
+</LanguageData>

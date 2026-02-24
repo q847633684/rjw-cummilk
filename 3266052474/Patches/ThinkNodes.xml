@@ -1,0 +1,48 @@
+<Patch>
+    <!-- Colonists -->
+    <Operation Class="PatchOperationInsert">
+        <xpath>
+            Defs/ThinkTreeDef[defName="Humanlike"]/thinkRoot[@Class="ThinkNode_Priority"]/subNodes/li[insertTag="Humanlike_PreMain"]</xpath>
+        <value>
+            <li Class="ThinkNode_ConditionalOfPlayerFaction">
+                <subNodes>
+                    <li Class="ThinkNode_ConditionalPrisoner">
+                        <invert>true</invert>
+                        <subNodes>
+                            <li Class="EqualMilking.JobGiver_BreastfeedAdult"></li>
+                            <li Class="EqualMilking.JobGiver_MilkSelf"></li>
+                            <li Class="EqualMilking.JobGiver_ActiveSuckle"></li>
+                        </subNodes>
+                    </li>
+                </subNodes>
+            </li>
+            <li Class="ThinkNode_ConditionalPrisoner">
+                <subNodes>
+                    <li Class="EqualMilking.JobGiver_MilkSelf"></li>
+                </subNodes>
+            </li>
+        </value>
+    </Operation>
+    <!-- Animals-->
+    <Operation Class="PatchOperationInsert">
+        <xpath>Defs/ThinkTreeDef[defName="Animal"]/thinkRoot/subNodes/li[insertTag="Animal_PreMain"]</xpath>
+        <value>
+            <li Class="EqualMilking.JobGiver_EqualBreastfeed"></li>
+            <li Class="EqualMilking.JobGiver_BreastfeedAdult"></li>
+            <li Class="EqualMilking.JobGiver_MilkSelf"></li>
+            <li Class="EqualMilking.JobGiver_ActiveSuckle"></li>
+        </value>
+    </Operation>
+    <!-- Mechanoids-->
+    <Operation Class="PatchOperationInsert">
+        <xpath>Defs/ThinkTreeDef/thinkRoot/subNodes/li/subNodes/li/subNodes/li[@Class="ThinkNode_ConditionalWorkMode"]/subNodes/li[@Class="JobGiver_Work"
+            and ./emergency="true"]</xpath>
+        <order>Append</order>
+        <value>
+            <li Class="EqualMilking.JobGiver_EqualBreastfeed"></li>
+            <li Class="EqualMilking.JobGiver_BreastfeedAdult"></li>
+            <li Class="EqualMilking.JobGiver_MilkSelf"></li>
+            <li Class="EqualMilking.JobGiver_ActiveSuckle"></li>
+        </value>
+    </Operation>
+</Patch>

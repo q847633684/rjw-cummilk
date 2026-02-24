@@ -1,0 +1,33 @@
+<Defs>
+    <JobDef>
+        <defName>EM_InjectLactatingDrug</defName>
+        <driverClass>EqualMilking.JobDriver_InjectLactatingDrug</driverClass>
+        <reportString>feeding TargetA to TargetB.</reportString>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+    </JobDef>
+    <JobDef>
+        <defName>EM_ForcedBreastfeed</defName>
+        <driverClass>EqualMilking.JobDriver_ForcedBreastfeed</driverClass>
+        <reportString>breastfeeding TargetA.</reportString>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+    </JobDef>
+    <JobDef>
+        <defName>EM_ActiveSuckle</defName>
+        <driverClass>EqualMilking.JobDriver_ActiveSuckle</driverClass>
+        <reportString>feeding from TargetA.</reportString>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+    </JobDef>
+
+    <WorkGiverDef>
+        <defName>EM_MilkEntity</defName>
+        <label>Milk entities</label>
+        <giverClass>EqualMilking.WorkGiver_EquallyMilkEntity</giverClass>
+        <workType>Handling</workType>
+        <verb>milk</verb>
+        <gerund>milking</gerund>
+        <priorityInType>90</priorityInType>
+        <requiredCapacities>
+            <li>Manipulation</li>
+        </requiredCapacities>
+    </WorkGiverDef>
+</Defs>

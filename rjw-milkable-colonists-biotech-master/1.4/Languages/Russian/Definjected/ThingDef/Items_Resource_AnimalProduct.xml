@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+	<HumanMilk.label>человеческое молоко</HumanMilk.label>
+  <HumanMilk.description>Молоко от человека. Сладкое и необходимое для жизни новорожденного.</HumanMilk.description>
+
+  <HumanoidMilk.label>гуманоидное молоко</HumanoidMilk.label>
+  <HumanoidMilk.description>Молоко человекоподобного млекопитающего. Сладкое и необходимое для жизни новорожденного.</HumanoidMilk.description>
+
+</LanguageData>

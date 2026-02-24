@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EqualMilking_PipeSystem</name>
+    </assembly>
+    <members>
+        <member name="T:EqualMilking.PipeSystem.ApplyPatches.ThingWithComps_DrawAt_Patch">
+            <summary>
+            Actually draw the damn attachments
+            </summary>
+        </member>
+        <member name="M:EqualMilking.PipeSystem.Alert_NoStorage_Patch.ThingsList_Postfix(System.Collections.Generic.List{Verse.Thing}@)">
+            <summary>
+            Remove no storage alert for milking buildings
+            </summary>
+            <param name="__result"></param>
+        </member>
+    </members>
+</doc>

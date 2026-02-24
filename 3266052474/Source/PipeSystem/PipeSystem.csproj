@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>$(SolutionName)_$(MSBuildProjectName)</AssemblyName>
+    <OutDir>$(OutDirBase)/Integrations/$(MSBuildProjectName)/Assemblies</OutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="..\EqualMilking\EqualMilking.csproj">
+        <Private>false</Private>
+      </ProjectReference>
+    <!-- Vanilla Expanded -->
+    <Reference Include="PipeSystem">
+      <HintPath>../../Libs/Workshop/2023507013/$(Configuration)/Assemblies/PipeSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage" />
+    <Publicize Include="PipeSystem:PipeSystem.CompProperties_ResourceStorage" />
+    <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage.amountStored" />
+    <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage.ticksWithoutPower" />
+    <Publicize Include="PipeSystem:PipeSystem.Alert_NoStorage.ThingsList" />
+  </ItemGroup>
+</Project>

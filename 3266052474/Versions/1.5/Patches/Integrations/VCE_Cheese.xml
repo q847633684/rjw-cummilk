@@ -1,0 +1,14 @@
+<Patch>
+	<!-- Vanilla Cooking Expanded-->
+	<Operation Class="PatchOperationSequence">
+		<operations>
+			<li Class="PatchOperationAdd" MayRequire="vanillaexpanded.vcooke">
+				<xpath>
+					Defs/ItemProcessor.ItemAcceptedDef[defName="IP_CheesePressFirstItem"]/items</xpath>
+				<value>
+					<li>EM_HumanMilk</li>
+				</value>
+			</li>
+		</operations>
+	</Operation>
+</Patch>

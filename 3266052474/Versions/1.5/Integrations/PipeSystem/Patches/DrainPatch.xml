@@ -1,0 +1,18 @@
+<Patch>
+    <Operation Class="PatchOperationReplace">
+        <xpath>Defs/ThingDef[@Name="EM_MilkingMachine"]/building/defaultStorageSettings/priority</xpath>
+        <value>
+            <priority>Important</priority>
+        </value>
+    </Operation>
+    <Operation Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[@Name="EM_MilkingMachine"]</xpath>
+        <value>
+            <inspectorTabs>
+                <li>ITab_Storage</li>
+            </inspectorTabs>
+            <surfaceType>Item</surfaceType>
+            <canOverlapZones>false</canOverlapZones>
+        </value>
+    </Operation>
+</Patch>

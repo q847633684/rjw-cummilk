@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <EM_MilkingSpot.description>指定在该位置给自己挤奶</EM_MilkingSpot.description>
+    <EM_MilkingPump.description>挤奶用的手动泵，可以少量提高挤奶速度和收获产物的概率</EM_MilkingPump.description>
+    <EM_MilkingElectric.description>挤奶用的电动泵，通电时可以提高挤奶速度，并且必定能收获产物。非人类也能够使用</EM_MilkingElectric.description>
+</LanguageData>

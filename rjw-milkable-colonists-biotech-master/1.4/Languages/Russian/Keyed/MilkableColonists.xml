@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+	<MilkFullnessMilk>Заполненность молоком</MilkFullnessMilk>
+	<MilkFullnessMilkBottles>Маленьких баночек</MilkFullnessMilkBottles>
+
+	<MilkableColonists.settings>RJW - Дойные колонисты - Biotech</MilkableColonists.settings>
+
+	<MilkableColonists.breastGrowthDisabled>Отключить рост груди</MilkableColonists.breastGrowthDisabled>
+	<MilkableColonists.breastGrowthDisabledDesc>По умолчанию: отключено.  Включите, чтобы предотвратить рост груди из-за выработки молока или доения.</MilkableColonists.breastGrowthDisabledDesc>
+
+	<MilkableColonists.breastGrowthMaxSize>Максимальный рост груди из-за выработки молока или доения</MilkableColonists.breastGrowthMaxSize>
+	<MilkableColonists.breastGrowthMaxSizeDesc>По умолчанию 1. Вы можете сделать это 2, и в зависимости от ваших модов может быть неправильно.  Кроме того, не проверено.  Грудь больше этого числа будет уменьшена до этого числа.  (На случай, если вы что-то испортили и вам нужно что-то исправить.)</MilkableColonists.breastGrowthMaxSizeDesc>
+	
+	<MilkableColonists.flatChestGivesMilk>лоская грудь производит молоко</MilkableColonists.flatChestGivesMilk>
+	<MilkableColonists.flatChestGivesMilkDesc>По умолчанию: выключено (в плоской груди нет места для производства молока);  Включите минимальное производство молока.</MilkableColonists.flatChestGivesMilkDesc>
+	
+	<MilkableColonists.ignoreReproductiveStage>DEBUG: игнорировать репродуктивную стадию</MilkableColonists.ignoreReproductiveStage>
+	<MilkableColonists.ignoreReproductiveStageDesc>По умолчанию: отключено.  Включайте, только если у вас есть расы, в репродуктивной стадии не установлен должным.</MilkableColonists.ignoreReproductiveStageDesc>
+	
+	<MilkableColonists.enableDebugLogging>DEBUG: регистрировать события доения</MilkableColonists.enableDebugLogging>
+	<MilkableColonists.enableDebugLoggingDesc>По умолчанию: выключено.  Показать результаты доения в консоли.</MilkableColonists.enableDebugLoggingDesc>
+	
+	<MilkableColonists.enableDebugLoggingMilkGrowth>DEBUG: регистрировать прирост молока. Будет много спамить. </MilkableColonists.enableDebugLoggingMilkGrowth>
+	<MilkableColonists.enableDebugLoggingMilkGrowthDesc>По умолчанию: выключено. Показывать отдельные приросты молока каждый тик. Будет много спамить.</MilkableColonists.enableDebugLoggingMilkGrowthDesc>
+	
+	<MilkableColonists.enableMilkDrip>Подавать молоко при наполнении.</MilkableColonists.enableMilkDrip>
+	<MilkableColonists.enableMilkDripDesc>По умолчанию: включено. Молоко начнёт капать на землю если заполненность выше > 100%</MilkableColonists.enableMilkDripDesc>
+
+	<MilkableColonists.enabledMilkDripAmount>Накапливать молоко при полном заполнении</MilkableColonists.enabledMilkDripAmount>
+	<MilkableColonists.enabledMilkDripAmountDesc>По умолчанию необходим 100 % уровень наполненности, прежде чем молоко начнет капать на землю.</MilkableColonists.enabledMilkDripAmountDesc>
+
+
+	<MilkableColonists.adultBreastfeedNutritionModAmount>Питание для взрослых при грудном вскармливании.</MilkableColonists.adultBreastfeedNutritionModAmount>
+	<MilkableColonists.adultBreastfeedNutritionModAmountDesc>Питание при грудном вскармливании обычно очень низкое. Он будет умножен на эту сумму, чтобы ваши пешки не голодали во время грудного вскармливания. Вы можете сделать это значение равным 1, если хотите попробовать значение по умолчанию, на котором живут дети.</MilkableColonists.adultBreastfeedNutritionModAmountDesc>
+
+	<MilkableColonists.fullnessHungerAmount>Грудное вскармливание: Уровень голода, необходимый для грудного вскармливания</MilkableColonists.fullnessHungerAmount>
+	<MilkableColonists.fullnessHungerAmountDesc>По умолчанию 50%: Взрослые пешки не будут рассматривать грудное вскармливание, пока их голод не упадет ниже этого уровня. Сделайте его выше, чтобы пешки кормились грудью раньше. Если установить слишком низкое значение, они, предпочтут, вместо этого обычную пищу.</MilkableColonists.fullnessHungerAmountDesc> 
+
+	<MilkableColonists.fullnessMilkBreastfeedAmount>Грудное вскармливание: требуется количество сытости</MilkableColonists.fullnessMilkBreastfeedAmount>
+	<MilkableColonists.fullnessMilkBreastfeedAmountDesc>По умолчанию 100%: взрослые пешки не будут выбраны для грудного вскармливания, пока их сытость не достигнет этого значения.</MilkableColonists.fullnessMilkBreastfeedAmountDesc>
+
+	<MilkableColonists.fullnessMilkBottleAmount>Доение: Требуемое количество</MilkableColonists.fullnessMilkBottleAmount>
+	<MilkableColonists.fullnessMilkBottleAmountDesc>По умолчанию 120%: Пешки не будут доиться, пока их наполненность не достигнет этого значения.</MilkableColonists.fullnessMilkBottleAmountDesc>
+
+	<MilkableColonists.fullnessMilkSelfAmount>Самодоение: требуемое количество наполненности</MilkableColonists.fullnessMilkSelfAmount>
+    <MilkableColonists.fullnessMilkSelfAmountDesc>По умолчанию 150%: пешки не будут доить себя, пока их наполненность не достигнет этого количества.</MilkableColonists.fullnessMilkSelfAmountDesc >
+
+    <MilkableColonists.workSpeedMult>Множитель рабочей скорости/количества</MilkableColonists.workSpeedMult>
+    <MilkableColonists.workSpeedMultDesc>По умолчанию 1: Это множитель для ускорения различной работы, которую дает этот мод. Вы будете доить больше бутылочек или пить больше молока за каждое действие. Это может помочь при работе с пешками с большой грудью </MilkableColonists.workSpeedMultDesc>
+
+    <MilkableColonists.enableDebugFillButton>DEBUG: показать кнопку отладки "Наполнить молоком"</MilkableColonists.enableDebugFillButton>
+    <MilkableColonists.enableDebugFillButtonDesc>По умолчанию: выключено. Покажите кнопку отладки на пешках, чтобы немедленно восполнить количество молока.</MilkableColonists.enableDebugFillButtonDesc> 
+
+	<MilkTableMain_Designators>Группы</MilkTableMain_Designators>	
+
+	<!--debug fill milk button-->
+	<DebugFillMilkGizmoLabel>Debug: Наполнить молоком</DebugFillMilkGizmoLabel>
+	<DebugFillMilkGizmoDesc>Установить заполненность молоком на 150%</DebugFillMilkGizmoDesc>
+
+	
+</LanguageData>

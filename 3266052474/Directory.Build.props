@@ -1,0 +1,74 @@
+<Project>
+    <PropertyGroup>
+        <!-- Prevent dumping garbage into the output directory -->
+        <BaseIntermediateOutputPath>..\..\Build\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+        <Configurations>1.5;1.6</Configurations>
+        <Platforms>AnyCPU</Platforms>
+        <TargetFramework>net481</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);MSB3052;1591</NoWarn>
+        <DebugType>none</DebugType>
+        <Optimize>true</Optimize>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>3</WarningLevel>
+        <Prefer32Bit>false</Prefer32Bit>
+        <DefineConstants>TRACE</DefineConstants>
+
+        <!-- Custom Macros -->
+        <OutDirBase>../../Versions/$(Configuration)</OutDirBase>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == '1.5'">
+        <DefineConstants>$(DefineConstants);v1_5</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == '1.6'">
+        <DefineConstants>$(DefineConstants);v1_6</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Krafs.Publicizer" Version="2.3.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <!-- DLLs -->
+        <!-- Harmony -->
+        <Reference Include="Harmony" Condition="'$(Configuration)' == '1.5'">
+            <HintPath>../../Libs/Workshop/2009463077/1.5/Assemblies/0Harmony.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="Harmony" Condition="'$(Configuration)' == '1.6'">
+            <HintPath>../../Libs/Workshop/2009463077/Current/Assemblies/0Harmony.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <!-- RimWorld -->
+        <Reference Include="Assembly-CSharp">
+            <HintPath>../../RimWorld_Data/$(Configuration)/Assembly-CSharp.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <!-- Unity -->
+        <Reference Include="UnityEngine">
+            <HintPath>../../RimWorld_Data/$(Configuration)/UnityEngine.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>../../RimWorld_Data/$(Configuration)/UnityEngine.CoreModule.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule">
+            <HintPath>../../RimWorld_Data/$(Configuration)/UnityEngine.TextRenderingModule.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+            <HintPath>../../RimWorld_Data/$(Configuration)/UnityEngine.IMGUIModule.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="netstandard">
+            <HintPath>../../RimWorld_Data/$(Configuration)/netstandard.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="mscorlib">
+            <HintPath>../../RimWorld_Data/$(Configuration)/mscorlib.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+</Project>

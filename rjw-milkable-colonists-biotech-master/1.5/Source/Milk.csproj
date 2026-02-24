@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3FC2D442-19B8-4CF9-9D35-CD13B6AC7B28}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Milk</RootNamespace>
+    <AssemblyName>Milk</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Assemblies\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Assemblies\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HugsLib">
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\818773962\v1.2\Assemblies\HugsLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RJW">
+      <HintPath>..\..\..\rjw\1.5\Assemblies\RJW.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Building_HumanMilker.cs" />
+    <Compile Include="Data\DataStore.cs" />
+    <Compile Include="Data\DesignatorsData.cs" />
+    <Compile Include="Data\ModData.cs" />
+    <Compile Include="Data\PawnData.cs" />
+    <Compile Include="Designators\Designator_MilkAllowBfAdult.cs" />
+    <Compile Include="Designators\Designator_MilkAllowBfBaby.cs" />
+    <Compile Include="Designators\Designator_MilkAllowMachine.cs" />
+    <Compile Include="Designators\Designator_MilkAllowSelf.cs" />
+    <Compile Include="Designators\Designator_MilkShouldProduce.cs" />
+    <Compile Include="Designators\Designator_MilkWillBfAdult.cs" />
+    <Compile Include="Designators\Designator_MilkAllowManual.cs" />
+    <Compile Include="Designators\Designator_MilkWillManual.cs" />
+    <Compile Include="Designators\Designator_Utilities.cs" />
+    <Compile Include="Designators\PawnExtensions.cs" />
+    <Compile Include="Drugs\Milk_Drugs.cs" />
+    <Compile Include="JobsAndWork\JobDriver_BreastfedUpon.cs" />
+    <Compile Include="JobsAndWork\JobDriver_BreastfeedAdult.cs" />
+    <Compile Include="JobsAndWork\JobDriver_GetMilked.cs" />
+    <Compile Include="JobsAndWork\JobDriver_MilkHuman.cs" />
+    <Compile Include="JobsAndWork\JobDriver_MilkSelfAtMachine.cs" />
+    <Compile Include="JobsAndWork\JobDriver_MilkSelf.cs" />
+    <Compile Include="JobsAndWork\JobDriver_MilkSelfAtMachineAutomatic.cs" />
+    <Compile Include="JobsAndWork\JobGiver_MilkSelf.cs" />
+    <Compile Include="JobsAndWork\JobGiver_MilkSelfAtMachineAutomatic.cs" />
+    <Compile Include="JobsAndWork\WorkGiver_MilkSelfAtMachine.cs" />
+    <Compile Include="JobsAndWork\WorkGiver_BreastfeedAdult.cs" />
+    <Compile Include="MilkHediffModStats.cs" />
+    <Compile Include="CompMilkableHuman.cs" />
+    <Compile Include="CompProperties_MilkableHuman.cs" />
+    <Compile Include="HarmonyPatches.cs" />
+    <Compile Include="HaulAIUtility_PawnCanAutomaticallyHaulFast_Patch.cs" />
+    <Compile Include="HumanCompHasGatherableBodyResource.cs" />
+    <Compile Include="IngestionOutcomeDoer_GiveHediffOnce.cs" />
+    <Compile Include="MilkBase.cs" />
+    <Compile Include="MilkSettings.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ThinkTreeNodes\ThinkNode_MilkSelfAtMachineAutomaticChecks.cs" />
+    <Compile Include="ThinkTreeNodes\ThinkNode_MilkSelfChecks.cs" />
+    <Compile Include="Thoughts\ThoughtWorker_MilkFullness.cs" />
+    <Compile Include="Thoughts\ThoughtWorker_MillFullnessMasochist.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkAllowBfAdult.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkAllowBfBaby.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkAllowMachine.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkAllowManual.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkAllowSelf.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkWillBfAdult.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkWillManual.cs" />
+    <Compile Include="UI_Tab\Checkbox_MilkShouldProduce.cs" />
+    <Compile Include="UI_Tab\Icon_MilkAllowBfAdult.cs" />
+    <Compile Include="UI_Tab\Icon_MilkAllowBfBaby.cs" />
+    <Compile Include="UI_Tab\Icon_MilkAllowMachine.cs" />
+    <Compile Include="UI_Tab\Icon_MilkAllowManual.cs" />
+    <Compile Include="UI_Tab\Icon_MilkAllowSelf.cs" />
+    <Compile Include="UI_Tab\Icon_MilkShouldProduce.cs" />
+    <Compile Include="UI_Tab\Icon_MilkWillBfAdult.cs" />
+    <Compile Include="UI_Tab\Icon_MilkWillManual.cs" />
+    <Compile Include="UI_Tab\PawnTable_DefModExtension.cs" />
+    <Compile Include="UI_Tab\DesignatorCheckbox.cs" />
+    <Compile Include="UI_Tab\PawnTable_Main.cs" />
+    <Compile Include="UI_Tab\PawnColumnCheckbox.cs" />
+    <Compile Include="UI_Tab\PawnTableHumanlike.cs" />
+    <Compile Include="UI_Tab\Settings.cs" />
+    <Compile Include="JobsAndWork\WorkGiver_GatherHumanBodyResources.cs" />
+    <Compile Include="JobsAndWork\WorkGiver_MilkHuman.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

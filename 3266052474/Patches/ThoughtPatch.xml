@@ -1,0 +1,11 @@
+<Patch>
+  <!-- Remove age restrictions to get the breastfeeding thoughts-->
+  <Operation Class="PatchOperationRemove">
+    <xpath>
+      Defs/ThoughtDef[defName="BreastfedBaby"]/socialTargetDevelopmentalStageFilter</xpath>
+  </Operation>
+  <Operation Class="PatchOperationRemove">
+    <xpath>
+      Defs/ThoughtDef[defName="BreastfedMe"]/developmentalStageFilter</xpath>
+  </Operation>
+</Patch>

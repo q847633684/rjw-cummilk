@@ -1,0 +1,14 @@
+<Patch>
+	<!-- Vanilla Cooking Expanded-->
+	<Operation Class="PatchOperationSequence">
+		<operations>
+			<li Class="PatchOperationAdd" MayRequire="vanillaexpanded.vcooke">
+				<xpath>
+					Defs/ThingDef[defName="VCE_CheesePress"]/comps/li/processes</xpath>
+				<value>
+					<li>VCE_HumanMilkIntoCheese</li>
+				</value>
+			</li>
+		</operations>
+	</Operation>
+</Patch>

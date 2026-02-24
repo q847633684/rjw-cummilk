@@ -1,0 +1,7 @@
+<Defs>
+    <GeneCategoryDef>
+        <defName>Milk</defName>
+        <label>Milk</label>
+        <displayPriorityInXenotype>339</displayPriorityInXenotype>
+    </GeneCategoryDef>
+</Defs>

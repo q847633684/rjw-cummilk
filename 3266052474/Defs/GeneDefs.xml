@@ -1,0 +1,42 @@
+<Defs>
+    <GeneDef Name="EM_MilkBase" Abstract="True">
+        <displayCategory>Milk</displayCategory>
+        <exclusionTags>
+            <li>Milk</li>
+        </exclusionTags>
+    </GeneDef>
+    <GeneDef ParentName="EM_MilkBase">
+        <defName>EM_Lactation_Enhanced</defName>
+        <label>enhanced lactation</label>
+        <labelShortAdj>enhanced lactation</labelShortAdj>
+        <iconPath>UI/Icons/Genes/Gene_Lactation_Enhanced</iconPath>
+        <displayOrderInCategory>10</displayOrderInCategory>
+        <statOffsets>
+            <EM_Lactating_Efficiency_Factor>0.5</EM_Lactating_Efficiency_Factor>
+            <EM_Milk_Amount_Factor>0.5</EM_Milk_Amount_Factor>
+        </statOffsets>
+        <biostatMet>-1</biostatMet>
+    </GeneDef>
+    <GeneDef ParentName="EM_MilkBase">
+        <defName>EM_Lactation_Poor</defName>
+        <label>poor lactation</label>
+        <labelShortAdj>poor lactation</labelShortAdj>
+        <iconPath>UI/Icons/Genes/Gene_Lactation_Poor</iconPath>
+        <displayOrderInCategory>10</displayOrderInCategory>
+        <statOffsets>
+            <EM_Lactating_Efficiency_Factor>-0.25</EM_Lactating_Efficiency_Factor>
+            <EM_Milk_Amount_Factor>-0.25</EM_Milk_Amount_Factor>
+        </statOffsets>
+        <biostatMet>1</biostatMet>
+    </GeneDef>
+    <GeneDef>
+        <displayCategory>Milk</displayCategory>
+        <defName>EM_Permanent_Lactation</defName>
+        <label>permanent lactation</label>
+        <labelShortAdj>permanent lactation</labelShortAdj>
+        <iconPath>UI/Icons/Genes/Gene_Lactation_Permanent</iconPath>
+        <displayOrderInCategory>10</displayOrderInCategory>
+        <biostatMet>0</biostatMet>
+        <biostatCpx>1</biostatCpx>
+    </GeneDef>
+</Defs>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Defs>
+    <DesignatorDropdownGroupDef>
+        <defName>EM_MilkPipes</defName>
+        <label>milk pipes</label>
+    </DesignatorDropdownGroupDef>
+    <ThingDef Name="EM_MilkPipeBase" Abstract="True">
+        <thingClass>PipeSystem.Building_Pipe</thingClass>
+        <category>Building</category>
+        <tickerType>Rare</tickerType>
+        <designatorDropdown>EM_MilkPipes</designatorDropdown>
+        <graphicData>
+            <graphicClass>Graphic_Single</graphicClass>
+            <linkType>Basic</linkType>
+            <linkFlags>
+                <li>Custom7</li>
+            </linkFlags>
+            <damageData>
+                <rect>(0,0.35,1,0.3)</rect>
+            </damageData>
+        </graphicData>
+        <building>
+            <ai_chillDestination>false</ai_chillDestination>
+            <isInert>true</isInert>
+            <isEdifice>false</isEdifice>
+            <blueprintGraphicData>
+                <texPath>Things/Building/Linked/EM_MilkPipes/MilkPipes_Blueprint_Atlas</texPath>
+            </blueprintGraphicData>
+            <ai_neverTrashThis>true</ai_neverTrashThis>
+            <isTargetable>false</isTargetable>
+            <expandHomeArea>false</expandHomeArea>
+            <canBeDamagedByAttacks>false</canBeDamagedByAttacks>
+        </building>
+        <drawerType>MapMeshOnly</drawerType>
+        <altitudeLayer>Conduits</altitudeLayer>
+        <passability>Standable</passability>
+        <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+        <drawStyleCategory>Conduits</drawStyleCategory>
+        <comps>
+            <li Class="PipeSystem.CompProperties_Resource">
+                <pipeNet>EM_MilkNet</pipeNet>
+            </li>
+            <li Class="PipeSystem.CompProperties_Resource">
+                <pipeNet>EM_HumanMilkNet</pipeNet>
+            </li>
+        </comps>
+        <placeWorkers>
+            <li>PipeSystem.PlaceWorker_Pipe</li>
+        </placeWorkers>
+        <rotatable>false</rotatable>
+        <selectable>true</selectable>
+        <neverMultiSelect>true</neverMultiSelect>
+        <soundImpactDefault>BulletImpact_Metal</soundImpactDefault>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <!-- <designationCategory>EM_PipeNetworks</designationCategory> -->
+        <constructEffect>ConstructMetal</constructEffect>
+        <clearBuildingArea>false</clearBuildingArea>
+    </ThingDef>
+
+    <ThingDef ParentName="EM_MilkPipeBase">
+        <defName>EM_MilkPipe</defName>
+        <label>milk pipe</label>
+        <description>Light steel pipes for transporting milk.</description>
+        <graphicData>
+            <texPath>Things/Building/Linked/EM_MilkPipes/MilkPipes_Atlas</texPath>
+        </graphicData>
+        <uiIconPath>Things/Building/Linked/EM_MilkPipes/MilkPipes_MenuIcon</uiIconPath>
+        <uiIconScale>0.7</uiIconScale>
+        <statBases>
+            <MaxHitPoints>40</MaxHitPoints>
+            <WorkToBuild>35</WorkToBuild>
+            <Flammability>1.0</Flammability>
+        </statBases>
+        <costList>
+            <Steel>2</Steel>
+        </costList>
+        <designationCategory>EM_PipeNetworks</designationCategory>
+    </ThingDef>
+
+    <ThingDef ParentName="EM_MilkPipeBase">
+        <defName>EM_UndergroundMilkPipe</defName>
+        <label>hidden milk pipe</label>
+        <description>Hidden steel pipes for transporting milk.</description>
+        <graphicData>
+            <texPath>UI/CSG/IConduit</texPath>
+        </graphicData>
+        <uiIconPath>Things/Building/Linked/EM_MilkPipes/BuriedMilkPipes_MenuIcon</uiIconPath>
+        <uiIconScale>0.7</uiIconScale>
+        <statBases>
+            <MaxHitPoints>48</MaxHitPoints>
+            <WorkToBuild>280</WorkToBuild>
+            <Flammability>0</Flammability>
+        </statBases>
+        <costList>
+            <Steel>4</Steel>
+        </costList>
+        <designationCategory>EM_PipeNetworks</designationCategory>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>EM_MilkValve</defName>
+        <label>milk valve</label>
+        <description>Switches milk flow on/off.</description>
+        <thingClass>PipeSystem.Building_PipeValve</thingClass>
+        <category>Building</category>
+        <graphicData>
+            <texPath>Things/Building/Linked/EM_MilkPipes/MilkValve</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <shaderType>Transparent</shaderType>
+            <damageData>
+                <rect>(0.2,0.2,0.6,0.6)</rect>
+            </damageData>
+        </graphicData>
+        <building>
+            <ai_chillDestination>false</ai_chillDestination>
+            <allowWireConnection>false</allowWireConnection>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>Standable</passability>
+        <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+        <statBases>
+            <MaxHitPoints>120</MaxHitPoints>
+            <WorkToBuild>200</WorkToBuild>
+            <Flammability>1.0</Flammability>
+            <Beauty>-2</Beauty>
+        </statBases>
+        <costList>
+            <Steel>5</Steel>
+        </costList>
+        <comps>
+            <li Class="PipeSystem.CompProperties_PipeValve">
+                <pipeNet>EM_MilkNet</pipeNet>
+                <alwaysLinkToPipes>true</alwaysLinkToPipes>
+            </li>
+            <li Class="PipeSystem.CompProperties_PipeValve">
+                <pipeNet>EM_HumanMilkNet</pipeNet>
+                <alwaysLinkToPipes>true</alwaysLinkToPipes>
+            </li>
+            <li Class="CompProperties_Flickable"></li>
+        </comps>
+        <rotatable>false</rotatable>
+        <selectable>true</selectable>
+        <neverMultiSelect>false</neverMultiSelect>
+        <tickerType>Normal</tickerType>
+        <designationCategory>EM_PipeNetworks</designationCategory>
+        <constructEffect>ConstructMetal</constructEffect>
+    </ThingDef>
+</Defs>

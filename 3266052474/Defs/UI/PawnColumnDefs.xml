@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+	<PawnColumnDef>
+		<defName>Milk_AllowManual</defName>
+		<headerIcon>ui/icons/suppressiontoggle</headerIcon>
+		<workerClass>EqualMilking.PawnColumnWorker_MilkAllowManual</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	
+	<PawnColumnDef>
+		<defName>Milk_AllowSelf</defName>
+		<headerIcon>ui/icons/trainables/tameness</headerIcon>
+		<workerClass>EqualMilking.PawnColumnWorker_MilkAllowSelf</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
+		<defName>Milk_AllowBf</defName>
+		<headerIcon>things/pawn/humanlike/silhouettes/silhouette_humanbaby</headerIcon>
+		<workerClass>EqualMilking.PawnColumnWorker_MilkAllowBreastFeeding</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
+		<defName>Milk_AllowBfAdult</defName>
+		<headerIcon>things/pawn/humanlike/silhouettes/silhouette_humanadult</headerIcon>
+		<workerClass>EqualMilking.PawnColumnWorker_MilkAllowBreastFeedingAdult</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+
+ 	<PawnColumnDef>
+		<defName>Milk_MilkType</defName>
+		<workerClass>EqualMilking.PawnColumnWorker_MilkType</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	
+ 	<PawnColumnDef>
+		<defName>Milk_Lactating</defName>
+		<workerClass>EqualMilking.PawnColumnWorker_Lactating</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+	
+ 	<PawnColumnDef>
+		<defName>Milk_Fullness</defName>
+		<workerClass>EqualMilking.PawnColumnWorker_MilkFullness</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>80</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
+		<defName>Milk_FedBy</defName>
+		<headerIcon>UI/Icons/Fed</headerIcon>
+		<workerClass>EqualMilking.PawnColumnWorker_FedBy</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>120</width>
+	</PawnColumnDef>
+	
+ 	<PawnColumnDef>
+		<defName>Milk_Dev</defName>
+		<label>Lactating(Dev)</label>
+		<workerClass>EqualMilking.PawnColumnWorker_Dev</workerClass>
+		<sortable>false</sortable>
+		<paintable>true</paintable>
+		<width>120</width>
+	</PawnColumnDef>
+</Defs>

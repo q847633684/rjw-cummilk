@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>$(SolutionName)_$(MSBuildProjectName)</AssemblyName>
+    <OutDir>$(OutDirBase)/Integrations/$(MSBuildProjectName)/Assemblies</OutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="RJW">
+      <HintPath>../../Libs/Mods/rjw/$(Configuration)/Assemblies/RJW.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EqualMilking\EqualMilking.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+
+  <ThoughtDef>
+    <defName>wasBreastfedAdult</defName>
+    <developmentalStageFilter>Adult</developmentalStageFilter>
+    <durationDays>1</durationDays>
+    <stages>
+      <li>
+        <label>breastfeed</label>
+        <description>That was tasty. Yum!</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+  <ThoughtDef>
+    <defName>wasBreastfedAdultHucowIdeo</defName>
+    <developmentalStageFilter>Adult</developmentalStageFilter>
+    <durationDays>1</durationDays>
+    <stages>
+      <li>
+        <label>breastfeed</label>
+        <description>Milk direct from the source. Nothing better!</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+  
+  <ThoughtDef>
+    <defName>didBreastfeedAdultGood</defName>
+    <developmentalStageFilter>Adult</developmentalStageFilter>
+    <durationDays>1</durationDays>
+    <stages>
+      <li>
+        <label>breastfed</label>
+        <description>I helped someone in need with my milk.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+ 
+   <ThoughtDef>
+    <defName>didBreastfeedAdultGoodHucowIdeo</defName>
+    <developmentalStageFilter>Adult</developmentalStageFilter>
+    <durationDays>1</durationDays>
+    <stages>
+      <li>
+        <label>breastfed</label>
+        <description>I was honored to help someone in need with my milk.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+  
+  <ThoughtDef>
+    <defName>didBreastfeedAdultBad</defName>
+    <developmentalStageFilter>Adult</developmentalStageFilter>
+    <durationDays>1</durationDays>
+    <stages>
+      <li>
+        <label>breastfed</label>
+        <description>I can't believe someone did that to me.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+	<ThoughtDef>
+		<defName>MilkFullness</defName>
+		<developmentalStageFilter>Adult</developmentalStageFilter>
+		<workerClass>Milk.ThoughtWorker_MilkFullness</workerClass>
+		<nullifyingTraits>
+			<li>Masochist</li>
+		</nullifyingTraits>
+		<stages>
+			<li> <!-- stage 0, 0-49% fullness -->
+				<label>Lactating</label>
+				<description>I'm making milk.</description>
+				<baseMoodEffect>1</baseMoodEffect>
+			</li>
+			<li> <!-- stage 1, 50-99% fullness -->
+				<label>Lactating</label>
+				<description>I'm making milk.</description>
+				<baseMoodEffect>1</baseMoodEffect>
+			</li>
+			<li> <!-- stage 2, 100-139% fullness -->
+				<label>Lactating (Full)</label>
+				<description>I need to do something about all this milk.</description>
+				<baseMoodEffect>-1</baseMoodEffect>
+			</li>
+			<li> <!-- stage 3, 140% fullness -->
+				<label>Lactating (Very Full)</label>
+				<description>Ow. I need to relieve this!</description>
+				<baseMoodEffect>-2</baseMoodEffect>
+			</li>
+		</stages>
+	</ThoughtDef>
+
+	<ThoughtDef>
+		<defName>MilkFullnessMasochist</defName>
+		<developmentalStageFilter>Adult</developmentalStageFilter>
+		<workerClass>Milk.ThoughtWorker_MilkFullnessMasochist</workerClass>
+		<requiredTraits>
+			<li>Masochist</li>
+		</requiredTraits>
+		<stages>
+			<li> <!-- stage 0, 0-49% fullness -->
+				<label>Lactating</label>
+				<description>I'm making milk.</description>
+				<baseMoodEffect>0</baseMoodEffect>
+			</li>
+			<li> <!-- stage 1, 50-99% fullness -->
+				<label>Lactating</label>
+				<description>I'm making milk.</description>
+				<baseMoodEffect>0</baseMoodEffect>
+			</li>
+			<li> <!-- stage 2, 100-139% fullness -->
+				<label>Lactating (Full)</label>
+				<description>This is starting to hurt. Nice!</description>
+				<baseMoodEffect>1</baseMoodEffect>
+			</li>
+			<li> <!-- stage 3, 140% fullness -->
+				<label>Lactating (Very Full)</label>
+				<description>Ow. I need more milk!</description>
+				<baseMoodEffect>2</baseMoodEffect>
+			</li>
+		</stages>
+	</ThoughtDef>
+
+</Defs>

@@ -1,0 +1,30 @@
+#if v1_6
+using System.Collections.Generic;
+using EqualMilking.Helpers;
+using RimWorld;
+using Verse;
+using Verse.AI;
+
+namespace EqualMilking.UI;
+
+public class FloatMenuOptionProvider_InjectLactationDrug : FloatMenuOptionProvider
+{
+    protected override bool Drafted => false;
+    protected override bool Undrafted => true;
+    protected override bool Multiselect => false;
+    protected override bool RequiresManipulation => true;
+    protected override bool CanSelfTarget => false;
+    protected override bool MechanoidCanDo => false;
+    public override bool CanTargetDespawned => true;
+    public override bool TargetThingValid(Thing thing, FloatMenuContext context)
+    {
+        if (!base.TargetThingValid(thing, context)) { return false; }
+        if (!context.FirstSelectedPawn.CanReach(thing, PathEndMode.ClosestTouch, Danger.Deadly)) { return false; }
+        return thing.ShouldShowInjectMenu();
+    }
+    public override IEnumerable<FloatMenuOption> GetOptionsFor(Thing clickedThing, FloatMenuContext context)
+    {
+        return clickedThing.InjectMenuOptions(context.FirstSelectedPawn);
+    }
+}
+#endif

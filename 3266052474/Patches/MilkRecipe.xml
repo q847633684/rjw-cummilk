@@ -1,0 +1,31 @@
+<Patch>
+    <Operation Class="PatchOperationAdd">
+        <xpath>
+            Defs/ThingDef[defName="Milk"]</xpath>
+        <value>
+            <recipeMaker>
+                <recipeUsers>
+                    <li>CraftingSpot</li>
+                    <li>Campfire</li>
+                    <li>ElectricStove</li>
+                    <li>FueledStove</li>
+                </recipeUsers>
+                <effectWorking>Cook</effectWorking>
+                <soundWorking>Recipe_CookMeal</soundWorking>
+                <bulkRecipeCount>4</bulkRecipeCount>
+                <workSpeedStat>CookSpeed</workSpeedStat>
+                <workSkill>Cooking</workSkill>
+                <workAmount>10</workAmount>
+            </recipeMaker>
+        </value>
+    </Operation>
+    <Operation Class="PatchOperationAdd">
+        <xpath>
+            Defs/ThingDef[defName="Milk"]</xpath>
+        <value>
+        <costList>
+            <EM_HumanMilk>1</EM_HumanMilk>
+        </costList>
+        </value>
+    </Operation>
+</Patch>

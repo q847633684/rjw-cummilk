@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<MilkableColonists.breastGrowthDisabled>禁用乳房成长</MilkableColonists.breastGrowthDisabled>
+	<MilkableColonists.breastGrowthDisabledDesc>默认关闭。开启以禁止乳房因为产奶或哺乳而成长变大。</MilkableColonists.breastGrowthDisabledDesc>
+	<MilkableColonists.flatChestGivesMilk>平胸产奶</MilkableColonists.flatChestGivesMilk>
+	<MilkableColonists.flatChestGivesMilkDesc>默认关闭（对A哪有奶？闹呢）。开启后平胸将拥有最小奶产量。</MilkableColonists.flatChestGivesMilkDesc>
+	<MilkableColonists.ignoreReproductiveStage>Debug: 忽略生理生殖阶段</MilkableColonists.ignoreReproductiveStage>
+	<MilkableColonists.ignoreReproductiveStageDesc>默认关闭。请仅因为部分种族的生理生殖阶段未被正确设置而启用。</MilkableColonists.ignoreReproductiveStageDesc>
+</LanguageData>
