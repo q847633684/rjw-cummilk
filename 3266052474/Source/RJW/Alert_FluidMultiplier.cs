@@ -20,6 +20,6 @@ public class Alert_FluidMultiplier : Alert
 
     public override TaggedString GetExplanation()
     {
-        return "Pawn(s) have a breast fluid multiplier of 0. This will cause them to not produce any milk. You need to fix them using Dev tool => RJW: Edit parts tool. The button is located at the top of the health tab when dev mode is enabled.";
+        return "EM.AlertLactatingButFluidZero".Translate();
     }
 }

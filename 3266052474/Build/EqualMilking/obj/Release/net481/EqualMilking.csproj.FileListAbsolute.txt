@@ -1,0 +1,5 @@
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\net481\EqualMilking.csproj.AssemblyReference.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\net481\EqualMilking.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\net481\EqualMilking.AssemblyInfoInputs.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\net481\EqualMilking.AssemblyInfo.cs
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\net481\EqualMilking.csproj.CoreCompileInputs.cache

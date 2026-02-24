@@ -1,0 +1,10 @@
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.csproj.AssemblyReference.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.AssemblyInfoInputs.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.AssemblyInfo.cs
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.csproj.CoreCompileInputs.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Versions\Release\Assemblies\EqualMilking.dll
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Versions\Release\Assemblies\EqualMilking.xml
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMil.B8302744.Up2Date
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.dll
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\Release\EqualMilking.xml

@@ -1,0 +1,54 @@
+<Defs>
+    <ThoughtDef>
+        <defName>EM_Prolactin_Joy</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>0.5</durationDays>
+        <stages>
+            <li>
+                <label>化学温暖</label>
+                <description>催乳素让我感到温暖和放松。</description>
+                <baseMoodEffect>6</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+    
+    <ThoughtDef>
+        <defName>EM_Prolactin_HighThought</defName>
+        <workerClass>ThoughtWorker_Hediff</workerClass>
+        <hediff>EM_Prolactin_High</hediff>
+        <validWhileDespawned>true</validWhileDespawned>
+        <stages>
+            <li>
+                <label>催乳素兴奋</label>
+                <description>身体暖暖的，有点飘。</description>
+                <baseMoodEffect>5</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+    
+    <ThoughtDef>
+        <defName>EM_Prolactin_Withdrawal</defName>
+        <workerClass>ThoughtWorker_Hediff</workerClass>
+        <hediff>EM_Prolactin_Addiction</hediff>
+        <validWhileDespawned>true</validWhileDespawned>
+        <stages>
+            <li>
+                <label>催乳素戒断</label>
+                <description>我真的需要再服一剂。没有它我的身体感觉不完整。</description>
+                <baseMoodEffect>-12</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+    <ThoughtDef>
+        <defName>EM_HadSexWhileLactating</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>0.5</durationDays>
+        <stages>
+            <li>
+                <label>泌乳期性事</label>
+                <description>刚经历过性事，身体仍处于泌乳期。</description>
+                <baseMoodEffect>2</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+</Defs>

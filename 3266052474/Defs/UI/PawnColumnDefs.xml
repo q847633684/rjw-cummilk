@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Defs>
 	<PawnColumnDef>
 		<defName>Milk_AllowManual</defName>
@@ -61,12 +61,12 @@
 	</PawnColumnDef>
 
 	<PawnColumnDef>
-		<defName>Milk_FedBy</defName>
-		<headerIcon>UI/Icons/Fed</headerIcon>
-		<workerClass>EqualMilking.PawnColumnWorker_FedBy</workerClass>
-		<sortable>true</sortable>
-		<paintable>true</paintable>
-		<width>120</width>
+		<defName>Milk_ProducerRestrictions</defName>
+		<label>EM.ProducerRestrictionsColumn</label>
+		<workerClass>EqualMilking.PawnColumnWorker_ProducerRestrictions</workerClass>
+		<sortable>false</sortable>
+		<paintable>false</paintable>
+		<width>44</width>
 	</PawnColumnDef>
 	
  	<PawnColumnDef>

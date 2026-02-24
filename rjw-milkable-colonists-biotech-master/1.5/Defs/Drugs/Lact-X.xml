@@ -100,15 +100,15 @@
 				<painFactor>0.9</painFactor>
 				<capMods>
 					<li>
-						<capacity>Consciousness</capacity>
+						<capacity>Consciousness</capacity><!--意识-->
 						<offset>-0.10</offset>
 					</li>
 					<li>
-						<capacity>Manipulation</capacity>
+						<capacity>Manipulation</capacity><!--操纵-->
 						<setMax>0.5</setMax>
 					</li>
 					<li>
-						<capacity>Moving</capacity>
+						<capacity>Moving</capacity><!--移动-->
 						<setMax>0.5</setMax>
 					</li>
 				</capMods>

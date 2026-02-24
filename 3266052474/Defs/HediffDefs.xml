@@ -1,0 +1,120 @@
+<Defs>
+    <HediffDef>
+        <defName>EM_Prolactin_Tolerance</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>催乳素耐受</label>
+        <description>Developing tolerance to Prolactin</description>
+        <initialSeverity>0.01</initialSeverity>
+        <maxSeverity>1.0</maxSeverity>
+        <isBad>false</isBad>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-0.015</severityPerDay>
+            </li>
+            <li Class="HediffCompProperties_DrugEffectFactor">
+                <chemical>EM_Prolactin_Chemical</chemical>
+            </li>
+        </comps>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>small tolerance</label>
+            </li>
+            <li>
+                <minSeverity>0.3</minSeverity>
+                <label>moderate tolerance</label>
+                <statFactors>
+                    <DrugDurationMultiplier>0.9</DrugDurationMultiplier>
+                </statFactors>
+            </li>
+            <li>
+                <minSeverity>0.6</minSeverity>
+                <label>high tolerance</label>
+                <statFactors>
+                    <DrugDurationMultiplier>0.7</DrugDurationMultiplier>
+                </statFactors>
+                <hediffGivers>
+                    <li Class="HediffGiver_RandomDrugEffect">
+                        <hediff>ChemicalDamageModerate</hediff>
+                        <minSeverity>0.75</minSeverity>
+                        <baseMtbDays>180</baseMtbDays>
+                        <partsToAffect>
+                            <li>Kidney</li>
+                        </partsToAffect>
+                    </li>
+                </hediffGivers>
+            </li>
+        </stages>
+    </HediffDef>
+    
+    <!-- 短期“high”状态：愉悦 + 轻微负面（操纵/移动/意识） -->
+    <HediffDef>
+        <defName>EM_Prolactin_High</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>催乳素兴奋</label>
+        <description>Short-term euphoria from Prolactin; slight impairment to coordination and awareness.</description>
+        <defaultLabelColor>(1,0.6,0.8)</defaultLabelColor>
+        <maxSeverity>1.0</maxSeverity>
+        <isBad>false</isBad>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-1</severityPerDay>
+            </li>
+        </comps>
+        <stages>
+            <li>
+                <painFactor>0.9</painFactor>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.10</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <setMax>0.5</setMax>
+                    </li>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <setMax>0.5</setMax>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    
+    <HediffDef ParentName="AddictionBase">
+        <defName>EM_Prolactin_Addiction</defName>
+        <hediffClass>Hediff_Addiction</hediffClass>
+        <label>催乳素成瘾</label>
+        <description>Addicted to Prolactin</description>
+        <causesNeed>Chemical_EM_Prolactin</causesNeed>
+        <initialSeverity>0.5</initialSeverity>
+        <maxSeverity>1.0</maxSeverity>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-0.015</severityPerDay>
+            </li>
+        </comps>
+        <stages>
+            <li>
+                <label>satisfied</label>
+            </li>
+            <li>
+                <label>withdrawal</label>
+                <painFactor>2.0</painFactor>
+                <restFallFactorOffset>0.3</restFallFactorOffset>
+                <hungerRateFactorOffset>0.5</hungerRateFactorOffset>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.15</offset>
+                    </li>
+                    <li>
+                        <capacity>Eating</capacity>
+                        <offset>-0.20</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+</Defs>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Defs>
 	<PawnTableDef>
 		<defName>Milk_PawnTable</defName>
@@ -26,7 +26,7 @@
 			<li>GapTiny</li>
 			<li>Milk_AllowBfAdult</li>
 			<li>GapTiny</li>
-			<li>Milk_FedBy</li>
+			<li>Milk_ProducerRestrictions</li>
 			<li>GapTiny</li>
 			<li>Milk_Dev</li>
 			<li>RemainingSpace</li>

@@ -82,7 +82,7 @@ public static class Hediff_BasePregnancy_Patch
                 lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
             }
         }
-        if (mother.IsLactating() && mother.CompEquallyMilkable() is CompEquallyMilkable comp && mother.CanBreastfeedEver(baby))
+        if (mother.IsInLactatingState() && mother.CompEquallyMilkable() is CompEquallyMilkable comp && mother.CanBreastfeedEver(baby))
         {
             comp.MilkSettings.allowBreastFeeding = true;
         }

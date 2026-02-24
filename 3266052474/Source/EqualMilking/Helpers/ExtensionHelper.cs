@@ -1,6 +1,7 @@
 using Verse;
 using RimWorld;
 using UnityEngine;
+using System.Collections.Generic;
 using EqualMilking.Data;
 using static EqualMilking.Helpers.Categories;
 
@@ -8,6 +9,9 @@ namespace EqualMilking.Helpers;
 
 public static class ExtensionHelper
 {
+    private const int LactatingStateCacheTicks = 60;
+    private static readonly Dictionary<Pawn, (bool value, int tick)> LactatingStateCache = new();
+
     public static MilkSettings GetDefaultMilkSetting(this Pawn pawn)
     {
         if (pawn == null) { return null; }
@@ -32,6 +36,26 @@ public static class ExtensionHelper
     public static bool HasDrugMilk(this Pawn pawn) => pawn.IsMilkable() && ((pawn.MilkDef().ingestible?.drugCategory ?? DrugCategory.None) != DrugCategory.None);
     public static bool HasEdibleMilk(this Pawn pawn) => pawn.HasNutritiousMilk() || pawn.HasDrugMilk();
     public static bool IsLactating(this Pawn pawn) => pawn?.health?.hediffSet?.HasHediff(HediffDefOf.Lactating) ?? false;
+    /// <summary>统一泌乳判断：本体 Lactating 或 RJW 系 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
+    public static bool IsInLactatingState(this Pawn pawn)
+    {
+        if (pawn?.health?.hediffSet == null) return false;
+        int now = Find.TickManager.TicksGame;
+        if (LactatingStateCache.TryGetValue(pawn, out var cached) && now - cached.tick < LactatingStateCacheTicks)
+            return cached.value;
+        bool value = pawn.health.hediffSet.HasHediff(HediffDefOf.Lactating)
+            || (DefDatabase<HediffDef>.GetNamedSilentFail("Lactating_Drug") is HediffDef d1 && pawn.health.hediffSet.HasHediff(d1))
+            || (DefDatabase<HediffDef>.GetNamedSilentFail("Lactating_Permanent") is HediffDef d2 && pawn.health.hediffSet.HasHediff(d2))
+            || (DefDatabase<HediffDef>.GetNamedSilentFail("Heavy_Lactating_Permanent") is HediffDef d3 && pawn.health.hediffSet.HasHediff(d3));
+        LactatingStateCache[pawn] = (value, now);
+        return value;
+    }
+    /// <summary>清除泌乳缓存（如 hediff 变更时可调，非必须）。</summary>
+    public static void ClearLactatingStateCache(Pawn pawn = null)
+    {
+        if (pawn == null) LactatingStateCache.Clear();
+        else LactatingStateCache.Remove(pawn);
+    }
     public static bool AllowMilking(this Pawn pawn) => pawn.CompEquallyMilkable()?.MilkSettings?.allowMilking ?? false;
     public static bool SetAllowMilking(this Pawn pawn, bool allow)
     {
@@ -87,8 +111,42 @@ public static class ExtensionHelper
         }
         if (pawn == baby) { return false; }
         if (!pawn.CanBreastfeedEver(baby)) { return false; }
+        if (!SuckleRestrictionAllowed(pawn, baby)) { return false; }
         if (!baby.CompEquallyMilkable().AllowedToBeAutoFedBy(pawn)) { return false; }
         return AllowBreastFeedByAge(pawn, baby);
+    }
+    /// <summary>指定“谁可以吸我的奶”：产奶者列表 allowedSucklers 非空则仅列表中可吸；空则默认子女+伴侣。</summary>
+    private static bool SuckleRestrictionAllowed(Pawn mother, Pawn baby)
+    {
+        var comp = mother?.CompEquallyMilkable();
+        if (comp == null) return true;
+        if (comp.allowedSucklers != null && comp.allowedSucklers.Count > 0)
+            return comp.allowedSucklers.Contains(baby);
+        return IsDefaultSuckler(mother, baby);
+    }
+
+    /// <summary>默认“谁可以吸奶”：子女或伴侣。</summary>
+    private static bool IsDefaultSuckler(Pawn mother, Pawn baby)
+    {
+        if (mother?.relations == null || baby?.relations == null) return false;
+        return mother.relations.DirectRelationExists(PawnRelationDefOf.Lover, baby)
+            || mother.relations.DirectRelationExists(PawnRelationDefOf.Parent, baby)
+            || mother.relations.DirectRelationExists(PawnRelationDefOf.Child, baby)
+            || (mother.relations.FamilyByBlood != null && mother.relations.FamilyByBlood.Contains(baby))
+            || (baby.relations?.FamilyByBlood != null && baby.relations.FamilyByBlood.Contains(mother));
+    }
+
+    /// <summary>指定谁可以使用产出的奶/奶制品：无 producer 允许；自己始终允许；否则看产奶者 allowedConsumers，空=仅自己。</summary>
+    public static bool CanConsumeMilkProduct(this Pawn consumer, Thing food)
+    {
+        if (consumer == null || food == null) return true;
+        var comp = food.TryGetComp<CompShowProducer>();
+        if (comp?.producer == null) return true;
+        if (comp.producer == consumer) return true;
+        var producerComp = comp.producer.CompEquallyMilkable();
+        if (producerComp?.allowedConsumers == null || producerComp.allowedConsumers.Count == 0)
+            return false; // 仅产奶者本人
+        return producerComp.allowedConsumers.Contains(consumer);
     }
     public static bool AllowedToAutoBreastFeed(this Pawn pawn, Pawn baby)
     {
@@ -142,7 +200,7 @@ public static class ExtensionHelper
     public static float MilkAmount(this Pawn pawn) => EqualMilkingSettings.GetMilkAmount(pawn);
     public static float MilkIntervalDays(this Pawn pawn) => EqualMilkingSettings.GetMilkIntervalDays(pawn);
     public static float MilkGrowthMultiplier(this Pawn pawn) => EqualMilkingSettings.GetMilkGrowthMultiplier(pawn);
-    public static float MilkGrowthTime(this Pawn pawn) => pawn.MilkIntervalDays() / pawn.GetStatValue(EMDefOf.EM_Lactating_Efficiency_Factor);
+    public static float MilkGrowthTime(this Pawn pawn) => pawn.MilkIntervalDays() / EqualMilkingSettings.GetLactatingEfficiencyFactorWithTolerance(pawn);
     public static float MilkPerYear(this Pawn pawn) => 60f / pawn.MilkIntervalDays() * pawn.MilkAmount();
     public static float MilkMarketValue(this Pawn pawn) => pawn.MilkDef()?.BaseMarketValue ?? 0;
     public static float MilkMarketValuePerYear(this Pawn pawn) => pawn.MilkPerYear() * pawn.MilkMarketValue();

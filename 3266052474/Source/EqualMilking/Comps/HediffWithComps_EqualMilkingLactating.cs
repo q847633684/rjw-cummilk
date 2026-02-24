@@ -3,14 +3,20 @@ using RimWorld;
 using Verse;
 using UnityEngine;
 using System.Text;
+using System.Collections.Generic;
 using EqualMilking.Helpers;
 public class HediffWithComps_EqualMilkingLactating : HediffWithComps
 {
-    private HediffStage[] hediffStages = new HediffStage[EqualMilkingSettings.maxLactationStacks * 2 + 2];
+    /// <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage.</summary>
+    private const int SeverityStepsPerUnit = 4;
+    private const int MaxSeverityForStages = 20;
+    private HediffStage[] hediffStages;
+    private HediffStage[] hediffStagesWithGain;
     private HediffStage vanillaStage;
+    private HediffStage vanillaStageWithGain;
     private bool isDirty = true;
     public override HediffStage CurStage => GetCurStage();
-    public override int CurStageIndex => GetStageIndex(Mathf.FloorToInt(this.Severity), pawn.CompEquallyMilkable().Fullness >= 1f);
+    public override int CurStageIndex => GetStageIndex(this.Severity, pawn.CompEquallyMilkable().Fullness >= 1f);
     public override void PostTick()
     {
         if (isDirty)
@@ -26,26 +32,12 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     public override bool TryMergeWith(Hediff other)
     {
         if (other == null || other.def != this.def)
-        {
             return false;
-        }
-        // Enhance the severity of the hediff if it is less than 1
-        if (other.Severity < 1f && this.Severity < 1f)
-        {
-            this.Severity += other.Severity;
-            if (this.Severity > 1f)
-            {
-                this.Severity = 0.9999f; // Prevent the severity from reaching 1
-            }
-            return true;
-        }
-        if (this.Severity < EqualMilkingSettings.maxLactationStacks)
-        {
-            this.Severity += other.Severity;
+        this.Severity += other.Severity;
+        if (other.Severity >= 1f)
             this.Severity = Mathf.Floor(this.Severity);
+        if (other.Severity >= 1f || this.Severity >= 1f)
             this.ageTicks = 0;
-            return true;
-        }
         return true;
     }
     public void SetDirty()
@@ -55,54 +47,77 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     public void OnGathered()
     {
         if (this.Severity < 1f)
-        {
-            this.Severity = 0.9999f;
-        }
+            this.Severity = Mathf.Min(1f, this.Severity + 0.5f); // 挤奶时最多推到 1，不直接变永久；永久=成瘾且满足需求不衰减
     }
     public void OnGathered(float fullness)
     {
-        if (this.Severity < 1f)
-        {
-            if (this.Severity + fullness >= 1f)
-            {
-                this.Severity = 0.9999f;
-            }
-            else
-            {
-                this.Severity += fullness;
-            }
-        }
+        if (this.Severity < 1f && this.Severity + fullness >= 1f)
+            this.Severity = 1f;
+        else
+            this.Severity += fullness;
     }
     private void GenStages()
     {
-        if (hediffStages == null || hediffStages.Length == 0)
+        int maxSteps = MaxSeverityForStages * SeverityStepsPerUnit + 1;
+        int count = maxSteps * 2;
+        if (hediffStages == null || hediffStages.Length != count)
         {
-            hediffStages = new HediffStage[EqualMilkingSettings.maxLactationStacks * 2 + 2];
+            hediffStages = new HediffStage[count];
+            hediffStagesWithGain = new HediffStage[count];
         }
-        for (int i = 0; i <= EqualMilkingSettings.maxLactationStacks; i++)
+        for (int i = 0; i < maxSteps; i++)
         {
-            GenStage(ref hediffStages[i * 2], i, false);
-            GenStage(ref hediffStages[i * 2 + 1], i, true);
+            float severity = (float)i / SeverityStepsPerUnit;
+            GenStage(ref hediffStages[i * 2], severity, false, false);
+            GenStage(ref hediffStages[i * 2 + 1], severity, true, false);
+            GenStage(ref hediffStagesWithGain[i * 2], severity, false, true);
+            GenStage(ref hediffStagesWithGain[i * 2 + 1], severity, true, true);
         }
-        this.vanillaStage = new HediffStage
-        {
-            fertilityFactor = 0.05f
-        };
-
+        this.vanillaStage = new HediffStage { fertilityFactor = 0.05f };
+        this.vanillaStageWithGain = new HediffStage { fertilityFactor = 0.05f };
+        // vanillaStageWithGain 的 capMods 在 GetCurStage 里按当前 Severity 再填
     }
-    private void GenStage(ref HediffStage stage, int severity, bool isFull)
+    /// <summary>仅吃过 Prolactin/Lucilactin（有耐受或成瘾）的泌乳期才给意识/操纵/移动增益。</summary>
+    private static bool HasDrugInducedLactation(Pawn p)
+    {
+        return p?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance) != null
+            || p?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction) != null;
+    }
+    /// <summary>按吃药多少（severity）叠加；数值来自设置 lactatingGainCapModPercent，受 lactatingGainEnabled 控制。</summary>
+    private static void AddGainCapMods(HediffStage stage, float severity)
+    {
+        if (!EqualMilkingSettings.lactatingGainEnabled || EqualMilkingSettings.lactatingGainCapModPercent <= 0f) return;
+        float pct = Mathf.Clamp(EqualMilkingSettings.lactatingGainCapModPercent, 0f, 0.20f);
+        float offset = pct * severity;
+        if (stage.capMods == null) stage.capMods = new List<PawnCapacityModifier>();
+        else stage.capMods.Clear();
+        stage.capMods.Add(new PawnCapacityModifier { capacity = PawnCapacityDefOf.Consciousness, offset = offset });
+        stage.capMods.Add(new PawnCapacityModifier { capacity = PawnCapacityDefOf.Manipulation, offset = offset });
+        stage.capMods.Add(new PawnCapacityModifier { capacity = PawnCapacityDefOf.Moving, offset = offset });
+    }
+    /// <summary>Stage formulas use float severity so 0.5 vs 0.9999 differ: more severity = more milk, faster growth, more hunger. addGain = 吃药引起的泌乳期才加的 capMods。</summary>
+    private void GenStage(ref HediffStage stage, float severity, bool isFull, bool addGain)
     {
         if (stage == null) { stage = new HediffStage(); }
-        if (severity >= 1) { stage.label = Lang.Permanent + " x" + severity.ToString(); }
+        int severityInt = Mathf.FloorToInt(severity);
+        if (severityInt >= 1) { stage.label = Lang.Permanent + " x" + severityInt.ToString(); }
         else { stage.label = ""; }
-        stage.hungerRateFactorOffset = isFull ? 0f : Mathf.Pow(EqualMilkingSettings.hungerRateMultiplierPerStack, Mathf.Max(severity, 1f));
+        // 食物消耗、产奶量、产奶效率：三项统一用同一倍率（lactatingEfficiencyMultiplierPerStack），加成%一致
+        float mult = EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack;
+        stage.hungerRateFactorOffset = isFull ? 0f : Mathf.Pow(mult, Mathf.Max(severity, 0.5f));
         StatUtility.SetStatValueInList(ref stage.statOffsets, StatDefOf.MechEnergyUsageFactor, stage.hungerRateFactorOffset);
-        StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Milk_Amount_Factor, Mathf.Pow(EqualMilkingSettings.milkAmountMultiplierPerStack, Mathf.Max(severity - 1, 0f)));
-        StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Lactating_Efficiency_Factor, isFull ? 0f : Mathf.Pow(EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, Mathf.Max(severity - 1, 0f)));
+        StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Milk_Amount_Factor, Mathf.Pow(mult, severity));
+        StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Lactating_Efficiency_Factor, isFull ? 0f : Mathf.Pow(mult, severity));
+        if (addGain)
+            AddGainCapMods(stage, severity);
+        else if (stage.capMods != null)
+            stage.capMods.Clear();
     }
-    private int GetStageIndex(int severity, bool isFull)
+    private int GetStageIndex(float severity, bool isFull)
     {
-        return severity * 2 + (isFull ? 1 : 0);
+        int maxStep = MaxSeverityForStages * SeverityStepsPerUnit;
+        int step = Mathf.Min((int)(severity * SeverityStepsPerUnit), maxStep);
+        return step * 2 + (isFull ? 1 : 0);
     }
     private HediffStage GetCurStage()
     {
@@ -110,12 +125,18 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         {
             GenStages();
         }
+        bool useGain = HasDrugInducedLactation(pawn);
         if (!pawn.IsMilkable() && pawn.RaceProps.Humanlike)
         {
-            if (this.Severity > 1f) { this.Severity = 0.9999f; }//No permanent lactation for non-milkable humanlike
+            if (this.Severity > 1f) { this.Severity = 0.9999f; }
+            if (useGain)
+            {
+                AddGainCapMods(vanillaStageWithGain, this.Severity);
+                return vanillaStageWithGain;
+            }
             return vanillaStage;
         }
-        return hediffStages[CurStageIndex];
+        return useGain ? hediffStagesWithGain[CurStageIndex] : hediffStages[CurStageIndex];
     }
     public override bool Visible => pawn.IsMilkable() || pawn.RaceProps.Humanlike; //Milkable or breastfeedable in vanilla.
 }
@@ -129,11 +150,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     }
     public float ExtraNutritionPerDay()
     {
-        return Parent.CurStage.hungerRateFactorOffset * PawnUtility.BodyResourceGrowthSpeed(base.Pawn) * Parent.pawn.BaseNutritionPerDay();
+        float tol = EqualMilkingSettings.GetProlactinTolerance(Pawn);
+        return Parent.CurStage.hungerRateFactorOffset * (1f - tol) * PawnUtility.BodyResourceGrowthSpeed(base.Pawn) * Parent.pawn.BaseNutritionPerDay();
     }
     public float ExtraEnergyPerDay()
     {
-        return Parent.CurStage.statOffsets.GetStatOffsetFromList(StatDefOf.MechEnergyUsageFactor) * Pawn.needs.energy.BaseFallPerDay;
+        float tol = EqualMilkingSettings.GetProlactinTolerance(Pawn);
+        float offset = Parent.CurStage.statOffsets.GetStatOffsetFromList(StatDefOf.MechEnergyUsageFactor);
+        return offset * (1f - tol) * Pawn.needs.energy.BaseFallPerDay;
     }
     public override void CompPostTick(ref float severityAdjustment)
     {
@@ -196,10 +220,20 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float SeverityChangePerDay()
     {
         if (!Pawn.IsMilkable())
-        {
             return -0.1f;
+        var addiction = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction);
+        if (addiction != null)
+        {
+            if (addiction.CurStageIndex == 1)
+            {
+                float tol = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
+                return -0.1f * (1f + tol);
+            }
+            return 0f; // 成瘾且满足需求 → 不衰减（永久维持）
         }
-        return this.Parent.Severity >= 1f ? 0f : -0.1f;
+        // 未成瘾：不论 severity 多高都按耐受衰减
+        float tolerance = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
+        return -0.1f * (1f + tolerance);
     }
     public void SetMilkFullness(float fullness)
     {

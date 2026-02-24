@@ -114,8 +114,11 @@ internal static class ApplyPatches
     [HarmonyPatch(typeof(Building_Milking), nameof(Building_Milking.PlaceMilkThing))]
     public static class Building_Milking_PlaceMilkThing_Patch
     {
+        /// <summary>人奶（带 producer 且为人类）不进入管道/大桶，直接放置；动物奶才进入管道。</summary>
         public static bool Prefix(Building_Milking __instance, ref Thing milkThing)
         {
+            if (milkThing.TryGetComp<CompShowProducer>() is CompShowProducer comp && comp.producer != null && comp.producer.RaceProps.Humanlike)
+                return true; // 人奶：不送管道，让原方法放置到地上
             if (__instance.GetPipeNetForThing(milkThing.def) is PipeNet pipeNet)
             {
                 pipeNet.DistributeAmongStorage(milkThing.stackCount, out float stored);

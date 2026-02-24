@@ -12,7 +12,7 @@ public static class MenuHelper
     {
         Pawn pawn = thing as Pawn ?? (thing as Building_HoldingPlatform)?.HeldPawn;
         if (pawn == null) { return false; }
-        if (!pawn.IsMilkable() || (pawn.LactatingHediff()?.Severity ?? 0) >= EqualMilkingSettings.maxLactationStacks) { return false; }
+        if (!pawn.IsMilkable()) { return false; }
         if (EqualMilkingSettings.showMechOptions && pawn.IsColonyMech && MechanitorUtility.IsMechanitor(pawn)) { return true; }
         if (EqualMilkingSettings.showColonistOptions && pawn.IsFreeNonSlaveColonist) { return true; }
         if (EqualMilkingSettings.showSlaveOptions && pawn.IsSlaveOfColony) { return true; }

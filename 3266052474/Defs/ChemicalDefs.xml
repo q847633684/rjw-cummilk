@@ -1,0 +1,17 @@
+<Defs>
+    <ChemicalDef>
+        <defName>EM_Prolactin_Chemical</defName>
+        <label>Prolactin</label>
+        <addictionHediff>EM_Prolactin_Addiction</addictionHediff>
+        <toleranceHediff>EM_Prolactin_Tolerance</toleranceHediff>
+        <onGeneratedAddictedToleranceChance>0.8</onGeneratedAddictedToleranceChance>
+    </ChemicalDef>
+    
+    <NeedDef ParentName="DrugAddictionNeedBase">
+        <defName>Chemical_EM_Prolactin</defName>
+        <needClass>Need_Chemical</needClass>
+        <label>Prolactin</label>
+        <description>Because of a Prolactin addiction, this person needs to regularly consume the drug to avoid withdrawal symptoms.</description>
+        <listPriority>45</listPriority>
+    </NeedDef>
+</Defs>

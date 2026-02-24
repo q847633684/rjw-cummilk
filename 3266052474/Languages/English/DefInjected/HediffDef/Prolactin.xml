@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <EM_Prolactin_Tolerance.description>Developing tolerance to Prolactin. Reduces drug effect and increases daily lactation severity decay.</EM_Prolactin_Tolerance.description>
+    <EM_Prolactin_Tolerance.stages.0.label>small tolerance</EM_Prolactin_Tolerance.stages.0.label>
+    <EM_Prolactin_Tolerance.stages.1.label>moderate tolerance</EM_Prolactin_Tolerance.stages.1.label>
+    <EM_Prolactin_Tolerance.stages.2.label>high tolerance</EM_Prolactin_Tolerance.stages.2.label>
+    <EM_Prolactin_High.description>Short-term euphoria from Prolactin; slight impairment to coordination and awareness.</EM_Prolactin_High.description>
+    <EM_Prolactin_Addiction.description>Addicted to Prolactin. Must satisfy need regularly or lactation severity will decay; when satisfied, severity does not decay.</EM_Prolactin_Addiction.description>
+    <EM_Prolactin_Addiction.stages.0.label>satisfied</EM_Prolactin_Addiction.stages.0.label>
+    <EM_Prolactin_Addiction.stages.1.label>withdrawal</EM_Prolactin_Addiction.stages.1.label>
+</LanguageData>

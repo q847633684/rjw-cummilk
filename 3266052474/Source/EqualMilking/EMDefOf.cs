@@ -25,4 +25,15 @@ public static class EMDefOf
     public static PawnColumnDef Milk_Lactating;
     public static PawnColumnDef Milk_Fullness;
     public static MainButtonDef Milk_MainButton;
+    
+    // 成瘾系统新增定义
+    public static ChemicalDef EM_Prolactin_Chemical;
+    public static HediffDef EM_Prolactin_Tolerance;
+    public static HediffDef EM_Prolactin_Addiction;
+    public static NeedDef Chemical_EM_Prolactin;
+    public static ThoughtDef EM_Prolactin_Joy;
+    public static ThoughtDef EM_Prolactin_Withdrawal;
+    public static HediffDef EM_Prolactin_High;
+    public static ThoughtDef EM_Prolactin_HighThought;
+    public static ThoughtDef EM_HadSexWhileLactating;
 }

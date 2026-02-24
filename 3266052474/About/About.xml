@@ -28,6 +28,7 @@
     <li>drilledhead.milkexpanded</li>
     <li>akaster.vme.patch</li>
     <li>oskarpotocki.vanillafactionsexpanded.core</li>
+    <li>rim.job.world</li>
     <li>c0ffee.rimworld.animations</li> <!-- Prevents crash on game start -->
   </loadAfter>
   <incompatibleWith>

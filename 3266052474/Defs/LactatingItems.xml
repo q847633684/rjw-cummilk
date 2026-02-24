@@ -53,9 +53,24 @@
         </statBases>
         <ingestible>
             <outcomeDoers>
+                <!-- 泌乳（耐受联动：高耐受时效果减弱） -->
                 <li Class="IngestionOutcomeDoer_GiveHediff">
                     <hediffDef>Lactating</hediffDef>
                     <severity>0.5</severity>
+                    <toleranceChemical>EM_Prolactin_Chemical</toleranceChemical>
+                </li>
+                <!-- 兴奋/增益已并入泌乳期：有耐受或成瘾时 Lactating 阶段给意识/操纵/移动 +10%，与泌乳期同长，不再单独给短期 High -->
+                <!-- 耐受 +0.044，按体型分摊 -->
+                <li Class="IngestionOutcomeDoer_GiveHediff">
+                    <hediffDef>EM_Prolactin_Tolerance</hediffDef>
+                    <severity>0.044</severity>
+                    <divideByBodySize>true</divideByBodySize>
+                </li>
+                <!-- 娱乐需求，耐受联动 -->
+                <li Class="IngestionOutcomeDoer_OffsetNeed">
+                    <need>Joy</need>
+                    <offset>0.3</offset>
+                    <toleranceChemical>EM_Prolactin_Chemical</toleranceChemical>
                 </li>
             </outcomeDoers>
         </ingestible>
@@ -63,11 +78,25 @@
             <Neutroamine>2</Neutroamine>
             <MedicineHerbal>1</MedicineHerbal>
         </costList>
+        <comps>
+            <li Class="CompProperties_Drug">
+                <chemical>EM_Prolactin_Chemical</chemical>
+                <addictiveness>0.04</addictiveness>
+                <minToleranceToAddict>0.03</minToleranceToAddict>
+                <existingAddictionSeverityOffset>0.2</existingAddictionSeverityOffset>
+                <overdoseSeverityOffset>
+                    <min>0.18</min>
+                    <max>0.35</max>
+                </overdoseSeverityOffset>
+                <largeOverdoseChance>0.01</largeOverdoseChance>
+            </li>
+        </comps>
     </ThingDef>
 
     <ThingDef ParentName="EM_DrugBase">
         <defName>EM_Lucilactin</defName>
         <label>Lucilactin</label>
+        <description>Prolactin 基础药效的 4 倍，一针即永久级泌乳并直接成瘾。需定期服用以维持需求。</description>
         <techLevel>Industrial</techLevel>
         <graphicData>
             <texPath>Things/Item/Ingestible/Lucilactin</texPath>
@@ -77,9 +106,24 @@
         </statBases>
         <ingestible>
             <outcomeDoers>
+                <!-- 4 倍泌乳：0.5×4 = 2.0 -->
                 <li Class="IngestionOutcomeDoer_GiveHediff">
                     <hediffDef>Lactating</hediffDef>
-                    <severity>1</severity>
+                    <severity>2</severity>
+                    <toleranceChemical>EM_Prolactin_Chemical</toleranceChemical>
+                </li>
+                <!-- 兴奋/增益同泌乳期，不再单独给 EM_Prolactin_High -->
+                <!-- 耐受 +0.176（0.044×4），按体型 -->
+                <li Class="IngestionOutcomeDoer_GiveHediff">
+                    <hediffDef>EM_Prolactin_Tolerance</hediffDef>
+                    <severity>0.176</severity>
+                    <divideByBodySize>true</divideByBodySize>
+                </li>
+                <!-- Joy 4 倍 -->
+                <li Class="IngestionOutcomeDoer_OffsetNeed">
+                    <need>Joy</need>
+                    <offset>1.2</offset>
+                    <toleranceChemical>EM_Prolactin_Chemical</toleranceChemical>
                 </li>
             </outcomeDoers>
         </ingestible>
@@ -87,5 +131,20 @@
             <EM_Prolactin>1</EM_Prolactin>
             <Luciferium>2</Luciferium>
         </costList>
+        <comps>
+            <li Class="CompProperties_Drug">
+                <chemical>EM_Prolactin_Chemical</chemical>
+                <addictiveness>1</addictiveness>
+                <minToleranceToAddict>0</minToleranceToAddict>
+                <existingAddictionSeverityOffset>1</existingAddictionSeverityOffset>
+                <needLevelOffset>1</needLevelOffset>
+                <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
+                <overdoseSeverityOffset>
+                    <min>0.18</min>
+                    <max>0.35</max>
+                </overdoseSeverityOffset>
+                <largeOverdoseChance>0.01</largeOverdoseChance>
+            </li>
+        </comps>
     </ThingDef>
 </Defs>

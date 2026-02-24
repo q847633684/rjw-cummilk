@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 仅在启用 RJW (rim.job.world) 时加载。为 Lactating_Drug、Lactating_Permanent、Heavy_Lactating_Permanent（多来自 rjw-milkable-colonists 等）添加与本体泌乳期相同的长期正向增益（意识/操纵/移动各 +10%）。若当前存档未提供这些 def，则 xpath 不匹配、操作跳过。 -->
+<Patch>
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/HediffDef[defName="Lactating_Drug"]/stages/li</xpath>
+    <value>
+      <capMods>
+        <li><capacity>Consciousness</capacity><offset>0.10</offset></li>
+        <li><capacity>Manipulation</capacity><offset>0.10</offset></li>
+        <li><capacity>Moving</capacity><offset>0.10</offset></li>
+      </capMods>
+    </value>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/HediffDef[defName="Lactating_Permanent"]/stages/li</xpath>
+    <value>
+      <capMods>
+        <li><capacity>Consciousness</capacity><offset>0.10</offset></li>
+        <li><capacity>Manipulation</capacity><offset>0.10</offset></li>
+        <li><capacity>Moving</capacity><offset>0.10</offset></li>
+      </capMods>
+    </value>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/HediffDef[defName="Heavy_Lactating_Permanent"]/stages/li</xpath>
+    <value>
+      <capMods>
+        <li><capacity>Consciousness</capacity><offset>0.10</offset></li>
+        <li><capacity>Manipulation</capacity><offset>0.10</offset></li>
+        <li><capacity>Moving</capacity><offset>0.10</offset></li>
+      </capMods>
+    </value>
+  </Operation>
+</Patch>

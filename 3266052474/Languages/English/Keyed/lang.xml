@@ -1,3 +1,42 @@
 <LanguageData>
     <Equal_Milking>Equal Milking</Equal_Milking>
+    <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
+    <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>
+    <EM.LactatingGainPercent>Gain offset: {0}</EM.LactatingGainPercent>
+    <EM.SuckleRestriction>Who can suckle</EM.SuckleRestriction>
+    <EM.SuckleRestrictionDesc>Restricts which pawns can breastfeed from this lactating pawn (e.g. only colony, or only lovers/family).</EM.SuckleRestrictionDesc>
+    <EM.SuckleRestriction_0>No restriction</EM.SuckleRestriction_0>
+    <EM.SuckleRestriction_1>Same faction only</EM.SuckleRestriction_1>
+    <EM.SuckleRestriction_2>Colony only</EM.SuckleRestriction_2>
+    <EM.SuckleRestriction_3>Lovers or family only</EM.SuckleRestriction_3>
+    <EM.MilkProductConsumptionRestriction>Who can use milk / milk products</EM.MilkProductConsumptionRestriction>
+    <EM.MilkProductConsumptionRestrictionDesc>Restricts who can eat milk or food made from someone's milk (by producer). Same options as suckle; "Same as suckle" uses the setting above.</EM.MilkProductConsumptionRestrictionDesc>
+    <EM.MilkProductConsumptionRestriction_0>No restriction</EM.MilkProductConsumptionRestriction_0>
+    <EM.MilkProductConsumptionRestriction_1>Same faction only</EM.MilkProductConsumptionRestriction_1>
+    <EM.MilkProductConsumptionRestriction_2>Colony only</EM.MilkProductConsumptionRestriction_2>
+    <EM.MilkProductConsumptionRestriction_3>Lovers or family only</EM.MilkProductConsumptionRestriction_3>
+    <EM.MilkProductConsumptionRestriction_4>Same as "Who can suckle"</EM.MilkProductConsumptionRestriction_4>
+    <EM.FedByColumnTip>For the pawn being fed: choose which lactating pawns are allowed to feed this one. Empty list = any; non-empty = only listed.</EM.FedByColumnTip>
+    <EM.ProducerRestrictionsColumn>Who can suckle / use my milk</EM.ProducerRestrictionsColumn>
+    <EM.ProducerRestrictionsColumnTip>For the lactating pawn only: who can suckle from me (default: children + partner) and who can use my milk/products (default: only me). Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>
+    <EM.ProducerRestrictionsTitle>{0}'s restrictions</EM.ProducerRestrictionsTitle>
+    <EM.WhoCanSuckleFromMe>Who can suckle from me</EM.WhoCanSuckleFromMe>
+    <EM.WhoCanSuckleFromMeDefault>Default: my children and partner. Add pawns to restrict to only them; leave empty for default.</EM.WhoCanSuckleFromMeDefault>
+    <EM.WhoCanUseMyMilk>Who can use my milk / milk products</EM.WhoCanUseMyMilk>
+    <EM.WhoCanUseMyMilkDefault>Default: only me. Add pawns to also allow them to eat my milk or food made from my milk.</EM.WhoCanUseMyMilkDefault>
+    <EM.ProducerRestrictionsHint>Who can suckle / who can use milk: set per producer in the Milk table — click "Specify" (…) on a lactating pawn's row.</EM.ProducerRestrictionsHint>
+    <EM.RJWSection>--- RJW (when rim.job.world active) ---</EM.RJWSection>
+    <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
+    <EM.RjwBreastSizeDesc>When lactating, temporarily increase RJW breast size.</EM.RjwBreastSizeDesc>
+    <EM.RjwLustFromNursing>Nursing adds lust (Need_Sex)</EM.RjwLustFromNursing>
+    <EM.RjwLustFromNursingDesc>After nursing, mother and baby gain sex need satisfaction.</EM.RjwLustFromNursingDesc>
+    <EM.RjwSexNeedLactatingBonus>Lactating boosts sex need over time</EM.RjwSexNeedLactatingBonus>
+    <EM.RjwSexNeedLactatingBonusDesc>While lactating, small periodic bonus to Need_Sex.</EM.RjwSexNeedLactatingBonusDesc>
+    <EM.RjwSexSatisfactionAfterNursing>Sex after nursing gives extra satisfaction</EM.RjwSexSatisfactionAfterNursing>
+    <EM.RjwSexSatisfactionAfterNursingDesc>Sex shortly after nursing gives additional Need_Sex.</EM.RjwSexSatisfactionAfterNursingDesc>
+    <EM.RjwLactationFertility>Lactation fertility: {0}</EM.RjwLactationFertility>
+    <EM.RjwLactationFertilityDesc>Pregnancy chance multiplier when mother is lactating (0-1).</EM.RjwLactationFertilityDesc>
+    <EM.RjwLactatingInSexDesc>Show lactating in sex interactions</EM.RjwLactatingInSexDesc>
+    <EM.RjwLactatingInSexDescDesc>Lactating pawns may get different RJW sex descriptions.</EM.RjwLactatingInSexDescDesc>
+    <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
 </LanguageData>

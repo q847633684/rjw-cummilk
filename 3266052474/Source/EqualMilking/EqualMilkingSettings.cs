@@ -29,6 +29,20 @@ internal class EqualMilkingSettings : ModSettings
 	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
 	public static AnimalBreastfeed animalBreastfeed = new();
 	public static MechanoidBreastfeed mechanoidBreastfeed = new();
+	// 泌乳期意识/操纵/移动增益：开关与百分比 (0~0.20 = 0%~20%)
+	public static bool lactatingGainEnabled = true;
+	public static float lactatingGainCapModPercent = 0.10f;
+	// 谁可以吸奶：无限制 / 同派系 / 仅殖民地 / 仅爱人或亲属
+	public static int suckleRestrictionMode = 0; // 0=None, 1=SameFaction, 2=ColonyOnly, 3=LoversOrFamilyOnly
+	// 谁可以使用产出的奶/奶制品食物：同上 0~3，4=与“谁可以吸奶”相同
+	public static int milkProductConsumptionRestrictionMode = 0; // 4=UseSuckleSetting
+	// RJW 联动（仅当 rim.job.world 激活时生效）
+	public static bool rjwBreastSizeEnabled = true;
+	public static bool rjwLustFromNursingEnabled = true;
+	public static bool rjwSexNeedLactatingBonusEnabled = true;
+	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
+	public static float rjwLactationFertilityFactor = 0.85f; // 泌乳期怀孕概率乘数 (0~1)
+	public static bool rjwLactatingInSexDescriptionEnabled = true;
 	public static List<Gene_MilkTypeData> genes = new();
 	public static MilkSettings colonistSetting = new();
 	public static MilkSettings slaveSetting = new();
@@ -64,6 +78,16 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref showAnimalOptions, "EM.ShowAnimalOptions", true);
 		Scribe_Values.Look(ref showMiscOptions, "EM.ShowMiscOptions", true);
 		Scribe_Values.Look(ref nutritionToEnergyFactor, "EM.NutritionToEnergyFactor", 100f);
+		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
+		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
+		Scribe_Values.Look(ref suckleRestrictionMode, "EM.SuckleRestrictionMode", 0);
+		Scribe_Values.Look(ref milkProductConsumptionRestrictionMode, "EM.MilkProductConsumptionRestrictionMode", 0);
+		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
+		Scribe_Values.Look(ref rjwLustFromNursingEnabled, "EM.RjwLustFromNursingEnabled", true);
+		Scribe_Values.Look(ref rjwSexNeedLactatingBonusEnabled, "EM.RjwSexNeedLactatingBonusEnabled", true);
+		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
+		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
+		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
 		Scribe_Deep.Look(ref humanlikeBreastfeed, "EM.HumanlikeBreastfeed");
 		Scribe_Deep.Look(ref animalBreastfeed, "EM.AnimalBreastfeed");
 		Scribe_Deep.Look(ref mechanoidBreastfeed, "EM.MechanoidBreastfeed");
@@ -188,7 +212,7 @@ internal class EqualMilkingSettings : ModSettings
 		EventHelper.TriggerSettingsChanged();
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
-		HediffDefOf.Lactating.maxSeverity = maxLactationStacks;
+		HediffDefOf.Lactating.maxSeverity = 100f; // 不再用 maxLactationStacks 限制，允许 severity 自由叠加
 		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
 		animalBreastfeed ??= new AnimalBreastfeed();
 		mechanoidBreastfeed ??= new MechanoidBreastfeed();
@@ -200,6 +224,14 @@ internal class EqualMilkingSettings : ModSettings
 		foreach (ThingDef milkDef in productDefs)
 		{
 			AddOrSetShowProducerComp(milkDef);
+		}
+		// Recipe products from human milk (e.g. vanilla Milk) can show producer
+		ThingDef vanillaMilk = DefDatabase<ThingDef>.GetNamedSilentFail("Milk");
+		if (vanillaMilk != null)
+		{
+			AddOrSetShowProducerComp(vanillaMilk);
+			if (!productsToTags.ContainsKey("Milk"))
+				productsToTags.Add("Milk", new MilkTag("Milk", true, false));
 		}
 		foreach (Pawn pawn in PawnsFinder.AllMaps)
 		{
@@ -375,7 +407,7 @@ internal class EqualMilkingSettings : ModSettings
 	}
 	internal static float GetMilkAmount(Pawn pawn)
 	{
-		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount * pawn.GetStatValue(EMDefOf.EM_Milk_Amount_Factor);
+		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount * GetMilkAmountFactorWithTolerance(pawn);
 	}
 	internal static float GetMilkIntervalDays(Pawn pawn)
 	{
@@ -383,7 +415,22 @@ internal class EqualMilkingSettings : ModSettings
 	}
 	internal static float GetMilkGrowthMultiplier(Pawn pawn)
 	{
-		return pawn.GetStatValue(EMDefOf.EM_Lactating_Efficiency_Factor) * PawnUtility.BodyResourceGrowthSpeed(pawn);
+		return GetLactatingEfficiencyFactorWithTolerance(pawn) * PawnUtility.BodyResourceGrowthSpeed(pawn);
+	}
+	/// <summary>耐受参与加成：有效倍率 = 1 + (原倍率 − 1) × (1 − 耐受)。</summary>
+	internal static float GetProlactinTolerance(Pawn pawn) => pawn?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
+	internal static float GetMilkAmountFactorWithTolerance(Pawn pawn)
+	{
+		float v = pawn.GetStatValue(EMDefOf.EM_Milk_Amount_Factor);
+		float t = GetProlactinTolerance(pawn);
+		return 1f + (v - 1f) * (1f - t);
+	}
+	internal static float GetLactatingEfficiencyFactorWithTolerance(Pawn pawn)
+	{
+		float v = pawn.GetStatValue(EMDefOf.EM_Lactating_Efficiency_Factor);
+		float t = GetProlactinTolerance(pawn);
+		if (v <= 0f) return v;
+		return 1f + (v - 1f) * (1f - t);
 	}
 	#endregion
 }

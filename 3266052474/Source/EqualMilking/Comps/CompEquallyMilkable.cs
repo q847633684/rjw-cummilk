@@ -30,6 +30,10 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
     internal List<Pawn> assignedFeeders = new();
+    /// <summary>谁可以吸我的奶。空列表 = 默认（子女+伴侣）；非空 = 仅列表中人。</summary>
+    internal List<Pawn> allowedSucklers = new();
+    /// <summary>谁可以使用我产出的奶/奶制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。</summary>
+    internal List<Pawn> allowedConsumers = new();
     private int updateTick = 0;
     private bool cachedActive = false;
     public override void PostExposeData()
@@ -38,6 +42,8 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref breastfedAmount, "BreastfedAmount", 0f);
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref assignedFeeders, "CanBeFedBy", LookMode.Reference);
+        Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
+        Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
     }
     protected override bool Active
     {
@@ -136,17 +142,12 @@ public class CompEquallyMilkable : CompMilkable
                 int stack = Mathf.Clamp(num, 1, ResourceDef.stackLimit);
                 num -= stack;
                 Thing thing = ThingMaker.MakeThing(ResourceDef);
-                if (thing.TryGetComp<CompShowProducer>() is CompShowProducer compShowProducer)
+                if (thing.TryGetComp<CompShowProducer>() is CompShowProducer compShowProducer && pawn.RaceProps.Humanlike)
                 {
                     if (EqualMilkingSettings.HasRaceTag(thing))
-                    {
                         compShowProducer.producerKind = pawn.kindDef;
-
-                    }
                     if (EqualMilkingSettings.HasPawnTag(thing))
-                    {
                         compShowProducer.producer = pawn;
-                    }
                 }
 
                 thing.stackCount = stack;
@@ -162,14 +163,9 @@ public class CompEquallyMilkable : CompMilkable
         }
         fullness = 0f;
     }
-    /// <summary>
-    /// Check if the pawn is allowed to be auto fed by the milkable pawn.
-    /// Internally, it checks if the assignedFeeders list is empty or contains the pawn.
-    /// </summary>
-    /// <param name="pawn">the pawn that is being checked</param>
-    /// <returns>true if the pawn is allowed to be auto fed by the milkable pawn</returns>
+    /// <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
     public bool AllowedToBeAutoFedBy(Pawn pawn)
     {
-        return this.MilkSettings?.canBeFed == true && (assignedFeeders.NullOrEmpty() || assignedFeeders.Contains(pawn));
+        return this.MilkSettings?.canBeFed == true;
     }
 }

@@ -13,8 +13,8 @@ namespace EqualMilking.HarmonyPatches;
 [HarmonyPatch(typeof(CompMilkable))]
 public static class CompMilkable_Patch
 {
-    // Prevent Vanilla Milkable Comp from being used, as it is replaced by CompEquallyMilkable
-    // Disables text display as well
+    //防止使用 Vanilla Milkable Comp，因为它已被 CompEquallyMilkable 取代
+    //也禁用文本显示
     [HarmonyPrefix]
     [HarmonyPatch("Active", MethodType.Getter)]
     [HarmonyPriority(Priority.First)]
@@ -240,3 +240,45 @@ public static class FloatMenuMakerMap_Patch
     }
 }
 #endif
+
+// 成瘾机制增强补丁
+[HarmonyPatch(typeof(IngestionOutcomeDoer_GiveHediff))]
+public static class ProlactinAddictionPatch
+{
+    [HarmonyPostfix]
+    [HarmonyPatch("DoIngestionOutcome")]
+    public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested)
+    {
+        // 仅在被添加的是 Lactating 时执行，确保一次用药只触发一次成瘾判定（其它 outcome 为耐受/High 等）
+        if (ingested.def.defName != "EM_Prolactin" || __instance.hediffDef != HediffDefOf.Lactating)
+            return;
+
+        // 愉悦与短期负面已由 XML 的 EM_Prolactin_High + EM_Prolactin_HighThought 提供，此处只做成瘾判定
+        HandleAddictionMechanics(pawn);
+    }
+
+    /// <summary>成瘾时将当前泌乳转为永久（severity=1，不再衰减），逻辑更顺：依赖药物=身体改变固定。</summary>
+    private static void HandleAddictionMechanics(Pawn pawn)
+    {
+        float addictionChance = 0.04f; // 4%基础成瘾率
+
+        var tolerance = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance);
+        if (tolerance != null)
+            addictionChance *= (1 + tolerance.Severity);
+
+        if (!Rand.Chance(addictionChance))
+            return;
+
+        var addiction = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction);
+        if (addiction != null)
+            return;
+
+        addiction = HediffMaker.MakeHediff(EMDefOf.EM_Prolactin_Addiction, pawn);
+        pawn.health.AddHediff(addiction);
+
+        // 成瘾即视为“身体依赖”，泌乳改为永久（若当前有 Lactating 且 &lt;1 则提到 1，不再衰减）
+        var lactating = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating);
+        if (lactating != null && lactating.Severity < 1f)
+            lactating.Severity = 1f;
+    }
+}

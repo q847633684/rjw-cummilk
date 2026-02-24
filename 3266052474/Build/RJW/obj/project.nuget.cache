@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "vVwxT83Xv64=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\q8476\\Documents\\work\\RJW-mc\\3266052474\\Source\\RJW\\RJW.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\q8476\\.nuget\\packages\\krafs.publicizer\\2.3.0\\krafs.publicizer.2.3.0.nupkg.sha512",
+    "C:\\Users\\q8476\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\q8476\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net481\\1.0.3\\microsoft.netframework.referenceassemblies.net481.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <EM_Prolactin_Tolerance.description>对催乳素产生耐受。会减弱药效并加快泌乳严重度每日衰减。</EM_Prolactin_Tolerance.description>
+    <EM_Prolactin_Tolerance.stages.0.label>轻度耐受</EM_Prolactin_Tolerance.stages.0.label>
+    <EM_Prolactin_Tolerance.stages.1.label>中度耐受</EM_Prolactin_Tolerance.stages.1.label>
+    <EM_Prolactin_Tolerance.stages.2.label>高度耐受</EM_Prolactin_Tolerance.stages.2.label>
+    <EM_Prolactin_High.description>催乳素引起的短期兴奋；轻微影响协调与意识。</EM_Prolactin_High.description>
+    <EM_Prolactin_Addiction.description>催乳素成瘾。需定期满足需求，否则泌乳严重度会衰减；满足需求时严重度不衰减。</EM_Prolactin_Addiction.description>
+    <EM_Prolactin_Addiction.stages.0.label>满足</EM_Prolactin_Addiction.stages.0.label>
+    <EM_Prolactin_Addiction.stages.1.label>戒断</EM_Prolactin_Addiction.stages.1.label>
+</LanguageData>

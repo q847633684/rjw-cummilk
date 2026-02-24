@@ -1,3 +1,42 @@
 <LanguageData>
     <Equal_Milking>平等产奶</Equal_Milking>
+    <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
+    <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>
+    <EM.LactatingGainPercent>增益偏移：{0}</EM.LactatingGainPercent>
+    <EM.SuckleRestriction>谁可以吸奶</EM.SuckleRestriction>
+    <EM.SuckleRestrictionDesc>限制谁可以从该泌乳者处吸奶（例如仅殖民地、或仅爱人/亲属）。</EM.SuckleRestrictionDesc>
+    <EM.SuckleRestriction_0>无限制</EM.SuckleRestriction_0>
+    <EM.SuckleRestriction_1>仅同派系</EM.SuckleRestriction_1>
+    <EM.SuckleRestriction_2>仅殖民地</EM.SuckleRestriction_2>
+    <EM.SuckleRestriction_3>仅爱人或亲属</EM.SuckleRestriction_3>
+    <EM.MilkProductConsumptionRestriction>谁可以使用产出的奶/奶制品</EM.MilkProductConsumptionRestriction>
+    <EM.MilkProductConsumptionRestrictionDesc>限制谁可以食用“某人产的奶”或“用某人奶做的食物”。可选与吸奶规则相同，或选“与谁可以吸奶相同”沿用上方设置。</EM.MilkProductConsumptionRestrictionDesc>
+    <EM.MilkProductConsumptionRestriction_0>无限制</EM.MilkProductConsumptionRestriction_0>
+    <EM.MilkProductConsumptionRestriction_1>仅同派系</EM.MilkProductConsumptionRestriction_1>
+    <EM.MilkProductConsumptionRestriction_2>仅殖民地</EM.MilkProductConsumptionRestriction_2>
+    <EM.MilkProductConsumptionRestriction_3>仅爱人或亲属</EM.MilkProductConsumptionRestriction_3>
+    <EM.MilkProductConsumptionRestriction_4>与“谁可以吸奶”相同</EM.MilkProductConsumptionRestriction_4>
+    <EM.FedByColumnTip>被喂食者：指定“允许哪些泌乳者喂我”。列表为空=任意泌乳者；非空=仅列表中的泌乳者。</EM.FedByColumnTip>
+    <EM.ProducerRestrictionsColumn>谁可吸/谁可用我的奶</EM.ProducerRestrictionsColumn>
+    <EM.ProducerRestrictionsColumnTip>仅泌乳者：谁可以吸我的奶（默认子女+伴侣）、谁可以使用我的奶/奶制品（默认仅自己）。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
+    <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
+    <EM.WhoCanSuckleFromMe>谁可以吸我的奶</EM.WhoCanSuckleFromMe>
+    <EM.WhoCanSuckleFromMeDefault>默认：子女与伴侣。添加小人则仅允许列表中的人；留空即使用默认。</EM.WhoCanSuckleFromMeDefault>
+    <EM.WhoCanUseMyMilk>谁可以使用我产出的奶/奶制品</EM.WhoCanUseMyMilk>
+    <EM.WhoCanUseMyMilkDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkDefault>
+    <EM.ProducerRestrictionsHint>谁可以吸奶、谁可使用奶制品：在奶表格中点击泌乳者行的「指定」列，按产奶者分别设置。</EM.ProducerRestrictionsHint>
+    <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
+    <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
+    <EM.RjwBreastSizeDesc>泌乳期时暂时增大 RJW 胸部尺寸。</EM.RjwBreastSizeDesc>
+    <EM.RjwLustFromNursing>哺乳/吸奶增加性需求</EM.RjwLustFromNursing>
+    <EM.RjwLustFromNursingDesc>哺乳或刚被哺乳后，母亲与婴儿获得少量性需求满足。</EM.RjwLustFromNursingDesc>
+    <EM.RjwSexNeedLactatingBonus>泌乳期性需求随时间小幅提升</EM.RjwSexNeedLactatingBonus>
+    <EM.RjwSexNeedLactatingBonusDesc>泌乳期小人获得少量性需求加成。</EM.RjwSexNeedLactatingBonusDesc>
+    <EM.RjwSexSatisfactionAfterNursing>哺乳后性行为额外满足</EM.RjwSexSatisfactionAfterNursing>
+    <EM.RjwSexSatisfactionAfterNursingDesc>刚哺乳后不久进行性行为获得额外满足。</EM.RjwSexSatisfactionAfterNursingDesc>
+    <EM.RjwLactationFertility>泌乳期怀孕概率：{0}</EM.RjwLactationFertility>
+    <EM.RjwLactationFertilityDesc>母亲泌乳时怀孕概率乘以此值（0～1）。</EM.RjwLactationFertilityDesc>
+    <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
+    <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
+    <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
 </LanguageData>
