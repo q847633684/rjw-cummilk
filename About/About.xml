@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <author>Akaster (Equal Milking) · Vegapnk / Telanda (Cumpilation merged)</author>
+  <packageId>TianTian.MilkCum</packageId>
+  <name>精液和母乳 (Milk and Cum)</name>
+
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+      <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+    <li>
+      <packageId>Ludeon.RimWorld.Biotech</packageId>
+      <displayName>Biotech</displayName>
+    </li>
+    <li>
+      <packageId>rim.job.world</packageId>
+      <displayName>RimJobWorld</displayName>
+      <downloadUrl>https://gitgud.io/Ed86/rjw</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+    <li>Ludeon.RimWorld.Biotech</li>
+    <li>drilledhead.milkexpanded</li>
+    <li>akaster.vme.patch</li>
+    <li>oskarpotocki.vanillafactionsexpanded.core</li>
+    <li>rim.job.world</li>
+    <li>c0ffee.rimworld.animations</li>
+  </loadAfter>
+  <loadBefore>
+    <li>Vegapnk.rjw.genes</li>
+  </loadBefore>
+  <incompatibleWith>
+    <li>rjw.milk.humanoid</li>
+    <li>Mlie.MilkableColonists</li>
+    <li>tory187.rjw.gatheredrjw</li>
+    <li>rjw.bucket</li>
+  </incompatibleWith>
+  <description>
+等量挤奶+精液收集合并。牛奶和精液合二为一的模组。
+  - 牛奶：泌乳、泵送、可食用者（允许的消费者）。
+  - 精液：精液膨胀、放气（桶/泵）、手术；生产者/消费者规则相同。
+  - 药物：进入泌乳期使用 EM_Prolactin 或 EM_Lucilactin；泌乳期增加产奶量使用催乳剂（Cumpilation_Galactogogues）。
+  - RJW 流体力学、群交、填充、生物雕塑循环、Slug（Biotech）、非精液处理器（Samenstein/Spermatuch）。
+  </description>
+</ModMetaData>
