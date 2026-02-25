@@ -70,6 +70,19 @@
         <costList>
             <Steel>20</Steel>
         </costList>
+        <comps>
+            <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
+            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket" />
+        </comps>
+        <modExtensions>
+            <!-- 作为 Cumpilation 流体收集设备（性交射入泵） -->
+            <li Class="Cumpilation.Gathering.FluidGatheringBuilding">
+                <range>3</range>
+                <supportedFluids>
+                    <li>Cum</li>
+                </supportedFluids>
+            </li>
+        </modExtensions>
     </ThingDef>
 
     <ThingDef ParentName="EM_MilkingMachine">
@@ -93,7 +106,21 @@
                 <basePowerConsumption>20</basePowerConsumption>
             </li>
             <li Class="CompProperties_Flickable" />
+            <!-- 作为 Cumpilation 泄精目标（DeflateBucket），电泵效率稍高 -->
+            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+                <deflateMult>1.5</deflateMult>
+                <deflateRate>1</deflateRate>
+            </li>
         </comps>
+        <modExtensions>
+            <!-- 作为 Cumpilation 流体收集设备（性交射入泵），范围略大于手动泵 -->
+            <li Class="Cumpilation.Gathering.FluidGatheringBuilding">
+                <range>4</range>
+                <supportedFluids>
+                    <li>Cum</li>
+                </supportedFluids>
+            </li>
+        </modExtensions>
         <costList>
             <Steel>20</Steel>
             <ComponentIndustrial>1</ComponentIndustrial>

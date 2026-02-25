@@ -17,6 +17,8 @@ public class CompEquallyMilkable : CompMilkable
     protected virtual float GrowthMultiplier => Pawn.MilkGrowthMultiplier();
     public float breastfedAmount = 0f;
     public float maxFullness = 1f;
+    /// <summary>当前奶量 fullness（0~maxFullness），对外只读，用于调度 Job 优先级等。</summary>
+    public float Fullness => fullness;
     private MilkSettings milkSettings = null;
     public MilkSettings MilkSettings
     {
@@ -32,7 +34,7 @@ public class CompEquallyMilkable : CompMilkable
     internal List<Pawn> assignedFeeders = new();
     /// <summary>谁可以吸我的奶。空列表 = 默认（子女+伴侣）；非空 = 仅列表中人。</summary>
     internal List<Pawn> allowedSucklers = new();
-    /// <summary>谁可以使用我产出的奶/奶制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。</summary>
+    /// <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）。</summary>
     internal List<Pawn> allowedConsumers = new();
     private int updateTick = 0;
     private bool cachedActive = false;
@@ -162,6 +164,12 @@ public class CompEquallyMilkable : CompMilkable
             }
         }
         fullness = 0f;
+        // 7.5：被强制挤奶时给产主负面记忆（挤奶者不在允许吸奶名单内）
+        if (parent is Pawn producer && producer.RaceProps.Humanlike && producer.needs?.mood?.thoughts?.memories != null
+            && !ExtensionHelper.IsAllowedSuckler(producer, doer))
+        {
+            producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
+        }
     }
     /// <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
     public bool AllowedToBeAutoFedBy(Pawn pawn)

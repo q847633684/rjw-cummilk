@@ -41,4 +41,17 @@
     <EM.RjwLactatingInSexDesc>Show lactating in sex interactions</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>Lactating pawns may get different RJW sex descriptions.</EM.RjwLactatingInSexDescDesc>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
+    <!-- Cum bucket link to bed (Cumpilation) -->
+    <EM_CumBucket_LinkBed>Link to bed</EM_CumBucket_LinkBed>
+    <EM_CumBucket_LinkBed_Desc>Link this cum bucket to a bed. When empty, only the bed owner can use it; when occupied, others get "not their cum bucket". Shared bedroom (multiple beds in room) = everyone can use, output is mixed cum.</EM_CumBucket_LinkBed_Desc>
+    <EM_CumBucket_UnlinkBed>Unlink bed</EM_CumBucket_UnlinkBed>
+    <EM_CumBucket_UnlinkBed_Desc>Unlink this bucket from the bed; anyone can use it afterwards.</EM_CumBucket_UnlinkBed_Desc>
+    <EM_CumBucket_NotLinked>Not linked (anyone can use)</EM_CumBucket_NotLinked>
+    <EM_CumBucket_SharedRoom>Shared bedroom (everyone can use, mixed cum)</EM_CumBucket_SharedRoom>
+    <EM_CumBucket_Owner>Owner: {0}</EM_CumBucket_Owner>
+    <EM_CumBucket_UnassignedBed>Linked bed has no owner</EM_CumBucket_UnassignedBed>
+    <EM_CumBucket_NotYours>{0} cannot use: not their cum bucket (already occupied).</EM_CumBucket_NotYours>
+    <EM_CumBucket_SelectBed>Select bed to link</EM_CumBucket_SelectBed>
+    <EM_CumBucket_BedsInRoom>Beds in same room</EM_CumBucket_BedsInRoom>
+    <EM_CumBucket_BedsElsewhere>Other beds</EM_CumBucket_BedsElsewhere>
 </LanguageData>

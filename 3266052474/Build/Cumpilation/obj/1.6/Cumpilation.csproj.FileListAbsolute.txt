@@ -1,0 +1,3 @@
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\Cumpilation\obj\1.6\Cumpilation.csproj.AssemblyReference.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\Cumpilation\obj\1.6\Cumpilation.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\Cumpilation\obj\1.6\Cumpilation.csproj.CoreCompileInputs.cache

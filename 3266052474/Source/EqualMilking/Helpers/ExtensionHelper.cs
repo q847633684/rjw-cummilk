@@ -136,7 +136,17 @@ public static class ExtensionHelper
             || (baby.relations?.FamilyByBlood != null && baby.relations.FamilyByBlood.Contains(mother));
     }
 
-    /// <summary>指定谁可以使用产出的奶/奶制品：无 producer 允许；自己始终允许；否则看产奶者 allowedConsumers，空=仅自己。</summary>
+    /// <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 吸奶（7.5 自愿/强制框架）。</summary>
+    public static bool IsAllowedSuckler(Pawn producer, Pawn doer)
+    {
+        var comp = producer?.CompEquallyMilkable();
+        if (comp == null) return true;
+        if (comp.allowedSucklers != null && comp.allowedSucklers.Count > 0)
+            return comp.allowedSucklers.Contains(doer);
+        return IsDefaultSuckler(producer, doer);
+    }
+
+    /// <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，见 7.4）。</summary>
     public static bool CanConsumeMilkProduct(this Pawn consumer, Thing food)
     {
         if (consumer == null || food == null) return true;
@@ -145,7 +155,7 @@ public static class ExtensionHelper
         if (comp.producer == consumer) return true;
         var producerComp = comp.producer.CompEquallyMilkable();
         if (producerComp?.allowedConsumers == null || producerComp.allowedConsumers.Count == 0)
-            return false; // 仅产奶者本人
+            return false; // 仅产主本人（含囚犯/奴隶：未 explicitly 加入名单则殖民者不可食用）
         return producerComp.allowedConsumers.Contains(consumer);
     }
     public static bool AllowedToAutoBreastFeed(this Pawn pawn, Pawn baby)

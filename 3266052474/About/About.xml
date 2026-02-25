@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <!-- Must contain a dot; usually <author>.<modname> -->
-  <author>Akaster</author>
+  <author>Akaster (Equal Milking) · Vegapnk / Telanda (Cumpilation merged)</author>
   <packageId>akaster.equalmilking</packageId>
-  <name>Equal Milking</name>
+  <name>精液和母乳 (Milk and Cum)</name>
 
-  <!-- Game versions this mod supports. More on game versions later. -->
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
@@ -20,23 +18,35 @@
       <packageId>Ludeon.RimWorld.Biotech</packageId>
       <displayName>Biotech</displayName>
     </li>
+    <li>
+      <packageId>rim.job.world</packageId>
+      <displayName>RimJobWorld</displayName>
+      <downloadUrl>https://gitgud.io/Ed86/rjw</downloadUrl>
+    </li>
   </modDependencies>
   <loadAfter>
-    <li>brrainz.haromny</li>
+    <li>brrainz.harmony</li>
     <li>Ludeon.RimWorld.Biotech</li>
     <li>drilledhead.milkexpanded</li>
     <li>akaster.vme.patch</li>
     <li>oskarpotocki.vanillafactionsexpanded.core</li>
     <li>rim.job.world</li>
-    <li>c0ffee.rimworld.animations</li> <!-- Prevents crash on game start -->
-    <li>vegapnk.cumpilation</li> <!-- Optional: producer restriction for cum when both mods loaded -->
+    <li>c0ffee.rimworld.animations</li>
   </loadAfter>
+  <loadBefore>
+    <li>Vegapnk.rjw.genes</li>
+  </loadBefore>
   <incompatibleWith>
     <li>rjw.milk.humanoid</li>
     <li>Mlie.MilkableColonists</li>
+    <li>tory187.rjw.gatheredrjw</li>
+    <li>rjw.bucket</li>
+    <li>vegapnk.cumpilation</li>
   </incompatibleWith>
   <description>
-    Allows you to milk all pawns. Adds new drugs that can make pawns lactate.
-    Also allow tweaking the milk product, production speed and amount.
+    Equal Milking + Cumpilation merged. Milk and cum in one mod.
+    - Milk: lactate, pump, who can consume (allowedConsumers).
+    - Cum: cumflation, deflate buckets/pump, surgery; same producer/consumer rules.
+    - RJW fluid mechanics, bukkake, stuffing, biosculptor cycles, slug (Biotech), Not-Semen-Processor (Samenstein/Spermatuch).
   </description>
 </ModMetaData>

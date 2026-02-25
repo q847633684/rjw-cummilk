@@ -34,6 +34,12 @@ public class WorkGiver_EquallyMilk : WorkGiver_Milk
         CompEquallyMilkable comp = target.CompEquallyMilkable();
         if (comp?.ActiveAndFull == true)
         {
+            // 若目标同时存在 Cumflation，且严重度远高于奶的 fullness，则优先让泄精 Job 抢人
+            var cumflation = Cumpilation.Cumflation.CumflationUtility.GetOrCreateCumflationHediff(target);
+            if (cumflation != null && cumflation.Severity > 0.75f && comp.Fullness < comp.maxFullness * 0.75f && !forced)
+            {
+                return false;
+            }
             return pawn.CanReserve(target, 1, -1, null, forced);
         }
         return false;

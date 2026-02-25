@@ -15,12 +15,12 @@ public class PawnColumnWorker_ProducerRestrictions : PawnColumnWorker
             Find.WindowStack.Add(new Window_ProducerRestrictions(pawn));
     }
 
-    /// <summary>泌乳者或（Cumpilation 启用时的）人形均可指定谁可食用我产出的奶/精液。</summary>
+    /// <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
     internal static bool ShouldShowFor(Pawn pawn)
     {
         if (pawn?.CompEquallyMilkable() == null) return false;
         if (pawn.IsLactating()) return true;
-        if (ModLister.GetActiveModWithIdentifier("vegapnk.cumpilation") != null && pawn.RaceProps?.Humanlike == true)
+        if (pawn.RaceProps?.Humanlike == true)
             return true;
         return false;
     }

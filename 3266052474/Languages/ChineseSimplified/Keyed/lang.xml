@@ -41,4 +41,17 @@
     <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
+    <!-- 精液桶关联床（Cumpilation 联动） -->
+    <EM_CumBucket_LinkBed>链接到床</EM_CumBucket_LinkBed>
+    <EM_CumBucket_LinkBed_Desc>将精液桶关联到一张床。床主在桶空时默认唯一可使用；有占用时其他人会看到「不属于他的精液桶」提示。共享卧室（房间内多床）时全员可用，排放为混合精液。</EM_CumBucket_LinkBed_Desc>
+    <EM_CumBucket_UnlinkBed>取消关联床</EM_CumBucket_UnlinkBed>
+    <EM_CumBucket_UnlinkBed_Desc>取消精液桶与床的关联，之后任何人都可使用此桶。</EM_CumBucket_UnlinkBed_Desc>
+    <EM_CumBucket_NotLinked>未关联床（任何人可用）</EM_CumBucket_NotLinked>
+    <EM_CumBucket_SharedRoom>共享卧室（全员可用，混合精液）</EM_CumBucket_SharedRoom>
+    <EM_CumBucket_Owner>床主：{0}</EM_CumBucket_Owner>
+    <EM_CumBucket_UnassignedBed>已关联床但床未指定主人</EM_CumBucket_UnassignedBed>
+    <EM_CumBucket_NotYours>{0} 无法使用：不属于他的精液桶（已有占用）。</EM_CumBucket_NotYours>
+    <EM_CumBucket_SelectBed>选择要关联的床</EM_CumBucket_SelectBed>
+    <EM_CumBucket_BedsInRoom>同房间内的床</EM_CumBucket_BedsInRoom>
+    <EM_CumBucket_BedsElsewhere>其他床</EM_CumBucket_BedsElsewhere>
 </LanguageData>
