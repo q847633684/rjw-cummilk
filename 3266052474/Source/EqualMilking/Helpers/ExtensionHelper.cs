@@ -118,11 +118,7 @@ public static class ExtensionHelper
     /// <summary>指定“谁可以吸我的奶”：产奶者列表 allowedSucklers 非空则仅列表中可吸；空则默认子女+伴侣。</summary>
     private static bool SuckleRestrictionAllowed(Pawn mother, Pawn baby)
     {
-        var comp = mother?.CompEquallyMilkable();
-        if (comp == null) return true;
-        if (comp.allowedSucklers != null && comp.allowedSucklers.Count > 0)
-            return comp.allowedSucklers.Contains(baby);
-        return IsDefaultSuckler(mother, baby);
+        return IsAllowedSuckler(mother, baby);
     }
 
     /// <summary>默认“谁可以吸奶”：子女或伴侣。</summary>

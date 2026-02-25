@@ -36,4 +36,6 @@ public static class EMDefOf
     public static HediffDef EM_Prolactin_High;
     public static ThoughtDef EM_Prolactin_HighThought;
     public static ThoughtDef EM_HadSexWhileLactating;
+    public static ThoughtDef EM_ForcedMilking;
+    public static ThoughtDef EM_PartnerAteMyProduct;
 }

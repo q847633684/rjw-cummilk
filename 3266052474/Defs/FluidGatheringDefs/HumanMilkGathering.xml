@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+	<!-- 7.7: 清洁人奶污物时按概率产出 EM_HumanMilk（无 fluidDef，仅 filth→thingDef） -->
+	<Cumpilation.Gathering.FluidGatheringDef>
+		<defName>EM_HumanMilk_FromFilth</defName>
+		<thingDef>EM_HumanMilk</thingDef>
+		<canBeRetrievedFromFilth>true</canBeRetrievedFromFilth>
+		<filth>EM_HumanMilkFilth</filth>
+		<filthNecessaryForOneUnit>10</filthNecessaryForOneUnit>
+	</Cumpilation.Gathering.FluidGatheringDef>
+</Defs>

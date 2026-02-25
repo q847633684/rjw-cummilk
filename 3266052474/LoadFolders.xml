@@ -2,16 +2,12 @@
 <loadFolders>
 	<v1.6>
 		<li></li>
-		<li>Versions/1.6</li>
-		<li>Versions/1.6/CumpilationCommon</li>
-		<li>Versions/1.6/Cumpilation</li>
-		<li IfModActive="Ludeon.RimWorld.Biotech">Versions/1.6/Cumpilation/Mods/Biotech</li>
-		<li IfModActive="Ludeon.RimWorld.Ideology">Versions/1.6/Cumpilation/Mods/Ideology</li>
-		<li IfModActive="Dubwise.DubsBadHygiene,Dubwise.DubsBadHygiene.Lite">Versions/1.6/Cumpilation/Mods/DBH</li>
-		<li IfModNotActive="winderig.processor">Versions/1.6/Cumpilation/Mods/Not-Semen-Processor</li>
-		<li IfModActive="DRILLEDHEAD.MILKEXPANDED">Versions/1.6/Integrations/VME_HarmonyPatch</li>
-		<li IfModActive="rim.job.world">Versions/1.6/Integrations/RJW</li>
-		<li>Versions/1.6/Integrations/Cumpilation</li>
-		<li IfModActive="oskarpotocki.vanillafactionsexpanded.core">Versions/1.6/Integrations/PipeSystem</li>
+		<li IfModActive="Ludeon.RimWorld.Biotech">Mods/Biotech</li>
+		<li IfModActive="Ludeon.RimWorld.Ideology">Mods/Ideology</li>
+		<li IfModActive="Dubwise.DubsBadHygiene,Dubwise.DubsBadHygiene.Lite">Mods/DBH</li>
+		<li IfModNotActive="winderig.processor">Mods/Not-Semen-Processor</li>
+		<li IfModActive="DRILLEDHEAD.MILKEXPANDED">Integrations/VME_HarmonyPatch</li>
+		<li IfModActive="rim.job.world">Integrations/RJW</li>
+		<li IfModActive="oskarpotocki.vanillafactionsexpanded.core">Integrations/PipeSystem</li>
 	</v1.6>
 </loadFolders>

@@ -89,11 +89,10 @@ internal static class ApplyPatches
     }
     public static void AddResourceConversions()
     {
+        // 7.6：仅动物产出的原版 Milk 进入管道；人奶 EM_HumanMilk 与精液 Cumpilation_Cum 均不进入管道，直接落格。
         ThingDef milkDef = DefDatabase<ThingDef>.GetNamed("Milk");
         EMDefOf.EM_MilkingPump.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
-        EMDefOf.EM_MilkingPump.comps.Add(new CompProperties_ConvertThingToResource { thing = EMDefOf.EM_HumanMilk, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_HumanMilkNet") });
         EMDefOf.EM_MilkingElectric.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
-        EMDefOf.EM_MilkingElectric.comps.Add(new CompProperties_ConvertThingToResource { thing = EMDefOf.EM_HumanMilk, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_HumanMilkNet") });
     }
     public static bool IsConnectedToPipeNetStorage(this ThingWithComps thing, PipeNetDef def)
     {

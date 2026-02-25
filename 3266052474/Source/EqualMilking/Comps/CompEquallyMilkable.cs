@@ -47,6 +47,16 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
         Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
     }
+    /// <summary>7.11: 旧存档兼容 — 确保列表非 null 并移除已销毁的 Pawn 引用。加载后由 UpdateEqualMilkingSettings 调用。</summary>
+    public void EnsureSaveCompatAllowedLists()
+    {
+        allowedSucklers ??= new List<Pawn>();
+        allowedConsumers ??= new List<Pawn>();
+        assignedFeeders ??= new List<Pawn>();
+        allowedSucklers.RemoveAll(p => p == null || p.Destroyed);
+        allowedConsumers.RemoveAll(p => p == null || p.Destroyed);
+        assignedFeeders.RemoveAll(p => p == null || p.Destroyed);
+    }
     protected override bool Active
     {
         get

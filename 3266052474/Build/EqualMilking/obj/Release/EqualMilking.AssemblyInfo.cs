@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EqualMilking")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e8a4c666f23bf305d78070b9e42003568a76aa8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+99f1c87fd9fcd7a92a3e69dcfcd09452c7d5feaa")]
 [assembly: System.Reflection.AssemblyProductAttribute("EqualMilking")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EqualMilking")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

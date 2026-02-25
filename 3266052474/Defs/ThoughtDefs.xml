@@ -51,4 +51,28 @@
             </li>
         </stages>
     </ThoughtDef>
+    <ThoughtDef>
+        <defName>EM_ForcedMilking</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>0.5</durationDays>
+        <stages>
+            <li>
+                <label>被强制挤奶</label>
+                <description>有人在我未允许的情况下挤了我的奶。</description>
+                <baseMoodEffect>-3</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+    <ThoughtDef>
+        <defName>EM_PartnerAteMyProduct</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>0.25</durationDays>
+        <stages>
+            <li>
+                <label>伴侣吃了我的产物</label>
+                <description>伴侣吃了我产的奶/精液制品，有点开心。</description>
+                <baseMoodEffect>2</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
 </Defs>

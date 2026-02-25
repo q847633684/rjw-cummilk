@@ -18,7 +18,7 @@
     <EM.MilkProductConsumptionRestriction_4>与“谁可以吸奶”相同</EM.MilkProductConsumptionRestriction_4>
     <EM.FedByColumnTip>被喂食者：指定“允许哪些泌乳者喂我”。列表为空=任意泌乳者；非空=仅列表中的泌乳者。</EM.FedByColumnTip>
     <EM.ProducerRestrictionsColumn>谁可吸/谁可吃我的奶制品或精液制品</EM.ProducerRestrictionsColumn>
-    <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以吸我的奶、谁可以吃我的奶制品。男性（启用 Cumpilation 时）：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
+    <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以吸我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
     <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
     <EM.WhoCanSuckleFromMe>谁可以吸我的奶</EM.WhoCanSuckleFromMe>
     <EM.WhoCanSuckleFromMeDefault>默认：子女与伴侣。添加小人则仅允许列表中的人；留空即使用默认。</EM.WhoCanSuckleFromMeDefault>
@@ -27,6 +27,7 @@
     <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
     <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionsHint>女性：谁可以吸奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
+    <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>
     <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
     <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>泌乳期时暂时增大 RJW 胸部尺寸。</EM.RjwBreastSizeDesc>

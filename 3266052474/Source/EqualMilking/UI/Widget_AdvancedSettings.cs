@@ -40,6 +40,11 @@ public class Widget_AdvancedSettings
 		Widgets.Label(sliderRect, "EM.ProducerRestrictionsHint".Translate());
 		GUI.color = Color.white;
 		sliderRect.y += UNIT_SIZE * 2;
+		// 7.9: 药物分工提示
+		GUI.color = Color.gray;
+		Widgets.Label(sliderRect, "EM.DrugRoleHint".Translate());
+		GUI.color = Color.white;
+		sliderRect.y += UNIT_SIZE * 2;
 		string s_breastfeedTime = EqualMilkingSettings.breastfeedTime.ToString();
 		Widgets.TextFieldNumericLabeled(sliderRect, Lang.Join(Lang.Breastfeed, Lang.Time), ref EqualMilkingSettings.breastfeedTime, ref s_breastfeedTime, 1f);
 		sliderRect.y += UNIT_SIZE;
@@ -80,3 +85,4 @@ public class Widget_AdvancedSettings
 			Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), "EM.RjwLactatingInSexDesc".Translate(), ref EqualMilkingSettings.rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescDesc".Translate());
 		}
 	}
+}

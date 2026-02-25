@@ -9,9 +9,9 @@ using EqualMilking.Comps;
 namespace EqualMilking.HarmonyPatches;
 
 /// <summary>
-/// When Cumpilation is loaded: tag cum items with producer so consumption
-/// uses the same "who can eat" rules as milk (CompShowProducer + allowedConsumers).
-/// Bucket can link to bed: only bed owner can use when empty; when occupied show "not your cum bucket"; shared room = everyone, mixed cum.
+/// 本 Mod 已合并 Cumpilation：为精液物品打产主(producer)，食用规则与奶制品一致(CompShowProducer + allowedConsumers)。
+/// 桶可关联床：仅床主可用空桶；占用时提示“不是你的桶”；共享卧室=混合精液。
+/// 7.13: 单源(ExtractCum、DeflateBucket 单主、Gathering from sex)设 producer；混合桶/清洁污物回收不设 producer。
 /// </summary>
 public static class CumpilationIntegration
 {

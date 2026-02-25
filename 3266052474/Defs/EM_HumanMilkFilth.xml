@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+	<!-- 7.7: 人奶污物，清洁时可按 FluidGatheringDef 回收为 EM_HumanMilk -->
+	<ThingDef ParentName="BaseCumFilth">
+		<defName>EM_HumanMilkFilth</defName>
+		<label>human milk</label>
+		<graphicData>
+			<texPath>Things/Filth/Spatter</texPath>
+			<color>(240, 240, 235, 100)</color>
+		</graphicData>
+		<statBases>
+			<Beauty>-28</Beauty>
+			<Cleanliness>-12</Cleanliness>
+		</statBases>
+		<filth>
+			<rainWashes>true</rainWashes>
+			<cleaningWorkToReduceThickness>40</cleaningWorkToReduceThickness>
+			<canFilthAttach>true</canFilthAttach>
+		</filth>
+	</ThingDef>
+</Defs>

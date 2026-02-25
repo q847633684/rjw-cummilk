@@ -48,3 +48,18 @@ public static class JobDriver_Ingest_MilkProductCheck
         __instance.pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
     }
 }
+
+/// <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。</summary>
+[HarmonyPatch(typeof(ThingComp), nameof(ThingComp.PostIngested))]
+public static class Patch_PostIngested_PartnerAteMyProduct
+{
+    [HarmonyPostfix]
+    static void Postfix(ThingComp __instance, Pawn ingester)
+    {
+        if (ingester == null || __instance?.parent == null) return;
+        var comp = __instance.parent.TryGetComp<CompShowProducer>();
+        if (comp?.producer == null || comp.producer == ingester) return;
+        if (!comp.producer.relations?.DirectRelationExists(PawnRelationDefOf.Lover, ingester) ?? true) return;
+        comp.producer.needs?.mood?.thoughts?.memories?.TryGainMemory(EMDefOf.EM_PartnerAteMyProduct);
+    }
+}

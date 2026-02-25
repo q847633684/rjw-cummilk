@@ -209,6 +209,12 @@ internal class EqualMilkingSettings : ModSettings
 	}
 	internal void UpdateEqualMilkingSettings()
 	{
+		// 7.11: 旧存档兼容 — 补全缺失的 allowedSucklers/allowedConsumers 并清理无效引用
+		foreach (Pawn p in PawnsFinder.AllMaps)
+		{
+			if (p?.CompEquallyMilkable() is CompEquallyMilkable comp)
+				comp.EnsureSaveCompatAllowedLists();
+		}
 		EventHelper.TriggerSettingsChanged();
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
@@ -233,6 +239,10 @@ internal class EqualMilkingSettings : ModSettings
 			if (!productsToTags.ContainsKey("Milk"))
 				productsToTags.Add("Milk", new MilkTag("Milk", true, false));
 		}
+		// 7.10: rjw-genes cum milk etc. — ensure breast-sourced cum gets producer so allowedConsumers apply
+		ThingDef cumDef = DefDatabase<ThingDef>.GetNamedSilentFail("Cumpilation_Cum");
+		if (cumDef != null && !productsToTags.ContainsKey("Cumpilation_Cum"))
+			productsToTags.Add("Cumpilation_Cum", new MilkTag("Cumpilation_Cum", true, false));
 		foreach (Pawn pawn in PawnsFinder.AllMaps)
 		{
 			pawn.LactatingHediffWithComps()?.SetDirty();

@@ -56,7 +56,7 @@ public static class ThingWithComps_Patch
 public static class Hediff_Pregnant_Patch
 {
     /// <summary>
-    /// Add Lactating Hediff to animals on giving birth
+    /// 7.8: 分娩结束时为母亲添加 Lactating。动物原有逻辑；人类（Biotech 原版分娩）也自动进入泌乳期。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Hediff_Pregnant.DoBirthSpawn))]
@@ -65,6 +65,12 @@ public static class Hediff_Pregnant_Patch
         if (mother.IsNormalAnimal())
         {
             mother.health.AddHediff(HediffDefOf.Lactating);
+            return;
+        }
+        if (mother.RaceProps?.Humanlike == true && mother.health?.hediffSet != null
+            && !mother.health.hediffSet.HasHediff(HediffDefOf.Lactating))
+        {
+            mother.health.GetOrAddHediff(HediffDefOf.Lactating);
         }
     }
 }
