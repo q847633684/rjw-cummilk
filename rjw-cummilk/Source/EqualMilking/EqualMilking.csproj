@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutDir>$(OutDirBase)/Assemblies/</OutDir>
+    <TargetFramework>net48</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <!-- Cumpilation 已合并进本工程，需引用 RJW。RJW 路径：Steam RimWorld Mods\rjw -->
+    <Reference Include="RJW">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\rjw\1.6\Assemblies\RJW.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 排除 Cumpilation 自带的 AssemblyInfo，避免与 SDK 自动生成的重复 -->
+    <Compile Remove="Cumpilation\Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- ITab_Pawn_Feeding -->
+    <Publicize Include="Assembly-CSharp" MemberPattern="^RimWorld\.ITab_Pawn_Feeding\..*" />
+    <Publicize Include="Assembly-CSharp:RimWorld.ITab_Pawn_Feeding+BabyFeederPair" />
+    <!-- Pawn_MindState -->
+    <Publicize Include="Assembly-CSharp:Verse.AI.Pawn_MindState.autoFeeders" />
+    <!-- JobDriver_Breastfeed.Breastfeed -->
+    <Publicize Include="Assembly-CSharp:RimWorld.JobDriver_Breastfeed.Breastfeed" />
+    <Publicize Include="Assembly-CSharp:RimWorld.JobDriver_FeedBaby.Baby" />
+    <!-- WorkGiver_FeedBabyManually -->
+    <Publicize Include="Assembly-CSharp:RimWorld.WorkGiver_FeedBabyManually.CanCreateManualFeedingJob" />
+    <!-- FloatMenuMakerMap -->
+    <Publicize Include="Assembly-CSharp:RimWorld.FloatMenuMakerMap.AddHumanlikeOrders" />
+    <!-- Need-->
+    <Publicize Include="Assembly-CSharp:RimWorld.Need.pawn" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Need_MechEnergy.BaseFallPerDay" />
+  </ItemGroup>
+</Project>

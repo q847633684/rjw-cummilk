@@ -1,0 +1,104 @@
+<Defs>
+    <ThingDef ParentName="BuildingBase" Name="EM_MilkingBase" Abstract="True">
+        <thingClass>EqualMilking.Building_Milking</thingClass>
+        <rotatable>false</rotatable>
+        <scatterableOnMapGen>false</scatterableOnMapGen>
+        <designationCategory>Production</designationCategory>
+        <uiOrder>2000</uiOrder>
+        <passability>Standable</passability>
+        <altitudeLayer>FloorEmplacement</altitudeLayer>
+        <building>
+            <sowTag>SupportPlantsOnly</sowTag>
+            <canPlaceOverImpassablePlant>false</canPlaceOverImpassablePlant>
+            <ai_chillDestination>false</ai_chillDestination>
+            <wakeDormantPawnsOnConstruction>false</wakeDormantPawnsOnConstruction>
+            <artificialForMeditationPurposes>false</artificialForMeditationPurposes>
+        </building>
+    </ThingDef>
+    <ThingDef ParentName="EM_MilkingBase" Name="EM_MilkingMachine" Abstract="True">
+        <altitudeLayer>Building</altitudeLayer>
+        <building>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <fixedStorageSettings>
+                <filter>
+                    <disallowNotEverStorable>true</disallowNotEverStorable>
+                    <thingDefs>
+                        <li>Milk</li>
+                        <li>EM_HumanMilk</li>
+                    </thingDefs>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Unstored</priority>
+                <filter>
+                    <disallowNotEverStorable>true</disallowNotEverStorable>
+                    <thingDefs>
+                        <li>Milk</li>
+                        <li>EM_HumanMilk</li>
+                    </thingDefs>
+                </filter>
+            </defaultStorageSettings>
+        </building>
+    </ThingDef>
+    <ThingDef ParentName="EM_MilkingMachine">
+        <defName>EM_MilkingPump</defName>
+        <label>milking pump</label>
+        <graphicData>
+            <texPath>Things/Building/Production/MilkingPump</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <statBases>
+            <WorkToBuild>50</WorkToBuild>
+        </statBases>
+        <equippedStatOffsets>
+            <AnimalGatherYield>0.25</AnimalGatherYield>
+            <AnimalGatherSpeed>0.25</AnimalGatherSpeed>
+        </equippedStatOffsets>
+        <costList>
+            <Steel>20</Steel>
+        </costList>
+        <comps>
+            <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
+            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket" />
+            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+        </comps>
+    </ThingDef>
+
+    <ThingDef ParentName="EM_MilkingMachine">
+        <defName>EM_MilkingElectric</defName>
+        <label>Electric milking pump</label>
+        <graphicData>
+            <texPath>Things/Building/Production/MilkingPumpElectric</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <statBases>
+            <WorkToBuild>100</WorkToBuild>
+        </statBases>
+        <equippedStatOffsets>
+            <AnimalGatherYield>1</AnimalGatherYield>
+            <AnimalGatherSpeed>1</AnimalGatherSpeed>
+        </equippedStatOffsets>
+        <comps>
+            <li Class="CompProperties_Power">
+                <compClass>CompPowerTrader</compClass>
+                <shortCircuitInRain>false</shortCircuitInRain>
+                <basePowerConsumption>20</basePowerConsumption>
+            </li>
+            <li Class="CompProperties_Flickable" />
+            <!-- 作为 Cumpilation 泄精目标（DeflateBucket），电泵效率稍高 -->
+            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+                <deflateMult>1.5</deflateMult>
+                <deflateRate>1</deflateRate>
+            </li>
+            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+        </comps>
+        <costList>
+            <Steel>20</Steel>
+            <ComponentIndustrial>1</ComponentIndustrial>
+        </costList>
+        <researchPrerequisites>
+            <li>Electricity</li>
+        </researchPrerequisites>
+    </ThingDef>
+</Defs>

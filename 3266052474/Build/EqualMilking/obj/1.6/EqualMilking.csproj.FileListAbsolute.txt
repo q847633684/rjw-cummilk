@@ -1,5 +1,0 @@
-C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\1.6\EqualMilking.csproj.AssemblyReference.cache
-C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\1.6\EqualMilking.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\1.6\EqualMilking.AssemblyInfoInputs.cache
-C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\1.6\EqualMilking.AssemblyInfo.cs
-C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\EqualMilking\obj\1.6\EqualMilking.csproj.CoreCompileInputs.cache

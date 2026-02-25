@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <EM_MilkingPump.description>搾乳用のマニュアル泵、搾乳の速度と収穫率を少し増加</EM_MilkingPump.description>
+    <EM_MilkingElectric.description>搾乳用の電動泵、通電時に挤奶速度を増加し、必ず収穫する。人間以外でも使用可能</EM_MilkingElectric.description>
+</LanguageData>

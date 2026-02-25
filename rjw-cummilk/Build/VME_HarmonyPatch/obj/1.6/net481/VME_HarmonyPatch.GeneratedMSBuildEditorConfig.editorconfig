@@ -1,0 +1,8 @@
+is_global = true
+build_property.RootNamespace = VME_HarmonyPatch
+build_property.ProjectDir = C:\Users\q8476\Documents\work\RJW-mc\3266052474\Source\VME_Patch\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 

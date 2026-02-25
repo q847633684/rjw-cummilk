@@ -1,0 +1,66 @@
+<LanguageData>
+    <Equal_Milking>平等产奶</Equal_Milking>
+    <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
+    <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>
+    <EM.LactatingGainPercent>增益偏移：{0}</EM.LactatingGainPercent>
+    <EM.SuckleRestriction>谁可以吸奶</EM.SuckleRestriction>
+    <EM.SuckleRestrictionDesc>限制谁可以从该泌乳者处吸奶（例如仅殖民地、或仅爱人/亲属）。</EM.SuckleRestrictionDesc>
+    <EM.SuckleRestriction_0>无限制</EM.SuckleRestriction_0>
+    <EM.SuckleRestriction_1>仅同派系</EM.SuckleRestriction_1>
+    <EM.SuckleRestriction_2>仅殖民地</EM.SuckleRestriction_2>
+    <EM.SuckleRestriction_3>仅爱人或亲属</EM.SuckleRestriction_3>
+    <EM.MilkProductConsumptionRestriction>谁可以使用产出的奶/奶制品</EM.MilkProductConsumptionRestriction>
+    <EM.MilkProductConsumptionRestrictionDesc>限制谁可以食用“某人产的奶”或“用某人奶做的食物”。可选与吸奶规则相同，或选“与谁可以吸奶相同”沿用上方设置。</EM.MilkProductConsumptionRestrictionDesc>
+    <EM.MilkProductConsumptionRestriction_0>无限制</EM.MilkProductConsumptionRestriction_0>
+    <EM.MilkProductConsumptionRestriction_1>仅同派系</EM.MilkProductConsumptionRestriction_1>
+    <EM.MilkProductConsumptionRestriction_2>仅殖民地</EM.MilkProductConsumptionRestriction_2>
+    <EM.MilkProductConsumptionRestriction_3>仅爱人或亲属</EM.MilkProductConsumptionRestriction_3>
+    <EM.MilkProductConsumptionRestriction_4>与“谁可以吸奶”相同</EM.MilkProductConsumptionRestriction_4>
+    <EM.FedByColumnTip>被喂食者：指定“允许哪些泌乳者喂我”。列表为空=任意泌乳者；非空=仅列表中的泌乳者。</EM.FedByColumnTip>
+    <EM.ProducerRestrictionsColumn>谁可使用我的奶 / 谁可吃奶制品或精液制品</EM.ProducerRestrictionsColumn>
+    <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以使用我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
+    <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
+    <EM.WhoCanSuckleFromMe>谁可以使用我的奶</EM.WhoCanSuckleFromMe>
+    <EM.WhoCanSuckleFromMeDefault>下方名单默认已勾选子女与伴侣；可添加或移除。</EM.WhoCanSuckleFromMeDefault>
+    <EM.WhoCanUseMyMilkProducts>谁可以吃我的奶制品</EM.WhoCanUseMyMilkProducts>
+    <EM.WhoCanUseMyMilkProductsDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkProductsDefault>
+    <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
+    <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
+    <EM.ProducerRestrictionsHint>女性：谁可以使用我的奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
+    <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>
+    <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
+    <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
+    <EM.RjwBreastSizeDesc>泌乳期时暂时增大 RJW 胸部尺寸。</EM.RjwBreastSizeDesc>
+    <EM.RjwLustFromNursing>哺乳/吸奶增加性需求</EM.RjwLustFromNursing>
+    <EM.RjwLustFromNursingDesc>哺乳或刚被哺乳后，母亲与婴儿获得少量性需求满足。</EM.RjwLustFromNursingDesc>
+    <EM.RjwSexNeedLactatingBonus>泌乳期性需求随时间小幅提升</EM.RjwSexNeedLactatingBonus>
+    <EM.RjwSexNeedLactatingBonusDesc>泌乳期小人获得少量性需求加成。</EM.RjwSexNeedLactatingBonusDesc>
+    <EM.RjwSexSatisfactionAfterNursing>哺乳后性行为额外满足</EM.RjwSexSatisfactionAfterNursing>
+    <EM.RjwSexSatisfactionAfterNursingDesc>刚哺乳后不久进行性行为获得额外满足。</EM.RjwSexSatisfactionAfterNursingDesc>
+    <EM.RjwLactationFertility>泌乳期怀孕概率：{0}</EM.RjwLactationFertility>
+    <EM.RjwLactationFertilityDesc>母亲泌乳时怀孕概率乘以此值（0～1）。</EM.RjwLactationFertilityDesc>
+    <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
+    <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
+    <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
+    <!-- 精液桶关联床（Cumpilation 联动） -->
+    <EM_CumBucket_LinkBed>链接到床</EM_CumBucket_LinkBed>
+    <EM_CumBucket_LinkBed_Desc>将精液桶关联到一张床。床主在桶空时默认唯一可使用；有占用时其他人会看到「不属于他的精液桶」提示。共享卧室（房间内多床）时全员可用，排放为混合精液。</EM_CumBucket_LinkBed_Desc>
+    <EM_CumBucket_UnlinkBed>取消关联床</EM_CumBucket_UnlinkBed>
+    <EM_CumBucket_UnlinkBed_Desc>取消精液桶与床的关联，之后任何人都可使用此桶。</EM_CumBucket_UnlinkBed_Desc>
+    <EM_CumBucket_NotLinked>未关联床（任何人可用）</EM_CumBucket_NotLinked>
+    <EM_CumBucket_SharedRoom>共享卧室（全员可用，混合精液）</EM_CumBucket_SharedRoom>
+    <EM_CumBucket_Owner>床主：{0}</EM_CumBucket_Owner>
+    <EM_CumBucket_UnassignedBed>已关联床但床未指定主人</EM_CumBucket_UnassignedBed>
+    <EM_CumBucket_NotYours>{0} 无法使用：不属于他的精液桶（已有占用）。</EM_CumBucket_NotYours>
+    <EM_CumBucket_CannotLinkNotOwner>桶内精液不属于该床主，无法关联。</EM_CumBucket_CannotLinkNotOwner>
+    <EM_CumBucket_SelectBed>选择要关联的床</EM_CumBucket_SelectBed>
+    <EM_CumBucket_BedsInRoom>同房间内的床</EM_CumBucket_BedsInRoom>
+    <EM_CumBucket_BedsElsewhere>其他床</EM_CumBucket_BedsElsewhere>
+    <EM.Milk_Dev>泌乳（开发）</EM.Milk_Dev>
+    <EM.Milk_SealCum>塞住</EM.Milk_SealCum>
+    <EM.Milk_SealCumTip>是否塞住，防止精液自然泄漏。仅人形成人且有阴道时显示。</EM.Milk_SealCumTip>
+    <EM.Milk_AllowDeflate>允许泄精</EM.Milk_AllowDeflate>
+    <EM.Milk_AllowDeflateTip>是否允许该小人去做泄精 Job（泄到桶/清洁/随地）。关则不会自动泄精。</EM.Milk_AllowDeflateTip>
+    <EM.DefaultSetting_CanBeFed>允许被自动喂食</EM.DefaultSetting_CanBeFed>
+    <EM.DefaultSetting_CanBeFedTip>作为婴儿/幼体时，是否允许保育员自动来哺乳我。关则不会成为自动哺乳的对象。</EM.DefaultSetting_CanBeFedTip>
+</LanguageData>

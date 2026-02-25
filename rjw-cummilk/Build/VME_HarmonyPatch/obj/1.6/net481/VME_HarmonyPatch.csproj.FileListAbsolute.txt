@@ -1,0 +1,5 @@
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\VME_HarmonyPatch\obj\1.6\net481\VME_HarmonyPatch.csproj.AssemblyReference.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\VME_HarmonyPatch\obj\1.6\net481\VME_HarmonyPatch.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\VME_HarmonyPatch\obj\1.6\net481\VME_HarmonyPatch.AssemblyInfoInputs.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\VME_HarmonyPatch\obj\1.6\net481\VME_HarmonyPatch.AssemblyInfo.cs
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\VME_HarmonyPatch\obj\1.6\net481\VME_HarmonyPatch.csproj.CoreCompileInputs.cache

@@ -1,0 +1,5 @@
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\RJW\obj\1.6\net481\RJW.csproj.AssemblyReference.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\RJW\obj\1.6\net481\RJW.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\RJW\obj\1.6\net481\RJW.AssemblyInfoInputs.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\RJW\obj\1.6\net481\RJW.AssemblyInfo.cs
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\RJW\obj\1.6\net481\RJW.csproj.CoreCompileInputs.cache

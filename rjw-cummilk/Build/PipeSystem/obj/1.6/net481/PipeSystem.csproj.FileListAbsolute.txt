@@ -1,0 +1,5 @@
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\PipeSystem\obj\1.6\net481\PipeSystem.csproj.AssemblyReference.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\PipeSystem\obj\1.6\net481\PipeSystem.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\PipeSystem\obj\1.6\net481\PipeSystem.AssemblyInfoInputs.cache
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\PipeSystem\obj\1.6\net481\PipeSystem.AssemblyInfo.cs
+C:\Users\q8476\Documents\work\RJW-mc\3266052474\Build\PipeSystem\obj\1.6\net481\PipeSystem.csproj.CoreCompileInputs.cache

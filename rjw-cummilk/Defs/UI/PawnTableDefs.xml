@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+	<PawnTableDef>
+		<defName>Milk_PawnTable</defName>
+		<workerClass>EqualMilking.Milk_PawnTable</workerClass>
+		<columns>
+			<li>Label</li>
+			<li>GapTiny</li>
+			<li>Gender</li>
+			<li>GapTiny</li>
+			<li>LifeStage</li>
+			<li>GapTiny</li>
+			<li>Pregnant</li>
+			<li>GapTiny</li>
+			<li>Milk_MilkType</li>
+			<li>GapTiny</li>
+			<li>Milk_Lactating</li>
+			<li>GapTiny</li>
+			<li>Milk_Fullness</li>
+			<li>GapTiny</li>
+			<li>Milk_AllowSelf</li>
+			<li>GapTiny</li>
+			<li>Milk_ProducerRestrictions</li>
+			<li>GapTiny</li>
+			<li>Milk_SealCum</li>
+			<li>GapTiny</li>
+			<li>Milk_AllowDeflate</li>
+			<li>GapTiny</li>
+			<li>Milk_Dev</li>
+			<li>RemainingSpace</li>
+		</columns>
+	</PawnTableDef>
+</Defs>

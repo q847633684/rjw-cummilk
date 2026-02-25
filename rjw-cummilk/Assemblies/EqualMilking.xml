@@ -1,0 +1,839 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EqualMilking</name>
+    </assembly>
+    <members>
+        <member name="T:EqualMilking.Comps.CompCumBucketLink">
+            <summary>
+            精液桶/椅/泵关联床：可链接到一张床。
+            链接后仅床主可使用，产主精液 = 床主（即收集的精液一律记为床主产生）。
+            未链接时多人可使用，多人用过则为混合精液（无产主）。
+            若罐内已有精液且产主不是该床的床主，则无法链接到该床（CanLinkToBed 为 false，弹窗提示）。
+            </summary>
+        </member>
+        <member name="P:EqualMilking.Comps.CompCumBucketLink.Owner">
+            <summary>床主（通过 CompAssignableToPawn 获取，兼容各版本）。</summary>
+        </member>
+        <member name="P:EqualMilking.Comps.CompCumBucketLink.IsSharedRoom">
+            <summary>共享卧室：房间内多张床，或链接的床无主。</summary>
+        </member>
+        <member name="P:EqualMilking.Comps.CompCumBucketLink.HasContent">
+            <summary>桶格上有精液物品即视为有占用。</summary>
+        </member>
+        <member name="M:EqualMilking.Comps.CompCumBucketLink.CanLinkToBed(RimWorld.Building_Bed)">
+            <summary>桶内有精液时，仅当所有精液均属于该床主（或无产主）时才允许关联；否则返回 false 并应由调用方提示无法链接。</summary>
+        </member>
+        <member name="M:EqualMilking.Comps.CompCumBucketLink.CanPawnUse(Verse.Pawn)">
+            <summary>该小人是否被允许使用此桶（做 DeflateBucket 等）。</summary>
+        </member>
+        <member name="M:EqualMilking.Comps.CompCumBucketLink.ShouldWarnNotYourBucket(Verse.Pawn)">
+            <summary>是否应提示“不属于他的精液桶”（有占用且不是他的桶）。</summary>
+        </member>
+        <member name="M:EqualMilking.Comps.CompCumBucketLink.NotifyPawnUsed(Verse.Pawn)">
+            <summary>记录该小人向此桶排放了一次；若多人用过则后续产出为混合精液。</summary>
+        </member>
+        <member name="P:EqualMilking.Comps.CompCumBucketLink.IsMixed">
+            <summary>是否已有多人使用过（产出应为混合精液）。</summary>
+        </member>
+        <member name="P:EqualMilking.CompEquallyMilkable.Fullness">
+            <summary>当前奶量 fullness（0~maxFullness），对外只读，用于调度 Job 优先级等。</summary>
+        </member>
+        <member name="F:EqualMilking.CompEquallyMilkable.allowedSucklers">
+            <summary>谁可以使用我的奶。名单为空时会预填子女+伴侣；仅名单内的人可吸奶/挤奶。</summary>
+        </member>
+        <member name="F:EqualMilking.CompEquallyMilkable.allowedConsumers">
+            <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）。</summary>
+        </member>
+        <member name="M:EqualMilking.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
+            <summary>7.11: 旧存档兼容 — 确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
+        </member>
+        <member name="M:EqualMilking.CompEquallyMilkable.SetFullness(System.Single)">
+            <summary>
+            Set the fullness of the milkable pawn, will clamp the value between 0 and maxFullness
+            </summary>
+            <param name="value">new fullness value</param>
+        </member>
+        <member name="M:EqualMilking.CompEquallyMilkable.Gathered(Verse.Pawn)">
+            <summary>
+            Gather the milk from the milkable pawn, place the milk in the milking spot or the doer's position. Overrides vanilla method.
+            </summary>
+            <param name="doer">the pawn that is gathering the milk</param>
+        </member>
+        <member name="M:EqualMilking.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
+            <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
+        </member>
+        <member name="T:EqualMilking.DrugEffectSystemFix">
+            <summary>
+            药物效果系统修复类
+            实现用户提出的递减累加机制
+            </summary>
+        </member>
+        <member name="M:EqualMilking.DrugEffectSystemFix.CalculateCumulativeProduction(System.Int32)">
+            <summary>
+            计算累积药物效果
+            </summary>
+        </member>
+        <member name="M:EqualMilking.DrugEffectSystemFix.ApplyExponentialDecay(System.Single,System.Int32,System.Single)">
+            <summary>
+            应用指数衰减（自然衰减 + 耐受衰减）
+            </summary>
+        </member>
+        <member name="M:EqualMilking.DrugEffectSystemFix.CalculateDecayedEffect(System.Single,System.Int32,System.Single)">
+            <summary>
+            计算衰减后的效果值
+            </summary>
+        </member>
+        <member name="M:EqualMilking.EqualMilkingSettings.GetProlactinTolerance(Verse.Pawn)">
+            <summary>耐受参与加成：有效倍率 = 1 + (原倍率 − 1) × (1 − 耐受)。</summary>
+        </member>
+        <member name="T:EqualMilking.JobGiver_ActiveSuckle">
+            <summary>
+            Allow non-humanlike to breastfeed
+            </summary>
+        </member>
+        <member name="T:EqualMilking.JobGiver_BreastFeedAdult">
+            <summary>
+            Allow non-humanlike to breastfeed
+            </summary>
+        </member>
+        <member name="T:EqualMilking.JobGiver_EqualBreastfeed">
+            <summary>
+            Allow non-humanlike to breastfeed
+            </summary>
+        </member>
+        <member name="T:EqualMilking.JobGiver_MilkSelf">
+            <summary>
+            Allow non-humanlike to breastfeed
+            </summary>
+        </member>
+        <member name="P:EqualMilking.WorkGiver_EquallyMilkEntity.PotentialWorkThingRequest">
+            <summary>
+            Somehow potential work thing global just doesn't process entities, Must use potential work thing request
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.FillTab_Delegate.ShouldHideInAutoFeed(Verse.Pawn)">
+            <summary>
+            Controls what to hide in auto feed ITab menu
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.ITab_Pawn_Feeding_Patch.GenerateFloatMenuOption_Postfix(Verse.FloatMenuOption@,Verse.AutofeedMode,RimWorld.ITab_Pawn_Feeding.BabyFeederPair)">
+            <summary>
+            Change label from Childcare to Breastfeed for appropriate feeder
+            Should change labels for pawns that cannot do childcare but can breastfeed
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.Pawn_MindState_Patch.AutofeedSetting_Prefix(Verse.AI.Pawn_MindState,Verse.AutofeedMode@,Verse.Pawn)">
+            <summary>
+            Allow childcare for Pawns that doesn't have Developmental stage baby
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.Pawn_MindState_Patch.SetAutofeeder_Prefix(Verse.AI.Pawn_MindState,Verse.Pawn,Verse.AutofeedMode)">
+            <summary>
+            Allow assigning childcare to Pawns that can't do childcare
+            TODO Clean up logic
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.ChildcareUtility_Patch.CanSuckle_PostFix(System.Boolean@,Verse.Pawn,System.Nullable{RimWorld.ChildcareUtility.BreastfeedFailReason}@)">
+            <summary>
+            This function is also used to determine who is a baby by vanilla. Don't bypass age check
+            </summary>
+            <param name="__result"></param>
+            <param name="baby"></param>
+            <param name="reason"></param>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.ChildcareUtility_Patch.SuckleFromLactatingPawn_Prefix(System.Boolean@,Verse.Pawn,Verse.Pawn,System.Int32)">
+            <summary>
+            Allow suckle to gain energy instead of nutrition, bypass vanilla suckle
+            </summary>
+            <param name="__result"></param>
+            <param name="baby"></param>
+            <param name="feeder"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.ChildcareUtility_Patch.Translate_Prefix(RimWorld.ChildcareUtility.BreastfeedFailReason@)">
+            <summary>
+            Avoid not lactating not player facing
+            </summary>
+            <param name="reason"></param>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.WorkGiverPatches.Play_JobOnThing_Prefix(Verse.Pawn,Verse.Thing,Verse.AI.Job@)">
+            <summary>
+            Childcare-capable mech/animal don't play with themselves as babies
+            Patching JobOnThing to be compatible with Surrogate Mechanoid that uses JobOnThing directly
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.WorkGiverPatches.CanCreateManualFeedingJob_Prefix(Verse.Pawn,Verse.Thing,System.Boolean@)">
+            <summary>
+            Prevent bottle feeding self
+            Disable bottle feeding for non-breastfeedable
+            </summary>
+            <param name="pawn"></param>
+            <param name="t"></param>
+            <param name="__result"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.WorkGiverPatches.CopyFrom_Prefix(RimWorld.StorageSettings,RimWorld.StorageSettings)">
+            <summary>
+            Fix null reference when used with VEF
+            </summary>
+            <param name="__instance"></param>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.CumpilationIntegration">
+            <summary>
+            本 Mod 已合并 Cumpilation：为精液物品打产主(producer)，食用规则与奶制品一致(CompShowProducer + allowedConsumers)。
+            桶可关联床：仅床主可用空桶；占用时提示“不是你的桶”；共享卧室=混合精液。
+            7.13: 单源(ExtractCum、DeflateBucket 单主、Gathering from sex)设 producer；混合桶/清洁污物回收不设 producer。
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.CumpilationIntegration.JobGiver_Deflate_TryFindBucketFor_Postfix(Verse.Pawn,Verse.Thing@)">
+            <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied.</summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.CumpilationIntegration.GetProducerFromBucketDeflate(System.Object,System.Object)">
+            <summary>
+            From JobDriver_DeflateBucket instance and current fluid, get the pawn to use as producer
+            by reading cumflationHediff's SourceStorage sources (same fluid, pick by weight).
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.HaulAIUtility_Patch.HaulToCellStorageJob_Prefix(Verse.AI.Job@,Verse.Thing,Verse.IntVec3)">
+            <summary>
+            Fix starting job 10 time error when trying to fill hopper with labeled human milk
+            This fixes a missing check in vanilla code
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.CompProperties_Milkable_Patch.Prefix(RimWorld.CompProperties_Milkable)">
+            <summary>
+            Replace CompMilkable with CompEquallyMilkable
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.ThingWithComps_Patch.InitializeComps_Post(Verse.ThingWithComps)">
+            <summary>
+            Ensure initialization of EquallyMilkable Comp on ThingWithComps
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.Hediff_Pregnant_Patch.DoBirthSpawn_Prefix(Verse.Pawn)">
+            <summary>
+            7.8: 分娩结束时为母亲添加 Lactating。动物原有逻辑；人类（Biotech 原版分娩）也自动进入泌乳期。
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.Hediff_LaborPushing_Patch.PreRemoved_Postfix(Verse.Hediff_LaborPushing)">
+            <summary>
+            Allow mother to breastfeed babies after giving birth
+            </summary>
+            <param name="__instance"></param>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.Need_Food_Patch.GetTipString_PostFix(RimWorld.Need_Food,System.String@)">
+            <summary>
+            Add hunger rate from lactating to food need tip string
+            </summary>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.AnimalProductionUtility_Patch">
+            <summary>
+            Bypass vanilla milkable comp stat entries
+            </summary>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.RaceProperties_Patch">
+            <summary>
+            Add accurate stat defs to all milkable pawns
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.RaceProperties_Patch.SpecialDisplayStats_PostFix(System.Collections.Generic.IEnumerable{RimWorld.StatDrawEntry}@,RimWorld.StatRequest)">
+            <summary>
+            replace vanilla stat entries EM ones
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.RaceProperties_Patch.GetSpecialDisplayStats(System.Collections.Generic.IEnumerable{RimWorld.StatDrawEntry},RimWorld.StatRequest)">
+            <summary>
+            Generate the stat entries for milkable pawns
+            </summary>
+        </member>
+        <member name="M:EqualMilking.HarmonyPatches.ProlactinAddictionPatch.HandleAddictionMechanics(Verse.Pawn)">
+            <summary>成瘾时将当前泌乳转为永久（severity=1，不再衰减），逻辑更顺：依赖药物=身体改变固定。</summary>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
+            <summary>分配进食任务时排除不允许食用的奶制品。</summary>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.JobDriver_Ingest_MilkProductCheck">
+            <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。</summary>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.Patch_PostIngested_PartnerAteMyProduct">
+            <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。</summary>
+        </member>
+        <member name="T:EqualMilking.HarmonyPatches.Bill_Production_Notify_IterationCompleted_Patch">
+            <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.IsInLactatingState(Verse.Pawn)">
+            <summary>统一泌乳判断：本体 Lactating 或 RJW 系 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.ClearLactatingStateCache(Verse.Pawn)">
+            <summary>清除泌乳缓存（如 hediff 变更时可调，非必须）。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.AllowedToBreastFeed(Verse.Pawn,Verse.Pawn)">
+            <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.SuckleRestrictionAllowed(Verse.Pawn,Verse.Pawn)">
+            <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.IsDefaultSuckler(Verse.Pawn,Verse.Pawn)">
+            <summary>默认“谁可以吸奶”：子女或伴侣。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.GetDefaultSucklers(Verse.Pawn)">
+            <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（用于名单为空时预填，不再用“空=默认”判断）。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.IsAllowedSuckler(Verse.Pawn,Verse.Pawn)">
+            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶（名单内即可；名单默认预填子女+伴侣）。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.CanConsumeMilkProduct(Verse.Pawn,Verse.Thing)">
+            <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，见 7.4）。</summary>
+        </member>
+        <member name="M:EqualMilking.Helpers.ExtensionHelper.GetBedOwner(RimWorld.Building_Bed)">
+            <summary>床的分配对象（床主）。兼容无 AssigningPawn 的 RimWorld 版本，通过 CompAssignableToPawn 获取。</summary>
+        </member>
+        <member name="T:EqualMilking.UI.Widget_CumpilationSettings">
+            <summary>精液/Cumpilation 设置：膨胀、填充、覆盖、收集、泄精等，统一到主 mod 设置的一个 Tab。</summary>
+        </member>
+        <member name="T:EqualMilking.UI.Window_ProducerRestrictions">
+            <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+        </member>
+        <member name="T:EqualMilking.PawnColumnWorker_MilkAllowDeflate">
+            <summary>奶表格列：是否允许泄精（去做泄到桶/清洁/随地的 Job）。</summary>
+        </member>
+        <member name="T:EqualMilking.PawnColumnWorker_MilkSealCum">
+            <summary>奶表格列：塞住（防止精液自然泄漏）。仅人形成人且有阴道时显示。</summary>
+        </member>
+        <member name="M:EqualMilking.PawnColumnWorker_MilkType.GetMinHeaderHeight(RimWorld.PawnTable)">
+            <summary>
+            Called once on table dirty, clear cache
+            </summary>
+            <param name="table"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EqualMilking.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
+            <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
+        </member>
+        <member name="F:HediffWithComps_EqualMilkingLactating.SeverityStepsPerUnit">
+            <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage.</summary>
+        </member>
+        <member name="M:HediffWithComps_EqualMilkingLactating.HasDrugInducedLactation(Verse.Pawn)">
+            <summary>仅吃过 Prolactin/Lucilactin（有耐受或成瘾）的泌乳期才给意识/操纵/移动增益。</summary>
+        </member>
+        <member name="M:HediffWithComps_EqualMilkingLactating.AddGainCapMods(Verse.HediffStage,System.Single)">
+            <summary>按吃药多少（severity）叠加；数值来自设置 lactatingGainCapModPercent，受 lactatingGainEnabled 控制。</summary>
+        </member>
+        <member name="M:HediffWithComps_EqualMilkingLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean,System.Boolean)">
+            <summary>Stage formulas use float severity so 0.5 vs 0.9999 differ: more severity = more milk, faster growth, more hunger. addGain = 吃药引起的泌乳期才加的 capMods。</summary>
+        </member>
+        <member name="T:Cumpilation.Bukkake.BukkakeUtility">
+            <summary>
+            Initializes and Manages both the "Per Body-Part" Splashes on Bukkake as well as their controllers. 
+            
+            DevNote: 
+            Initially, the Bukkake implementation from Ed86-Cum had two mechanics that got removed. 
+            1) The body-parts had a "Overspill" logic which means that if your chest was full, 
+               you'd get splashes on the arms and legs. 
+            2) The Controller would calculate itself regularly. 
+               This is now done upon spawning parts and the controller just ticks down.  
+            
+            Also, all drawing got removed. The drawing framework people should take care of that (#Innocent)
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Bukkake.BukkakeUtility.CanBeCovered(Verse.Pawn)">
+            <summary>
+            Simple check if the pawn can be covered with fluids.
+            Only some sanity checks and ruling animals out.
+            </summary>
+            <param name="pawn">The pawn that might be covered.</param>
+            <returns>True if the pawn can be covered by fluid, false otherwise.</returns>
+        </member>
+        <member name="M:Cumpilation.Bukkake.BukkakeUtility.PartitionSeverity(System.Single,System.Int32,System.Single)">
+            <summary>
+            Partitions a float into a sub-list of smaller floats whose sum is the initialSeverity. 
+            There will be atmost 3 * initialseverity parts, or max_parts, whatever is smaller. 
+            The size of each partition is capped at 1.0 (default).
+            </summary>
+            <param name="initialSeverity"></param>
+            <param name="max_parts">Max number of partitions to create, default capped at 10</param>
+            <param name="max_severity_on_part">Max value for each entry, default capped at 1.0</param>
+            <returns>A list of floats whose sum is the original severity.</returns>
+        </member>
+        <member name="M:Cumpilation.Bukkake.BukkakeUtility.TicksToCleanSplashFromSelf(Verse.Hediff,System.Single)">
+            <summary>
+            Looks up the ticks (time) required to clean a splash from a body-part. 
+            In case of any error, null value or other issues, 240 (2s) is returned, which was the original cleanup time from frameworks.
+            If the severity is lower (or higher) than 1, it is considerd as a linear co-efficient. 
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff.summedSeverityRequiredForFullController">
+            <summary>
+            How many of the sub-hediffs severity are required to have a 1.0 Severity of the corresponding Controller.
+            Default 4.5 "full" (=Severity 1.0) parts to reach the full bukkake.
+            For a normal pawn, there should be 6 or 7 bodyparts, so 4.5 is already quite a lot. 
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Common.DefModExtension_PawnTargetting.blockingHediffs">
+            <summary>
+            A list of hediffs that block spawning of this Hediff.
+            If any is present, at any severity other than 0, `CanTargetPawn` will return false.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Common.FluidUtility.StoreFluidSource(Verse.Hediff,Verse.Pawn,rjw.SexFluidDef,System.Single)">
+            <summary>
+            Tries to store a record of `FluidSource` in a given Hediff.
+            In case the Hediff does not have a `HediffComp_SourceStorage` nothing will happen. 
+            If there already exists a Storage Entry for this Pawn and this fluid, it will be increased by the incoming amount.
+            </summary>
+            <param name="cumflationHediff">The hediff to store a record in</param>
+            <param name="origin">The pawn that originated the Fluid</param>
+            <param name="fluid">The type of fluid</param>
+            <param name="amount">The amount of fluid</param>
+        </member>
+        <member name="M:Cumpilation.Common.FluidUtility.LikesCumflation(Verse.Pawn)">
+            <summary>
+            Returns true if the pawn likes cumflation / cumstuffing for one or the other reason. 
+            Important: This is a separate method intentionally, so it can be patched. 
+            </summary>
+            <param name="inflated">The pawn that maybe likes cumflation</param>
+            <returns>True, if the pawn likes cumflation from traits, quirks or zoophile.</returns>
+        </member>
+        <member name="F:Cumpilation.Common.HediffCompProperties_RandomlySpawnFilth.chanceBasedOnSeverity">
+            <summary>
+            Scale the chance based on severity. If Chance is 50% and Severity is 50%, then there is a 25% final chance.
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Common.HediffCompProperties_RandomlySpawnFilth.onlyAtStagesHigherThan">
+            <summary>
+            Only try to spawn filth if the current stage is higher than the specified number.
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Common.HediffComp_ChangeFluidfactorBasedOnSeverity">
+            <summary>
+            Adjusts the targetted SexParts fluid-amount based on a linear factor between a configured Max and Min value. 
+            
+            Example: Max 5, Min 2
+            Severity 100% -> 5.0
+            Severity 50%  -> 3.5
+            Severity 0%   -> 2.0
+            Severity 33%  -> 3.0
+            Severity 66%  -> 4.0
+            Severity 250% -> 5.0
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Common.IngestionOutcomeDoer_PawnTargetting.blockingHediffs">
+            <summary>
+            A list of hediffs that block spawning of this Hediff.
+            If any is present, at any severity other than 0, `CanTargetPawn` will return false.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Common.MapUtility.PawnIsOnHomeMap(Verse.Pawn)">
+            <summary>
+            Checks if the pawn is on the players home map. 
+            
+            Reason is that drones should only be punished for absence of queen if they are on the map and there is no queen.
+            If they are on a mission, transport-pod etc. they should not get boni or mali. 
+            </summary>
+            <param name="pawn">The pawn for which to check map-presence.</param>
+            <returns>True if the pawn is on the home-map, False otherwise.</returns>
+        </member>
+        <member name="M:Cumpilation.Common.PartUtility.FindFittingSexParts(Verse.Pawn,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            This method finds all relevant, targetted parts as specified. 
+            
+            A sanity check, if the pawn is valid / healthy and matches the configuration, is done earlier in `IsValidPawn`. 
+            </summary>
+            <param name="pawn">The pawn for which to find SexParts.</param>
+            <param name="targetPenis">Consider Penises (using `RJW.PartHelper.Is_Penis`)</param>
+            <param name="targetVagina">Consider Vaginas (using `RJW.PartHelper.Is_Vagina`)</param>
+            <param name="targetBreast">Consider Breasts (using HomeBrew helper)</param>
+            <param name="targetAnus">Consider Anus (using `RJW.PartHelper.Is_Anus`)</param>
+            <param name="targetOther">Consider SexParts that are not in any other category</param>
+            <param name="onlyFirst">only return the first (fitting) part.</param>
+            <param name="needsFluid">only return parts that have fluid.</param>
+            <returns>All targetted SexParts of the pawn, or an empty List on Errors.</returns>
+        </member>
+        <member name="M:Cumpilation.Common.PartUtility.IsValidPawn(Verse.Pawn,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.IEnumerable{Verse.HediffDef},System.Collections.Generic.IEnumerable{RimWorld.TraitDef},System.Boolean)">
+            <summary>
+            Does a bunch of checks on a pawn, if it is a valid target.
+            </summary>
+            <param name="pawn">The pawn to check</param>
+            <param name="allowMen">Men are valid targets (Using RW.Gender)</param>
+            <param name="allowWomen">Women are valid targets (using RW.Gender)</param>
+            <param name="allowFutas">Futas are valid targets (using RJW.GenderUtility.IsFuta); Futa is checked before men and women.</param>
+            <param name="allowAnimals">Animals are valid targets.</param>
+            <param name="blockingHediffs">Return an empty list if any of the HediffDefs is present at a severity other than 0.</param>
+            <param name="blockingTraits"></param>
+            <returns>True if the pawn is a valid target, false if it cannot be targeted</returns>
+        </member>
+        <member name="M:Cumpilation.ModLog.Error(System.String)">
+            <summary>
+            Logs the given message with [SaveStorage.ModId] appended.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.ModLog.Message(System.String)">
+            <summary>
+            Logs the given message with [SaveStorage.ModId] appended.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.ModLog.Warning(System.String)">
+            <summary>
+            Logs the given message with [SaveStorage.ModId] appended.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Cumflation.CumflationUtility.CumflatePawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
+            <summary>
+            Manages Cumflation by adding and increasing the relevant Hediff, checked for each Genital.
+            
+            Also does the check IF a pawn should be cumflated.
+            </summary>
+            <param name="inflator">Donor of the fluid</param>
+            <param name="inflated">Receiver of the fluid</param>
+            <param name="props">Sexprops, always useful.</param>
+        </member>
+        <member name="M:Cumpilation.Cumflation.CumflationUtility.TryQueueOverflowingCumflation(Verse.Pawn)">
+            <summary>
+            If the pawn is "overflowing", i.E. the severity is over 1, 
+            it will try to start a Job to spray cum around.
+            The Job will run until the Severity is below 1. 
+            </summary>
+            <param name="inflated">The pawn that might gets the Job.</param>
+        </member>
+        <member name="M:Cumpilation.Cumflation.CumflationUtility.GetOrCreateCumflationHediff(Verse.Pawn)">
+            <summary>
+            Gets (or creates) a Cumflation Hediff for the `inflated`-pawn, 
+            located in the Genitals BodyPart. 
+            The severity is set later in case of a new creation.
+            </summary>
+            <param name="inflated"></param>
+            <returns>A Cumflation Hediff of the inflated pawn.</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.CumflationUtility.CanBeCumflated(Verse.Pawn)">
+            <summary>
+            Modding - Hook. 
+            Default: All Pawns can be cumflated. Animals cannot be cumflated.
+            </summary>
+            <param name="pawn">The pawn that might be cumflated.</param>
+            <returns>True, unless patched.</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.CumflationUtility.DetermineCumflationSeverity(Verse.Pawn,System.Single,rjw.SexFluidDef)">
+            <summary>
+            Calculates the resulting Cumflation-Severity relative to the fluid-amount and pawns body size. 
+            Also used to determine "overflow". 
+            
+            This method is also used to determine "cumstuffed" despite the name. 
+            </summary>
+            <param name="pawn">The pawn that might be cumflated</param>
+            <param name="fluidAmount">The amount of fluid coming in.</param>
+            <param name="def">FluidDef, optional for patching.</param>
+            <returns>The severity of the resulting cumflation</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.CumflationUtility.FluidAmountRequiredToCumflatePawn(Verse.Pawn,rjw.SexFluidDef)">
+            <summary>
+            We assume a simple relation: 100 fluid per 1 Bodysize. 
+            The returning value will determine how much of the fluid is necessary for 1.0 cumflation severity.
+            
+            This might be altered with Patches etc. or extra behaviour, which is why this is a separate method despite very simple logic. 
+            </summary>
+            <param name="pawn">The pawn for which </param>
+            <param name="fluid">Optional for patches: For which fluid to check.</param>
+            <returns>A number how much fluid amount is necessary for a "full" cumflation, i.E. a cumflation result resulting in 1.0 cumflation severity. </returns>
+        </member>
+        <member name="F:Cumpilation.Cumflation.StuffingDef.resultingStuffedHediff">
+            <summary>
+            Note: The Cumstuffed Hediff MUST have a `HediffComp_SharedSeverityPerDay` otherwise there will be issues. 
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Cumflation.StuffingDef.amountOfFluidForFullStuffing">
+            <summary>
+            The amount of Fluid required for making a 1.0 Severity Hediff of the relative xxx-stuffing.
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Cumflation.StuffingDef.thoughtThreshold">
+            <summary>
+            How much severity does the resulting stuffing must have to give a thought?
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Cumflation.HediffCompProperties_SharedSeverityPerDay">
+            <summary>
+            Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
+            Hediffs with this Comp are present. 
+            
+            Example: You have 1 hediff with `-0.10` SeverityPerDay. It will behave as normal. 
+            Example 2: You have 3 hediffs with `-0.15` SeverityPerDay each. 
+            Because you have three, they will effectively reduce by `-0.05` each day, resulting in a "global" reduction of 0.15 amongst all. 
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Cumflation.HediffCompProperties_VomitFluidMtb.mtbDays">
+            <summary>
+            "mean time between" measured in days. 
+            If set to 1, there will be 1 vomiting per days (in random occurrence).
+            If set to 2, there will be 0.5 vomiting per days, etc. 
+            If set to 0.1, there will be 10 vomitings per days
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Cumflation.HediffCompProperties_VomitFluidMtb.scaleWithSeverity">
+            <summary>
+            If true, the "chance" of application is scaled with the Severity of the Stuffing. 
+            So if your stuffing is 1.0, it will have a "full mtbDays". 
+            Otherwise, if your stuffing is 0.5, it will will result in half as much Vomiting.
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Cumflation.HediffComp_SharedSeverityPerDay">
+            <summary>
+            Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
+            Hediffs with this Comp are present. 
+            
+            Example: You have 1 hediff with `-0.10` SeverityPerDay. It will behave as normal. 
+            Example 2: You have 3 hediffs with `-0.15` SeverityPerDay each. 
+            Because you have three, they will effectively reduce by `-0.05` each day, resulting in a "global" reduction of 0.15 amongst all. 
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Cumflation.JobDriver_OverflowingCumflation">
+            <summary>
+            - Stop the pawn flat / make it look like it
+            - Spray correct outside of it
+            - Spray until the cumflation is at &lt;1.0
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Cumflation.JobDriver_VomitFluid.LookupRandomFilthDef(Verse.Pawn)">
+            <summary>
+            Checks the pawns "Stuffed" Hediffs and returns a fitting FilthDef. 
+            If there is none, it'll return the normal Filth_Vomit.
+            </summary>
+            <param name="pawn">The Pawn which has stuffing-hediffs</param>
+            <returns>A filth fitting for the existing stuffing-hediffs, or a Filth_Vomit as fallback.</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.Patch_TransferFluids_Stuff.PrintDebugInfoForSexRoles(rjw.SexProps)">
+            Tim -> Anal Rape -> Joe             := Joe=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
+            Tim -> Anal Riding (Reverse) -> Joe := Joe=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
+            Tim -> Anal Rape -> Eva             := Eva=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
+            Tim -> Cunnilingus (Reverse) -> Eva := Eva=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
+        </member>
+        <member name="M:Cumpilation.Cumflation.StuffingUtility.StuffPawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
+            <summary>
+            Manages Stuffing by adding and increasing the relevant Hediff, checked for each Genital.
+            If the pawn is already "fully stuffed", old liquids get pushed out by reducing their severity.
+            See the bottom of `StuffingUtility` for examples on the Behaviour.
+            
+            Also does the check IF a pawn should be stuffed.
+            </summary>
+            <param name="inflator">Donor of the fluid</param>
+            <param name="inflated">Receiver of the fluid</param>
+            <param name="props">Sexprops, always useful.</param>
+        </member>
+        <member name="M:Cumpilation.Cumflation.StuffingUtility.CanBeStuffed(Verse.Pawn)">
+            <summary>
+            Modding - Hook. 
+            Default: All Pawns can be Stuffed.
+            </summary>
+            <param name="pawn">The pawn that might be stuffed.</param>
+            <returns>True, unless patched.</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.StuffingUtility.GetMaximumCombinedStuffingSeverity(Verse.Pawn)">
+            <summary>
+            Mod-Hook, no initial behaviour planned. 
+            Default: All pawns can have 1 total stuffing severity. 
+            </summary>
+            <param name="pawn">The pawn that might be stuffed</param>
+            <returns>1.0 as default</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.StuffingUtility.GetOrCreateStuffHediff(Verse.Pawn,rjw.SexFluidDef)">
+            <summary>
+            Gets (or creates) a Stuffing Hediff for the `inflated`-pawn, 
+            located in the Genitals BodyPart. 
+            The severity is set later in case of a new creation.
+            </summary>
+            <param name="inflated"></param>
+            <returns>A Stuffed Hediff of the inflated pawn.</returns>
+        </member>
+        <member name="M:Cumpilation.Cumflation.StuffingUtility.DetermineStuffingSeverity(Verse.Pawn,System.Single,rjw.SexFluidDef)">
+            <summary>
+            Calculates the resulting severity for a given pawn.
+            Will return a float bigger than 0.0, potentially bigger than 1.0;
+            There is no limit at 1 because this method is also used for the overflow. 
+            </summary>
+            <param name="pawn">The pawn that will be checked for - bodysize is important.</param>
+            <param name="fluidAmount">The amount of incoming fluid</param>
+            <param name="def">The incoming fluid</param>
+            <returns>The severity of a stuffing-hediff given bodysize and fluid-amount.</returns>
+        </member>
+        <member name="T:Cumpilation.Fluids.Cum.SpecialThingFilterWorker_CumBase">
+            <summary>
+            (Simple) Filters for Food to include or non-include cum. 
+            
+            DevNote: Gently taken from Amevarashi-Sexperience
+            https://gitgud.io/amevarashi/rjw-sexperience/-/tree/master/Source/RJWSexperience/Cum/FilterWorkers?ref_type=heads
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Fluids.Slug.SexFluidIngestionDoer_ConsumeSlug">
+            <summary>
+            Adds up to MAX_SEVERITY (Default=0.2f) Toxic Buildup to the receiver upon consuming Slug. 
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Gathering.MechPassiveFluidGathererComp">
+            <summary>
+            Does basically the same as the Passive-Fluid Gatherer but checks that it's only for mechs that have power. 
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Gathering.PassiveFluidGathererComp">
+            <summary>
+            Unlike `FluidGatheringBuilding` that works upon nearby sex, the PassiveFluidGatherer is trying to clean nearby floors from Filth.
+            Due to logic, they must be in the same room. 
+            
+            Important: For this to work properly, the ThingWithComp needs to have a `<tickerType>Normal</tickerType>` to run CompTick
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Gathering.PassiveFluidGathererComp.GatheredFilth">
+            <summary>
+            Stores the currently running information on how much of which filth was soaked in (by filth def and producer for bed-linked filtering).
+            Resets on load.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Gathering.PassiveFluidGathererComp.FilthToItem">
+            <summary>
+            Checks the current `GatheredFilth` and spawns any item inside me if there is enough Filth gathered of the right kind.
+            The logic for how much and what you need is done by `FluidGatheringDef`s. 
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Gathering.PassiveFluidGathererComp.CleanFilth(System.Collections.Generic.IEnumerable{RimWorld.Filth})">
+            <summary>
+            Sucks up supported Filths. If bucket is linked to a bed with an owner, only absorbs filth recorded as that owner's; otherwise absorbs all (mixed).
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Gathering.FluidGatheringBuilding">
+            <summary>
+            Extension that can be added to (storage) buildings, to gather fluids on orgasm. 
+            This is meant to manage things at `Patch_SatisfyPersonal_FillFluidGatherers`. 
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Gathering.FluidGatheringBuilding.range">
+            <summary>
+            The range in which fluids are gathered on Orgasm
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Gathering.FluidGatheringBuilding.supportedFluids">
+            <summary>
+            All supported fluids, so that a cumbucket cannot collect girl-cum.
+            </summary>
+        </member>
+        <member name="F:Cumpilation.Gathering.FluidGatheringBuilding.collectsFromInternal">
+            <summary>
+            "true" will work for all Sextypes, "false" will only work for Handjob, Footjob, etc. things on the outside. 
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Gathering.FilthProducerRegistry">
+            <summary>
+            本 Mod 生成污物时登记产主；高级桶吸收时可按床主过滤，并给产出打产主。
+            键为 (地图, 格, 污物Def)，同一格多次生成时后者覆盖（仅保留最后产主）。
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Gathering.FilthProducerRegistry.GetAndRemove(Verse.Map,Verse.IntVec3,Verse.ThingDef)">
+            <summary>取出并移除该格该污物的产主记录；无记录则返回 null。</summary>
+        </member>
+        <member name="M:Cumpilation.Gathering.GatheringUtility.GetNearbyFilth(Verse.Thing,System.Boolean,System.Int32)">
+            <summary>
+            Returns a list of all Filths that are within a given range, and within the same room of this Comps parent.
+            When `onlyFluidFilth` is true, only filth that is specified in a rjw.SexFluidDef will be considered. 
+            </summary>
+            <param name="onlyFluidFilth">If true, only Filth that is mentioned in rjw.SexFluidDefs are returned</param>
+            <param name="range">Filter for the horicontal distance to the parent.</param>
+            <returns>A list of Fitlhs in the same room of the parent, filtered for SexFluids and/or range.</returns>
+        </member>
+        <member name="M:Cumpilation.Gathering.GatheringUtility.IsSupportedFilthType(RimWorld.Filth,System.Collections.Generic.IEnumerable{rjw.SexFluidDef})">
+            <summary>
+            Small helper that checks for a filth if the Gatherer can handle is. 
+            This consist of checking if the filth is in a (supported) fluidDef, 
+            or if there is a filth specified in a gatheringDef. 
+            </summary>
+            <param name="filth"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Cumpilation.Gathering.GatheringUtility.AddFluidToSink(rjw.SexFluidDef,System.Single,Verse.Building)">
+            <summary>
+            Other big method, used when there are other sources of fluid coming into the Sinks. 
+            This happens for example on JobDrivers that Clean Bukkake.
+            
+            If everything works out, the correct item is spawned, following the FluidGatheringDef.
+            </summary>
+            <param name="fluid">The fluid coming in, can be unsupported and nothing will happen.</param>
+            <param name="fluidAmount">The amount of fluid coming in.</param>
+            <param name="sink">The potential sink that the building </param>
+        </member>
+        <member name="T:Cumpilation.Gathering.Patch_CasualSexHelper_FindNearbyBucketToMasturbate">
+            <summary>
+            Changes the Position that (Player) Pawns want to Masturbate at. 
+            If there is a supported and free Fluid-Gatherer (Sink), a position next to it will be chosen. 
+            
+            Extracted and Extended behaviour from Amevarashi Sexperience:
+            https://gitgud.io/amevarashi/rjw-sexperience/-/blob/master/Source/RJWSexperience/Patches/RJW_Patch.cs#L123
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Gathering.Patch_CasualSexHelper_FindNearbyBucketToMasturbate.Prefix(Verse.Pawn,Verse.Pawn,Verse.IntVec3@)">
+            <summary>
+            If masturbation and current map has a bucket, return location near the bucket
+            </summary>
+            <param name="__result">The place to stand near a bucket</param>
+            <returns>Run original method</returns>
+        </member>
+        <member name="T:Cumpilation.HarmonyInit">
+            <summary>
+            已合并进 EqualMilking：不再在此创建 Harmony，由 EqualMilking 主入口统一 PatchAll() 本程序集（含 Cumpilation 的 [HarmonyPatch]）。
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Leaking.Settings">
+            <summary>数据已统一到 EqualMilkingSettings；此类仅作代理，供 Cumpilation 代码读取。</summary>
+        </member>
+        <member name="M:Cumpilation.Oscillation.OscillationHelper.GetOrCreateBlueBallsHediff(Verse.Pawn)">
+            <summary>
+            Gets (or creates) a BlueBall Hediff for the pawn, 
+            located in the Genitals BodyPart. 
+            The severity is set later in case of a new creation.
+            </summary>
+            <param name="pawn"></param>
+            <returns>A Blueball Hediff with Severity 0 of the pawn.</returns>
+        </member>
+        <member name="T:Cumpilation.Reactions.ThoughtDefExtension_StageFromConsumption">
+            <summary>
+            
+            
+            Initially taken from Ameravashis Sexperience, extended to cover multiple fluids, optional quirks and traits that hardwire results.
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
+            <summary>
+            Handles the updating (and thought-giving) when pawns consume meals with fluid based ingredients. 
+            
+            To work, there need to be two defs: 
+            - A RecordFluidMappingDef
+            - The IngestionOutComeDoer
+            
+            Originally, this was from Amaverashi-Sexperience but extended for multiple fluids. 
+            https://gitgud.io/amevarashi/rjw-sexperience/-/blob/master/Source/RJWSexperience/Cum/IngestionOutcomeDoer_RecordEatenCum.cs?ref_type=heads
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Reactions.Patches.Patch_IngestMeal_UpdateRecordAndGiveThoughts">
+            <summary>
+            I have one IngestionOutcomeDoer but it's not enough. The individual outcome-doers are not used in meals. 
+            This triggers all (relevant) ingredients to give their thoughts. 
+            This also means that if a meal is made of cum and insect jelly, the eater will get two thoughts. 
+            
+            TODO: Right now, the "NumEaten" is updated, but the "AmountEaten" is buggy. 
+            But as it gives the right thoughts, I am decently happy for now. 
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Reactions.Thought_Recordbased">
+            <summary>
+            Thought class that uses record to select active stage 
+            Initially taken from Ameravashis Sexperience, extended to cover multiple fluids, optional quirks and traits that hardwire results.
+            </summary>
+        </member>
+        <member name="M:Cumpilation.Reactions.Thought_Recordbased.TryMergeWithExistingMemory(System.Boolean@)">
+            <summary>
+            This method is called for every thought right after the pawn is assigned
+            </summary>
+        </member>
+        <member name="T:Cumpilation.Settings">
+            <summary>数据已统一到 EqualMilkingSettings；此类仅作代理，供 Cumpilation 代码读取。</summary>
+        </member>
+    </members>
+</doc>

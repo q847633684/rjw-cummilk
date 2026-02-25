@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <EM_MilkingPump.description>挤奶用的手动泵，可以少量提高挤奶速度和收获产物的概率</EM_MilkingPump.description>
+    <EM_MilkingElectric.description>挤奶用的电动泵，通电时可以提高挤奶速度，并且必定能收获产物。非人类也能够使用</EM_MilkingElectric.description>
+    <EM_Prolactin.description>提升泌乳；效果与持续时间随严重度变化。高耐受会减弱效果并加快每日严重度衰减。</EM_Prolactin.description>
+    <EM_Lucilactin.description>催乳素基础药效的 4 倍，一针即永久级泌乳并直接成瘾。需定期服用以维持需求。</EM_Lucilactin.description>
+</LanguageData>
