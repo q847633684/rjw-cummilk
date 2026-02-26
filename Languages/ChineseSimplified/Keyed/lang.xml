@@ -42,6 +42,9 @@
     <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
+    <!-- 水池模型 hediff 悬停 -->
+    <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
+    <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
     <!-- 精液桶关联床（Cumpilation 联动） -->
     <EM_CumBucket_LinkBed>链接到床</EM_CumBucket_LinkBed>
     <EM_CumBucket_LinkBed_Desc>将精液桶关联到一张床。床主在桶空时默认唯一可使用；有占用时其他人会看到「不属于他的精液桶」提示。共享卧室（房间内多床）时全员可用，排放为混合精液。</EM_CumBucket_LinkBed_Desc>

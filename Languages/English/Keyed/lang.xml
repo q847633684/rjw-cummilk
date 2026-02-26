@@ -42,6 +42,9 @@
     <EM.RjwLactatingInSexDesc>Show lactating in sex interactions</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>Lactating pawns may get different RJW sex descriptions.</EM.RjwLactatingInSexDescDesc>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
+    <!-- 水池模型 hediff 悬停 -->
+    <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
+    <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <!-- Cum bucket link to bed (Cumpilation) -->
     <EM_CumBucket_LinkBed>Link to bed</EM_CumBucket_LinkBed>
     <EM_CumBucket_LinkBed_Desc>Link this cum bucket to a bed. When empty, only the bed owner can use it; when occupied, others get "not their cum bucket". Shared bedroom (multiple beds in room) = everyone can use, output is mixed cum.</EM_CumBucket_LinkBed_Desc>

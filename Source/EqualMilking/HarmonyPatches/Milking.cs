@@ -65,6 +65,7 @@ public static class Hediff_Pregnant_Patch
         if (mother.IsNormalAnimal())
         {
             mother.health.AddHediff(HediffDefOf.Lactating);
+            PoolModelBirthHelper.ApplyBirthPoolValues(mother);
             return;
         }
         if (mother.RaceProps?.Humanlike == true && mother.health?.hediffSet != null
@@ -72,6 +73,9 @@ public static class Hediff_Pregnant_Patch
         {
             mother.health.GetOrAddHediff(HediffDefOf.Lactating);
         }
+        // 人类分娩：若已有 Lactating（如药物）也叠加剩余天数+10、当前泌乳量+基础值
+        if (mother.RaceProps?.Humanlike == true)
+            PoolModelBirthHelper.ApplyBirthPoolValues(mother);
     }
 }
 [HarmonyPatch(typeof(Hediff_LaborPushing))]
@@ -264,6 +268,21 @@ public static class ProlactinAddictionPatch
 
     public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested)
     {
+        if (__instance.hediffDef == HediffDefOf.Lactating && pawn?.health?.hediffSet != null)
+        {
+            var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating);
+            if (hediff?.comps != null)
+            {
+                foreach (var c in hediff.comps)
+                {
+                    if (c is HediffComp_EqualMilkingLactating comp)
+                    {
+                        comp.AddFromDrug(__instance.severity);
+                        break;
+                    }
+                }
+            }
+        }
         if (ingested?.def == null || ingested.def.defName != "EM_Prolactin" || __instance.hediffDef != HediffDefOf.Lactating)
             return;
         HandleAddictionMechanics(pawn);
@@ -284,5 +303,23 @@ public static class ProlactinAddictionPatch
         var lactating = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating);
         if (lactating != null && lactating.Severity < 1f)
             lactating.Severity = 1f;
+    }
+}
+
+/// <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
+internal static class PoolModelBirthHelper
+{
+    public static void ApplyBirthPoolValues(Pawn mother)
+    {
+        var hediff = mother?.health?.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating);
+        if (hediff?.comps == null) return;
+        foreach (var c in hediff.comps)
+        {
+            if (c is HediffComp_EqualMilkingLactating comp)
+            {
+                comp.AddFromBirth();
+                break;
+            }
+        }
     }
 }
