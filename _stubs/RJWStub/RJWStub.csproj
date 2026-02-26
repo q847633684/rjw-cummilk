@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>RJW</AssemblyName>
+    <RootNamespace>rjw</RootNamespace>
+    <NoWarn>CS0108;CS0114;CS0649;CS0169;CS0414;CS0067</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../AssemblyCSharp/AssemblyCSharp.csproj" />
+    <ProjectReference Include="../HarmonyStub/HarmonyStub.csproj" />
+    <ProjectReference Include="../UnityEngineStub/UnityEngineStub.csproj" />
+  </ItemGroup>
+</Project>

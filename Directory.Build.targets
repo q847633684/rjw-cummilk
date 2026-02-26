@@ -1,0 +1,17 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <!-- On Linux, redirect Windows-specific RJW reference to local stub path -->
+  <ItemGroup>
+    <Reference Update="RJW">
+      <HintPath>../../Libs/Mods/rjw/1.6/Assemblies/RJW.dll</HintPath>
+    </Reference>
+    <Reference Update="0Harmony">
+      <HintPath>../../Libs/Workshop/2009463077/Current/Assemblies/0Harmony.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
