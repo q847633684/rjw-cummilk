@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+  <!-- 主菜单/设置 -->
+  <Equal_Milking>等量挤奶</Equal_Milking>
+  <cumpilation_settings_menuname>膨胀与收集</cumpilation_settings_menuname>
+  <cumpilation_cumsettings_menuname>泄漏与泄精</cumpilation_cumsettings_menuname>
+
+  <!-- 默认设置 -->
+  <EM.DefaultSetting_CanBeFed>允许被自动喂食</EM.DefaultSetting_CanBeFed>
+  <EM.DefaultSetting_CanBeFedTip>勾选后，该类别下的小人可被设为“允许被自动喂食”（谁可以喂我）。</EM.DefaultSetting_CanBeFedTip>
+
+  <!-- 奶表格列：谁可吸奶/吃奶/精液制品（点 ... 进入） -->
+  <EM.ProducerRestrictionsColumn>谁可吸奶/吃奶或精液制品</EM.ProducerRestrictionsColumn>
+  <EM.ProducerRestrictionsColumnTip>女性：谁可以吸我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。点击「...」进入设置。</EM.ProducerRestrictionsColumnTip>
+  <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
+  <EM.WhoCanSuckleFromMe>谁可以使用我的奶（吸奶/挤奶）</EM.WhoCanSuckleFromMe>
+  <EM.WhoCanSuckleFromMeDefault>下方名单默认已勾选子女与伴侣；可添加或移除。</EM.WhoCanSuckleFromMeDefault>
+  <EM.WhoCanUseMyMilkProducts>谁可以吃我的奶制品</EM.WhoCanUseMyMilkProducts>
+  <EM.WhoCanUseMyMilkProductsDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkProductsDefault>
+  <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
+  <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
+
+  <!-- 奶表格列（女：塞住 / 男：允许泄精） -->
+  <EM.Milk_SealCum>塞住</EM.Milk_SealCum>
+  <EM.Milk_SealCumTip>是否塞住，防止精液自然泄漏。仅人形且有阴道时显示。</EM.Milk_SealCumTip>
+  <EM.Milk_AllowDeflate>允许泄精</EM.Milk_AllowDeflate>
+  <EM.Milk_AllowDeflateTip>是否允许该小人去做泄精 Job（泄到桶/清洁/随地）。关则不会自动泄精。</EM.Milk_AllowDeflateTip>
+
+  <!-- 精液桶链接床 -->
+  <EM_CumBucket_LinkBed>链接床</EM_CumBucket_LinkBed>
+  <EM_CumBucket_LinkBed_Desc>将精液桶链接到一张床，仅床主可使用，产主记为床主。</EM_CumBucket_LinkBed_Desc>
+  <EM_CumBucket_UnlinkBed>取消链接床</EM_CumBucket_UnlinkBed>
+  <EM_CumBucket_UnlinkBed_Desc>取消与当前床的链接。</EM_CumBucket_UnlinkBed_Desc>
+  <EM_CumBucket_NotLinked>未链接床</EM_CumBucket_NotLinked>
+  <EM_CumBucket_SharedRoom>共享卧室（多人/无主）</EM_CumBucket_SharedRoom>
+  <EM_CumBucket_Owner>链接床主：{0}</EM_CumBucket_Owner>
+  <EM_CumBucket_UnassignedBed>已链接床但未指定床主</EM_CumBucket_UnassignedBed>
+  <EM_CumBucket_SelectBed>选择要链接的床</EM_CumBucket_SelectBed>
+  <EM_CumBucket_BedsInRoom>同房间内的床</EM_CumBucket_BedsInRoom>
+  <EM_CumBucket_BedsElsewhere>其他位置的床</EM_CumBucket_BedsElsewhere>
+  <EM_CumBucket_CannotLinkNotOwner>桶内已有他人的精液，无法链接到该床。</EM_CumBucket_CannotLinkNotOwner>
+
+  <!-- 催乳素耐受 tooltip 后备 -->
+  <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
+
+  <!-- 泌乳状态提示 -->
+  <LactatingStoppedBecauseFull>已满，暂停产奶。</LactatingStoppedBecauseFull>
+  <LactatingStoppedBecauseHungry>饥饿，暂停产奶。</LactatingStoppedBecauseHungry>
+  <LactatingAddedNutritionPerDay>每日额外营养消耗：{0}（倍率 {1}）</LactatingAddedNutritionPerDay>
+  <CurrentMechEnergyFallPerDay>每日能量消耗</CurrentMechEnergyFallPerDay>
+  <MilkFullness>奶量</MilkFullness>
+
+  <!-- 产主标签 -->
+  <SomeonesRoom>{PAWN_labelShort} 的 {1}</SomeonesRoom>
+
+  <!-- 警报 -->
+  <EM.AlertLactatingButFluidZero>有小人处于泌乳状态但流体倍率为零，无法产奶。</EM.AlertLactatingButFluidZero>
+  <Fluid_Multiplier_Zero>流体倍率为零</Fluid_Multiplier_Zero>
+
+  <!-- Cumpilation 设置项 -->
+  <cumpilation_settings_enable_cumflation_key>体内精液膨胀 (Cumflation)</cumpilation_settings_enable_cumflation_key>
+  <cumpilation_settings_cumflation_modifier_key>体内膨胀倍率</cumpilation_settings_cumflation_modifier_key>
+  <cumpilation_settings_enable_stuffing_key>启用饱腹/填塞</cumpilation_settings_enable_stuffing_key>
+  <cumpilation_settings_stuffing_modifier_key>饱腹/填塞全局倍率</cumpilation_settings_stuffing_modifier_key>
+  <cumpilation_settings_enable_bukkake_key>启用覆盖（体表）</cumpilation_settings_enable_bukkake_key>
+  <cumpilation_settings_bukkake_modifier_key>覆盖全局倍率</cumpilation_settings_bukkake_modifier_key>
+  <cumpilation_settings_enable_fluid_gathering_while_cleaning_key>清洁时允许收集流体</cumpilation_settings_enable_fluid_gathering_while_cleaning_key>
+  <cumpilation_settings_max_gathering_check_distance_key>收集检测最大距离</cumpilation_settings_max_gathering_check_distance_key>
+  <cumpilation_settings_enable_progressing_consumption_thoughts_key>启用渐进食用心情</cumpilation_settings_enable_progressing_consumption_thoughts_key>
+  <cumpilation_settings_enable_oscillation_mechanics_key>启用振荡机制</cumpilation_settings_enable_oscillation_mechanics_key>
+  <cumpilation_settings_enable_oscillation_mechanics_animals_key>动物启用振荡机制</cumpilation_settings_enable_oscillation_mechanics_animals_key>
+  <cumpilation_settings_enable_debug_logging_key>启用调试日志</cumpilation_settings_enable_debug_logging_key>
+
+  <!-- 泄精/收集设置 -->
+  <cumpilation_cumsettings_enable_filth_key>泄精生成污物</cumpilation_cumsettings_enable_filth_key>
+  <cumpilation_cumsettings_enable_autodeflatebucket_key>自动放气（桶）</cumpilation_cumsettings_enable_autodeflatebucket_key>
+  <cumpilation_cumsettings_enable_autodeflatedubs_key>自动放气（清洁时）</cumpilation_cumsettings_enable_autodeflatedubs_key>
+  <cumpilation_cumsettings_enable_autodeflatedirty_key>自动放气（脏污时）</cumpilation_cumsettings_enable_autodeflatedirty_key>
+  <cumpilation_cumsettings_enable_privacy_key>隐私模式</cumpilation_cumsettings_enable_privacy_key>
+  <cumpilation_cumsettings_min_autodeflate_key>自动放气最低严重度</cumpilation_cumsettings_min_autodeflate_key>
+  <cumpilation_cumsettings_max_deflatedistance_key>放气最大距离</cumpilation_cumsettings_max_deflatedistance_key>
+  <cumpilation_cumsettings_leak_amount_multi_key>泄精量倍率</cumpilation_cumsettings_leak_amount_multi_key>
+  <cumpilation_cumsettings_leak_speed_multi_key>泄精速度倍率</cumpilation_cumsettings_leak_speed_multi_key>
+  <cumpilation_cumsettings_deflate_amount_multi_key>放气量倍率</cumpilation_cumsettings_deflate_amount_multi_key>
+  <cumpilation_cumsettings_deflate_speed_multi_key>放气速度倍率</cumpilation_cumsettings_deflate_speed_multi_key>
+</LanguageData>

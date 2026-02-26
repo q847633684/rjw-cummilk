@@ -45,8 +45,8 @@ public class Window_ProducerRestrictions : Window
         Text.Font = GameFont.Small;
 
         float y = inRect.y;
-        // 泌乳者：“谁可以使用我的奶”名单（默认已勾选子女+伴侣）；吸奶与挤奶均按此名单判断
-        if (producer.IsLactating())
+        // 女性：始终显示两个选项框——（1）谁可以使用我的奶 （2）谁可以吃我的奶制品。男性只显示精液制品。
+        if (producer.gender == Gender.Female)
         {
             comp.EnsureSaveCompatAllowedLists();
             Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), "EM.WhoCanSuckleFromMe".Translate());
@@ -61,12 +61,13 @@ public class Window_ProducerRestrictions : Window
             y += SeparatorHeight * 2;
         }
 
-        // 女性（泌乳者）：谁可以吃我的奶制品 / 男性：谁可以吃我的精液制品
-        bool forCumProducts = !producer.IsLactating();
+        // 女性：谁可以吃我的奶制品 / 男性：谁可以吃我的精液制品。用性别+泌乳双重判断，避免 RJW 等 mod 的性别显示与 vanilla 不一致
+        bool forCumProducts = producer.gender == Gender.Male && !producer.IsLactating();
         Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), forCumProducts ? "EM.WhoCanUseMyCumProducts".Translate() : "EM.WhoCanUseMyMilkProducts".Translate());
         y += EntryHeight;
         GUI.color = Color.gray;
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f), forCumProducts ? "EM.WhoCanUseMyCumProductsDefault".Translate() : "EM.WhoCanUseMyMilkProductsDefault".Translate());
+        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f),
+            forCumProducts ? "EM.WhoCanUseMyCumProductsDefault".Translate() : "EM.WhoCanUseMyMilkProductsDefault".Translate());
         GUI.color = Color.white;
         y += EntryHeight;
         DrawListSection(inRect, ref y, comp.allowedConsumers, Allow, Forbid, ColonyPawns().ToList(), null);

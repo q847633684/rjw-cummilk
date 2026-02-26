@@ -57,7 +57,7 @@
 		<workerClass>EqualMilking.PawnColumnWorker_ProducerRestrictions</workerClass>
 		<sortable>false</sortable>
 		<paintable>false</paintable>
-		<width>44</width>
+		<width>110</width>
 	</PawnColumnDef>
 	
  	<PawnColumnDef>

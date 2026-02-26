@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-	<cumpilation_settings_menuname>精液 / Cumpilation 基础</cumpilation_settings_menuname>
+	<cumpilation_settings_menuname>膨胀与收集</cumpilation_settings_menuname>
 
-	<cumpilation_settings_enable_cumflation_key>膨胀 (Cumflation)</cumpilation_settings_enable_cumflation_key>
-	<cumpilation_settings_enable_cumflation_desc>启用阴道精液膨胀等 Hediff。</cumpilation_settings_enable_cumflation_desc>
-	<cumpilation_settings_cumflation_modifier_key>全局膨胀倍数</cumpilation_settings_cumflation_modifier_key>
-	<cumpilation_settings_cumflation_modifier_desc>满膨胀所需流体倍数。数值越大所需越多。</cumpilation_settings_cumflation_modifier_desc>
+	<cumpilation_settings_enable_cumflation_key>体内精液膨胀 (Cumflation)</cumpilation_settings_enable_cumflation_key>
+	<cumpilation_settings_enable_cumflation_desc>启用阴道/体内精液充盈等 Hediff。</cumpilation_settings_enable_cumflation_desc>
+	<cumpilation_settings_cumflation_modifier_key>体内膨胀倍率</cumpilation_settings_cumflation_modifier_key>
+	<cumpilation_settings_cumflation_modifier_desc>达到满膨胀所需流体量乘以此倍率。数值越大所需精液越多。</cumpilation_settings_cumflation_modifier_desc>
 
 	<cumpilation_settings_enable_stuffing_key>填充 (Stuffing)</cumpilation_settings_enable_stuffing_key>
 	<cumpilation_settings_enable_stuffing_desc>启开口腔/肛门精液填充等 Hediff。</cumpilation_settings_enable_stuffing_desc>
@@ -35,7 +35,7 @@
 	<cumpilation_settings_enable_debug_logging_key>调试日志</cumpilation_settings_enable_debug_logging_key>
 	<cumpilation_settings_enable_debug_logging_desc>启用后在 Mod 日志中输出更详细的调试信息。</cumpilation_settings_enable_debug_logging_desc>
 
-	<cumpilation_cumsettings_menuname>精液泄出 / 泄精</cumpilation_cumsettings_menuname>
+	<cumpilation_cumsettings_menuname>泄漏与泄精（自然渗出、主动泄精到桶/地面等）</cumpilation_cumsettings_menuname>
 
 	<cumpilation_cumsettings_enable_filth_key>泄精时生成污物</cumpilation_cumsettings_enable_filth_key>
 	<cumpilation_cumsettings_enable_filth_desc>关闭后，体内有精液的小人随时间自然泄出时不再生成地面污物。</cumpilation_cumsettings_enable_filth_desc>

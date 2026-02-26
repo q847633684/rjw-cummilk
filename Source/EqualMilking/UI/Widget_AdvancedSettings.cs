@@ -31,7 +31,7 @@ public class Widget_AdvancedSettings
 		// 泌乳期意识/操纵/移动增益
 		Rect rLactatingGain = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
 		Widgets.CheckboxLabeled(rLactatingGain, "EM.LactatingGain".Translate(), ref EqualMilkingSettings.lactatingGainEnabled, false);
-		TooltipHandler.TipRegion(rLactatingGain, "EM.LactatingGainDesc".Translate());
+		{ string t = "EM.LactatingGainDesc".Translate(); TooltipHandler.TipRegion(rLactatingGain, string.IsNullOrEmpty(t) ? "EM.LactatingGainDesc" : t); }
 		sliderRect.y += UNIT_SIZE;
 		float pct = EqualMilkingSettings.lactatingGainCapModPercent;
 		Widgets.HorizontalSlider(sliderRect, ref pct, new FloatRange(0f, 0.20f), "EM.LactatingGainPercent".Translate(pct.ToStringPercent()), 0.01f);
@@ -74,19 +74,19 @@ public class Widget_AdvancedSettings
 			sliderRect.y += UNIT_SIZE;
 			Rect rRjwBreast = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwBreast, "EM.RjwBreastSize".Translate(), ref EqualMilkingSettings.rjwBreastSizeEnabled, false);
-			TooltipHandler.TipRegion(rRjwBreast, "EM.RjwBreastSizeDesc".Translate());
+			{ string t = "EM.RjwBreastSizeDesc".Translate(); TooltipHandler.TipRegion(rRjwBreast, string.IsNullOrEmpty(t) ? "EM.RjwBreastSizeDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
 			Rect rRjwLust = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwLust, "EM.RjwLustFromNursing".Translate(), ref EqualMilkingSettings.rjwLustFromNursingEnabled, false);
-			TooltipHandler.TipRegion(rRjwLust, "EM.RjwLustFromNursingDesc".Translate());
+			{ string t = "EM.RjwLustFromNursingDesc".Translate(); TooltipHandler.TipRegion(rRjwLust, string.IsNullOrEmpty(t) ? "EM.RjwLustFromNursingDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
 			Rect rRjwNeed = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwNeed, "EM.RjwSexNeedLactatingBonus".Translate(), ref EqualMilkingSettings.rjwSexNeedLactatingBonusEnabled, false);
-			TooltipHandler.TipRegion(rRjwNeed, "EM.RjwSexNeedLactatingBonusDesc".Translate());
+			{ string t = "EM.RjwSexNeedLactatingBonusDesc".Translate(); TooltipHandler.TipRegion(rRjwNeed, string.IsNullOrEmpty(t) ? "EM.RjwSexNeedLactatingBonusDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
 			Rect rRjwSat = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwSat, "EM.RjwSexSatisfactionAfterNursing".Translate(), ref EqualMilkingSettings.rjwSexSatisfactionAfterNursingEnabled, false);
-			TooltipHandler.TipRegion(rRjwSat, "EM.RjwSexSatisfactionAfterNursingDesc".Translate());
+			{ string t = "EM.RjwSexSatisfactionAfterNursingDesc".Translate(); TooltipHandler.TipRegion(rRjwSat, string.IsNullOrEmpty(t) ? "EM.RjwSexSatisfactionAfterNursingDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
 			float fert = EqualMilkingSettings.rjwLactationFertilityFactor;
 			Widgets.HorizontalSlider(sliderRect, ref fert, new FloatRange(0f, 1f), "EM.RjwLactationFertility".Translate(fert.ToStringPercent()), 0.05f);
@@ -94,7 +94,7 @@ public class Widget_AdvancedSettings
 			sliderRect.y += UNIT_SIZE;
 			Rect rRjwInSex = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwInSex, "EM.RjwLactatingInSexDesc".Translate(), ref EqualMilkingSettings.rjwLactatingInSexDescriptionEnabled, false);
-			TooltipHandler.TipRegion(rRjwInSex, "EM.RjwLactatingInSexDescDesc".Translate());
+			{ string t = "EM.RjwLactatingInSexDescDesc".Translate(); TooltipHandler.TipRegion(rRjwInSex, string.IsNullOrEmpty(t) ? "EM.RjwLactatingInSexDescDesc" : t); }
 		}
 	}
 }

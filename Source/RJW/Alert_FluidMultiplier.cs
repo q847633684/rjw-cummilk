@@ -15,7 +15,7 @@ public class Alert_FluidMultiplier : Alert
 
     public override string GetLabel()
     {
-        return "Fluid Multiplier Zero";
+        return "Fluid_Multiplier_Zero".Translate();
     }
 
     public override TaggedString GetExplanation()

@@ -20,7 +20,7 @@ internal class EqualMilkingSettings : ModSettings
 	public static float breastfeedTime = 5000f;
 	public static bool femaleAnimalAdultAlwaysLactating = false;
 	public static bool showMechOptions = true;
-	public static bool showColonistOptions = false;
+	public static bool showColonistOptions = true;
 	public static bool showSlaveOptions = true;
 	public static bool showPrisonerOptions = true;
 	public static bool showAnimalOptions = true;
@@ -97,7 +97,7 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref breastfeedTime, "EM.BreastfeedTime", 5000f);
 		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "EM.FemaleAnimalAdultAlwaysLactating", false);
 		Scribe_Values.Look(ref showMechOptions, "EM.ShowMechOptions", true);
-		Scribe_Values.Look(ref showColonistOptions, "EM.ShowColonistOptions", false);
+		Scribe_Values.Look(ref showColonistOptions, "EM.ShowColonistOptions", true);
 		Scribe_Values.Look(ref showSlaveOptions, "EM.ShowSlaveOptions", true);
 		Scribe_Values.Look(ref showPrisonerOptions, "EM.ShowPrisonerOptions", true);
 		Scribe_Values.Look(ref showAnimalOptions, "EM.ShowAnimalOptions", true);

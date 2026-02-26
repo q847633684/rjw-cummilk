@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<LanguageData>
+  <EM_HumanMilk.label>人奶</EM_HumanMilk.label>
+  <EM_Prolactin.label>催乳素</EM_Prolactin.label>
+  <EM_Lucilactin.label>卢西乳素</EM_Lucilactin.label>
+  <EM_MilkingPump.label>挤奶泵</EM_MilkingPump.label>
+  <EM_MilkingElectric.label>电动挤奶泵</EM_MilkingElectric.label>
+
+  <!-- ========== 精液和母乳 Objects ========== -->
+  <Cumpilation_Cum.label>精液</Cumpilation_Cum.label>
+  <Cumpilation_Cum.description>收集的精液。</Cumpilation_Cum.description>
+
+  <Cumpilation_Lecithin.label>卵磷脂</Cumpilation_Lecithin.label>
+  <Cumpilation_Lecithin.description>这种（非处方）补充剂可暂时提高尿道球腺活性，使阴茎流体产出增加约 2 天。</Cumpilation_Lecithin.description>
+
+  <Cumpilation_Galactogogues.label>催乳剂</Cumpilation_Galactogogues.label>
+  <Cumpilation_Galactogogues.description>这种（非处方）补充剂可暂时提高乳腺活性，使产奶量增加约 3 天。</Cumpilation_Galactogogues.description>
+
+  <VCE_HumanMilkCheese.label>人奶奶酪</VCE_HumanMilkCheese.label>
+
+  <!-- 奶管系统 -->
+  <EM_MilkPipe.label>奶管</EM_MilkPipe.label>
+  <EM_MilkPipe.description>用于输送奶的轻型钢管。</EM_MilkPipe.description>
+  <EM_UndergroundMilkPipe.label>隐蔽奶管</EM_UndergroundMilkPipe.label>
+  <EM_UndergroundMilkPipe.description>用于输送奶的隐蔽钢管。</EM_UndergroundMilkPipe.description>
+  <EM_MilkTap.label>奶龙头</EM_MilkTap.label>
+  <EM_MilkTap.description>从连接的储罐倒出奶的龙头。</EM_MilkTap.description>
+  <EM_HumanMilkTap.label>人奶龙头</EM_HumanMilkTap.label>
+  <EM_HumanMilkTap.description>从连接的储罐倒出人奶的龙头。</EM_HumanMilkTap.description>
+  <EM_MilkContainer.label>奶罐</EM_MilkContainer.label>
+  <EM_MilkContainer.description>储存奶的大型储罐。</EM_MilkContainer.description>
+  <EM_MilkValve.label>奶阀</EM_MilkValve.label>
+  <EM_MilkValve.description>控制奶流开关。</EM_MilkValve.description>
+</LanguageData>

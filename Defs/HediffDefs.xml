@@ -1,7 +1,7 @@
 <Defs>
     <HediffDef>
         <defName>EM_Prolactin_Tolerance</defName>
-        <hediffClass>HediffWithComps</hediffClass>
+        <hediffClass>EqualMilking.Hediff_ProlactinTolerance</hediffClass>
         <label>催乳素耐受</label>
         <description>Developing tolerance to Prolactin</description>
         <initialSeverity>0.01</initialSeverity>

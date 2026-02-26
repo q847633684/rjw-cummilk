@@ -246,51 +246,41 @@ public static class FloatMenuMakerMap_Patch
 }
 #endif
 
-// 成瘾机制增强补丁
-[HarmonyPatch(typeof(IngestionOutcomeDoer_GiveHediff))]
+// 成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃
 public static class ProlactinAddictionPatch
 {
-    [HarmonyTargetMethod]
-    private static MethodBase TargetMethod()
+    public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
     {
         var type = typeof(IngestionOutcomeDoer_GiveHediff);
         var method = type.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (method == null)
             method = type.BaseType?.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        return method;
+        if (method == null)
+            return;
+        var postfix = typeof(ProlactinAddictionPatch).GetMethod(nameof(DoIngestionOutcome_Postfix), BindingFlags.Public | BindingFlags.Static);
+        if (postfix != null)
+            harmony.Patch(method, postfix: new HarmonyLib.HarmonyMethod(postfix));
     }
 
-    [HarmonyPostfix]
     public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested)
     {
-        // 仅在被添加的是 Lactating 时执行，确保一次用药只触发一次成瘾判定（其它 outcome 为耐受/High 等）
-        if (ingested.def.defName != "EM_Prolactin" || __instance.hediffDef != HediffDefOf.Lactating)
+        if (ingested?.def == null || ingested.def.defName != "EM_Prolactin" || __instance.hediffDef != HediffDefOf.Lactating)
             return;
-
-        // 愉悦与短期负面已由 XML 的 EM_Prolactin_High + EM_Prolactin_HighThought 提供，此处只做成瘾判定
         HandleAddictionMechanics(pawn);
     }
 
-    /// <summary>成瘾时将当前泌乳转为永久（severity=1，不再衰减），逻辑更顺：依赖药物=身体改变固定。</summary>
     private static void HandleAddictionMechanics(Pawn pawn)
     {
-        float addictionChance = 0.04f; // 4%基础成瘾率
-
+        float addictionChance = 0.04f;
         var tolerance = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance);
         if (tolerance != null)
             addictionChance *= (1 + tolerance.Severity);
-
         if (!Rand.Chance(addictionChance))
             return;
-
-        var addiction = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction);
-        if (addiction != null)
+        if (pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction) != null)
             return;
-
-        addiction = HediffMaker.MakeHediff(EMDefOf.EM_Prolactin_Addiction, pawn);
+        var addiction = HediffMaker.MakeHediff(EMDefOf.EM_Prolactin_Addiction, pawn);
         pawn.health.AddHediff(addiction);
-
-        // 成瘾即视为“身体依赖”，泌乳改为永久（若当前有 Lactating 且 &lt;1 则提到 1，不再衰减）
         var lactating = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating);
         if (lactating != null && lactating.Severity < 1f)
             lactating.Severity = 1f;

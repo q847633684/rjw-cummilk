@@ -31,5 +31,5 @@ public class PawnColumnWorker_ProducerRestrictions : PawnColumnWorker
     }
 
     public override int GetMinWidth(PawnTable table) => 36;
-    public override int GetOptimalWidth(PawnTable table) => 44;
+    public override int GetOptimalWidth(PawnTable table) => 110;
 }

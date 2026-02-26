@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <!-- 原版 Pregnant 列无 label，注入中文标题 -->
+  <Pregnant.label>怀孕</Pregnant.label>
+  <Pregnant.headerTip>怀孕状态。怀孕时显示剩余天数。</Pregnant.headerTip>
+</LanguageData>
