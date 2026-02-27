@@ -3,7 +3,7 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace EqualMilking.RJW;
+namespace MilkCum.RJW;
 
 public class Alert_FluidMultiplier : Alert
 {

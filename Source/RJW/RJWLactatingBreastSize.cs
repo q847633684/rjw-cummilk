@@ -5,9 +5,10 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using rjw;
-using EqualMilking.Helpers;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
 
-namespace EqualMilking.RJW;
+namespace MilkCum.RJW;
 
 /// <summary>泌乳期时临时增大 RJW 胸部 Severity，离开泌乳期后恢复。仅修改本 mod 维护的“基础值”缓存并写回 Hediff.Severity。</summary>
 public class RJWLactatingBreastSizeGameComponent : GameComponent

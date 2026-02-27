@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>$(SolutionName)_$(MSBuildProjectName)</AssemblyName>
     <OutDir>$(OutDirBase)/Integrations/$(MSBuildProjectName)/Assemblies</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EqualMilking\EqualMilking.csproj">
+    <ProjectReference Include="..\MilkCum\MilkCum.csproj">
       <Private>false</Private>
     </ProjectReference>
     <Reference Include="Building_Milk">

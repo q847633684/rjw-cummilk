@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using System.Linq;
-using EqualMilking.Helpers;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
 using PipeSystem;
-namespace EqualMilking.PipeSystem;
+namespace MilkCum.PipeSystem;
 [StaticConstructorOnStartup]
 internal static class ApplyPatches
 {

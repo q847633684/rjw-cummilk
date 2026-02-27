@@ -7,7 +7,7 @@ using rjw;
 using rjw.Modules.Interactions;
 using Verse;
 
-namespace EqualMilking.RJW;
+namespace MilkCum.RJW;
 public static class RJWVersionDiffHelper
 {
     public static IEnumerable<ISexPartHediff> GetBreasts(this Pawn pawn)

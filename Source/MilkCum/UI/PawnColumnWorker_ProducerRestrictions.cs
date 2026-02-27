@@ -1,0 +1,35 @@
+using RimWorld;
+using UnityEngine;
+using Verse;
+using MilkCum.Milk.Helpers;
+using MilkCum.UI;
+
+namespace MilkCum.UI;
+
+public class PawnColumnWorker_ProducerRestrictions : PawnColumnWorker
+{
+    public override void DoCell(Rect rect, Pawn pawn, PawnTable table)
+    {
+        if (!ShouldShowFor(pawn)) return;
+        if (Widgets.ButtonText(rect, "..."))
+            Find.WindowStack.Add(new Window_ProducerRestrictions(pawn));
+    }
+
+    /// <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
+    internal static bool ShouldShowFor(Pawn pawn)
+    {
+        if (pawn?.CompEquallyMilkable() == null) return false;
+        if (pawn.IsLactating()) return true;
+        if (pawn.RaceProps?.Humanlike == true)
+            return true;
+        return false;
+    }
+
+    protected override string GetHeaderTip(PawnTable table)
+    {
+        return "EM.ProducerRestrictionsColumnTip".Translate();
+    }
+
+    public override int GetMinWidth(PawnTable table) => 36;
+    public override int GetOptimalWidth(PawnTable table) => 110;
+}

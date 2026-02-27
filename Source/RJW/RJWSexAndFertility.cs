@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-using EqualMilking;
+using MilkCum.Core;
 
-namespace EqualMilking.RJW;
+namespace MilkCum.RJW;
 
 /// <summary>哺乳后性行为额外满足 Need_Sex；泌乳期怀孕概率乘数；性互动中泌乳状态（Thought）。</summary>
 public static class RJWSexAndFertility

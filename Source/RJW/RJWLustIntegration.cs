@@ -2,9 +2,10 @@ using System;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-using EqualMilking.Helpers;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
 
-namespace EqualMilking.RJW;
+namespace MilkCum.RJW;
 
 /// <summary>哺乳/吸奶时增加 RJW 性需求 (Need_Sex.CurLevel)；泌乳期对性需求有持续小幅正向影响。</summary>
 public static class RJWLustIntegration
@@ -69,7 +70,7 @@ public static class ChildcareHelper_SuckleFromLactatingPawn_Patch
 {
     static System.Reflection.MethodBase TargetMethod()
     {
-        return AccessTools.Method(AccessTools.TypeByName("EqualMilking.Helpers.ChildcareHelper"), "SuckleFromLactatingPawn");
+        return AccessTools.Method(AccessTools.TypeByName("MilkCum.Milk.Helpers.ChildcareHelper"), "SuckleFromLactatingPawn");
     }
 
     [HarmonyPostfix]
@@ -85,7 +86,7 @@ public static class ChildcareHelper_Breastfeed_Patch
 {
     static System.Reflection.MethodBase TargetMethod()
     {
-        return AccessTools.Method(AccessTools.TypeByName("EqualMilking.Helpers.ChildcareHelper"), "Breastfeed");
+        return AccessTools.Method(AccessTools.TypeByName("MilkCum.Milk.Helpers.ChildcareHelper"), "Breastfeed");
     }
 
     [HarmonyPostfix]

@@ -28,7 +28,7 @@
     
     <ThoughtDef>
         <defName>EM_Prolactin_Withdrawal</defName>
-        <workerClass>EqualMilking.ThoughtWorker_ProlactinWithdrawal</workerClass>
+        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_ProlactinWithdrawal</workerClass>
         <validWhileDespawned>true</validWhileDespawned>
         <stages>
             <li>
@@ -90,7 +90,7 @@
     <!-- 10.8-5：成瘾满足时的小幅正面心情 -->
     <ThoughtDef>
         <defName>EM_AddictionSatisfied</defName>
-        <workerClass>EqualMilking.ThoughtWorker_AddictionSatisfied</workerClass>
+        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_AddictionSatisfied</workerClass>
         <validWhileDespawned>true</validWhileDespawned>
         <stages>
             <li>
@@ -103,7 +103,7 @@
     <!-- 10.8-6：满池时轻微不适 -->
     <ThoughtDef>
         <defName>EM_MilkPoolFull</defName>
-        <workerClass>EqualMilking.ThoughtWorker_MilkPoolFull</workerClass>
+        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_MilkPoolFull</workerClass>
         <stages>
             <li>
                 <label>奶水过满</label>
@@ -115,7 +115,7 @@
     <!-- 10.8-6：长时间未挤奶且奶量较多时不适 -->
     <ThoughtDef>
         <defName>EM_LongTimeNotMilked</defName>
-        <workerClass>EqualMilking.ThoughtWorker_LongTimeNotMilked</workerClass>
+        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_LongTimeNotMilked</workerClass>
         <stages>
             <li>
                 <label>很久没挤奶</label>

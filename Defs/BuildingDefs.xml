@@ -1,6 +1,6 @@
 <Defs>
     <ThingDef ParentName="BuildingBase" Name="EM_MilkingBase" Abstract="True">
-        <thingClass>EqualMilking.Building_Milking</thingClass>
+        <thingClass>MilkCum.Core.Building_Milking</thingClass>
         <rotatable>false</rotatable>
         <scatterableOnMapGen>false</scatterableOnMapGen>
         <designationCategory>Production</designationCategory>
@@ -61,7 +61,7 @@
         <comps>
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
             <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket" />
-            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -91,7 +91,7 @@
                 <deflateMult>1.5</deflateMult>
                 <deflateRate>1</deflateRate>
             </li>
-            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
         </comps>
         <costList>
             <Steel>20</Steel>

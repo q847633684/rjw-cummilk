@@ -5,8 +5,9 @@ using RimWorld;
 using UnityEngine;
 using System.Linq;
 using rjw;
-using EqualMilking.Helpers;
-namespace EqualMilking.RJW;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
+namespace MilkCum.RJW;
 [StaticConstructorOnStartup]
 internal static class ApplyPatches
 {
