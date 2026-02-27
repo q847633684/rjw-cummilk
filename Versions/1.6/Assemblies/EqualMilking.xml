@@ -54,6 +54,12 @@
         <member name="F:EqualMilking.CompEquallyMilkable.overflowAccumulator">
             <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）。</summary>
         </member>
+        <member name="F:EqualMilking.CompEquallyMilkable.lastGatheredTick">
+            <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定。</summary>
+        </member>
+        <member name="P:EqualMilking.CompEquallyMilkable.LastGatheredTick">
+            <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用。</summary>
+        </member>
         <member name="M:EqualMilking.CompEquallyMilkable.SyncBaseFullness">
             <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用。</summary>
         </member>
@@ -292,12 +298,6 @@
         <member name="F:EqualMilking.Helpers.PoolModelConstants.BaseValueTBirth">
             <summary>分娩时 L 增量（不乘有效药效系数），单位与 L 一致（归一化容量）。</summary>
         </member>
-        <member name="F:EqualMilking.Helpers.PoolModelConstants.DailyConsumptionBase">
-            <summary>每日消耗系数基数（仅用于非水池逻辑或兼容）。</summary>
-        </member>
-        <member name="F:EqualMilking.Helpers.PoolModelConstants.DailyConsumptionToleranceFactor">
-            <summary>每日消耗系数中耐受系数：0.1×(1+耐受)。</summary>
-        </member>
         <member name="F:EqualMilking.Helpers.PoolModelConstants.EffectiveDrugFactorMin">
             <summary>有效药效系数下限：max(1−耐受, 0.05)。</summary>
         </member>
@@ -345,6 +345,15 @@
         </member>
         <member name="M:EqualMilking.Helpers.ExtensionHelper.GetBedOwner(RimWorld.Building_Bed)">
             <summary>床的分配对象（床主）。兼容无 AssigningPawn 的 RimWorld 版本，通过 CompAssignableToPawn 获取。</summary>
+        </member>
+        <member name="T:EqualMilking.ThoughtWorker_AddictionSatisfied">
+            <summary>10.8-5：当成瘾处于满足阶段时显示小幅正面心情。</summary>
+        </member>
+        <member name="T:EqualMilking.ThoughtWorker_LongTimeNotMilked">
+            <summary>10.8-6：人类泌乳且奶量较多但超过 2 游戏日未被挤奶时显示不适心情。</summary>
+        </member>
+        <member name="T:EqualMilking.ThoughtWorker_MilkPoolFull">
+            <summary>10.8-6：满池时（人类）显示轻微不适心情。</summary>
         </member>
         <member name="T:EqualMilking.ThoughtWorker_ProlactinWithdrawal">
             <summary>10.8-4：仅当成瘾处于戒断阶段时显示催乳素戒断心情。</summary>
@@ -410,9 +419,6 @@
         <member name="M:HediffComp_EqualMilkingLactating.GetEffectiveDrugFactor">
             <summary>有效药效系数 max(1−耐受, 0.05)。</summary>
         </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetDailyConsumption">
-            <summary>每日消耗系数：成瘾且满足为 0，否则 1 + 0.1×(1+耐受)。永久泌乳基因或动物始终泌乳时也视为 0。</summary>
-        </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
             <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。</summary>
         </member>
@@ -424,12 +430,6 @@
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.AddFromBirth">
             <summary>分娩时累加：L += 基础值（不乘有效药效系数）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
-            <summary>外部追加“剩余天数”等价量：L += 天数×基础日衰减 1/(B_T×E)。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.AddCurrentLactationAmount(System.Single)">
-            <summary>外部追加当前泌乳量 L（如后续扩展）。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
             <summary>泌乳结束：清空双池、移除 Lactating hediff。</summary>

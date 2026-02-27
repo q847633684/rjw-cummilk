@@ -37,4 +37,8 @@ public static class EMDefOf
     public static ThoughtDef EM_HadSexWhileLactating;
     public static ThoughtDef EM_ForcedMilking;
     public static ThoughtDef EM_PartnerAteMyProduct;
+    public static ThoughtDef EM_AllowedMilking;
+    public static ThoughtDef EM_AddictionSatisfied;
+    public static ThoughtDef EM_MilkPoolFull;
+    public static ThoughtDef EM_LongTimeNotMilked;
 }

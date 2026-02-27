@@ -14,10 +14,6 @@ public static class PoolModelConstants
     public const float BaseValueT = 3f;
     /// <summary>分娩时 L 增量（不乘有效药效系数），单位与 L 一致（归一化容量）。</summary>
     public const float BaseValueTBirth = 10f;
-    /// <summary>每日消耗系数基数（仅用于非水池逻辑或兼容）。</summary>
-    public const float DailyConsumptionBase = 1f;
-    /// <summary>每日消耗系数中耐受系数：0.1×(1+耐受)。</summary>
-    public const float DailyConsumptionToleranceFactor = 0.1f;
     /// <summary>有效药效系数下限：max(1−耐受, 0.05)。</summary>
     public const float EffectiveDrugFactorMin = 0.05f;
     /// <summary>负反馈系数 k：每日衰减 = 1/(B_T×E) + k×L。τ≈1/k 游戏日。建议 [0.002, 0.05]。</summary>

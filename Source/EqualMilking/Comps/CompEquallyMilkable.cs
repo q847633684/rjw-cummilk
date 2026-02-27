@@ -11,7 +11,6 @@ public class CompEquallyMilkable : CompMilkable
 {
     protected Pawn Pawn => parent as Pawn;
     protected override int GatherResourcesIntervalDays => Mathf.Max((int)Props.milkIntervalDays, 1);
-    protected float fGatherResourcesIntervalDays => Pawn.MilkIntervalDays();
     protected override int ResourceAmount => (int)Pawn.MilkAmount();
     protected override ThingDef ResourceDef => Pawn.MilkDef();
     protected virtual float fResourceAmount => Pawn.MilkAmount();
@@ -50,6 +49,8 @@ public class CompEquallyMilkable : CompMilkable
     private bool cachedActive = false;
     /// <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）。</summary>
     private float overflowAccumulator = 0f;
+    /// <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定。</summary>
+    private int lastGatheredTick = -1;
 
     public override void PostExposeData()
     {
@@ -58,6 +59,7 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref leftFullness, "PoolLeftFullness", 0f);
         Scribe_Values.Look(ref rightFullness, "PoolRightFullness", 0f);
         Scribe_Values.Look(ref overflowAccumulator, "PoolOverflowAccumulator", 0f);
+        Scribe_Values.Look(ref lastGatheredTick, "PoolLastGatheredTick", -1);
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref assignedFeeders, "CanBeFedBy", LookMode.Reference);
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
@@ -67,8 +69,13 @@ public class CompEquallyMilkable : CompMilkable
         {
             leftFullness = rightFullness = Mathf.Clamp(fullness * 0.5f, 0f, HalfPool);
         }
+        if (Scribe.mode == LoadSaveMode.PostLoadInit && lastGatheredTick < 0)
+            lastGatheredTick = Find.TickManager.TicksGame;
         SyncBaseFullness();
     }
+
+    /// <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用。</summary>
+    public int LastGatheredTick => lastGatheredTick;
 
     /// <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用。</summary>
     private void SyncBaseFullness()
@@ -272,12 +279,19 @@ public class CompEquallyMilkable : CompMilkable
         else
             rightFullness = 0f;
         SyncBaseFullness();
-        // 7.5：被强制挤奶时给产主负面记忆
-        if (parent is Pawn producer && producer.RaceProps.Humanlike && producer.needs?.mood?.thoughts?.memories != null
-            && !ExtensionHelper.IsAllowedSuckler(producer, doer))
+        // 10.8-5：挤奶心情细分 — 被允许的人挤奶给正面记忆，否则给强制挤奶负面记忆
+        if (parent is Pawn producer && producer.RaceProps.Humanlike && producer.needs?.mood?.thoughts?.memories != null)
         {
-            producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
+            if (ExtensionHelper.IsAllowedSuckler(producer, doer))
+            {
+                if (EMDefOf.EM_AllowedMilking != null)
+                    producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_AllowedMilking);
+            }
+            else if (EMDefOf.EM_ForcedMilking != null)
+                producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
         }
+        // 10.8-6：记录最近一次挤奶时刻，供「长时间未挤奶」心情判定
+        lastGatheredTick = Find.TickManager.TicksGame;
     }
     /// <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
     public bool AllowedToBeAutoFedBy(Pawn pawn)

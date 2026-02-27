@@ -192,20 +192,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return Mathf.Max(1f - tol, PoolModelConstants.EffectiveDrugFactorMin);
     }
 
-    /// <summary>每日消耗系数：成瘾且满足为 0，否则 1 + 0.1×(1+耐受)。永久泌乳基因或动物始终泌乳时也视为 0。</summary>
-    public float GetDailyConsumption()
-    {
-        if (Pawn?.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true)
-            return 0f;
-        if (Pawn != null && EqualMilkingSettings.femaleAnimalAdultAlwaysLactating && Pawn.IsAdultFemaleAnimalOfColony())
-            return 0f;
-        var addiction = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction);
-        if (addiction != null && addiction.CurStageIndex == 0) // 成瘾且满足
-            return 0f;
-        float tol = EqualMilkingSettings.GetProlactinTolerance(Pawn);
-        return PoolModelConstants.DailyConsumptionBase + PoolModelConstants.DailyConsumptionToleranceFactor * (1f + tol);
-    }
-
     /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。</summary>
     public float GetDailyLactationDecay(float lactationAmount)
     {
@@ -229,16 +215,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         currentLactationAmount += GetBaseValueNormalized(Pawn);
     }
-
-    /// <summary>外部追加“剩余天数”等价量：L += 天数×基础日衰减 1/(B_T×E)。</summary>
-    public void AddRemainingDays(float days)
-    {
-        float eff = GetEffectiveDrugFactor();
-        if (eff > 0f)
-            currentLactationAmount += days / (PoolModelConstants.BaseValueT * eff);
-    }
-    /// <summary>外部追加当前泌乳量 L（如后续扩展）。</summary>
-    public void AddCurrentLactationAmount(float amount) { currentLactationAmount += amount; }
 
     public override void CompPostTick(ref float severityAdjustment)
     {
@@ -344,24 +320,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             stringBuilder.AppendLine("dailyLactationDecay(D): " + GetDailyLactationDecay().ToString("F3"));
         }
         return stringBuilder.ToString().TrimEndNewlines();
-    }
-    private float SeverityChangePerDay()
-    {
-        if (!Pawn.IsMilkable())
-            return -0.1f;
-        var addiction = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction);
-        if (addiction != null)
-        {
-            if (addiction.CurStageIndex == 1)
-            {
-                float tol = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
-                return -0.1f * (1f + tol);
-            }
-            return 0f; // 成瘾且满足需求 → 不衰减（永久维持）
-        }
-        // 未成瘾：不论 severity 多高都按耐受衰减
-        float tolerance = Pawn.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
-        return -0.1f * (1f + tolerance);
     }
     public void SetMilkFullness(float fullness)
     {
