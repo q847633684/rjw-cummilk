@@ -36,8 +36,14 @@
         <member name="P:EqualMilking.Comps.CompCumBucketLink.IsMixed">
             <summary>是否已有多人使用过（产出应为混合精液）。</summary>
         </member>
+        <member name="F:EqualMilking.CompEquallyMilkable.leftFullness">
+            <summary>水池模型：左乳水位（0～0.5），与右乳合计 0～1。</summary>
+        </member>
+        <member name="F:EqualMilking.CompEquallyMilkable.rightFullness">
+            <summary>水池模型：右乳水位（0～0.5），与左乳合计 0～1。</summary>
+        </member>
         <member name="P:EqualMilking.CompEquallyMilkable.Fullness">
-            <summary>当前奶量 fullness（0~maxFullness），对外只读，用于调度 Job 优先级等。</summary>
+            <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
         </member>
         <member name="F:EqualMilking.CompEquallyMilkable.allowedSucklers">
             <summary>谁可以使用我的奶。名单为空时会预填子女+伴侣；仅名单内的人可吸奶/挤奶。</summary>
@@ -45,23 +51,36 @@
         <member name="F:EqualMilking.CompEquallyMilkable.allowedConsumers">
             <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）。</summary>
         </member>
+        <member name="F:EqualMilking.CompEquallyMilkable.overflowAccumulator">
+            <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）。</summary>
+        </member>
+        <member name="M:EqualMilking.CompEquallyMilkable.SyncBaseFullness">
+            <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用。</summary>
+        </member>
+        <member name="M:EqualMilking.CompEquallyMilkable.ClearPools">
+            <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）。</summary>
+        </member>
         <member name="M:EqualMilking.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
             <summary>7.11: 旧存档兼容 — 确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
         </member>
         <member name="M:EqualMilking.CompEquallyMilkable.SetFullness(System.Single)">
             <summary>
-            Set the fullness of the milkable pawn, will clamp the value between 0 and maxFullness
+            设置总奶量（0～1）。从双池中排出至目标值，先排最满一侧，相同时男左女右。
             </summary>
-            <param name="value">new fullness value</param>
         </member>
         <member name="M:EqualMilking.CompEquallyMilkable.Gathered(Verse.Pawn)">
             <summary>
-            Gather the milk from the milkable pawn, place the milk in the milking spot or the doer's position. Overrides vanilla method.
+            挤奶：先挤最满一侧，相同时男左女右；只排空该侧并产出奶。
             </summary>
-            <param name="doer">the pawn that is gathering the milk</param>
         </member>
         <member name="M:EqualMilking.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
             <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
+        </member>
+        <member name="T:EqualMilking.Hediff_ProlactinTolerance">
+            <summary>Provides safe tooltip for 催乳素耐受; avoids "Error getting tip text" from vanilla DrugEffectFactor comp.</summary>
+        </member>
+        <member name="P:EqualMilking.Hediff_ProlactinTolerance.TipString">
+            <summary>RimWorld 部分版本中 Hediff.TipString 非 virtual，用 new 隐藏基类成员以避免编译错误；悬停时仍会显示安全文案。</summary>
         </member>
         <member name="T:EqualMilking.DrugEffectSystemFix">
             <summary>
@@ -249,8 +268,8 @@
             Generate the stat entries for milkable pawns
             </summary>
         </member>
-        <member name="M:EqualMilking.HarmonyPatches.ProlactinAddictionPatch.HandleAddictionMechanics(Verse.Pawn)">
-            <summary>成瘾时将当前泌乳转为永久（severity=1，不再衰减），逻辑更顺：依赖药物=身体改变固定。</summary>
+        <member name="T:EqualMilking.HarmonyPatches.PoolModelBirthHelper">
+            <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
         </member>
         <member name="T:EqualMilking.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
             <summary>分配进食任务时排除不允许食用的奶制品。</summary>
@@ -263,6 +282,42 @@
         </member>
         <member name="T:EqualMilking.HarmonyPatches.Bill_Production_Notify_IterationCompleted_Patch">
             <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
+        </member>
+        <member name="T:EqualMilking.Helpers.PoolModelConstants">
+            <summary>水池模型常量：规格第七节、第一节、十四节已定。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.BaseValueT">
+            <summary>基础值_T（B_T）：每日基础衰减 = 1/(B_T×有效药效系数)。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.BaseValueTBirth">
+            <summary>分娩时 L 增量（不乘有效药效系数），单位与 L 一致（归一化容量）。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.DailyConsumptionBase">
+            <summary>每日消耗系数基数（仅用于非水池逻辑或兼容）。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.DailyConsumptionToleranceFactor">
+            <summary>每日消耗系数中耐受系数：0.1×(1+耐受)。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.EffectiveDrugFactorMin">
+            <summary>有效药效系数下限：max(1−耐受, 0.05)。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.NegativeFeedbackK">
+            <summary>负反馈系数 k：每日衰减 = 1/(B_T×E) + k×L。τ≈1/k 游戏日。建议 [0.002, 0.05]。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.LactationEndEpsilon">
+            <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.BaseAbsorptionDelayTicks">
+            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks / Clamp(代谢率, 0.25, 2)。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.StretchCapFactor">
+            <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.OverflowFilthThreshold">
+            <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。</summary>
+        </member>
+        <member name="F:EqualMilking.Helpers.PoolModelConstants.ShrinkPerStep">
+            <summary>排水后回缩：每 30 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 0.5 游戏日回缩到基础容量。</summary>
         </member>
         <member name="M:EqualMilking.Helpers.ExtensionHelper.IsInLactatingState(Verse.Pawn)">
             <summary>统一泌乳判断：本体 Lactating 或 RJW 系 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
@@ -291,6 +346,9 @@
         <member name="M:EqualMilking.Helpers.ExtensionHelper.GetBedOwner(RimWorld.Building_Bed)">
             <summary>床的分配对象（床主）。兼容无 AssigningPawn 的 RimWorld 版本，通过 CompAssignableToPawn 获取。</summary>
         </member>
+        <member name="T:EqualMilking.ThoughtWorker_ProlactinWithdrawal">
+            <summary>10.8-4：仅当成瘾处于戒断阶段时显示催乳素戒断心情。</summary>
+        </member>
         <member name="T:EqualMilking.UI.Widget_CumpilationSettings">
             <summary>精液/Cumpilation 设置：膨胀、填充、覆盖、收集、泄精等，统一到主 mod 设置的一个 Tab。</summary>
         </member>
@@ -313,6 +371,18 @@
         <member name="M:EqualMilking.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
             <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
         </member>
+        <member name="T:EqualMilking.PendingLactatingEntry">
+            <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(severity)。</summary>
+        </member>
+        <member name="T:EqualMilking.WorldComponent_EqualMilkingAbsorptionDelay">
+            <summary>水池模型吸收延迟：吃药后延迟一段时间再挂 Lactating 并进水，延迟由代谢率决定。</summary>
+        </member>
+        <member name="M:EqualMilking.WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(Verse.Pawn,System.Single)">
+            <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴奋 hediff），供延迟生效与无 World 立即生效共用。</summary>
+        </member>
+        <member name="M:EqualMilking.WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
+            <summary>根据代谢率计算吸收延迟 tick。代谢率高则延迟短。</summary>
+        </member>
         <member name="F:HediffWithComps_EqualMilkingLactating.SeverityStepsPerUnit">
             <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage.</summary>
         </member>
@@ -324,6 +394,45 @@
         </member>
         <member name="M:HediffWithComps_EqualMilkingLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean,System.Boolean)">
             <summary>Stage formulas use float severity so 0.5 vs 0.9999 differ: more severity = more milk, faster growth, more hunger. addGain = 吃药引起的泌乳期才加的 capMods。</summary>
+        </member>
+        <member name="F:HediffComp_EqualMilkingLactating.currentLactationAmount">
+            <summary>水池模型（L 驱动）：当前泌乳量 L。唯一状态量；每日衰减 = 1/(B_T×E)+k×L；泌乳结束 L≤0。</summary>
+        </member>
+        <member name="P:HediffComp_EqualMilkingLactating.RemainingDays">
+            <summary>剩余天数（游戏日），由 L 计算：L / (1/(B_T×E)+k×L)，仅作显示。</summary>
+        </member>
+        <member name="P:HediffComp_EqualMilkingLactating.CurrentLactationAmount">
+            <summary>当前泌乳量 L（规格：基础值 = 总容量，归一化 1）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetBaseValueNormalized(Verse.Pawn)">
+            <summary>归一化基础值 = 总容量（规格：基础值 = 总容量），当前实现为 1。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetEffectiveDrugFactor">
+            <summary>有效药效系数 max(1−耐受, 0.05)。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetDailyConsumption">
+            <summary>每日消耗系数：成瘾且满足为 0，否则 1 + 0.1×(1+耐受)。永久泌乳基因或动物始终泌乳时也视为 0。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
+            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
+            <summary>当前 L 下的每日衰减（用于显示/兼容）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.AddFromDrug(System.Single)">
+            <summary>吃药时累加：L += 基础值×有效药效系数。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.AddFromBirth">
+            <summary>分娩时累加：L += 基础值（不乘有效药效系数）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
+            <summary>外部追加“剩余天数”等价量：L += 天数×基础日衰减 1/(B_T×E)。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.AddCurrentLactationAmount(System.Single)">
+            <summary>外部追加当前泌乳量 L（如后续扩展）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
+            <summary>泌乳结束：清空双池、移除 Lactating hediff。</summary>
         </member>
         <member name="T:Cumpilation.Bukkake.BukkakeUtility">
             <summary>
