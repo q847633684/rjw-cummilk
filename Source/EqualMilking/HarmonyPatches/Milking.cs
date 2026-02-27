@@ -268,21 +268,31 @@ public static class ProlactinAddictionPatch
 
     public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested)
     {
-        if (__instance.hediffDef == HediffDefOf.Lactating && pawn?.health?.hediffSet != null)
+        if (__instance.hediffDef != HediffDefOf.Lactating || pawn?.health?.hediffSet == null)
+            goto AddictionCheck;
+        var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
+        if (hediff == null)
+            goto AddictionCheck;
+        // 水池模型吸收延迟：先移除刚加的 Lactating，到点时再挂并 AddFromDrug
+        float severity = __instance.severity;
+        pawn.health.RemoveHediff(hediff);
+        var world = Find.World;
+        var delayComp = world?.GetComponent<WorldComponent_EqualMilkingAbsorptionDelay>();
+        if (delayComp != null)
         {
-            var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating);
-            if (hediff?.comps != null)
-            {
-                foreach (var c in hediff.comps)
-                {
-                    if (c is HediffComp_EqualMilkingLactating comp)
-                    {
-                        comp.AddFromDrug(__instance.severity);
-                        break;
-                    }
-                }
-            }
+            int endTick = Find.TickManager.TicksGame + WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(pawn);
+            delayComp.ScheduleLactating(pawn, severity, endTick);
         }
+        else
+        {
+            // 无 World 时（如测试）立即生效
+            var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating) as HediffWithComps;
+            if (reapply?.comps != null)
+                foreach (var c in reapply.comps)
+                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(severity); break; }
+            WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, severity);
+        }
+AddictionCheck:
         if (ingested?.def == null || ingested.def.defName != "EM_Prolactin" || __instance.hediffDef != HediffDefOf.Lactating)
             return;
         HandleAddictionMechanics(pawn);
@@ -311,7 +321,7 @@ internal static class PoolModelBirthHelper
 {
     public static void ApplyBirthPoolValues(Pawn mother)
     {
-        var hediff = mother?.health?.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating);
+        var hediff = mother?.health?.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff?.comps == null) return;
         foreach (var c in hediff.comps)
         {

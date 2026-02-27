@@ -16,7 +16,7 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     private HediffStage vanillaStageWithGain;
     private bool isDirty = true;
     public override HediffStage CurStage => GetCurStage();
-    public override int CurStageIndex => GetStageIndex(this.Severity, pawn.CompEquallyMilkable()?.Fullness >= 1f ?? false);
+    public override int CurStageIndex => GetStageIndex(this.Severity, (pawn.CompEquallyMilkable()?.Fullness ?? 0f) >= 1f);
     public override void PostTick()
     {
         if (isDirty)
@@ -143,31 +143,42 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
 }
 public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
 {
-    /// <summary>水池模型：剩余天数（游戏日），每游戏日扣减，≤0 时泌乳结束并重置。</summary>
-    private float remainingDays;
-    /// <summary>水池模型：当前泌乳量（累计），进水流速 = 当前泌乳量×饥饿系数；基础值 = 总容量（归一化 1）。</summary>
+    /// <summary>水池模型（L 驱动）：当前泌乳量 L。唯一状态量；每日衰减 = 1/(B_T×E)+k×L；泌乳结束 L≤0。</summary>
     private float currentLactationAmount;
 
     public CompEquallyMilkable CompEquallyMilkable => this.Pawn.CompEquallyMilkable();
     public HediffWithComps_EqualMilkingLactating Parent => (HediffWithComps_EqualMilkingLactating)this.parent;
 
-    /// <summary>剩余天数（游戏日）。</summary>
-    public float RemainingDays => remainingDays;
-    /// <summary>当前泌乳量（规格：基础值 = 总容量，归一化 1）。</summary>
+    /// <summary>剩余天数（游戏日），由 L 计算：L / (1/(B_T×E)+k×L)，仅作显示。</summary>
+    public float RemainingDays
+    {
+        get
+        {
+            float L = currentLactationAmount;
+            if (L <= 0f) return 0f;
+            float D = GetDailyLactationDecay(L);
+            if (D <= 0f) return 0f;
+            return L / D;
+        }
+    }
+    /// <summary>当前泌乳量 L（规格：基础值 = 总容量，归一化 1）。</summary>
     public float CurrentLactationAmount => currentLactationAmount;
 
     public override void CompExposeData()
     {
         base.CompExposeData();
-        Scribe_Values.Look(ref remainingDays, "PoolRemainingDays", 0f);
+        float legacyRemainingDays = 0f;
+        Scribe_Values.Look(ref legacyRemainingDays, "PoolRemainingDays", 0f);
         Scribe_Values.Look(ref currentLactationAmount, "PoolCurrentLactationAmount", 0f);
-        // 旧存档兼容：无水池字段时用 Severity 推算
-        if (Scribe.mode == LoadSaveMode.PostLoadInit && remainingDays <= 0f && currentLactationAmount <= 0f && Parent.Severity > 0f)
+        if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
-            float tol = EqualMilkingSettings.GetProlactinTolerance(Pawn);
-            float eff = Mathf.Max(1f - tol, PoolModelConstants.EffectiveDrugFactorMin);
-            remainingDays = Parent.Severity * PoolModelConstants.BaseValueT * eff;
-            currentLactationAmount = Parent.Severity * GetBaseValueNormalized() * eff;
+            if (currentLactationAmount <= 0f && legacyRemainingDays > 0f)
+                currentLactationAmount = legacyRemainingDays / (PoolModelConstants.BaseValueT * Mathf.Max(GetEffectiveDrugFactor(), PoolModelConstants.EffectiveDrugFactorMin));
+            else if (currentLactationAmount <= 0f && Parent.Severity > 0f)
+            {
+                float eff = GetEffectiveDrugFactor();
+                currentLactationAmount = Parent.Severity * GetBaseValueNormalized(Pawn) * eff;
+            }
         }
     }
 
@@ -195,32 +206,38 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return PoolModelConstants.DailyConsumptionBase + PoolModelConstants.DailyConsumptionToleranceFactor * (1f + tol);
     }
 
-    /// <summary>当前泌乳量 每天衰减 = 1/(基础值_T×有效药效系数)；每游戏日扣减一次，避免无限累加。</summary>
-    public float GetDailyLactationDecay()
+    /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。</summary>
+    public float GetDailyLactationDecay(float lactationAmount)
     {
         float eff = GetEffectiveDrugFactor();
         if (eff <= 0f) return 0f;
-        return 1f / (PoolModelConstants.BaseValueT * eff);
+        return 1f / (PoolModelConstants.BaseValueT * eff) + PoolModelConstants.NegativeFeedbackK * lactationAmount;
     }
 
-    /// <summary>吃药时累加：剩余天数 += BaseValueT×有效药效系数，当前泌乳量 += 基础值×有效药效系数。</summary>
+    /// <summary>当前 L 下的每日衰减（用于显示/兼容）。</summary>
+    public float GetDailyLactationDecay() => GetDailyLactationDecay(currentLactationAmount);
+
+    /// <summary>吃药时累加：L += 基础值×有效药效系数。</summary>
     public void AddFromDrug(float rawSeverity)
     {
         float eff = GetEffectiveDrugFactor();
-        remainingDays += PoolModelConstants.BaseValueT * eff;
         currentLactationAmount += GetBaseValueNormalized(Pawn) * eff;
     }
 
-    /// <summary>分娩时累加：剩余天数 += 10，当前泌乳量 += 基础值（不乘有效药效系数）。</summary>
+    /// <summary>分娩时累加：L += 基础值（不乘有效药效系数）。</summary>
     public void AddFromBirth()
     {
-        remainingDays += PoolModelConstants.BaseValueTBirth;
         currentLactationAmount += GetBaseValueNormalized(Pawn);
     }
 
-    /// <summary>外部追加剩余天数（如后续扩展）。</summary>
-    public void AddRemainingDays(float days) { remainingDays += days; }
-    /// <summary>外部追加当前泌乳量（如后续扩展）。</summary>
+    /// <summary>外部追加“剩余天数”等价量：L += 天数×基础日衰减 1/(B_T×E)。</summary>
+    public void AddRemainingDays(float days)
+    {
+        float eff = GetEffectiveDrugFactor();
+        if (eff > 0f)
+            currentLactationAmount += days / (PoolModelConstants.BaseValueT * eff);
+    }
+    /// <summary>外部追加当前泌乳量 L（如后续扩展）。</summary>
     public void AddCurrentLactationAmount(float amount) { currentLactationAmount += amount; }
 
     public override void CompPostTick(ref float severityAdjustment)
@@ -230,20 +247,25 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             base.CompPostTick(ref severityAdjustment);
             return;
         }
-        // 水池模型：按游戏日扣减剩余天数；当前泌乳量每游戏日扣减 每天衰减，并 clamp ≥ 0
+        // 水池模型（L 驱动）：每游戏日 L −= D(L,E)；D = 1/(B_T×E)+k×L；L≤0 或 L&lt;ε 时泌乳结束。
         if (Pawn.IsHashIntervalTick(200))
         {
-            if (remainingDays <= 0f && (Pawn.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true
-                || (EqualMilkingSettings.femaleAnimalAdultAlwaysLactating && Pawn.IsAdultFemaleAnimalOfColony())))
-                remainingDays = PoolModelConstants.BaseValueTBirth; // 永久泌乳/动物始终泌乳：给默认天数
-            float daily = GetDailyConsumption();
-            remainingDays -= daily * (200f / 60000f);
-            float dailyLactationDecay = GetDailyLactationDecay() * (200f / 60000f);
-            currentLactationAmount = Mathf.Max(0f, currentLactationAmount - dailyLactationDecay);
-            if (remainingDays <= 0f)
+            bool permanentOrAnimal = Pawn.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true
+                || (EqualMilkingSettings.femaleAnimalAdultAlwaysLactating && Pawn.IsAdultFemaleAnimalOfColony());
+            if (currentLactationAmount <= 0f && permanentOrAnimal)
+                currentLactationAmount = PoolModelConstants.BaseValueTBirth;
+            else
             {
-                ResetAndRemoveLactating();
-                return;
+                float step = 200f / 60000f;
+                float dailyDecay = GetDailyLactationDecay(currentLactationAmount) * step;
+                currentLactationAmount = Mathf.Max(0f, currentLactationAmount - dailyDecay);
+                if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
+                    currentLactationAmount = 0f;
+                if (currentLactationAmount <= 0f)
+                {
+                    ResetAndRemoveLactating();
+                    return;
+                }
             }
         }
         this.Charge = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
@@ -252,7 +274,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>泌乳结束：清空双池、移除 Lactating hediff。</summary>
     private void ResetAndRemoveLactating()
     {
-        remainingDays = 0f;
         currentLactationAmount = 0f;
         CompEquallyMilkable?.ClearPools();
         Pawn.health.RemoveHediff(parent);
@@ -303,7 +324,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             var s = base.CompLabelInBracketsExtra + Lang.MilkFullness + ": " + Charge.ToStringPercent();
             if (Pawn.IsMilkable() && CompEquallyMilkable != null)
             {
-                s += ", " + "EM.PoolRemainingDays".Translate() + ": " + remainingDays.ToString("F1");
+                s += ", " + "EM.PoolRemainingDays".Translate() + ": " + RemainingDays.ToString("F1");
                 s += ", " + "EM.PoolCurrentLactation".Translate() + ": " + currentLactationAmount.ToString("F2");
                 s += ", " + Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * CompEquallyMilkable.Fullness).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute);
             }
@@ -318,10 +339,9 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         stringBuilder.Append(base.CompDebugString());
         if (!base.Pawn.Dead)
         {
-            stringBuilder.AppendLine("remainingDays: " + remainingDays.ToString("F2"));
-            stringBuilder.AppendLine("currentLactationAmount: " + currentLactationAmount.ToString("F3"));
-            stringBuilder.AppendLine("dailyConsumption: " + GetDailyConsumption().ToString("F3"));
-            stringBuilder.AppendLine("dailyLactationDecay: " + GetDailyLactationDecay().ToString("F3"));
+            stringBuilder.AppendLine("remainingDays(computed): " + RemainingDays.ToString("F2"));
+            stringBuilder.AppendLine("currentLactationAmount(L): " + currentLactationAmount.ToString("F3"));
+            stringBuilder.AppendLine("dailyLactationDecay(D): " + GetDailyLactationDecay().ToString("F3"));
         }
         return stringBuilder.ToString().TrimEndNewlines();
     }

@@ -48,12 +48,16 @@ public class CompEquallyMilkable : CompMilkable
     internal List<Pawn> allowedConsumers = new();
     private int updateTick = 0;
     private bool cachedActive = false;
+    /// <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）。</summary>
+    private float overflowAccumulator = 0f;
+
     public override void PostExposeData()
     {
         base.PostExposeData();
         Scribe_Values.Look(ref breastfedAmount, "BreastfedAmount", 0f);
         Scribe_Values.Look(ref leftFullness, "PoolLeftFullness", 0f);
         Scribe_Values.Look(ref rightFullness, "PoolRightFullness", 0f);
+        Scribe_Values.Look(ref overflowAccumulator, "PoolOverflowAccumulator", 0f);
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref assignedFeeders, "CanBeFedBy", LookMode.Reference);
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
@@ -146,7 +150,7 @@ public class CompEquallyMilkable : CompMilkable
     {
         if (!parent.IsHashIntervalTick(30)) { return; }
         if (!Active) { return; }
-        // 水池模型：进水流速 = 当前泌乳量×饥饿系数，两侧各得一半
+        // 水池模型：进水流速 = 当前泌乳量×饥饿系数，两侧各得一半；满池撑大 + 溢出生成污物（不扣水位）
         var lactatingComp = Pawn?.LactatingHediffWithComps()?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
         if (lactatingComp == null || lactatingComp.RemainingDays <= 0f) { return; }
         float currentLactation = lactatingComp.CurrentLactationAmount;
@@ -155,8 +159,35 @@ public class CompEquallyMilkable : CompMilkable
         float flowPerDay = currentLactation * hungerFactor;
         float addPerTickTotal = flowPerDay / 60000f * 30f;
         float addEach = addPerTickTotal * 0.5f;
-        leftFullness = Mathf.Min(HalfPool, leftFullness + addEach);
-        rightFullness = Mathf.Min(HalfPool, rightFullness + addEach);
+        float stretchCap = HalfPool * PoolModelConstants.StretchCapFactor;
+        float roomLeft = stretchCap - leftFullness;
+        float addLeft = roomLeft > 0f ? Mathf.Min(addEach, roomLeft) : 0f;
+        float overflowLeft = addEach - addLeft;
+        float roomRight = stretchCap - rightFullness;
+        float addRight = roomRight > 0f ? Mathf.Min(addEach, roomRight) : 0f;
+        float overflowRight = addEach - addRight;
+        leftFullness += addLeft;
+        rightFullness += addRight;
+        float overflowTotal = overflowLeft + overflowRight;
+        if (overflowTotal > 0f && Pawn != null && Pawn.Spawned && Pawn.Map != null)
+        {
+            overflowAccumulator += overflowTotal;
+            var filthDef = DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit");
+            if (filthDef != null)
+            {
+                while (overflowAccumulator >= PoolModelConstants.OverflowFilthThreshold)
+                {
+                    FilthMaker.TryMakeFilth(Pawn.Position, Pawn.Map, filthDef, 1);
+                    overflowAccumulator -= PoolModelConstants.OverflowFilthThreshold;
+                }
+            }
+            overflowAccumulator = Mathf.Min(overflowAccumulator, PoolModelConstants.OverflowFilthThreshold * 2f);
+        }
+        // 排水后回缩：超出基础容量部分每 tick 缓慢回缩，约 0.5 游戏日回缩到 HalfPool
+        if (leftFullness > HalfPool)
+            leftFullness = HalfPool + (leftFullness - HalfPool) * (1f - PoolModelConstants.ShrinkPerStep);
+        if (rightFullness > HalfPool)
+            rightFullness = HalfPool + (rightFullness - HalfPool) * (1f - PoolModelConstants.ShrinkPerStep);
         SyncBaseFullness();
     }
     /// <summary>

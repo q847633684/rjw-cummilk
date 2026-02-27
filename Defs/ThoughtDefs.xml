@@ -28,8 +28,7 @@
     
     <ThoughtDef>
         <defName>EM_Prolactin_Withdrawal</defName>
-        <workerClass>ThoughtWorker_Hediff</workerClass>
-        <hediff>EM_Prolactin_Addiction</hediff>
+        <workerClass>EqualMilking.ThoughtWorker_ProlactinWithdrawal</workerClass>
         <validWhileDespawned>true</validWhileDespawned>
         <stages>
             <li>
