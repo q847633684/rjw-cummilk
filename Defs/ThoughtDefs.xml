@@ -124,4 +124,17 @@
             </li>
         </stages>
     </ThoughtDef>
+    <!-- 规格：乳腺炎/堵塞时负面心情 -->
+    <ThoughtDef>
+        <defName>EM_Mastitis_Thought</defName>
+        <workerClass>ThoughtWorker_Hediff</workerClass>
+        <hediff>EM_Mastitis</hediff>
+        <stages>
+            <li>
+                <label>乳房不适</label>
+                <description>乳房有些堵塞或不适，产奶不畅。</description>
+                <baseMoodEffect>-3</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
 </Defs>

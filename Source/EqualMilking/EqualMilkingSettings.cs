@@ -43,6 +43,8 @@ internal class EqualMilkingSettings : ModSettings
 	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
 	public static float rjwLactationFertilityFactor = 0.85f; // 泌乳期怀孕概率乘数 (0~1)
 	public static bool rjwLactatingInSexDescriptionEnabled = true;
+	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
+	public static bool useDubsBadHygieneForMastitis = true;
 	// Cumpilation（统一到本设置，不再使用单独 Mod 入口）
 	public static bool Cumpilation_EnableCumflation = true;
 	public static float Cumpilation_GlobalCumflationModifier = 1.0f;
@@ -113,6 +115,7 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
+		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
 		Scribe_Values.Look(ref Cumpilation_EnableCumflation, "Cumpilation.EnableCumflation", true);
 		Scribe_Values.Look(ref Cumpilation_GlobalCumflationModifier, "Cumpilation.GlobalCumflationModifier", 1.0f);
 		Scribe_Values.Look(ref Cumpilation_EnableStuffing, "Cumpilation.EnableStuffing", true);
@@ -480,20 +483,37 @@ internal class EqualMilkingSettings : ModSettings
 	{
 		return GetLactatingEfficiencyFactorWithTolerance(pawn) * PawnUtility.BodyResourceGrowthSpeed(pawn);
 	}
-	/// <summary>耐受参与加成：有效倍率 = 1 + (原倍率 − 1) × (1 − 耐受)。</summary>
-	internal static float GetProlactinTolerance(Pawn pawn) => pawn?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
+	/// <summary>当前催乳素耐受严重度 t ∈ [0,1]；完全由游戏内 Hediff/Comp 决定。</summary>
+	internal static float GetProlactinTolerance(Pawn pawn)
+		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
+
+	/// <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。</summary>
+	internal static float GetProlactinToleranceFactor(Pawn pawn)
+	{
+		float t = GetProlactinTolerance(pawn);
+		return GetProlactinToleranceFactor(t);
+	}
+
+	/// <summary>统一耐受系数（按严重度 t）：E_tol(t) = max(1 − t, 0.05)。用于进水时使用吃药前 t_before。</summary>
+	internal static float GetProlactinToleranceFactor(float toleranceSeverity)
+	{
+		return Mathf.Max(1f - toleranceSeverity, PoolModelConstants.EffectiveDrugFactorMin);
+	}
+
 	internal static float GetMilkAmountFactorWithTolerance(Pawn pawn)
 	{
 		float v = pawn.GetStatValue(EMDefOf.EM_Milk_Amount_Factor);
-		float t = GetProlactinTolerance(pawn);
-		return 1f + (v - 1f) * (1f - t);
+		if (v <= 1f) return v;
+		float e = GetProlactinToleranceFactor(pawn);
+		return 1f + (v - 1f) * e;
 	}
 	internal static float GetLactatingEfficiencyFactorWithTolerance(Pawn pawn)
 	{
 		float v = pawn.GetStatValue(EMDefOf.EM_Lactating_Efficiency_Factor);
-		float t = GetProlactinTolerance(pawn);
 		if (v <= 0f) return v;
-		return 1f + (v - 1f) * (1f - t);
+		if (v <= 1f) return v;
+		float e = GetProlactinToleranceFactor(pawn);
+		return 1f + (v - 1f) * e;
 	}
 	#endregion
 }

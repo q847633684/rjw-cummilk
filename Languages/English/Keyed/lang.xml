@@ -27,6 +27,8 @@
     <EM.WhoCanUseMyCumProducts>Who can eat my cum products</EM.WhoCanUseMyCumProducts>
     <EM.WhoCanUseMyCumProductsDefault>Default: only me. Add pawns to also allow them to eat my cum or cum-based products.</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionsHint>Female: who can use my milk, who can eat my milk products. Male: who can eat my cum products. Set per producer in the Milk table — click "Specify" (…) on the row.</EM.ProducerRestrictionsHint>
+    <EM.HealthTabRestrictionsButton>Who can use my milk / milk or cum products</EM.HealthTabRestrictionsButton>
+    <EM.Specify>Specify</EM.Specify>
     <EM.DrugRoleHint>To enter lactation: Prolactin or Lucilactin. To boost milk output when already lactating: Galactogogues.</EM.DrugRoleHint>
     <EM.RJWSection>--- RJW (when rim.job.world active) ---</EM.RJWSection>
     <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
@@ -41,10 +43,16 @@
     <EM.RjwLactationFertilityDesc>Pregnancy chance multiplier when mother is lactating (0-1).</EM.RjwLactationFertilityDesc>
     <EM.RjwLactatingInSexDesc>Show lactating in sex interactions</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>Lactating pawns may get different RJW sex descriptions.</EM.RjwLactatingInSexDescDesc>
+    <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene (mastitis hygiene trigger) ---</EM.DubsBadHygieneSection>
+    <EM.UseDubsBadHygieneForMastitis>Use DBH Hygiene need for mastitis risk</EM.UseDubsBadHygieneForMastitis>
+    <EM.UseDubsBadHygieneForMastitisDesc>When enabled, low Hygiene (from Dubs Bad Hygiene) increases mastitis/clog risk. When disabled, room cleanliness is used instead.</EM.UseDubsBadHygieneForMastitisDesc>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
+    <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
+    <EM.PoolLeftBreast>Left</EM.PoolLeftBreast>
+    <EM.PoolRightBreast>Right</EM.PoolRightBreast>
     <!-- Cum bucket link to bed (Cumpilation) -->
     <EM_CumBucket_LinkBed>Link to bed</EM_CumBucket_LinkBed>
     <EM_CumBucket_LinkBed_Desc>Link this cum bucket to a bed. When empty, only the bed owner can use it; when occupied, others get "not their cum bucket". Shared bedroom (multiple beds in room) = everyone can use, output is mixed cum.</EM_CumBucket_LinkBed_Desc>

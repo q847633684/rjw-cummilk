@@ -41,4 +41,10 @@ public static class EMDefOf
     public static ThoughtDef EM_AddictionSatisfied;
     public static ThoughtDef EM_MilkPoolFull;
     public static ThoughtDef EM_LongTimeNotMilked;
+    public static HediffDef EM_Mastitis;
+    public static ThoughtDef EM_Mastitis_Thought;
+    public static HediffDef EM_BreastsEngorged;
+    public static HediffDef EM_DrugLactationBurden;
+    public static HediffDef EM_LactatingGain;
+    public static HediffDef EM_AbsorptionDelay;
 }

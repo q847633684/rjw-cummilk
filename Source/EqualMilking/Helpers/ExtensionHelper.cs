@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EqualMilking.Data;
 using static EqualMilking.Helpers.Categories;
+using rjw;
 
 namespace EqualMilking.Helpers;
 
@@ -37,6 +38,13 @@ public static class ExtensionHelper
     public static bool HasDrugMilk(this Pawn pawn) => pawn.IsMilkable() && ((pawn.MilkDef().ingestible?.drugCategory ?? DrugCategory.None) != DrugCategory.None);
     public static bool HasEdibleMilk(this Pawn pawn) => pawn.HasNutritiousMilk() || pawn.HasDrugMilk();
     public static bool IsLactating(this Pawn pawn) => pawn?.health?.hediffSet?.HasHediff(HediffDefOf.Lactating) ?? false;
+    /// <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于显示/添加「药物泌乳负担」等。</summary>
+    public static bool HasDrugInducedLactation(this Pawn pawn)
+    {
+        if (pawn?.health?.hediffSet == null) return false;
+        return (global::EqualMilking.EMDefOf.EM_Prolactin_Tolerance != null && pawn.health.hediffSet.GetFirstHediffOfDef(global::EqualMilking.EMDefOf.EM_Prolactin_Tolerance) != null)
+            || (global::EqualMilking.EMDefOf.EM_Prolactin_Addiction != null && pawn.health.hediffSet.GetFirstHediffOfDef(global::EqualMilking.EMDefOf.EM_Prolactin_Addiction) != null);
+    }
     /// <summary>统一泌乳判断：本体 Lactating 或 RJW 系 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
     public static bool IsInLactatingState(this Pawn pawn)
     {
@@ -231,6 +239,46 @@ public static class ExtensionHelper
     }
     #endregion
     #region Milk
+    /// <summary>规格：种族×乳房大小按部位区分。左乳容量占比（0～1），与右乳合计 1；无 RJW 或未启用时 0.5/0.5。</summary>
+    public static float GetLeftBreastCapacityFactor(this Pawn pawn)
+    {
+        GetBreastCapacityFactors(pawn, out float left, out _);
+        return left;
+    }
+    /// <summary>右乳容量占比（0～1），与左乳合计 1。</summary>
+    public static float GetRightBreastCapacityFactor(this Pawn pawn)
+    {
+        GetBreastCapacityFactors(pawn, out _, out float right);
+        return right;
+    }
+    /// <summary>按 RJW 乳房 Hediff 列表与 Severity（大小）计算左右容量占比；列表 [0]=左、[1]=右，单乳时全归左。</summary>
+    private static void GetBreastCapacityFactors(Pawn pawn, out float leftFactor, out float rightFactor)
+    {
+        leftFactor = 0.5f;
+        rightFactor = 0.5f;
+        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled || !pawn.RaceProps.Humanlike)
+            return;
+        try
+        {
+            var list = pawn.GetBreastList();
+            if (list == null || list.Count == 0) return;
+            if (list.Count == 1)
+            {
+                leftFactor = 1f;
+                rightFactor = 0f;
+                return;
+            }
+            float leftSize = Mathf.Clamp(list[0].Severity, 0.01f, 10f);
+            float rightSize = Mathf.Clamp(list[1].Severity, 0.01f, 10f);
+            float total = leftSize + rightSize;
+            leftFactor = leftSize / total;
+            rightFactor = rightSize / total;
+        }
+        catch
+        {
+            // RJW 未加载或 GetBreastList 异常时保持 0.5/0.5
+        }
+    }
     public static ThingDef MilkDef(this Pawn pawn) => EqualMilkingSettings.GetMilkProductDef(pawn);
     public static float MilkAmount(this Pawn pawn) => EqualMilkingSettings.GetMilkAmount(pawn);
     public static float MilkIntervalDays(this Pawn pawn) => EqualMilkingSettings.GetMilkIntervalDays(pawn);
@@ -244,6 +292,17 @@ public static class ExtensionHelper
     public static HediffComp_EqualMilkingLactating LactatingHediffComp(this Pawn pawn) => pawn.health.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>();
     public static Hediff LactatingHediff(this Pawn pawn) => pawn.health.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating);
     public static HediffWithComps_EqualMilkingLactating LactatingHediffWithComps(this Pawn pawn) => pawn.LactatingHediff() as HediffWithComps_EqualMilkingLactating;
+
+    /// <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。</summary>
+    public static float GetMilkFlowMultiplierFromConditions(this Pawn pawn)
+    {
+        if (pawn?.health?.hediffSet == null) return 1f;
+        var mastitis = global::EqualMilking.EMDefOf.EM_Mastitis != null ? pawn.health.hediffSet.GetFirstHediffOfDef(global::EqualMilking.EMDefOf.EM_Mastitis) : null;
+        if (mastitis == null) return 1f;
+        float penalty = mastitis.Severity * 0.5f;
+        return Mathf.Clamp(1f - penalty, 0.5f, 1f);
+    }
+
     public static float DistanceTo(this Pawn pawn, Pawn other)
     {
         if (pawn.Map != other.Map || pawn.Map == null || other.Map == null) return float.MaxValue;

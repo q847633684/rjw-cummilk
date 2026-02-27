@@ -87,7 +87,7 @@
         <hediffClass>Hediff_Addiction</hediffClass>
         <label>催乳素成瘾</label>
         <description>Addicted to Prolactin</description>
-        <chemical>EM_Prolactin_Chemical</chemical>
+        <chemicalNeed>Chemical_EM_Prolactin</chemicalNeed>
         <initialSeverity>0.5</initialSeverity>
         <maxSeverity>1.0</maxSeverity>
         <comps>
@@ -114,6 +114,129 @@
                         <offset>-0.20</offset>
                     </li>
                 </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    
+    <!-- 规格第三节、十七节：乳腺炎/堵塞，可由长时间满池、卫生、受伤等触发；影响进水流速或容量，或产生负面心情/健康。 -->
+    <HediffDef>
+        <defName>EM_Mastitis</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>乳房不适</label>
+        <description>乳腺堵塞或轻度炎症，产奶不畅；长时间满池、环境不洁或胸部受伤可能诱发。挤奶或保持池位较低可缓解。</description>
+        <defaultLabelColor>(0.9,0.6,0.4)</defaultLabelColor>
+        <initialSeverity>0.2</initialSeverity>
+        <maxSeverity>1.0</maxSeverity>
+        <isBad>true</isBad>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-0.02</severityPerDay>
+            </li>
+        </comps>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>轻微堵塞</label>
+            </li>
+            <li>
+                <minSeverity>0.5</minSeverity>
+                <label>乳房不适</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.02</offset>
+                    </li>
+                </capMods>
+            </li>
+            <li>
+                <minSeverity>0.8</minSeverity>
+                <label>乳腺炎</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.05</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    <!-- 满池时身体影响：行动不便，移动与操作略降。Fullness>=0.95 时由 CompEquallyMilkable 添加，<0.9 时移除。 -->
+    <HediffDef>
+        <defName>EM_BreastsEngorged</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>乳房胀满</label>
+        <description>乳房奶水过满，行动略有不便；挤奶或吸奶后可缓解。</description>
+        <defaultLabelColor>(0.95,0.85,0.6)</defaultLabelColor>
+        <isBad>true</isBad>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>胀满</label>
+                <capMods>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <offset>-0.05</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.03</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    <!-- 药物诱发泌乳时的身体负担：有催乳素耐受或成瘾且正在泌乳时添加，表示激素/身体负担。可与设置中的「泌乳增益」叠加，净效果可为正。 -->
+    <HediffDef>
+        <defName>EM_DrugLactationBurden</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>药物泌乳负担</label>
+        <description>长期使用泌乳药物带来的轻微身体负担，行动与操作略受影响。</description>
+        <defaultLabelColor>(0.85,0.75,0.9)</defaultLabelColor>
+        <isBad>true</isBad>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>负担</label>
+                <capMods>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <offset>-0.02</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.01</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    <!-- 药物诱发泌乳时的能力增益（意识/操纵/移动），健康页显示。由设置与 Lactating severity 动态算 capMods，条件满足时 CompEquallyMilkable 添加。 -->
+    <HediffDef>
+        <defName>EM_LactatingGain</defName>
+        <hediffClass>EqualMilking.Hediff_LactatingGain</hediffClass>
+        <label>泌乳增益</label>
+        <description>药物诱发泌乳时，设置开启后给予的意识、操纵、移动轻微加成。</description>
+        <defaultLabelColor>(0.6,0.9,0.7)</defaultLabelColor>
+        <isBad>false</isBad>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>增益</label>
+            </li>
+        </stages>
+    </HediffDef>
+    <!-- 吸收延迟：吃药后尚未挂上 Lactating 的等待期，健康页显示。ScheduleLactating 时添加，ApplyDelayedLactating 时移除。 -->
+    <HediffDef>
+        <defName>EM_AbsorptionDelay</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>吸收延迟</label>
+        <description>泌乳药物尚未完全吸收，泌乳即将生效。</description>
+        <defaultLabelColor>(0.7,0.85,1)</defaultLabelColor>
+        <isBad>false</isBad>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>吸收中</label>
             </li>
         </stages>
     </HediffDef>

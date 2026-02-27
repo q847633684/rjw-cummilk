@@ -255,64 +255,53 @@ public static class ProlactinAddictionPatch
 {
     public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
     {
-        var type = typeof(IngestionOutcomeDoer_GiveHediff);
-        var method = type.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        if (method == null)
-            method = type.BaseType?.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        if (method == null)
-            return;
-        var postfix = typeof(ProlactinAddictionPatch).GetMethod(nameof(DoIngestionOutcome_Postfix), BindingFlags.Public | BindingFlags.Static);
-        if (postfix != null)
-            harmony.Patch(method, postfix: new HarmonyLib.HarmonyMethod(postfix));
+        try
+        {
+            var type = typeof(IngestionOutcomeDoer_GiveHediff);
+            var method = type.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method == null)
+                method = type.BaseType?.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method == null)
+                return;
+            var postfix = typeof(ProlactinAddictionPatch).GetMethod(nameof(DoIngestionOutcome_Postfix), BindingFlags.Public | BindingFlags.Static);
+            if (postfix != null)
+                harmony.Patch(method, postfix: new HarmonyLib.HarmonyMethod(postfix));
+        }
+        catch (System.Exception ex)
+        {
+            Verse.Log.Warning($"[EqualMilking] ProlactinAddictionPatch.ApplyIfPossible failed (ingestion postfix skipped): {ex.Message}");
+        }
     }
 
-    public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested)
+    public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested, int ingestedCount)
     {
         if (__instance.hediffDef != HediffDefOf.Lactating || pawn?.health?.hediffSet == null)
-            goto AddictionCheck;
+            return;
         var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff == null)
-            goto AddictionCheck;
-        // 水池模型吸收延迟：先移除刚加的 Lactating，到点时再挂并 AddFromDrug
-        float severity = __instance.severity;
+            return;
+        // 耐受：本剂在 XML 中在 Lactating 之后添加，故当前已含本剂 +0.044。吃药前 t_before = 当前 - 0.044。
+        float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - 0.044f);
+        float rawSeverity = __instance.severity;
+        // 水池模型吸收延迟：先移除刚加的 Lactating，到点时再挂并 AddFromDrug(Δs, t_before)
         pawn.health.RemoveHediff(hediff);
         var world = Find.World;
         var delayComp = world?.GetComponent<WorldComponent_EqualMilkingAbsorptionDelay>();
         if (delayComp != null)
         {
             int endTick = Find.TickManager.TicksGame + WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(pawn);
-            delayComp.ScheduleLactating(pawn, severity, endTick);
+            delayComp.ScheduleLactating(pawn, rawSeverity, endTick, tBefore);
         }
         else
         {
-            // 无 World 时（如测试）立即生效
+            // 无 World 时（如测试）立即生效：Δs = raw × E_tol(t_before)，进水 ΔL = Δs × C_dose。
+            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore);
             var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating) as HediffWithComps;
             if (reapply?.comps != null)
                 foreach (var c in reapply.comps)
-                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(severity); break; }
-            WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, severity);
+                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaS); break; }
+            WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
         }
-AddictionCheck:
-        if (ingested?.def == null || ingested.def.defName != "EM_Prolactin" || __instance.hediffDef != HediffDefOf.Lactating)
-            return;
-        HandleAddictionMechanics(pawn);
-    }
-
-    private static void HandleAddictionMechanics(Pawn pawn)
-    {
-        float addictionChance = 0.04f;
-        var tolerance = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance);
-        if (tolerance != null)
-            addictionChance *= (1 + tolerance.Severity);
-        if (!Rand.Chance(addictionChance))
-            return;
-        if (pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction) != null)
-            return;
-        var addiction = HediffMaker.MakeHediff(EMDefOf.EM_Prolactin_Addiction, pawn);
-        pawn.health.AddHediff(addiction);
-        var lactating = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating);
-        if (lactating != null && lactating.Severity < 1f)
-            lactating.Severity = 1f;
     }
 }
 

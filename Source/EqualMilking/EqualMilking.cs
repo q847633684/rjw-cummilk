@@ -92,6 +92,9 @@ public static class EqualMilking
         JobDefOf.Milk.driverClass = typeof(JobDriver_EquallyMilk);
         DefDatabase<WorkGiverDef>.GetNamed("Milk").giverClass = typeof(WorkGiver_EquallyMilk);
         HediffDefOf.Lactating.hediffClass = typeof(HediffWithComps_EqualMilkingLactating);
+        // 确保耐受 Def 的 hediffClass 在运行时被正确设置，避免 Def 加载时类型未解析导致 MakeHediff 时 type 为 null
+        if (DefDatabase<HediffDef>.GetNamedSilentFail("EM_Prolactin_Tolerance") is HediffDef toleranceDef)
+            toleranceDef.hediffClass = typeof(Hediff_ProlactinTolerance);
         StatCategoryDefOf.AnimalProductivity.displayAllByDefault = true;
 
         // label auto translations

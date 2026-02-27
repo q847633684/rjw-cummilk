@@ -76,7 +76,7 @@ public static class ChildcareHelper
         Toil toil = ToilMaker.MakeToil("SuckleFrom");
         toil.initAction = delegate
         {
-            PawnUtility.ForceWait(pawn, 15000, baby, true);
+            PawnUtility.ForceWait(pawn, 400, baby, true);
         };
         toil.AddBreastfeedActions(pawn, baby, readyForNextToil);
         toil.AddFinishAction(delegate

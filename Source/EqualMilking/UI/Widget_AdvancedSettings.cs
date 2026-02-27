@@ -96,5 +96,17 @@ public class Widget_AdvancedSettings
 			Widgets.CheckboxLabeled(rRjwInSex, "EM.RjwLactatingInSexDesc".Translate(), ref EqualMilkingSettings.rjwLactatingInSexDescriptionEnabled, false);
 			{ string t = "EM.RjwLactatingInSexDescDesc".Translate(); TooltipHandler.TipRegion(rRjwInSex, string.IsNullOrEmpty(t) ? "EM.RjwLactatingInSexDescDesc" : t); }
 		}
+		// Dubs Bad Hygiene 联动：乳腺炎/堵塞的卫生触发
+		if (DubsBadHygieneIntegration.IsDubsBadHygieneActive())
+		{
+			sliderRect.y += UNIT_SIZE;
+			GUI.color = Color.gray;
+			Widgets.Label(sliderRect, "EM.DubsBadHygieneSection".Translate());
+			GUI.color = Color.white;
+			sliderRect.y += UNIT_SIZE;
+			Rect rDbhMastitis = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Widgets.CheckboxLabeled(rDbhMastitis, "EM.UseDubsBadHygieneForMastitis".Translate(), ref EqualMilkingSettings.useDubsBadHygieneForMastitis, false);
+			{ string t = "EM.UseDubsBadHygieneForMastitisDesc".Translate(); TooltipHandler.TipRegion(rDbhMastitis, string.IsNullOrEmpty(t) ? "EM.UseDubsBadHygieneForMastitisDesc" : t); }
+		}
 	}
 }

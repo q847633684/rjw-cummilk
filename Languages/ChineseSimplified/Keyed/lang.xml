@@ -27,6 +27,8 @@
     <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
     <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionsHint>女性：谁可以使用我的奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
+    <EM.HealthTabRestrictionsButton>谁可用我的奶 / 奶制品 / 精液制品</EM.HealthTabRestrictionsButton>
+    <EM.Specify>指定</EM.Specify>
     <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>
     <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
     <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
@@ -41,10 +43,16 @@
     <EM.RjwLactationFertilityDesc>母亲泌乳时怀孕概率乘以此值（0～1）。</EM.RjwLactationFertilityDesc>
     <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
+    <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene（乳腺炎卫生触发）---</EM.DubsBadHygieneSection>
+    <EM.UseDubsBadHygieneForMastitis>乳腺炎/堵塞使用 DBH 卫生需求</EM.UseDubsBadHygieneForMastitis>
+    <EM.UseDubsBadHygieneForMastitisDesc>开启时，Dubs Bad Hygiene 的卫生需求过低会提高乳腺炎/堵塞风险；关闭则改用房间清洁度。</EM.UseDubsBadHygieneForMastitisDesc>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
     <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
+    <EM.MilkFlowPerDay>产奶效率：{0}/天</EM.MilkFlowPerDay>
+    <EM.PoolLeftBreast>左乳</EM.PoolLeftBreast>
+    <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
     <!-- 精液桶关联床（Cumpilation 联动） -->
     <EM_CumBucket_LinkBed>链接到床</EM_CumBucket_LinkBed>
     <EM_CumBucket_LinkBed_Desc>将精液桶关联到一张床。床主在桶空时默认唯一可使用；有占用时其他人会看到「不属于他的精液桶」提示。共享卧室（房间内多床）时全员可用，排放为混合精液。</EM_CumBucket_LinkBed_Desc>

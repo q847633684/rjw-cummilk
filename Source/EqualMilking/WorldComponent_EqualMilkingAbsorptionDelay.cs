@@ -7,18 +7,21 @@ using UnityEngine;
 
 namespace EqualMilking
 {
-    /// <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(severity)。</summary>
+    /// <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(deltaSeverity, toleranceBefore)。</summary>
     public class PendingLactatingEntry : IExposable
     {
         public Pawn pawn;
-        public float severity;
+        public float rawSeverity;
         public int endTick;
+        /// <summary>吃药前的耐受严重度 t_before，用于计算 Δs 与 E_tol。</summary>
+        public float toleranceBefore;
 
         public void ExposeData()
         {
             Scribe_References.Look(ref pawn, "pawn");
-            Scribe_Values.Look(ref severity, "severity", 0f);
+            Scribe_Values.Look(ref rawSeverity, "severity", 0f);
             Scribe_Values.Look(ref endTick, "endTick", 0);
+            Scribe_Values.Look(ref toleranceBefore, "toleranceBefore", 0f);
         }
     }
 
@@ -37,11 +40,13 @@ namespace EqualMilking
                 pending = new List<PendingLactatingEntry>();
         }
 
-        public void ScheduleLactating(Pawn p, float severity, int endTick)
+        public void ScheduleLactating(Pawn p, float rawSeverity, int endTick, float toleranceBefore)
         {
             if (p == null || endTick <= 0) return;
             if (pending == null) pending = new List<PendingLactatingEntry>();
-            pending.Add(new PendingLactatingEntry { pawn = p, severity = severity, endTick = endTick });
+            pending.Add(new PendingLactatingEntry { pawn = p, rawSeverity = rawSeverity, endTick = endTick, toleranceBefore = toleranceBefore });
+            if (EMDefOf.EM_AbsorptionDelay != null && p.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_AbsorptionDelay) == null)
+                p.health.AddHediff(EMDefOf.EM_AbsorptionDelay);
         }
 
         public override void WorldComponentTick()
@@ -59,25 +64,29 @@ namespace EqualMilking
                 }
                 if (now < e.endTick) continue;
                 pending.RemoveAt(i);
-                ApplyDelayedLactating(e.pawn, e.severity);
+                ApplyDelayedLactating(e.pawn, e.rawSeverity, e.toleranceBefore);
             }
         }
 
-        private static void ApplyDelayedLactating(Pawn pawn, float severity)
+        private static void ApplyDelayedLactating(Pawn pawn, float rawSeverity, float toleranceBefore)
         {
             if (pawn?.health?.hediffSet == null) return;
+            if (EMDefOf.EM_AbsorptionDelay != null && pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_AbsorptionDelay) is Hediff absorptionHediff)
+                pawn.health.RemoveHediff(absorptionHediff);
+            // Δs = rawSeverity × E_tol(t_before)：已包含一次耐受削弱，进水时不再乘 E。
+            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(toleranceBefore);
             var hediff = pawn.health.GetOrAddHediff(HediffDefOf.Lactating) as HediffWithComps;
             if (hediff?.comps == null) return;
             foreach (var c in hediff.comps)
             {
                 if (c is HediffComp_EqualMilkingLactating comp)
                 {
-                    comp.AddFromDrug(severity);
+                    comp.AddFromDrug(deltaS);
                     break;
                 }
             }
             // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋（高量心情由 EM_Prolactin_HighThought 显示）
-            ApplyProlactinMoodEffects(pawn, severity);
+            ApplyProlactinMoodEffects(pawn, rawSeverity);
         }
 
         /// <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴奋 hediff），供延迟生效与无 World 立即生效共用。</summary>
