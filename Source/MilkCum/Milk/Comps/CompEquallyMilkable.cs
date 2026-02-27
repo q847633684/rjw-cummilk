@@ -55,6 +55,21 @@ public class CompEquallyMilkable : CompMilkable
     private int lastGatheredTick = -1;
     /// <summary>规格：连续满池（Fullness≥0.95）的 tick 数，用于乳腺炎/堵塞触发（长时间满池）。</summary>
     private int ticksFullPool;
+    /// <summary>满池溢出累计量（仅 Debug 显示用）。</summary>
+    internal float OverflowAccumulator => overflowAccumulator;
+
+    /// <summary>机器/设备兼容：下次应排的一侧（true=左，false=右）。与 Gathered 选侧一致：最满一侧，相同时男左女右。</summary>
+    public bool GetPreferredDrainSideLeft()
+    {
+        bool preferLeft = Pawn?.gender == Gender.Male;
+        return leftFullness > rightFullness || (Mathf.Approximately(leftFullness, rightFullness) && preferLeft);
+    }
+
+    /// <summary>机器/设备兼容：当前应排一侧的可排奶量（0～1，与该侧水位一致）。</summary>
+    public float GetDrainableAmountOnPreferredSide()
+    {
+        return GetPreferredDrainSideLeft() ? leftFullness : rightFullness;
+    }
 
     public override void PostExposeData()
     {
@@ -161,7 +176,16 @@ public class CompEquallyMilkable : CompMilkable
     public override void CompTick()
     {
         if (!parent.IsHashIntervalTick(30)) { return; }
-        // 药物诱发泌乳负担与增益：不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除
+        ApplyDrugInducedLactationEffects();
+        if (!Active) { return; }
+        UpdateMilkPools();
+        if (parent.IsHashIntervalTick(2000)) TryTriggerMastitis();
+        UpdateHealthHediffs();
+    }
+
+    /// <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。</summary>
+    private void ApplyDrugInducedLactationEffects()
+    {
         if (EMDefOf.EM_DrugLactationBurden != null && Pawn != null && Pawn.RaceProps.Humanlike)
         {
             if (Pawn.IsLactating() && Pawn.HasDrugInducedLactation())
@@ -182,8 +206,11 @@ public class CompEquallyMilkable : CompMilkable
             else if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_LactatingGain) is Hediff gain)
                 Pawn.health.RemoveHediff(gain);
         }
-        if (!Active) { return; }
-        // 水池模型：左右各有一条进水流速（可扩展为身体部位/基因左右比例），相加得到总流速，再按规则分配到双池：一侧满→只灌未满侧；两侧都满→溢出；两侧都未满→50/50，remainder 尽量给另一侧
+    }
+
+    /// <summary>水池模型：按容量比例分配流速，双池进水、溢出、回缩（含健康度系数），更新满池计数。</summary>
+    private void UpdateMilkPools()
+    {
         var lactatingComp = Pawn?.LactatingHediffWithComps()?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
         if (lactatingComp == null || lactatingComp.RemainingDays <= 0f) { return; }
         float currentLactation = lactatingComp.CurrentLactationAmount;
@@ -192,97 +219,77 @@ public class CompEquallyMilkable : CompMilkable
         float flowPerDay = currentLactation * hungerFactor;
         flowPerDay *= Pawn.GetMilkFlowMultiplierFromConditions();
         float flowPerTick = flowPerDay / 60000f * 30f;
-        // 左右各算一份流速（当前 50/50；日后可改为按身体部位/基因）
-        float flowLeftPerTick = flowPerTick * 0.5f;
-        float flowRightPerTick = flowPerTick * 0.5f;
-        float addPerTickTotal = flowLeftPerTick + flowRightPerTick;
-        // 水池模型：左右容量 = 种族×乳房大小按部位（GetLeft/RightBreastCapacityFactor），撑大上限 = 基础容量×StretchCapFactor
+
         float leftBaseCap = Pawn.GetLeftBreastCapacityFactor();
         float rightBaseCap = Pawn.GetRightBreastCapacityFactor();
-        float stretchCapLeft = leftBaseCap * PoolModelConstants.StretchCapFactor;
-        float stretchCapRight = rightBaseCap * PoolModelConstants.StretchCapFactor;
-        leftFullness = Mathf.Clamp(leftFullness, 0f, stretchCapLeft);
-        rightFullness = Mathf.Clamp(rightFullness, 0f, stretchCapRight);
-        float roomLeft = stretchCapLeft - leftFullness;
-        float roomRight = stretchCapRight - rightFullness;
-        float roomTotal = roomLeft + roomRight;
-        float addLeft;
-        float addRight;
-        if (roomTotal <= 0f)
+        float totalBaseCap = leftBaseCap + rightBaseCap;
+        float flowLeftPerTick;
+        float flowRightPerTick;
+        if (totalBaseCap < 1E-6f)
         {
-            addLeft = 0f;
-            addRight = 0f;
+            flowLeftPerTick = flowPerTick * 0.5f;
+            flowRightPerTick = flowPerTick * 0.5f;
         }
         else
         {
-            bool leftFull = roomLeft <= 0f;
-            bool rightFull = roomRight <= 0f;
-            if (leftFull && !rightFull)
-            {
-                addLeft = 0f;
-                addRight = Mathf.Min(addPerTickTotal, roomRight);
-            }
-            else if (!leftFull && rightFull)
-            {
-                addLeft = Mathf.Min(addPerTickTotal, roomLeft);
-                addRight = 0f;
-            }
-            else if (leftFull && rightFull)
-            {
-                addLeft = 0f;
-                addRight = 0f;
-            }
-            else
-            {
-                // 两侧都未满：50/50 分配，remainder 装不下的尽量给另一侧
-                float half = addPerTickTotal * 0.5f;
-                addLeft = Mathf.Min(half, roomLeft);
-                addRight = Mathf.Min(half, roomRight);
-                float remainder = addPerTickTotal - addLeft - addRight;
-                if (remainder > 1E-6f)
-                {
-                    float extraLeft = Mathf.Min(remainder, roomLeft - addLeft);
-                    if (extraLeft > 0f) { addLeft += extraLeft; remainder -= extraLeft; }
-                    if (remainder > 1E-6f)
-                        addRight += Mathf.Min(remainder, roomRight - addRight);
-                }
-            }
+            flowLeftPerTick = flowPerTick * (leftBaseCap / totalBaseCap);
+            flowRightPerTick = flowPerTick * (rightBaseCap / totalBaseCap);
         }
-        float overflowTotal = addPerTickTotal - addLeft - addRight;
-        leftFullness += addLeft;
-        rightFullness += addRight;
-        if (overflowTotal > 0f && Pawn != null && Pawn.Spawned && Pawn.Map != null)
-        {
-            overflowAccumulator += overflowTotal;
-            var filthDef = DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit");
-            if (filthDef != null)
-            {
-                while (overflowAccumulator >= PoolModelConstants.OverflowFilthThreshold)
-                {
-                    FilthMaker.TryMakeFilth(Pawn.Position, Pawn.Map, filthDef, 1);
-                    overflowAccumulator -= PoolModelConstants.OverflowFilthThreshold;
-                }
-            }
-            overflowAccumulator = Mathf.Min(overflowAccumulator, PoolModelConstants.OverflowFilthThreshold * 2f);
-        }
-        // 排水后回缩：超出基础容量部分每 tick 缓慢回缩，约 0.5 游戏日回缩到基础容量（按部位）
-        if (leftFullness > leftBaseCap)
-            leftFullness = leftBaseCap + (leftFullness - leftBaseCap) * (1f - PoolModelConstants.ShrinkPerStep);
-        if (rightFullness > rightBaseCap)
-            rightFullness = rightBaseCap + (rightFullness - rightBaseCap) * (1f - PoolModelConstants.ShrinkPerStep);
+
+        float stretchCapLeft = leftBaseCap * PoolModelConstants.StretchCapFactor;
+        float stretchCapRight = rightBaseCap * PoolModelConstants.StretchCapFactor;
+        var pool = new LactationPoolState();
+        pool.SetFrom(leftFullness, rightFullness, ticksFullPool);
+        float overflowTotal = pool.TickGrowth(flowLeftPerTick, flowRightPerTick, stretchCapLeft, stretchCapRight);
+        float healthPercent = 1f;
+        if (Pawn?.health?.summaryHealth != null)
+            healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
+        float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
+        pool.TickShrink(leftBaseCap, rightBaseCap, shrinkFactor);
+        pool.UpdateFullPoolCounter(0.95f, 30);
+
+        leftFullness = pool.LeftFullness;
+        rightFullness = pool.RightFullness;
+        ticksFullPool = pool.TicksFullPool;
         SyncBaseFullness();
-        if (Fullness >= 0.95f) ticksFullPool += 30; else ticksFullPool = 0;
-        if (parent.IsHashIntervalTick(2000)) TryTriggerMastitis();
-        // 满池时添加「乳房胀满」hediff，造成移动/操作略降；低于 0.9 时移除（滞后避免抖动）
-        if (EMDefOf.EM_BreastsEngorged != null && Pawn != null && Pawn.RaceProps.Humanlike && Pawn.IsLactating())
+        HandleOverflow(overflowTotal);
+    }
+
+    /// <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定。</summary>
+    private void HandleOverflow(float overflowThisTick)
+    {
+        if (overflowThisTick <= 0f || Pawn == null || !Pawn.Spawned || Pawn.Map == null) { return; }
+        overflowAccumulator += overflowThisTick;
+        var filthDef = string.IsNullOrEmpty(EqualMilkingSettings.overflowFilthDefName)
+            ? DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit")
+            : DefDatabase<ThingDef>.GetNamedSilentFail(EqualMilkingSettings.overflowFilthDefName);
+        if (filthDef == null)
+            filthDef = DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit");
+        if (filthDef != null)
         {
-            var engorged = Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_BreastsEngorged);
-            if (Fullness >= 0.95f && engorged == null)
-                Pawn.health.AddHediff(EMDefOf.EM_BreastsEngorged, Pawn.GetBreastOrChestPart());
-            else if (Fullness < 0.9f && engorged != null)
-                Pawn.health.RemoveHediff(engorged);
+            int filthSpawned = 0;
+            while (overflowAccumulator >= PoolModelConstants.OverflowFilthThreshold)
+            {
+                FilthMaker.TryMakeFilth(Pawn.Position, Pawn.Map, filthDef, 1);
+                overflowAccumulator -= PoolModelConstants.OverflowFilthThreshold;
+                filthSpawned++;
+            }
+            if (filthSpawned > 0 && Pawn.RaceProps.Humanlike && Pawn.needs?.mood?.thoughts?.memories != null
+                && EMDefOf.EM_MilkOverflow != null)
+                Pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_MilkOverflow);
         }
-        // 药物诱发泌乳时添加「药物泌乳负担」已在上面每 30 tick 统一处理，此处不再重复
+        overflowAccumulator = Mathf.Min(overflowAccumulator, PoolModelConstants.OverflowFilthThreshold * 2f);
+    }
+
+    /// <summary>满池时添加「乳房胀满」hediff；低于 0.9 时移除（滞后避免抖动）。</summary>
+    private void UpdateHealthHediffs()
+    {
+        if (EMDefOf.EM_BreastsEngorged == null || Pawn == null || !Pawn.RaceProps.Humanlike || !Pawn.IsLactating()) return;
+        var engorged = Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_BreastsEngorged);
+        if (Fullness >= 0.95f && engorged == null)
+            Pawn.health.AddHediff(EMDefOf.EM_BreastsEngorged, Pawn.GetBreastOrChestPart());
+        else if (Fullness < 0.9f && engorged != null)
+            Pawn.health.RemoveHediff(engorged);
     }
     /// <summary>
     /// 设置总奶量（0～1）。从双池中排出至目标值，先排最满一侧，相同时男左女右。
@@ -373,6 +380,8 @@ public class CompEquallyMilkable : CompMilkable
             {
                 if (EMDefOf.EM_AllowedMilking != null)
                     producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_AllowedMilking);
+                if (producer.HasDrugInducedLactation() && EMDefOf.EM_Prolactin_Joy != null)
+                    producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_Prolactin_Joy);
             }
             else if (EMDefOf.EM_ForcedMilking != null)
                 producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
@@ -392,19 +401,24 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次。</summary>
+    /// <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次；参数由 EqualMilkingSettings 可调；营养好则 MTB 延长（风险降低）。</summary>
     private void TryTriggerMastitis()
     {
         if (EMDefOf.EM_Mastitis == null || Pawn == null || !Pawn.RaceProps.Humanlike || !Pawn.IsLactating()) return;
+        if (!EqualMilkingSettings.allowMastitis) return;
         bool longFull = ticksFullPool >= 60000;
         float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Pawn);
         bool badHygiene = hygieneRisk >= 0.4f;
         bool torsoInjury = HasTorsoOrBreastInjury(Pawn);
         if (!longFull && !badHygiene && !torsoInjury) return;
-        float mtbDays = 1.5f;
-        if (longFull) mtbDays /= 1.5f;
-        if (badHygiene) mtbDays /= (0.5f + hygieneRisk);
+        float mtbDays = EqualMilkingSettings.mastitisBaseMtbDays;
+        if (mtbDays < 0.1f) mtbDays = 0.1f;
+        if (longFull) mtbDays /= Mathf.Max(0.1f, EqualMilkingSettings.overFullnessRiskMultiplier);
+        if (badHygiene) mtbDays /= Mathf.Max(0.1f, (0.5f + hygieneRisk) * EqualMilkingSettings.hygieneRiskMultiplier);
         if (torsoInjury) mtbDays /= 1.3f;
+        // 营养/饥饿缓解：饱腹时 MTB 延长（风险降低），饥饿时缩短
+        float nutritionFactor = 0.5f + 0.5f * Mathf.Clamp(PawnUtility.BodyResourceGrowthSpeed(Pawn), 0f, 1f);
+        mtbDays *= Mathf.Max(0.3f, nutritionFactor);
         if (!Rand.MTBEventOccurs(mtbDays, 60000f, 2000f)) return;
         var existing = Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Mastitis);
         if (existing != null)

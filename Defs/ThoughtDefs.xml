@@ -137,4 +137,17 @@
             </li>
         </stages>
     </ThoughtDef>
+    <!-- 满池溢出/漏奶时轻微负面记忆 -->
+    <ThoughtDef>
+        <defName>EM_MilkOverflow</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>0.15</durationDays>
+        <stages>
+            <li>
+                <label>奶水溢出</label>
+                <description>乳房太满，奶水溢出来了。</description>
+                <baseMoodEffect>-1</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
 </Defs>

@@ -46,6 +46,17 @@
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene (mastitis hygiene trigger) ---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>Use DBH Hygiene need for mastitis risk</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>When enabled, low Hygiene (from Dubs Bad Hygiene) increases mastitis/clog risk. When disabled, room cleanliness is used instead.</EM.UseDubsBadHygieneForMastitisDesc>
+    <EM.MastitisAndToleranceSection>Mastitis &amp; tolerance (tunable)</EM.MastitisAndToleranceSection>
+    <EM.AllowMastitis>Allow mastitis / clog risk</EM.AllowMastitis>
+    <EM.AllowMastitisDesc>When disabled, mastitis will not be triggered by full pool, hygiene or injury.</EM.AllowMastitisDesc>
+    <EM.MastitisBaseMtbDays>Mastitis base MTB (days): {0}</EM.MastitisBaseMtbDays>
+    <EM.OverFullnessRiskMultiplier>Over-fullness risk multiplier: {0}</EM.OverFullnessRiskMultiplier>
+    <EM.HygieneRiskMultiplier>Hygiene risk multiplier: {0}</EM.HygieneRiskMultiplier>
+    <EM.AllowToleranceAffectMilk>Tolerance affects milk efficiency</EM.AllowToleranceAffectMilk>
+    <EM.AllowToleranceAffectMilkDesc>When disabled, prolactin tolerance does not reduce lactation flow or duration (E_tol = 1).</EM.AllowToleranceAffectMilkDesc>
+    <EM.ToleranceFlowImpactExponent>Tolerance impact exponent: {0}</EM.ToleranceFlowImpactExponent>
+    <EM.OverflowFilthSection>Overflow filth</EM.OverflowFilthSection>
+    <EM.OverflowFilthDefName>Filth def name when pool overflows</EM.OverflowFilthDefName>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>

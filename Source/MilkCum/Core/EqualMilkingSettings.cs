@@ -45,6 +45,16 @@ internal class EqualMilkingSettings : ModSettings
 	public static bool rjwLactatingInSexDescriptionEnabled = true;
 	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
 	public static bool useDubsBadHygieneForMastitis = true;
+	// 乳腺炎可配置：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数
+	public static bool allowMastitis = true;
+	public static float mastitisBaseMtbDays = 1.5f;
+	public static float overFullnessRiskMultiplier = 1.5f;
+	public static float hygieneRiskMultiplier = 1f;
+	// 耐受对泌乳效率的影响：关闭则 E_tol 恒为 1；指数控制曲线（1=线性）
+	public static bool allowToleranceAffectMilk = true;
+	public static float toleranceFlowImpactExponent = 1f;
+	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
+	public static string overflowFilthDefName = "Filth_Vomit";
 	// Cumpilation（统一到本设置，不再使用单独 Mod 入口）
 	public static bool Cumpilation_EnableCumflation = true;
 	public static float Cumpilation_GlobalCumflationModifier = 1.0f;
@@ -116,6 +126,13 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
 		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
+		Scribe_Values.Look(ref allowMastitis, "EM.AllowMastitis", true);
+		Scribe_Values.Look(ref mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
+		Scribe_Values.Look(ref overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
+		Scribe_Values.Look(ref hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
+		Scribe_Values.Look(ref allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
+		Scribe_Values.Look(ref toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
+		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
 		Scribe_Values.Look(ref Cumpilation_EnableCumflation, "Cumpilation.EnableCumflation", true);
 		Scribe_Values.Look(ref Cumpilation_GlobalCumflationModifier, "Cumpilation.GlobalCumflationModifier", 1.0f);
 		Scribe_Values.Look(ref Cumpilation_EnableStuffing, "Cumpilation.EnableStuffing", true);
@@ -494,10 +511,12 @@ internal class EqualMilkingSettings : ModSettings
 		return GetProlactinToleranceFactor(t);
 	}
 
-	/// <summary>统一耐受系数（按严重度 t）：E_tol(t) = max(1 − t, 0.05)。用于进水时使用吃药前 t_before。</summary>
+	/// <summary>统一耐受系数（按严重度 t）：E_tol(t) = [max(1 − t, 0.05)]^exponent；allowToleranceAffectMilk 关闭时恒为 1。</summary>
 	internal static float GetProlactinToleranceFactor(float toleranceSeverity)
 	{
-		return Mathf.Max(1f - toleranceSeverity, PoolModelConstants.EffectiveDrugFactorMin);
+		if (!allowToleranceAffectMilk) return 1f;
+		float e = Mathf.Max(1f - toleranceSeverity, PoolModelConstants.EffectiveDrugFactorMin);
+		return Mathf.Pow(e, Mathf.Clamp(toleranceFlowImpactExponent, 0.1f, 3f));
 	}
 
 	internal static float GetMilkAmountFactorWithTolerance(Pawn pawn)

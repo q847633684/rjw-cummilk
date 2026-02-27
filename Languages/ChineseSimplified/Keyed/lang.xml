@@ -46,6 +46,17 @@
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene（乳腺炎卫生触发）---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>乳腺炎/堵塞使用 DBH 卫生需求</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>开启时，Dubs Bad Hygiene 的卫生需求过低会提高乳腺炎/堵塞风险；关闭则改用房间清洁度。</EM.UseDubsBadHygieneForMastitisDesc>
+    <EM.MastitisAndToleranceSection>乳腺炎与耐受（可调）</EM.MastitisAndToleranceSection>
+    <EM.AllowMastitis>允许乳腺炎/堵塞风险</EM.AllowMastitis>
+    <EM.AllowMastitisDesc>关闭后，满池、卫生或受伤不再触发乳腺炎。</EM.AllowMastitisDesc>
+    <EM.MastitisBaseMtbDays>乳腺炎基准 MTB（天）：{0}</EM.MastitisBaseMtbDays>
+    <EM.OverFullnessRiskMultiplier>满池过久风险系数：{0}</EM.OverFullnessRiskMultiplier>
+    <EM.HygieneRiskMultiplier>卫生风险系数：{0}</EM.HygieneRiskMultiplier>
+    <EM.AllowToleranceAffectMilk>耐受影响泌乳效率</EM.AllowToleranceAffectMilk>
+    <EM.AllowToleranceAffectMilkDesc>关闭后，催乳素耐受不降低产奶流速或持续时间（E_tol = 1）。</EM.AllowToleranceAffectMilkDesc>
+    <EM.ToleranceFlowImpactExponent>耐受影响指数：{0}</EM.ToleranceFlowImpactExponent>
+    <EM.OverflowFilthSection>溢出污物</EM.OverflowFilthSection>
+    <EM.OverflowFilthDefName>满池溢出时生成的地面污物 Def 名称</EM.OverflowFilthDefName>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>

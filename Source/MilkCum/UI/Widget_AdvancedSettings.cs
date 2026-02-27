@@ -108,5 +108,34 @@ public class Widget_AdvancedSettings
 			Widgets.CheckboxLabeled(rDbhMastitis, "EM.UseDubsBadHygieneForMastitis".Translate(), ref EqualMilkingSettings.useDubsBadHygieneForMastitis, false);
 			{ string t = "EM.UseDubsBadHygieneForMastitisDesc".Translate(); TooltipHandler.TipRegion(rDbhMastitis, string.IsNullOrEmpty(t) ? "EM.UseDubsBadHygieneForMastitisDesc" : t); }
 		}
+		// 乳腺炎与耐受可调参数
+		sliderRect.y += UNIT_SIZE;
+		GUI.color = Color.gray;
+		Widgets.Label(sliderRect, "EM.MastitisAndToleranceSection".Translate());
+		GUI.color = Color.white;
+		sliderRect.y += UNIT_SIZE;
+		Rect rAllowMastitis = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+		Widgets.CheckboxLabeled(rAllowMastitis, "EM.AllowMastitis".Translate(), ref EqualMilkingSettings.allowMastitis, false);
+		TooltipHandler.TipRegion(rAllowMastitis, "EM.AllowMastitisDesc".Translate());
+		sliderRect.y += UNIT_SIZE;
+		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.mastitisBaseMtbDays, new FloatRange(0.2f, 10f), "EM.MastitisBaseMtbDays".Translate(EqualMilkingSettings.mastitisBaseMtbDays.ToString("F1")), 0.1f);
+		sliderRect.y += UNIT_SIZE;
+		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.overFullnessRiskMultiplier, new FloatRange(0.5f, 5f), "EM.OverFullnessRiskMultiplier".Translate(EqualMilkingSettings.overFullnessRiskMultiplier.ToString("F1")), 0.1f);
+		sliderRect.y += UNIT_SIZE;
+		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.hygieneRiskMultiplier, new FloatRange(0.5f, 3f), "EM.HygieneRiskMultiplier".Translate(EqualMilkingSettings.hygieneRiskMultiplier.ToString("F1")), 0.1f);
+		sliderRect.y += UNIT_SIZE;
+		Rect rToleranceAffect = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+		Widgets.CheckboxLabeled(rToleranceAffect, "EM.AllowToleranceAffectMilk".Translate(), ref EqualMilkingSettings.allowToleranceAffectMilk, false);
+		TooltipHandler.TipRegion(rToleranceAffect, "EM.AllowToleranceAffectMilkDesc".Translate());
+		sliderRect.y += UNIT_SIZE;
+		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.toleranceFlowImpactExponent, new FloatRange(0.1f, 3f), "EM.ToleranceFlowImpactExponent".Translate(EqualMilkingSettings.toleranceFlowImpactExponent.ToString("F1")), 0.1f);
+		sliderRect.y += UNIT_SIZE;
+		GUI.color = Color.gray;
+		Widgets.Label(sliderRect, "EM.OverflowFilthSection".Translate());
+		GUI.color = Color.white;
+		sliderRect.y += UNIT_SIZE;
+		string overflowFilth = EqualMilkingSettings.overflowFilthDefName ?? "";
+		Widgets.TextFieldLabeled(sliderRect, "EM.OverflowFilthDefName".Translate(), ref overflowFilth, 64);
+		EqualMilkingSettings.overflowFilthDefName = overflowFilth?.Trim() ?? "Filth_Vomit";
 	}
 }

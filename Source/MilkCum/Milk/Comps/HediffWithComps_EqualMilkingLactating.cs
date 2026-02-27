@@ -292,6 +292,17 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             stringBuilder.AppendLine("remainingDays(computed): " + RemainingDays.ToString("F2"));
             stringBuilder.AppendLine("currentLactationAmount(L): " + currentLactationAmount.ToString("F3"));
             stringBuilder.AppendLine("dailyLactationDecay(D): " + GetDailyLactationDecay().ToString("F3"));
+            stringBuilder.AppendLine("effectiveDrugFactor(E): " + GetEffectiveDrugFactor().ToString("F3"));
+            if (CompEquallyMilkable != null)
+            {
+                stringBuilder.AppendLine("pool L: " + CompEquallyMilkable.LeftFullness.ToString("F3") + " R: " + CompEquallyMilkable.RightFullness.ToString("F3"));
+                stringBuilder.AppendLine("overflowAccumulator: " + CompEquallyMilkable.OverflowAccumulator.ToString("F3"));
+            }
+            if (Pawn?.RaceProps?.Humanlike == true)
+            {
+                float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Pawn);
+                stringBuilder.AppendLine("hygieneRisk(mastitis): " + hygieneRisk.ToString("F2"));
+            }
         }
         return stringBuilder.ToString().TrimEndNewlines();
     }
