@@ -57,6 +57,7 @@
     <EM.ToleranceFlowImpactExponent>Tolerance impact exponent: {0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>Overflow filth</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>Filth def name when pool overflows</EM.OverflowFilthDefName>
+    <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>

@@ -304,6 +304,20 @@ public static class ExtensionHelper
         return Mathf.Clamp(1f - penalty, 0.5f, 1f);
     }
 
+    /// <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返回 1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速。</summary>
+    public static float GetMilkFlowMultiplierFromGenes(this Pawn pawn)
+    {
+        if (pawn?.genes == null || !pawn.RaceProps.Humanlike) return 1f;
+        float mult = 1f;
+        var bigBreasts = DefDatabase<GeneDef>.GetNamedSilentFail("rjw_genes_big_breasts");
+        if (bigBreasts != null && pawn.genes.HasGene(bigBreasts))
+            mult *= 1.12f;
+        var extraBreasts = DefDatabase<GeneDef>.GetNamedSilentFail("rjw_genes_extra_breasts");
+        if (extraBreasts != null && pawn.genes.HasGene(extraBreasts))
+            mult *= 1.08f;
+        return Mathf.Clamp(mult, 0.5f, 1.5f);
+    }
+
     /// <summary>获取“乳房/胸部”身体部位，用于将 hediff 挂在健康页的乳房行。优先 Breast，否则 Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）。</summary>
     public static BodyPartRecord GetBreastOrChestPart(this Pawn pawn)
     {

@@ -218,6 +218,7 @@ public class CompEquallyMilkable : CompMilkable
         if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
         float flowPerDay = currentLactation * hungerFactor;
         flowPerDay *= Pawn.GetMilkFlowMultiplierFromConditions();
+        flowPerDay *= Pawn.GetMilkFlowMultiplierFromGenes();
         float flowPerTick = flowPerDay / 60000f * 30f;
 
         float leftBaseCap = Pawn.GetLeftBreastCapacityFactor();
@@ -277,6 +278,12 @@ public class CompEquallyMilkable : CompMilkable
             if (filthSpawned > 0 && Pawn.RaceProps.Humanlike && Pawn.needs?.mood?.thoughts?.memories != null
                 && EMDefOf.EM_MilkOverflow != null)
                 Pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_MilkOverflow);
+            if (filthSpawned > 0 && Pawn.Spawned && Pawn.Map != null)
+            {
+                string moteText = "EM.MilkOverflowMote".Translate();
+                if (!string.IsNullOrEmpty(moteText) && moteText != "EM.MilkOverflowMote")
+                    MoteMaker.ThrowText(Pawn.DrawPos, Pawn.Map, moteText, 2.5f);
+            }
         }
         overflowAccumulator = Mathf.Min(overflowAccumulator, PoolModelConstants.OverflowFilthThreshold * 2f);
     }

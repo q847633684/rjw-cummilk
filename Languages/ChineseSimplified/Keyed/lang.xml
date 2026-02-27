@@ -57,6 +57,7 @@
     <EM.ToleranceFlowImpactExponent>耐受影响指数：{0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>溢出污物</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>满池溢出时生成的地面污物 Def 名称</EM.OverflowFilthDefName>
+    <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
