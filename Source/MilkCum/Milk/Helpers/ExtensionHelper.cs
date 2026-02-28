@@ -123,25 +123,9 @@ public static class ExtensionHelper
         }
         if (pawn == baby) { return false; }
         if (!pawn.CanBreastfeedEver(baby)) { return false; }
-        if (!SuckleRestrictionAllowed(pawn, baby)) { return false; }
+        if (!IsAllowedSuckler(pawn, baby)) { return false; }
         if (!baby.CompEquallyMilkable().AllowedToBeAutoFedBy(pawn)) { return false; }
         return true;
-    }
-    /// <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣。</summary>
-    private static bool SuckleRestrictionAllowed(Pawn mother, Pawn baby)
-    {
-        return IsAllowedSuckler(mother, baby);
-    }
-
-    /// <summary>默认“谁可以吸奶”：子女或伴侣。</summary>
-    private static bool IsDefaultSuckler(Pawn mother, Pawn baby)
-    {
-        if (mother?.relations == null || baby?.relations == null) return false;
-        return mother.relations.DirectRelationExists(PawnRelationDefOf.Lover, baby)
-            || mother.relations.DirectRelationExists(PawnRelationDefOf.Parent, baby)
-            || mother.relations.DirectRelationExists(PawnRelationDefOf.Child, baby)
-            || (mother.relations.FamilyByBlood != null && mother.relations.FamilyByBlood.Contains(baby))
-            || (baby.relations?.FamilyByBlood != null && baby.relations.FamilyByBlood.Contains(mother));
     }
 
     /// <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（用于名单为空时预填，不再用“空=默认”判断）。</summary>
@@ -284,12 +268,8 @@ public static class ExtensionHelper
     }
     public static ThingDef MilkDef(this Pawn pawn) => EqualMilkingSettings.GetMilkProductDef(pawn);
     public static float MilkAmount(this Pawn pawn) => EqualMilkingSettings.GetMilkAmount(pawn);
-    public static float MilkIntervalDays(this Pawn pawn) => EqualMilkingSettings.GetMilkIntervalDays(pawn);
     public static float MilkGrowthMultiplier(this Pawn pawn) => EqualMilkingSettings.GetMilkGrowthMultiplier(pawn);
-    public static float MilkGrowthTime(this Pawn pawn) => pawn.MilkIntervalDays() / EqualMilkingSettings.GetLactatingEfficiencyFactorWithTolerance(pawn);
-    public static float MilkPerYear(this Pawn pawn) => 60f / pawn.MilkIntervalDays() * pawn.MilkAmount();
     public static float MilkMarketValue(this Pawn pawn) => pawn.MilkDef()?.BaseMarketValue ?? 0;
-    public static float MilkMarketValuePerYear(this Pawn pawn) => pawn.MilkPerYear() * pawn.MilkMarketValue();
     public static bool MilkTypeCanBreastfeed(this Pawn mom) => EqualMilkingSettings.MilkTypeCanBreastfeed(mom);
     public static bool CanBreastfeedEver(this Pawn mom, Pawn baby) => EqualMilkingSettings.CanBreastfeedEver(mom, baby);
     public static HediffComp_EqualMilkingLactating LactatingHediffComp(this Pawn pawn) => pawn.health.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>();
@@ -368,7 +348,7 @@ public static class ExtensionHelper
     {
         comp.milkDef = DefDatabase<ThingDef>.GetNamed(value.milkTypeDefName, true);
         comp.milkAmount = value.milkAmount;
-        comp.milkIntervalDays = Mathf.Max(1, (int)value.milkIntervalDays);
+        comp.milkIntervalDays = 1;
         comp.milkFemaleOnly = false;
     }
     public static CompEquallyMilkable CompEquallyMilkable(this ThingWithComps thing)
@@ -385,7 +365,7 @@ public static class ExtensionHelper
                     {
                         milkDef = pawn.MilkDef() ?? DefDatabase<ThingDef>.GetNamed("Milk", true),
                         milkAmount = (int)pawn.MilkAmount(),
-                        milkIntervalDays = Mathf.Max(1, (int)pawn.MilkIntervalDays()),
+                        milkIntervalDays = 1,
                         milkFemaleOnly = false
                     }
             };

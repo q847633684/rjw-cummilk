@@ -3,19 +3,6 @@
     <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>Gain offset: {0}</EM.LactatingGainPercent>
-    <EM.SuckleRestriction>Who can suckle</EM.SuckleRestriction>
-    <EM.SuckleRestrictionDesc>Restricts which pawns can breastfeed from this lactating pawn (e.g. only colony, or only lovers/family).</EM.SuckleRestrictionDesc>
-    <EM.SuckleRestriction_0>No restriction</EM.SuckleRestriction_0>
-    <EM.SuckleRestriction_1>Same faction only</EM.SuckleRestriction_1>
-    <EM.SuckleRestriction_2>Colony only</EM.SuckleRestriction_2>
-    <EM.SuckleRestriction_3>Lovers or family only</EM.SuckleRestriction_3>
-    <EM.MilkProductConsumptionRestriction>Who can use milk / milk products</EM.MilkProductConsumptionRestriction>
-    <EM.MilkProductConsumptionRestrictionDesc>Restricts who can eat milk or food made from someone's milk (by producer). Same options as suckle; "Same as suckle" uses the setting above.</EM.MilkProductConsumptionRestrictionDesc>
-    <EM.MilkProductConsumptionRestriction_0>No restriction</EM.MilkProductConsumptionRestriction_0>
-    <EM.MilkProductConsumptionRestriction_1>Same faction only</EM.MilkProductConsumptionRestriction_1>
-    <EM.MilkProductConsumptionRestriction_2>Colony only</EM.MilkProductConsumptionRestriction_2>
-    <EM.MilkProductConsumptionRestriction_3>Lovers or family only</EM.MilkProductConsumptionRestriction_3>
-    <EM.MilkProductConsumptionRestriction_4>Same as "Who can suckle"</EM.MilkProductConsumptionRestriction_4>
     <EM.FedByColumnTip>For the pawn being fed: choose which lactating pawns are allowed to feed this one. Empty list = any; non-empty = only listed.</EM.FedByColumnTip>
     <EM.ProducerRestrictionsColumn>Who can use my milk / eat my milk or cum products</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>Female (lactating): who can use my milk, who can eat my milk products. Male: who can eat my cum products. Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>

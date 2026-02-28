@@ -14,10 +14,7 @@ internal class EqualMilkingSettings : ModSettings
 {
 	private static Dictionary<string, RaceMilkType> namesToProducts = new();
 	private static Dictionary<string, MilkTag> productsToTags = new();
-	public static int maxLactationStacks = 5;
 	public static float lactatingEfficiencyMultiplierPerStack = 1.25f;
-	public static float milkAmountMultiplierPerStack = 1f;
-	public static float hungerRateMultiplierPerStack = 1.31f;
 	public static float breastfeedTime = 5000f;
 	public static bool femaleAnimalAdultAlwaysLactating = false;
 	public static bool showMechOptions = true;
@@ -33,10 +30,6 @@ internal class EqualMilkingSettings : ModSettings
 	// 泌乳期意识/操纵/移动增益：开关与百分比 (0~0.20 = 0%~20%)
 	public static bool lactatingGainEnabled = true;
 	public static float lactatingGainCapModPercent = 0.10f;
-	// 谁可以吸奶：无限制 / 同派系 / 仅殖民地 / 仅爱人或亲属
-	public static int suckleRestrictionMode = 0; // 0=None, 1=SameFaction, 2=ColonyOnly, 3=LoversOrFamilyOnly
-	// 谁可以使用产出的奶/奶制品食物：同上 0~3，4=与“谁可以吸奶”相同
-	public static int milkProductConsumptionRestrictionMode = 0; // 4=UseSuckleSetting
 	// RJW 联动（仅当 rim.job.world 激活时生效）
 	public static bool rjwBreastSizeEnabled = true;
 	public static bool rjwLustFromNursingEnabled = true;
@@ -126,10 +119,7 @@ internal class EqualMilkingSettings : ModSettings
 	public override void ExposeData()
 	{
 		base.ExposeData();
-		Scribe_Values.Look(ref maxLactationStacks, "EM.MaxLactationStacks", 5);
 		Scribe_Values.Look(ref lactatingEfficiencyMultiplierPerStack, "EM.LactatingEfficiencyMultiplierPerStack", 1.25f);
-		Scribe_Values.Look(ref milkAmountMultiplierPerStack, "EM.MilkAmountMultiplierPerStack", 1f);
-		Scribe_Values.Look(ref hungerRateMultiplierPerStack, "EM.HungerRateMultiplierPerStack", 1.31f);
 		Scribe_Values.Look(ref breastfeedTime, "EM.BreastfeedTime", 5000f);
 		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "EM.FemaleAnimalAdultAlwaysLactating", false);
 		Scribe_Values.Look(ref showMechOptions, "EM.ShowMechOptions", true);
@@ -141,8 +131,6 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref nutritionToEnergyFactor, "EM.NutritionToEnergyFactor", 100f);
 		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
-		Scribe_Values.Look(ref suckleRestrictionMode, "EM.SuckleRestrictionMode", 0);
-		Scribe_Values.Look(ref milkProductConsumptionRestrictionMode, "EM.MilkProductConsumptionRestrictionMode", 0);
 		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
 		Scribe_Values.Look(ref rjwLustFromNursingEnabled, "EM.RjwLustFromNursingEnabled", true);
 		Scribe_Values.Look(ref rjwSexNeedLactatingBonusEnabled, "EM.RjwSexNeedLactatingBonusEnabled", true);
@@ -319,7 +307,6 @@ internal class EqualMilkingSettings : ModSettings
 			{
 				milkProduct.milkTypeDefName = compMilkable.milkDef.defName;
 				milkProduct.milkAmount = compMilkable.milkAmount;
-				milkProduct.milkIntervalDays = compMilkable.milkIntervalDays;
 				milkProduct.isMilkable = true;
 				milkProducts.Add(def, milkProduct);
 			}
@@ -337,7 +324,7 @@ internal class EqualMilkingSettings : ModSettings
 		EventHelper.TriggerSettingsChanged();
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
-		HediffDefOf.Lactating.maxSeverity = 100f; // 不再用 maxLactationStacks 限制，允许 severity 自由叠加
+		HediffDefOf.Lactating.maxSeverity = 100f; // 允许 severity 自由叠加
 		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
 		animalBreastfeed ??= new AnimalBreastfeed();
 		mechanoidBreastfeed ??= new MechanoidBreastfeed();
@@ -394,7 +381,6 @@ internal class EqualMilkingSettings : ModSettings
 			if (def.race.Humanlike)
 			{
 				milkProduct.milkAmount = Mathf.FloorToInt(3f * def.race.baseBodySize / ThingDefOf.Human.race.baseBodySize);
-				milkProduct.milkIntervalDays = 0.25f;
 				milkProduct.isMilkable = true;
 				milkProduct.milkTypeDefName = EMDefOf.EM_HumanMilk.defName;
 			}
@@ -402,7 +388,6 @@ internal class EqualMilkingSettings : ModSettings
 			{
 				milkProduct.isMilkable = false;
 				milkProduct.milkAmount = Mathf.FloorToInt(14f * def.race.baseBodySize / ThingDefOf.Cow.race.baseBodySize);
-				milkProduct.milkIntervalDays = 1f;
 			}
 		}
 		return milkProduct;
@@ -558,10 +543,6 @@ internal class EqualMilkingSettings : ModSettings
 	internal static float GetMilkAmount(Pawn pawn)
 	{
 		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount * GetMilkAmountFactorWithTolerance(pawn);
-	}
-	internal static float GetMilkIntervalDays(Pawn pawn)
-	{
-		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkIntervalDays;
 	}
 	internal static float GetMilkGrowthMultiplier(Pawn pawn)
 	{

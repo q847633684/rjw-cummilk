@@ -38,7 +38,6 @@ public class Widget_MilkableTable
         widgetRow.Label(HediffDefOf.Lactating.label, UNIT_SIZE * 3, null);
         widgetRow.Label(Lang.MilkType, UNIT_SIZE * 6, Lang.MilkTypeDesc);
         widgetRow.Label(Lang.MilkAmount, UNIT_SIZE * 3, Lang.MilkAmountDesc);
-        widgetRow.Label(Lang.MilkGrowthTime + "(" + Lang.Days + ")", UNIT_SIZE * 5, Lang.MilkGrowthTimeDesc);
         Text.Font = GameFont.Small;
         Rect tableRect = new(rect.x, rect.y + UNIT_SIZE, rect.width, rect.height - UNIT_SIZE);
         Rect scrollRect = new(tableRect.x, tableRect.y + UNIT_SIZE, tableRect.width - UNIT_SIZE, EqualMilkingSettings.pawnDefs.Count() * UNIT_SIZE);
@@ -59,7 +58,6 @@ public class Widget_MilkableTable
                 SetupSelectProductButton(new Rect(tableRect.x + UNIT_SIZE * 11, y_Offset, UNIT_SIZE * 7, UNIT_SIZE), pawnDef, itemDefs);
                 string text = product.milkAmount.ToString();
                 Widgets.TextFieldNumeric(new Rect(tableRect.x + UNIT_SIZE * 19, y_Offset, UNIT_SIZE * 3, UNIT_SIZE), ref product.milkAmount, ref text, 1, 99999);
-                RoundedTextFieldNumeric(new Rect(tableRect.x + UNIT_SIZE * 22, y_Offset, UNIT_SIZE * 3, UNIT_SIZE), ref product.milkIntervalDays, new FloatRange(0.01f, 100f), 2);
             }
         }
         Widgets.EndScrollView();
@@ -125,15 +123,6 @@ public class Widget_MilkableTable
         {
             namesToProducts[defName].isMilkable = false;
         }
-    }
-
-    private void RoundedTextFieldNumeric(Rect rect, ref float value, FloatRange range, int roundTo)
-    {
-        string text = value.ToString();
-        float num = value;
-        Widgets.TextFieldNumeric<float>(rect, ref num, ref text, range.min, range.max);
-        num = (float)Math.Round(num, roundTo);
-        value = num;
     }
 
 }

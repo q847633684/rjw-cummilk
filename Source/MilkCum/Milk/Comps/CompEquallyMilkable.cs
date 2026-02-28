@@ -12,7 +12,8 @@ namespace MilkCum.Milk.Comps;
 public class CompEquallyMilkable : CompMilkable
 {
     protected Pawn Pawn => parent as Pawn;
-    protected override int GatherResourcesIntervalDays => Mathf.Max((int)Props.milkIntervalDays, 1);
+    /// <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）。</summary>
+    protected override int GatherResourcesIntervalDays => 1;
     protected override int ResourceAmount => (int)Pawn.MilkAmount();
     protected override ThingDef ResourceDef => Pawn.MilkDef();
     protected virtual float fResourceAmount => Pawn.MilkAmount();

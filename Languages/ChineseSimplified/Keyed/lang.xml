@@ -3,19 +3,6 @@
     <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
     <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>增益偏移：{0}</EM.LactatingGainPercent>
-    <EM.SuckleRestriction>谁可以吸奶</EM.SuckleRestriction>
-    <EM.SuckleRestrictionDesc>限制谁可以从该泌乳者处吸奶（例如仅殖民地、或仅爱人/亲属）。</EM.SuckleRestrictionDesc>
-    <EM.SuckleRestriction_0>无限制</EM.SuckleRestriction_0>
-    <EM.SuckleRestriction_1>仅同派系</EM.SuckleRestriction_1>
-    <EM.SuckleRestriction_2>仅殖民地</EM.SuckleRestriction_2>
-    <EM.SuckleRestriction_3>仅爱人或亲属</EM.SuckleRestriction_3>
-    <EM.MilkProductConsumptionRestriction>谁可以使用产出的奶/奶制品</EM.MilkProductConsumptionRestriction>
-    <EM.MilkProductConsumptionRestrictionDesc>限制谁可以食用“某人产的奶”或“用某人奶做的食物”。可选与吸奶规则相同，或选“与谁可以吸奶相同”沿用上方设置。</EM.MilkProductConsumptionRestrictionDesc>
-    <EM.MilkProductConsumptionRestriction_0>无限制</EM.MilkProductConsumptionRestriction_0>
-    <EM.MilkProductConsumptionRestriction_1>仅同派系</EM.MilkProductConsumptionRestriction_1>
-    <EM.MilkProductConsumptionRestriction_2>仅殖民地</EM.MilkProductConsumptionRestriction_2>
-    <EM.MilkProductConsumptionRestriction_3>仅爱人或亲属</EM.MilkProductConsumptionRestriction_3>
-    <EM.MilkProductConsumptionRestriction_4>与“谁可以吸奶”相同</EM.MilkProductConsumptionRestriction_4>
     <EM.FedByColumnTip>被喂食者：指定“允许哪些泌乳者喂我”。列表为空=任意泌乳者；非空=仅列表中的泌乳者。</EM.FedByColumnTip>
     <EM.ProducerRestrictionsColumn>谁可使用我的奶 / 谁可吃奶制品或精液制品</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以使用我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>

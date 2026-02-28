@@ -166,7 +166,6 @@ public static class Lang
     public static string Human => "TargetHuman".Translate();
     public static string HungerRate => "HungerRate".Translate();
     public static string Hungry => "HungerLevel_Hungry".Translate();
-    public static string InstallImplantAlreadyMaxLevel = "InstallImplantAlreadyMaxLevel".Translate();
     public static string Item => "ItemsTab".Translate();
     public static string MarketValue => "MarketValue".Translate();
     public static string Mechanoid => "Mechanoid".Translate();
@@ -176,8 +175,6 @@ public static class Lang
     public static string MilkAmount => "Stat_Animal_MilkAmount".Translate();
     public static string MilkAmountDesc => "Stat_Animal_MilkAmountDesc".Translate();
     public static string MilkFullness => "MilkFullness".Translate();
-    public static string MilkGrowthTime => "Stat_Animal_MilkGrowthTime".Translate();
-    public static string MilkGrowthTimeDesc => "Stat_Animal_MilkGrowthTimeDesc".Translate();
     public static string Misc => "MiscRecordsCategory".Translate();
     public static string Nutrition => "Nutrition".Translate();
     public static string Off => "Off".Translate();

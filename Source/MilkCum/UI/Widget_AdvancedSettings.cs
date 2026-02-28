@@ -21,23 +21,8 @@ public class Widget_AdvancedSettings
 		Rect scrollContent = new Rect(0f, 0f, inRect.width - 20f, contentHeight);
 		Widgets.BeginScrollView(inRect, ref _advancedScrollPosition, scrollContent, true);
 		Rect sliderRect = new(0f, 0f, scrollContent.width, UNIT_SIZE);
-		float fStacks = (float)EqualMilkingSettings.maxLactationStacks;
 		string lactatingLabel = HediffDefOf.Lactating?.label ?? "Lactating";
-		Widgets.HorizontalSlider(sliderRect, ref fStacks, new FloatRange(1, 10), Lang.Join(lactatingLabel, Lang.InstallImplantAlreadyMaxLevel) + ": " + ((int)fStacks).ToString(), 1f);
-		EqualMilkingSettings.maxLactationStacks = (int)fStacks;
-		sliderRect.y += UNIT_SIZE;
-		GUI.color = Color.gray;
-		GameFont prevFont = Text.Font;
-		Text.Font = GameFont.Tiny;
-		Widgets.Label(sliderRect, "（已弃用，仅兼容旧存档）");
-		Text.Font = prevFont;
-		GUI.color = Color.white;
-		sliderRect.y += UNIT_SIZE;
 		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(lactatingLabel, Lang.Efficiency, Lang.StatFactor) + ": " + EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString(), 0.01f);
-		sliderRect.y += UNIT_SIZE * 2;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.milkAmountMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(Lang.MilkAmount, Lang.StatFactor) + ": " + EqualMilkingSettings.milkAmountMultiplierPerStack.ToString(), 0.01f);
-		sliderRect.y += UNIT_SIZE * 2;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.hungerRateMultiplierPerStack, new FloatRange(0f, 5f), Lang.Join(Lang.HungerRate, Lang.StatFactor) + ": " + EqualMilkingSettings.hungerRateMultiplierPerStack.ToString(), 0.01f);
 		sliderRect.y += UNIT_SIZE * 2;
 		// 泌乳期意识/操纵/移动增益
 		Rect rLactatingGain = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
