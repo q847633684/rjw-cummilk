@@ -15,7 +15,7 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     private HediffStage vanillaStage;
     private bool isDirty = true;
     public override HediffStage CurStage => GetCurStage();
-    public override int CurStageIndex => GetStageIndex(this.Severity, (pawn.CompEquallyMilkable()?.Fullness ?? 0f) >= 1f);
+    public override int CurStageIndex => GetStageIndex(this.Severity, (pawn.CompEquallyMilkable()?.Fullness ?? 0f) >= Mathf.Max(0.01f, pawn.CompEquallyMilkable()?.maxFullness ?? 1f));
     public override void PostTick()
     {
         if (isDirty)
@@ -78,8 +78,9 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         if (severityInt >= 1) { stage.label = Lang.Permanent + " x" + severityInt.ToString(); }
         else { stage.label = ""; }
         float mult = EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack;
-        stage.hungerRateFactorOffset = isFull ? 0f : Mathf.Pow(mult, Mathf.Max(severity, 0.5f));
-        StatUtility.SetStatValueInList(ref stage.statOffsets, StatDefOf.MechEnergyUsageFactor, stage.hungerRateFactorOffset);
+        // 额外饥饿/能量改为由 ExtraNutritionPerDay/GetFlowPerDay 与 Need_Food/Need 补丁 1:1 施加，此处不再用 offset 增加饥饿
+        stage.hungerRateFactorOffset = 0f;
+        StatUtility.SetStatValueInList(ref stage.statOffsets, StatDefOf.MechEnergyUsageFactor, 0f);
         StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Milk_Amount_Factor, Mathf.Pow(mult, severity));
         StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Lactating_Efficiency_Factor, isFull ? 0f : Mathf.Pow(mult, severity));
         if (stage.capMods != null) stage.capMods.Clear();
@@ -214,16 +215,33 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         CompEquallyMilkable?.ClearPools();
         Pawn.health.RemoveHediff(parent);
     }
+    /// <summary>灌满期间额外营养/天：与产奶流速 1:1 平衡，灌满多少池就消耗多少营养；满池后不额外消耗。</summary>
     public float ExtraNutritionPerDay()
     {
-        return Parent.CurStage.hungerRateFactorOffset
-            * PawnUtility.BodyResourceGrowthSpeed(base.Pawn)
-            * Parent.pawn.BaseNutritionPerDay();
+        if (Pawn.needs?.food == null) return 0f;
+        float flow = GetFlowPerDay();
+        return flow;
     }
+    /// <summary>机械体灌满期间额外能量/天：与产奶流速 1:1 平衡，flowPerDay（池单位/天）× nutritionToEnergyFactor；满池后不额外消耗。</summary>
     public float ExtraEnergyPerDay()
     {
-        float offset = Parent.CurStage.statOffsets.GetStatOffsetFromList(StatDefOf.MechEnergyUsageFactor);
-        return offset * Pawn.needs.energy.BaseFallPerDay;
+        if (Pawn.needs?.energy == null) return 0f;
+        float flow = GetFlowPerDay();
+        return flow * EqualMilkingSettings.nutritionToEnergyFactor;
+    }
+    /// <summary>当前产奶流速（池单位/天），与 CompEquallyMilkable 进水公式一致；满池或不可产奶时返回 0。灌满 1 池单位即消耗 1 营养，由 Need_Food 补丁按此值施加额外饥饿。</summary>
+    internal float GetFlowPerDay()
+    {
+        if (CompEquallyMilkable == null) return 0f;
+        float maxF = CompEquallyMilkable.maxFullness;
+        if (Charge >= maxF) return 0f;
+        float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
+        if (currentLactationAmount <= 0f || hungerFactor <= 0f) return 0f;
+        float flowPerDay = currentLactationAmount * hungerFactor;
+        flowPerDay *= Pawn.GetMilkFlowMultiplierFromConditions();
+        flowPerDay *= Pawn.GetMilkFlowMultiplierFromGenes();
+        flowPerDay *= (Pawn.RaceProps.Humanlike ? EqualMilkingSettings.defaultFlowMultiplierForHumanlike : 1f);
+        return flowPerDay;
     }
     public override string CompTipStringExtra
     {
@@ -234,7 +252,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 return base.CompTipStringExtra;
             }
             var lines = new List<string>();
-            if (this.Charge >= 1f)
+            float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
+            if (this.Charge >= maxF)
             {
                 lines.Add("LactatingStoppedBecauseFull".Translate());
             }
@@ -257,8 +276,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             // 产奶详情全部放在悬停 tooltip 中
             if (CompEquallyMilkable != null)
             {
-                lines.Add(Lang.MilkFullness + ": " + Charge.ToStringPercent());
-                lines.Add("EM.PoolLeftBreast".Translate() + " " + CompEquallyMilkable.LeftFullness.ToStringPercent() + ", " + "EM.PoolRightBreast".Translate() + " " + CompEquallyMilkable.RightFullness.ToStringPercent());
+                float maxF = Mathf.Max(0.01f, CompEquallyMilkable.maxFullness);
+                float leftCap = Mathf.Max(0.01f, Pawn.GetLeftBreastCapacityFactor());
+                float rightCap = Mathf.Max(0.01f, Pawn.GetRightBreastCapacityFactor());
+                lines.Add(Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent());
+                lines.Add("EM.PoolLeftBreast".Translate() + " " + (CompEquallyMilkable.LeftFullness / leftCap).ToStringPercent() + ", " + "EM.PoolRightBreast".Translate() + " " + (CompEquallyMilkable.RightFullness / rightCap).ToStringPercent());
                 lines.Add("EM.PoolRemainingDays".Translate() + ": " + RemainingDays.ToString("F1"));
                 float growthSpeed = PawnUtility.BodyResourceGrowthSpeed(Pawn);
                 float flowPerDay = currentLactationAmount * growthSpeed;
@@ -268,7 +290,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             }
             else if (Pawn.MilkDef() != null)
             {
-                lines.Add(Lang.MilkFullness + ": " + Charge.ToStringPercent());
+                float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
+                lines.Add(Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent());
                 lines.Add(Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * (CompEquallyMilkable?.Fullness ?? 0f)).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
             }
             return lines.Count > 0 ? string.Join("\n", lines) : base.CompTipStringExtra;
@@ -278,8 +301,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         get
         {
-            // 名称就是名称，括号里只保留简短奶量%
-            var s = base.CompLabelInBracketsExtra + Lang.MilkFullness + ": " + Charge.ToStringPercent();
+            float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
+            var s = base.CompLabelInBracketsExtra + Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent();
             return s;
         }
     }

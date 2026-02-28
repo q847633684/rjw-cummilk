@@ -1,5 +1,38 @@
 <LanguageData>
     <Equal_Milking>Equal Milking</Equal_Milking>
+    <!-- Main / Sub tab labels -->
+    <EM.Tab.MilkAndFluids>Milk &amp; fluids</EM.Tab.MilkAndFluids>
+    <EM.Tab.Breastfeed>Breastfeed</EM.Tab.Breastfeed>
+    <EM.Tab.HealthAndRisk>Health &amp; risk</EM.Tab.HealthAndRisk>
+    <EM.Tab.EfficiencyAndInterface>Efficiency &amp; interface</EM.Tab.EfficiencyAndInterface>
+    <EM.Tab.IntegrationAndAdvanced>Integration &amp; advanced</EM.Tab.IntegrationAndAdvanced>
+    <EM.SubTab.Milk>Milk table</EM.SubTab.Milk>
+    <EM.SubTab.MilkTags>Milk tags</EM.SubTab.MilkTags>
+    <EM.SubTab.RaceOverrides>Race overrides</EM.SubTab.RaceOverrides>
+    <EM.SubTab.Fluids>Fluids (Cumpilation)</EM.SubTab.Fluids>
+    <EM.SubTab.BreastfeedOverview>Overview</EM.SubTab.BreastfeedOverview>
+    <EM.SubTab.Mastitis>Mastitis</EM.SubTab.Mastitis>
+    <EM.SubTab.DBH>DBH</EM.SubTab.DBH>
+    <EM.SubTab.ToleranceOverflow>Tolerance &amp; overflow</EM.SubTab.ToleranceOverflow>
+    <EM.SubTab.LoadFromDef>Load from Def</EM.SubTab.LoadFromDef>
+    <EM.SectionDesc_Mastitis>Mastitis/clog: master switch enables the mechanic; sliders set base MTB, over-fullness and hygiene risk multipliers, and humanlike/animal multipliers. Does not choose hygiene data source (that is set on the DBH sub-tab).</EM.SectionDesc_Mastitis>
+    <EM.SectionDesc_DBH>When Dubs Bad Hygiene is installed, choose whether mastitis/clog hygiene risk uses DBH's Hygiene need (pawn hygiene bar) or vanilla room cleanliness. Checked = DBH; unchecked = room cleanliness.</EM.SectionDesc_DBH>
+    <EM.SectionDesc_LoadFromDef>Click to apply key defaults from the EM_Defaults Def (mastitis, tolerance, baseline milk days, etc.) to current save. Does not overwrite race whitelist/blacklist. Other mods can patch that Def to change defaults.</EM.SectionDesc_LoadFromDef>
+    <EM.SectionDesc_ToleranceOverflow>Whether tolerance affects milk efficiency and the impact exponent; which filth def spawns when pool overflows; whether milking AI prefers fuller targets. Reference line shows pool model baselines.</EM.SectionDesc_ToleranceOverflow>
+    <EM.SectionDesc_IdentityAndMenu>Controls whether right-clicking a pawn of each type shows "Give prolactin", "Breastfeed/suckle", etc. in the float menu. Check by target identity (mechanoid/colonist/slave/prisoner/animal/misc) to reduce clutter.</EM.SectionDesc_IdentityAndMenu>
+    <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
+    <EM.SectionDesc_MilkingSelf>"Milking (self)": allow this role to milk themselves (auto take milk-self job). Off = only others can milk them or manual assign. The Milk table column overrides per pawn.</EM.SectionDesc_MilkingSelf>
+    <EM.SubTab.Efficiency>Efficiency</EM.SubTab.Efficiency>
+    <EM.SectionDesc_Efficiency>Efficiency and milk amount multipliers by lactation severity; consciousness/manipulation/moving gain and cap percent; whether adult female animals are always lactating. Affects only this mod's lactation and milk output.</EM.SectionDesc_Efficiency>
+    <EM.SectionDesc_RJW>Active when rim.job.world (RJW) is enabled. Controls lactation–breast size, sex need, post-nursing satisfaction, fertility, sex description, and post-sex milk pool boost.</EM.SectionDesc_RJW>
+    <EM.SubTab.IdentityAndMenu>Identity &amp; menu</EM.SubTab.IdentityAndMenu>
+    <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
+    <EM.SubTab.GenesAndAdvanced>Genes &amp; advanced</EM.SubTab.GenesAndAdvanced>
+    <EM.BreastfeedOverviewDesc>Who can feed whom is set below by humanlike / animal / mechanoid. Single feeding duration and mechanoid nutrition→energy here.</EM.BreastfeedOverviewDesc>
+    <EM.LactationExtraNutritionFactor>Lactation extra hunger: {0} (0=off, 150=1:1, 300=double)</EM.LactationExtraNutritionFactor>
+    <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
+    <EM.MilkingWorkTotalBase>Milking work total base</EM.MilkingWorkTotalBase>
+    <EM.MilkingCapacityFactor>Milking capacity factor</EM.MilkingCapacityFactor>
     <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>Gain offset: {0}</EM.LactatingGainPercent>

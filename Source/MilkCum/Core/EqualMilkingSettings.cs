@@ -15,7 +15,13 @@ internal class EqualMilkingSettings : ModSettings
 	private static Dictionary<string, RaceMilkType> namesToProducts = new();
 	private static Dictionary<string, MilkTag> productsToTags = new();
 	public static float lactatingEfficiencyMultiplierPerStack = 1.25f;
-	public static float breastfeedTime = 5000f;
+	public static float breastfeedTime = 300f;
+	/// <summary>按容量量化：挤奶工作量基准（原版 400），实际工作量 = 基准 × 容量系数。</summary>
+	public static float milkingWorkTotalBase = 400f;
+	/// <summary>按容量量化：挤奶工作量随 MilkAmount 的系数，work *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2.5]。</summary>
+	public static float milkingCapacityFactor = 0.2f;
+	/// <summary>按容量量化：吸奶有效时间随喂奶者 MilkAmount 的系数，effectiveTime *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2]。</summary>
+	public static float breastfeedCapacityFactor = 0.1f;
 	public static bool femaleAnimalAdultAlwaysLactating = false;
 	public static bool showMechOptions = true;
 	public static bool showColonistOptions = true;
@@ -24,6 +30,8 @@ internal class EqualMilkingSettings : ModSettings
 	public static bool showAnimalOptions = true;
 	public static bool showMiscOptions = true;
 	public static float nutritionToEnergyFactor = 100f;
+	/// <summary>泌乳灌满期间额外饥饿：滑块 0–300，150=1:1。饱食度每 150 tick 额外下降 = flowPerDay×(150/60000)×(本值/150)。</summary>
+	public static int lactationExtraNutritionBasis = 150;
 	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
 	public static AnimalBreastfeed animalBreastfeed = new();
 	public static MechanoidBreastfeed mechanoidBreastfeed = new();
@@ -103,7 +111,8 @@ internal class EqualMilkingSettings : ModSettings
 	public static MilkSettings animalSetting = new();
 	public static MilkSettings mechSetting = new();
 	public static MilkSettings entitySetting = new();
-	private int tabIndex = 0;
+	private int mainTabIndex = 0;
+	private int subTabIndex = 0;
 	private static readonly float unitSize = 32f;
 	public static IEnumerable<ThingDef> pawnDefs;
 	public static IEnumerable<ThingDef> productDefs;
@@ -115,12 +124,16 @@ internal class EqualMilkingSettings : ModSettings
 	private static Widget_GeneSetting geneSetting;
 	private static Widget_DefaultSetting defaultSettingWidget;
 	private static Widget_CumpilationSettings cumpilationSettings;
+	private static Widget_RaceOverrides raceOverridesWidget;
 
 	public override void ExposeData()
 	{
 		base.ExposeData();
 		Scribe_Values.Look(ref lactatingEfficiencyMultiplierPerStack, "EM.LactatingEfficiencyMultiplierPerStack", 1.25f);
-		Scribe_Values.Look(ref breastfeedTime, "EM.BreastfeedTime", 5000f);
+		Scribe_Values.Look(ref breastfeedTime, "EM.BreastfeedTime", 300f);
+		Scribe_Values.Look(ref milkingWorkTotalBase, "EM.MilkingWorkTotalBase", 400f);
+		Scribe_Values.Look(ref milkingCapacityFactor, "EM.MilkingCapacityFactor", 0.2f);
+		Scribe_Values.Look(ref breastfeedCapacityFactor, "EM.BreastfeedCapacityFactor", 0.1f);
 		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "EM.FemaleAnimalAdultAlwaysLactating", false);
 		Scribe_Values.Look(ref showMechOptions, "EM.ShowMechOptions", true);
 		Scribe_Values.Look(ref showColonistOptions, "EM.ShowColonistOptions", true);
@@ -129,6 +142,9 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref showAnimalOptions, "EM.ShowAnimalOptions", true);
 		Scribe_Values.Look(ref showMiscOptions, "EM.ShowMiscOptions", true);
 		Scribe_Values.Look(ref nutritionToEnergyFactor, "EM.NutritionToEnergyFactor", 100f);
+		Scribe_Values.Look(ref lactationExtraNutritionBasis, "EM.LactationExtraNutritionFactor", 150);
+		if (Scribe.mode == LoadSaveMode.LoadingVars && lactationExtraNutritionBasis is >= 1 and < 150)
+			lactationExtraNutritionBasis = 150; // 旧存档 float 1f 被读成 1，视为 150
 		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
 		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
@@ -240,56 +256,139 @@ internal class EqualMilkingSettings : ModSettings
 		animalSetting ??= new MilkSettings();
 		mechSetting ??= new MilkSettings();
 		entitySetting ??= new MilkSettings();
-		List<TabRecord> tabs = new()
+
+		// 主 Tab 栏（5 个）
+		List<TabRecord> mainTabs = new()
 		{
-			new(Lang.Pawn, () => tabIndex = 0, tabIndex == 0),
-			new(Lang.Join(Lang.Rename, Lang.MilkType), () => tabIndex = 1, tabIndex == 1),
-			new(Lang.Advanced, () => tabIndex = 2, tabIndex == 2),
-			new(Lang.Breastfeed, () => tabIndex = 3, tabIndex == 3),
-			new(Lang.Join(Lang.MilkType, Lang.Genes), () => tabIndex = 4, tabIndex == 4),
-			new(Lang.Default, () => tabIndex = 5, tabIndex == 5),
-			new("cumpilation_settings_menuname".Translate(), () => tabIndex = 6, tabIndex == 6)
+			new("EM.Tab.MilkAndFluids".Translate(), () => { mainTabIndex = 0; subTabIndex = 0; }, mainTabIndex == 0),
+			new("EM.Tab.Breastfeed".Translate(), () => { mainTabIndex = 1; subTabIndex = 0; }, mainTabIndex == 1),
+			new("EM.Tab.HealthAndRisk".Translate(), () => { mainTabIndex = 2; subTabIndex = 0; }, mainTabIndex == 2),
+			new("EM.Tab.EfficiencyAndInterface".Translate(), () => { mainTabIndex = 3; subTabIndex = 0; }, mainTabIndex == 3),
+			new("EM.Tab.IntegrationAndAdvanced".Translate(), () => { mainTabIndex = 4; subTabIndex = 0; }, mainTabIndex == 4)
 		};
-		TabDrawer.DrawTabs(inRect, tabs);
+		TabDrawer.DrawTabs(inRect, mainTabs);
+		inRect.yMin += unitSize;
+
+		// 子 Tab 栏（随主 Tab 变化）
+		List<TabRecord> subTabs = GetSubTabs();
+		if (subTabs.Count > 0)
+		{
+			TabDrawer.DrawTabs(inRect, subTabs);
+			inRect.yMin += unitSize;
+		}
+
 		Widgets.DrawMenuSection(inRect);
 		Rect contentRect = inRect.ContractedBy(unitSize / 2);
-		switch (tabIndex)
+
+		// 根据 mainTabIndex + subTabIndex 分发内容
+		switch (mainTabIndex)
 		{
-			case 0:
-				milkableTable ??= new Widget_MilkableTable(namesToProducts);
-				milkableTable.Draw(contentRect);
+			case 0: // 产奶与体液
+				switch (subTabIndex)
+				{
+					case 0:
+						milkableTable ??= new Widget_MilkableTable(namesToProducts);
+						milkableTable.Draw(contentRect);
+						break;
+					case 1:
+						milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
+						milkTagsTable.Draw(contentRect);
+						break;
+					case 2:
+						raceOverridesWidget ??= new Widget_RaceOverrides();
+						raceOverridesWidget.Draw(contentRect);
+						break;
+					case 3:
+						cumpilationSettings ??= new Widget_CumpilationSettings();
+						cumpilationSettings.Draw(contentRect);
+						break;
+				}
 				break;
-			case 1:
-				milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
-				milkTagsTable.Draw(contentRect);
-				break;
-			case 2:
-				advancedSettings ??= new Widget_AdvancedSettings();
-				advancedSettings.Draw(contentRect);
-				break;
-			case 3:
+			case 1: // 哺乳
 				breastfeedSettings ??= new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
-				breastfeedSettings.Draw(contentRect);
+				if (subTabIndex == 0)
+					breastfeedSettings.DrawOverview(contentRect);
+				else
+					breastfeedSettings.DrawTab(contentRect, subTabIndex - 1);
 				break;
-			case 4:
-				geneSetting ??= new Widget_GeneSetting(genes);
-				geneSetting.Draw(contentRect);
+			case 2: // 健康与风险
+				advancedSettings ??= new Widget_AdvancedSettings();
+				advancedSettings.DrawSection(contentRect, 2, subTabIndex);
 				break;
-			case 5:
-				defaultSettingWidget ??= new Widget_DefaultSetting(
-					colonistSetting,
-					slaveSetting,
-					prisonerSetting,
-					animalSetting,
-					mechSetting,
-					entitySetting);
-				defaultSettingWidget.Draw(contentRect);
+			case 3: // 效率与界面
+				advancedSettings ??= new Widget_AdvancedSettings();
+				if (subTabIndex == 0)
+					advancedSettings.DrawSection(contentRect, 3, 0);
+				else
+				{
+					Rect topRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 280f);
+					advancedSettings.DrawSection(topRect, 3, 1);
+					Rect belowRect = new Rect(contentRect.x, contentRect.y + 290f, contentRect.width, contentRect.height - 290f);
+					defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
+					defaultSettingWidget.Draw(belowRect);
+				}
 				break;
-			case 6:
-				cumpilationSettings ??= new Widget_CumpilationSettings();
-				cumpilationSettings.Draw(contentRect);
+			case 4: // 联动与扩展
+				if (subTabIndex == 0 || subTabIndex == 1)
+				{
+					advancedSettings ??= new Widget_AdvancedSettings();
+					advancedSettings.DrawSection(contentRect, 4, subTabIndex);
+				}
+				else
+				{
+					float devHeight = Prefs.DevMode ? 220f : 0f;
+					Rect geneRect = new Rect(contentRect.x, contentRect.y, contentRect.width, contentRect.height - devHeight);
+					geneSetting ??= new Widget_GeneSetting(genes);
+					geneSetting.Draw(geneRect);
+					if (Prefs.DevMode)
+					{
+						Rect devRect = new Rect(contentRect.x, contentRect.yMax - devHeight, contentRect.width, devHeight - 10f);
+						advancedSettings ??= new Widget_AdvancedSettings();
+						advancedSettings.DrawDevModeSection(devRect);
+					}
+				}
 				break;
 		}
+	}
+
+	private List<TabRecord> GetSubTabs()
+	{
+		return mainTabIndex switch
+		{
+			0 => new List<TabRecord>
+			{
+				new("EM.SubTab.Milk".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.MilkTags".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+				new("EM.SubTab.RaceOverrides".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+				new("EM.SubTab.Fluids".Translate(), () => subTabIndex = 3, subTabIndex == 3)
+			},
+			1 => new List<TabRecord>
+			{
+				new("EM.SubTab.BreastfeedOverview".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new(Lang.Colonist.CapitalizeFirst(), () => subTabIndex = 1, subTabIndex == 1),
+				new(Lang.Animal.CapitalizeFirst(), () => subTabIndex = 2, subTabIndex == 2),
+				new(Lang.Mechanoid.CapitalizeFirst(), () => subTabIndex = 3, subTabIndex == 3)
+			},
+			2 => new List<TabRecord>
+			{
+				new("EM.SubTab.Mastitis".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+				new("EM.SubTab.ToleranceOverflow".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+				new("EM.SubTab.LoadFromDef".Translate(), () => subTabIndex = 3, subTabIndex == 3)
+			},
+			3 => new List<TabRecord>
+			{
+				new("EM.SubTab.Efficiency".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.IdentityAndMenu".Translate(), () => subTabIndex = 1, subTabIndex == 1)
+			},
+			4 => new List<TabRecord>
+			{
+				new("EM.SubTab.RJW".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+				new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+			},
+			_ => new List<TabRecord>()
+		};
 	}
 	private static IEnumerable<ThingDef> GetMilkablePawns()
 	{

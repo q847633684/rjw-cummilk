@@ -19,7 +19,15 @@ public class EqualMilkingMod : Mod
 	public override void DoSettingsWindowContents(Rect inRect)
 	{
 		if (Settings == null) return;
-		Settings.DoWindowContents(inRect);
+		try
+		{
+			Settings.DoWindowContents(inRect);
+		}
+		catch (System.InvalidCastException ex)
+		{
+			Verse.Log.Error($"[Equal Milking] Settings cast error: {ex.Message}");
+			Widgets.Label(inRect, "Equal_Milking".Translate() + ": " + "EM.SettingsLoadError".Translate());
+		}
 	}
 	public override void WriteSettings()
 	{

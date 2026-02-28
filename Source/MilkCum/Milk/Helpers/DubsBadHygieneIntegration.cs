@@ -1,4 +1,5 @@
 using MilkCum.Core;
+using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -10,20 +11,39 @@ namespace MilkCum.Milk.Helpers;
         private static NeedDef _cachedHygieneNeedDef;
         private static bool _cachedHygieneNeedChecked;
 
-        /// <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef）。</summary>
+        /// <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef 或检测到 DBH 模组）。</summary>
         public static bool IsDubsBadHygieneActive()
         {
-            if (_cachedHygieneNeedChecked) return _cachedHygieneNeedDef != null;
+            if (_cachedHygieneNeedChecked)
+                return _cachedHygieneNeedDef != null || IsDubsBadHygieneModPresent();
             _cachedHygieneNeedChecked = true;
-            _cachedHygieneNeedDef = DefDatabase<NeedDef>.GetNamedSilentFail("Hygiene");
-            return _cachedHygieneNeedDef != null;
+            _cachedHygieneNeedDef = DefDatabase<NeedDef>.GetNamedSilentFail("Hygiene")
+                ?? DefDatabase<NeedDef>.GetNamedSilentFail("DBH_Hygiene");
+            if (_cachedHygieneNeedDef == null && IsDubsBadHygieneModPresent())
+            {
+                var needDef = DefDatabase<NeedDef>.AllDefs.FirstOrDefault(d =>
+                    d.defName != null && d.defName.IndexOf("Hygiene", System.StringComparison.OrdinalIgnoreCase) >= 0);
+                if (needDef != null)
+                    _cachedHygieneNeedDef = needDef;
+            }
+            return _cachedHygieneNeedDef != null || IsDubsBadHygieneModPresent();
+        }
+
+        private static bool IsDubsBadHygieneModPresent()
+        {
+            if (ModLister.GetModWithIdentifier("dubwise.dubsbadhygiene") != null)
+                return true;
+            return ModLister.AllInstalledMods.Any(m =>
+                m.Active && m.PackageIdPlayerFacing != null
+                && m.PackageIdPlayerFacing.IndexOf("dubs", System.StringComparison.OrdinalIgnoreCase) >= 0
+                && m.PackageIdPlayerFacing.IndexOf("hygiene", System.StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         /// <summary>卫生风险系数 0~1（1=最易诱发乳腺炎）。当启用 DBH 联动时用 Hygiene 需求等级（低=高风险）；否则用当前房间清洁度（脏=高风险）。</summary>
         public static float GetHygieneRiskFactorForMastitis(Pawn pawn)
         {
             if (pawn?.needs == null) return 0f;
-            if (IsDubsBadHygieneActive() && EqualMilkingSettings.useDubsBadHygieneForMastitis)
+            if (IsDubsBadHygieneActive() && EqualMilkingSettings.useDubsBadHygieneForMastitis && _cachedHygieneNeedDef != null)
             {
                 var need = pawn.needs.TryGetNeed(_cachedHygieneNeedDef);
                 if (need != null)

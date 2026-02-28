@@ -145,6 +145,30 @@ public static class Need_Food_Patch
 
     }
 }
+
+/// <summary>泌乳灌满期间按 flowPerDay 施加额外饥饿，使灌满 1 池单位 = 消耗 1 营养。NeedInterval 在基类 Need 上。</summary>
+[HarmonyPatch(typeof(Need))]
+[HarmonyPatch("NeedInterval")]
+public static class Need_NeedInterval_Patch
+{
+    private const int NeedTicksInterval = 150;
+
+    [HarmonyPostfix]
+    public static void Postfix(Need __instance)
+    {
+        if (__instance is not Need_Food needFood) return;
+        Pawn pawn = needFood.pawn;
+        if (pawn?.health?.hediffSet == null) return;
+        if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>() is not HediffComp_EqualMilkingLactating comp)
+            return;
+        float flowPerDay = comp.GetFlowPerDay();
+        if (flowPerDay <= 0f) return;
+        int basis = Mathf.Clamp(EqualMilkingSettings.lactationExtraNutritionBasis, 0, 300);
+        float factor = basis / 150f;
+        float extraFall = flowPerDay * factor * (NeedTicksInterval / 60000f);
+        needFood.CurLevel = Mathf.Max(0f, needFood.CurLevel - extraFall);
+    }
+}
 /// <summary>
 /// Bypass vanilla milkable comp stat entries
 /// </summary>

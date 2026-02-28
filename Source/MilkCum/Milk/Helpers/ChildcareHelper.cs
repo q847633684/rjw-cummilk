@@ -37,7 +37,10 @@ public static class ChildcareHelper
     {
         HediffComp_Chargeable hediffComp_Chargeable = feeder.LactatingHediff().TryGetComp<HediffComp_Chargeable>();
         if (!baby.TryGetFoodOrEnergyNeed(out float wanted, out float maxLevel)) { return false; }
-        float toConsumeInTicks = Mathf.Min(maxLevel * ((float)delta) / EqualMilkingSettings.breastfeedTime);
+        float effectiveTime = EqualMilkingSettings.breastfeedTime / EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(feeder);
+        float capMult = Mathf.Clamp(1f + EqualMilkingSettings.breastfeedCapacityFactor * (feeder.MilkAmount() - 1f), 0.5f, 2f);
+        effectiveTime *= capMult;
+        float toConsumeInTicks = Mathf.Min(maxLevel * ((float)delta) / effectiveTime);
         if (feeder.MilkDef().ingestible.CachedNutrition <= 0)
         {
             float nonNutritionConsumed = hediffComp_Chargeable.GreedyConsume(toConsumeInTicks);

@@ -21,11 +21,11 @@ public class CompEquallyMilkable : CompMilkable
     public float breastfedAmount = 0f;
     public float maxFullness = 1f;
 
-    /// <summary>水池模型：左乳水位（0～左乳基础容量），与右乳合计 0～1；容量由种族×乳房大小按部位区分。</summary>
+    /// <summary>水池模型：左乳水位（0～左乳容量），与右乳合计 0～maxFullness；总容量 = 左+右（正常人 1+1=2）。</summary>
     private float leftFullness;
-    /// <summary>水池模型：右乳水位（0～右乳基础容量），与左乳合计 0～1。</summary>
+    /// <summary>水池模型：右乳水位（0～右乳基础容量），与左乳合计 0～maxFullness。</summary>
     private float rightFullness;
-    /// <summary>旧实现与旧存档兼容：固定单侧容量 0.5；当前容量由 GetLeft/RightBreastCapacityFactor 决定。</summary>
+    /// <summary>旧实现与旧存档兼容：固定单侧容量 0.5；当前容量由 GetLeft/RightBreastCapacityFactor 决定（总容量=左+右）。</summary>
     private const float HalfPool = 0.5f;
 
     /// <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
@@ -55,7 +55,7 @@ public class CompEquallyMilkable : CompMilkable
     private float overflowAccumulator = 0f;
     /// <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定。</summary>
     private int lastGatheredTick = -1;
-    /// <summary>规格：连续满池（Fullness≥0.95）的 tick 数，用于乳腺炎/堵塞触发（长时间满池）。</summary>
+    /// <summary>规格：连续满池（Fullness≥95% maxFullness）的 tick 数，用于乳腺炎/堵塞触发。</summary>
     private int ticksFullPool;
     /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏。</summary>
     private int lastFullPoolLetterTick = -1;
@@ -184,6 +184,13 @@ public class CompEquallyMilkable : CompMilkable
     public override void CompTick()
     {
         if (!parent.IsHashIntervalTick(30)) { return; }
+        // 每 tick 同步总容量（单乳 0.5 / 双乳 (左+右Severity)/2），供满池判定与显示
+        if (parent is Pawn p)
+        {
+            maxFullness = Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+            if (leftFullness + rightFullness > maxFullness)
+                SetFullness(maxFullness);
+        }
         ApplyDrugInducedLactationEffects();
         if (!Active) { return; }
         UpdateMilkPools();
@@ -264,7 +271,7 @@ public class CompEquallyMilkable : CompMilkable
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
         float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
         pool.TickShrink(leftBaseCap, rightBaseCap, shrinkFactor);
-        pool.UpdateFullPoolCounter(0.95f, 30);
+        pool.UpdateFullPoolCounter(0.95f * maxFullness, 30);
 
         leftFullness = pool.LeftFullness;
         rightFullness = pool.RightFullness;
@@ -321,14 +328,16 @@ public class CompEquallyMilkable : CompMilkable
         overflowAccumulator = Mathf.Min(overflowAccumulator, PoolModelConstants.OverflowFilthThreshold * 2f);
     }
 
-    /// <summary>满池时添加「乳房胀满」hediff；低于 0.9 时移除（滞后避免抖动）。</summary>
+    /// <summary>满池时添加「乳房胀满」hediff；低于 90% maxFullness 时移除（滞后避免抖动）。</summary>
     private void UpdateHealthHediffs()
     {
         if (EMDefOf.EM_BreastsEngorged == null || Pawn == null || !Pawn.RaceProps.Humanlike || !Pawn.IsLactating()) return;
         var engorged = Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_BreastsEngorged);
-        if (Fullness >= 0.95f && engorged == null)
+        float fullThreshold = 0.95f * maxFullness;
+        float lowThreshold = 0.9f * maxFullness;
+        if (Fullness >= fullThreshold && engorged == null)
             Pawn.health.AddHediff(EMDefOf.EM_BreastsEngorged, Pawn.GetBreastOrChestPart());
-        else if (Fullness < 0.9f && engorged != null)
+        else if (Fullness < lowThreshold && engorged != null)
             Pawn.health.RemoveHediff(engorged);
     }
     /// <summary>

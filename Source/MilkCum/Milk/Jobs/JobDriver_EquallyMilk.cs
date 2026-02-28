@@ -11,6 +11,8 @@ namespace MilkCum.Milk.Jobs;
 public class JobDriver_EquallyMilk : JobDriver_Milk
 {
     private float gatherProgress;
+    /// <summary>按容量量化：本次挤奶所需工作量，由 MilkAmount 与池满度计算。</summary>
+    private float workTotal = 400f;
     private Sustainer milkSustainer;
     public Pawn Target => job.GetTarget(TargetIndex.A).Thing as Pawn;
     public Building_Milking MilkBuilding => job.GetTarget(TargetIndex.B).Thing as Building_Milking;
@@ -18,11 +20,24 @@ public class JobDriver_EquallyMilk : JobDriver_Milk
     {
         base.ExposeData();
         Scribe_Values.Look(ref gatherProgress, "gatherProgress");
+        Scribe_Values.Look(ref workTotal, "workTotal", 400f);
     }
 
     protected override CompHasGatherableBodyResource GetComp(Pawn animal)
     {
         return animal.CompEquallyMilkable();
+    }
+
+    /// <summary>按容量量化：工作量 = 基准 × (1 + 容量系数×(MilkAmount-1)) × (0.5+0.5×池满度)，有上下限。</summary>
+    private float GetWorkTotal()
+    {
+        CompEquallyMilkable comp = Target?.CompEquallyMilkable();
+        if (comp == null)
+            return EqualMilkingSettings.milkingWorkTotalBase;
+        float milkAmt = Target.MilkAmount();
+        float capMult = Mathf.Clamp(1f + EqualMilkingSettings.milkingCapacityFactor * (milkAmt - 1f), 0.5f, 2.5f);
+        float fullMult = 0.5f + 0.5f * Mathf.Clamp01(comp.Fullness / Mathf.Max(0.01f, comp.maxFullness));
+        return EqualMilkingSettings.milkingWorkTotalBase * capMult * fullMult;
     }
 
     public override bool TryMakePreToilReservations(bool errorOnFailed)
@@ -54,11 +69,17 @@ public class JobDriver_EquallyMilk : JobDriver_Milk
                 {
                     PawnUtility.ForceWait(Target, 15000, null, true, true);
                 }
+                workTotal = GetWorkTotal();
             };
         }
         else if (MilkBuilding != null)
         {
             yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.OnCell, true);
+            wait.initAction = delegate { workTotal = GetWorkTotal(); };
+        }
+        else
+        {
+            wait.initAction = delegate { workTotal = GetWorkTotal(); };
         }
         wait.WithEffect(EMDefOf.EM_Milk, TargetIndex.A);
         wait.tickAction = delegate
@@ -66,7 +87,7 @@ public class JobDriver_EquallyMilk : JobDriver_Milk
             Pawn actor = wait.actor;
             actor.skills?.Learn(SkillDefOf.Animals, 0.13f);
             gatherProgress += actor.GetStatValue(StatDefOf.AnimalGatherSpeed) + (MilkBuilding?.SpeedOffset() ?? 0f);
-            if (!(gatherProgress >= WorkTotal))
+            if (!(gatherProgress >= workTotal))
             {
                 if (MilkBuilding != null)
                 {
@@ -106,7 +127,7 @@ public class JobDriver_EquallyMilk : JobDriver_Milk
             return JobCondition.Incompletable;
         });
         wait.defaultCompleteMode = ToilCompleteMode.Never;
-        wait.WithProgressBar(TargetIndex.A, () => this.gatherProgress / WorkTotal);
+        wait.WithProgressBar(TargetIndex.A, () => this.gatherProgress / workTotal);
         wait.activeSkill = () => SkillDefOf.Animals;
         yield return wait;
     }

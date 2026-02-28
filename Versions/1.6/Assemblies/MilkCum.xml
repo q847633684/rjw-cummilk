@@ -410,7 +410,7 @@
             <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.DubsBadHygieneIntegration.IsDubsBadHygieneActive">
-            <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef）。</summary>
+            <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef 或检测到 DBH 模组）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Verse.Pawn)">
             <summary>卫生风险系数 0~1（1=最易诱发乳腺炎）。当启用 DBH 联动时用 Hygiene 需求等级（低=高风险）；否则用当前房间清洁度（脏=高风险）。</summary>
@@ -512,8 +512,23 @@
         <member name="M:MilkCum.UI.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
             <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
         </member>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawSection(UnityEngine.Rect,System.Int32,System.Int32)">
+            <summary>主/子 Tab 结构下按区块绘制。mainTab 2=健康与风险，3=效率与界面，4=联动与扩展。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawDevModeSection(UnityEngine.Rect)">
+            <summary>开发模式：选中小人的泌乳状态调试信息。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawOverview(UnityEngine.Rect)">
+            <summary>主/子 Tab 结构下：仅绘制总览（营养→能量、哺乳时间）。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawTab(UnityEngine.Rect,System.Int32)">
+            <summary>主/子 Tab 结构下：仅绘制指定子 Tab 内容（0=人形，1=动物，2=机械族），不画内层 Tab 栏。</summary>
+        </member>
         <member name="T:MilkCum.UI.Widget_CumpilationSettings">
             <summary>精液/Cumpilation 设置：膨胀、填充、覆盖、收集、泄精等，统一到主 mod 设置的一个 Tab。</summary>
+        </member>
+        <member name="T:MilkCum.UI.Widget_RaceOverrides">
+            <summary>种族覆盖子 Tab：白名单、黑名单、人形流速倍率。</summary>
         </member>
         <member name="T:MilkCum.UI.Window_ProducerRestrictions">
             <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>

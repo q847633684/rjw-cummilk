@@ -46,6 +46,8 @@ public class Widget_MilkableTable
 		Rect tableRect = new(rect.x, rect.y + UNIT_SIZE, rect.width, rect.height - UNIT_SIZE);
 		Rect scrollRect = new(tableRect.x, tableRect.y + UNIT_SIZE, tableRect.width - UNIT_SIZE, pawnDefs.Count() * UNIT_SIZE);
 		Widgets.BeginScrollView(tableRect, ref scrollPosition, scrollRect, true);
+		try
+		{
 		using (IEnumerator<ThingDef> enumerator = pawnDefs.GetEnumerator())
         {
             float y_Offset = tableRect.y;
@@ -64,8 +66,11 @@ public class Widget_MilkableTable
                 Widgets.TextFieldNumeric(new Rect(tableRect.x + UNIT_SIZE * 19, y_Offset, UNIT_SIZE * 3, UNIT_SIZE), ref product.milkAmount, ref text, 1, 99999);
             }
         }
-        Widgets.EndScrollView();
-
+        }
+		finally
+		{
+			Widgets.EndScrollView();
+		}
     }
     private void SetupSelectProductButton(Rect buttonRect, ThingDef currentOptionDef, IEnumerable<ThingDef> optionDefs)
     {

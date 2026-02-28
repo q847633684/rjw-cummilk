@@ -59,9 +59,15 @@ public class Widget_DefaultSetting
         }
         TabDrawer.DrawTabs(inRect.ContractedBy(UNIT_SIZE), tabs);
         if (setting == null) { return; }
-        Rect contentRect = inRect.ContractedBy(UNIT_SIZE * 2f);
+		Rect contentRect = inRect.ContractedBy(UNIT_SIZE * 2f);
         Listing_Standard listing = new();
         listing.Begin(contentRect);
+        GUI.color = Color.gray;
+        listing.Label("EM.SectionDesc_DefaultByRole".Translate());
+        GUI.color = Color.white;
+        listing.Gap(4f);
+        listing.Label("EM.SectionDesc_MilkingSelf".Translate(), -1f);
+        listing.Gap(2f);
         listing.CheckboxLabeled(Lang.Milking + " (" + Lang.Self + ")", ref setting.allowMilkingSelf);
         listing.CheckboxLabeled("EM.DefaultSetting_CanBeFed".Translate(), ref setting.canBeFed);
         GUI.color = Color.gray;

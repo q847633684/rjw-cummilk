@@ -226,44 +226,39 @@ public static class ExtensionHelper
     }
     #endregion
     #region Milk
-    /// <summary>规格：种族×乳房大小按部位区分。左乳容量占比（0～1），与右乳合计 1；无 RJW 或未启用时 0.5/0.5。</summary>
+    /// <summary>左乳池容量（与右乳合计 = 总容量）。总容量 = 左+右，正常人双乳 1+1→2。</summary>
     public static float GetLeftBreastCapacityFactor(this Pawn pawn)
     {
         GetBreastCapacityFactors(pawn, out float left, out _);
         return left;
     }
-    /// <summary>右乳容量占比（0～1），与左乳合计 1。</summary>
+    /// <summary>右乳池基础容量；与左乳合计 = 总容量。</summary>
     public static float GetRightBreastCapacityFactor(this Pawn pawn)
     {
         GetBreastCapacityFactors(pawn, out _, out float right);
         return right;
     }
-    /// <summary>按 RJW 乳房 Hediff 列表与 Severity（大小）计算左右容量占比；列表 [0]=左、[1]=右，单乳时全归左。</summary>
+    /// <summary>按 RJW 乳房 Hediff 与 Severity 计算左右池容量。总容量 = 左+右。</summary>
     private static void GetBreastCapacityFactors(Pawn pawn, out float leftFactor, out float rightFactor)
     {
-        leftFactor = 0.5f;
-        rightFactor = 0.5f;
-        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled || !pawn.RaceProps.Humanlike)
-            return;
+        leftFactor = 0f;
+        rightFactor = 0f;
+        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return;
         try
         {
             var list = pawn.GetBreastList();
-            if (list == null || list.Count == 0) return;
             if (list.Count == 1)
             {
-                leftFactor = 1f;
+                leftFactor = Mathf.Clamp(list[0].Severity, 0.01f, 10f);
                 rightFactor = 0f;
                 return;
             }
-            float leftSize = Mathf.Clamp(list[0].Severity, 0.01f, 10f);
-            float rightSize = Mathf.Clamp(list[1].Severity, 0.01f, 10f);
-            float total = leftSize + rightSize;
-            leftFactor = leftSize / total;
-            rightFactor = rightSize / total;
+            leftFactor = Mathf.Clamp(list[0].Severity, 0.01f, 10f);
+            rightFactor = Mathf.Clamp(list[1].Severity, 0.01f, 10f);
         }
         catch
         {
-            // RJW 未加载或 GetBreastList 异常时保持 0.5/0.5
+            // RJW 异常时保持 0/0
         }
     }
     public static ThingDef MilkDef(this Pawn pawn) => EqualMilkingSettings.GetMilkProductDef(pawn);
