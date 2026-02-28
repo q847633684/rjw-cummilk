@@ -53,14 +53,15 @@ internal class EqualMilkingSettings : ModSettings
 	// 耐受对泌乳效率的影响：关闭则 E_tol 恒为 1；指数控制曲线（1=线性）
 	// 建议 13：收拢为 MilkRiskSettings，便于序列化与 UI 分组；对外仍用静态属性，存档兼容旧 key
 	private static MilkRiskSettings _risk = new MilkRiskSettings();
-	public static bool allowMastitis { get => _risk.allowMastitis; set => _risk.allowMastitis = value; }
-	public static float mastitisBaseMtbDays { get => _risk.mastitisBaseMtbDays; set => _risk.mastitisBaseMtbDays = value; }
-	public static float overFullnessRiskMultiplier { get => _risk.overFullnessRiskMultiplier; set => _risk.overFullnessRiskMultiplier = value; }
-	public static float hygieneRiskMultiplier { get => _risk.hygieneRiskMultiplier; set => _risk.hygieneRiskMultiplier = value; }
-	public static bool allowToleranceAffectMilk { get => _risk.allowToleranceAffectMilk; set => _risk.allowToleranceAffectMilk = value; }
-	public static float toleranceFlowImpactExponent { get => _risk.toleranceFlowImpactExponent; set => _risk.toleranceFlowImpactExponent = value; }
-	public static float mastitisMtbDaysMultiplierHumanlike { get => _risk.mastitisMtbDaysMultiplierHumanlike; set => _risk.mastitisMtbDaysMultiplierHumanlike = value; }
-	public static float mastitisMtbDaysMultiplierAnimal { get => _risk.mastitisMtbDaysMultiplierAnimal; set => _risk.mastitisMtbDaysMultiplierAnimal = value; }
+	private static MilkRiskSettings Risk => _risk ??= new MilkRiskSettings();
+	public static bool allowMastitis { get => Risk.allowMastitis; set => Risk.allowMastitis = value; }
+	public static float mastitisBaseMtbDays { get => Risk.mastitisBaseMtbDays; set => Risk.mastitisBaseMtbDays = value; }
+	public static float overFullnessRiskMultiplier { get => Risk.overFullnessRiskMultiplier; set => Risk.overFullnessRiskMultiplier = value; }
+	public static float hygieneRiskMultiplier { get => Risk.hygieneRiskMultiplier; set => Risk.hygieneRiskMultiplier = value; }
+	public static bool allowToleranceAffectMilk { get => Risk.allowToleranceAffectMilk; set => Risk.allowToleranceAffectMilk = value; }
+	public static float toleranceFlowImpactExponent { get => Risk.toleranceFlowImpactExponent; set => Risk.toleranceFlowImpactExponent = value; }
+	public static float mastitisMtbDaysMultiplierHumanlike { get => Risk.mastitisMtbDaysMultiplierHumanlike; set => Risk.mastitisMtbDaysMultiplierHumanlike = value; }
+	public static float mastitisMtbDaysMultiplierAnimal { get => Risk.mastitisMtbDaysMultiplierAnimal; set => Risk.mastitisMtbDaysMultiplierAnimal = value; }
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
 	// 基准泌乳持续天数（参考/显示，对应池模型 B_T / B_T_birth）

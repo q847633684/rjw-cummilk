@@ -7,11 +7,13 @@
         <onGeneratedAddictedToleranceChance>0.8</onGeneratedAddictedToleranceChance>
     </ChemicalDef>
     
+    <!-- fallPerDay 用于信息面板「成瘾需求降低速率」「成瘾需求间隔」等；与 needLevelOffset 配合计算间隔天数 -->
     <NeedDef ParentName="DrugAddictionNeedBase">
         <defName>Chemical_EM_Prolactin</defName>
         <needClass>Need_Chemical</needClass>
         <label>Prolactin</label>
         <description>Because of a Prolactin addiction, this person needs to regularly consume the drug to avoid withdrawal symptoms.</description>
         <listPriority>45</listPriority>
+        <fallPerDay>0.5</fallPerDay>
     </NeedDef>
 </Defs>

@@ -12,11 +12,18 @@ using static MilkCum.Milk.Helpers.Constants;
 namespace MilkCum.UI;
 public class Widget_AdvancedSettings
 {
+	private Vector2 _advancedScrollPosition = Vector2.zero;
+
 	public void Draw(Rect inRect)
 	{
-		Rect sliderRect = new(inRect.x, inRect.y, inRect.width, UNIT_SIZE);
+		// 使用滚动区域，避免内容超出设置框（长标签、小窗口时可滚动查看）
+		float contentHeight = 2600f;
+		Rect scrollContent = new Rect(0f, 0f, inRect.width - 20f, contentHeight);
+		Widgets.BeginScrollView(inRect, ref _advancedScrollPosition, scrollContent, true);
+		Rect sliderRect = new(0f, 0f, scrollContent.width, UNIT_SIZE);
 		float fStacks = (float)EqualMilkingSettings.maxLactationStacks;
-		Widgets.HorizontalSlider(sliderRect, ref fStacks, new FloatRange(1, 10), Lang.Join(HediffDefOf.Lactating.label, Lang.InstallImplantAlreadyMaxLevel) + ": " + ((int)fStacks).ToString(), 1f);
+		string lactatingLabel = HediffDefOf.Lactating?.label ?? "Lactating";
+		Widgets.HorizontalSlider(sliderRect, ref fStacks, new FloatRange(1, 10), Lang.Join(lactatingLabel, Lang.InstallImplantAlreadyMaxLevel) + ": " + ((int)fStacks).ToString(), 1f);
 		EqualMilkingSettings.maxLactationStacks = (int)fStacks;
 		sliderRect.y += UNIT_SIZE;
 		GUI.color = Color.gray;
@@ -26,14 +33,14 @@ public class Widget_AdvancedSettings
 		Text.Font = prevFont;
 		GUI.color = Color.white;
 		sliderRect.y += UNIT_SIZE;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(HediffDefOf.Lactating.label, Lang.Efficiency, Lang.StatFactor) + ": " + EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString(), 0.01f);
+		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(lactatingLabel, Lang.Efficiency, Lang.StatFactor) + ": " + EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString(), 0.01f);
 		sliderRect.y += UNIT_SIZE * 2;
 		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.milkAmountMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(Lang.MilkAmount, Lang.StatFactor) + ": " + EqualMilkingSettings.milkAmountMultiplierPerStack.ToString(), 0.01f);
 		sliderRect.y += UNIT_SIZE * 2;
 		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.hungerRateMultiplierPerStack, new FloatRange(0f, 5f), Lang.Join(Lang.HungerRate, Lang.StatFactor) + ": " + EqualMilkingSettings.hungerRateMultiplierPerStack.ToString(), 0.01f);
 		sliderRect.y += UNIT_SIZE * 2;
 		// 泌乳期意识/操纵/移动增益
-		Rect rLactatingGain = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+		Rect rLactatingGain = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 		Widgets.CheckboxLabeled(rLactatingGain, "EM.LactatingGain".Translate(), ref EqualMilkingSettings.lactatingGainEnabled, false);
 		{ string t = "EM.LactatingGainDesc".Translate(); TooltipHandler.TipRegion(rLactatingGain, string.IsNullOrEmpty(t) ? "EM.LactatingGainDesc" : t); }
 		sliderRect.y += UNIT_SIZE;
@@ -54,19 +61,20 @@ public class Widget_AdvancedSettings
 		string s_breastfeedTime = EqualMilkingSettings.breastfeedTime.ToString();
 		Widgets.TextFieldNumericLabeled(sliderRect, Lang.Join(Lang.Breastfeed, Lang.Time), ref EqualMilkingSettings.breastfeedTime, ref s_breastfeedTime, 1f);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Animal.CapitalizeFirst() + ": " + Lang.Join(Lang.AnimalFemaleAdult, Lang.Always, Lang.Lactating), ref EqualMilkingSettings.femaleAnimalAdultAlwaysLactating);
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.AnimalAdultFemaleAlwaysLactating".Translate(), ref EqualMilkingSettings.femaleAnimalAdultAlwaysLactating);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Menu + ": " + Lang.GiveTo(EMDefOf.EM_Prolactin.label, Lang.Mechanoid), ref EqualMilkingSettings.showMechOptions);
+		string prolactinLabel = EMDefOf.EM_Prolactin?.label ?? "Prolactin";
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Mechanoid), ref EqualMilkingSettings.showMechOptions);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Menu + ": " + Lang.GiveTo(EMDefOf.EM_Prolactin.label, Lang.Colonist), ref EqualMilkingSettings.showColonistOptions);
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Colonist), ref EqualMilkingSettings.showColonistOptions);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Menu + ": " + Lang.GiveTo(EMDefOf.EM_Prolactin.label, Lang.Slave), ref EqualMilkingSettings.showSlaveOptions);
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Slave), ref EqualMilkingSettings.showSlaveOptions);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Menu + ": " + Lang.GiveTo(EMDefOf.EM_Prolactin.label, Lang.Prisoner), ref EqualMilkingSettings.showPrisonerOptions);
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Prisoner), ref EqualMilkingSettings.showPrisonerOptions);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Menu + ": " + Lang.GiveTo(EMDefOf.EM_Prolactin.label, Lang.Animal), ref EqualMilkingSettings.showAnimalOptions);
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Animal), ref EqualMilkingSettings.showAnimalOptions);
 		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE), Lang.Menu + ": " + Lang.GiveTo(EMDefOf.EM_Prolactin.label, Lang.Misc), ref EqualMilkingSettings.showMiscOptions);
+		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Misc), ref EqualMilkingSettings.showMiscOptions);
 		sliderRect.y += UNIT_SIZE;
 		// RJW 联动（仅当 RJW 激活时显示）
 		if (ModLister.GetModWithIdentifier("rim.job.world") != null)
@@ -76,19 +84,19 @@ public class Widget_AdvancedSettings
 			Widgets.Label(sliderRect, "EM.RJWSection".Translate());
 			GUI.color = Color.white;
 			sliderRect.y += UNIT_SIZE;
-			Rect rRjwBreast = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rRjwBreast = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwBreast, "EM.RjwBreastSize".Translate(), ref EqualMilkingSettings.rjwBreastSizeEnabled, false);
 			{ string t = "EM.RjwBreastSizeDesc".Translate(); TooltipHandler.TipRegion(rRjwBreast, string.IsNullOrEmpty(t) ? "EM.RjwBreastSizeDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
-			Rect rRjwLust = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rRjwLust = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwLust, "EM.RjwLustFromNursing".Translate(), ref EqualMilkingSettings.rjwLustFromNursingEnabled, false);
 			{ string t = "EM.RjwLustFromNursingDesc".Translate(); TooltipHandler.TipRegion(rRjwLust, string.IsNullOrEmpty(t) ? "EM.RjwLustFromNursingDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
-			Rect rRjwNeed = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rRjwNeed = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwNeed, "EM.RjwSexNeedLactatingBonus".Translate(), ref EqualMilkingSettings.rjwSexNeedLactatingBonusEnabled, false);
 			{ string t = "EM.RjwSexNeedLactatingBonusDesc".Translate(); TooltipHandler.TipRegion(rRjwNeed, string.IsNullOrEmpty(t) ? "EM.RjwSexNeedLactatingBonusDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
-			Rect rRjwSat = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rRjwSat = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwSat, "EM.RjwSexSatisfactionAfterNursing".Translate(), ref EqualMilkingSettings.rjwSexSatisfactionAfterNursingEnabled, false);
 			{ string t = "EM.RjwSexSatisfactionAfterNursingDesc".Translate(); TooltipHandler.TipRegion(rRjwSat, string.IsNullOrEmpty(t) ? "EM.RjwSexSatisfactionAfterNursingDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
@@ -96,17 +104,17 @@ public class Widget_AdvancedSettings
 			Widgets.HorizontalSlider(sliderRect, ref fert, new FloatRange(0f, 1f), "EM.RjwLactationFertility".Translate(fert.ToStringPercent()), 0.05f);
 			EqualMilkingSettings.rjwLactationFertilityFactor = fert;
 			sliderRect.y += UNIT_SIZE;
-			Rect rRjwInSex = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rRjwInSex = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwInSex, "EM.RjwLactatingInSexDesc".Translate(), ref EqualMilkingSettings.rjwLactatingInSexDescriptionEnabled, false);
 			{ string t = "EM.RjwLactatingInSexDescDesc".Translate(); TooltipHandler.TipRegion(rRjwInSex, string.IsNullOrEmpty(t) ? "EM.RjwLactatingInSexDescDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
-			Rect rSexBoost = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rSexBoost = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rSexBoost, "EM.RjwSexAddsLactationBoost".Translate(), ref EqualMilkingSettings.rjwSexAddsLactationBoost, false);
 			{ string t = "EM.RjwSexAddsLactationBoostDesc".Translate(); TooltipHandler.TipRegion(rSexBoost, string.IsNullOrEmpty(t) ? "EM.RjwSexAddsLactationBoostDesc" : t); }
 			sliderRect.y += UNIT_SIZE;
 			if (EqualMilkingSettings.rjwSexAddsLactationBoost)
 			{
-				Rect rDeltaS = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+				Rect rDeltaS = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 				Widgets.Label(rDeltaS.LeftHalf(), "EM.RjwSexLactationBoostDeltaS".Translate(EqualMilkingSettings.rjwSexLactationBoostDeltaS.ToString("F2")));
 				EqualMilkingSettings.rjwSexLactationBoostDeltaS = Widgets.HorizontalSlider(rDeltaS.RightHalf(), EqualMilkingSettings.rjwSexLactationBoostDeltaS, 0.05f, 0.5f, true);
 				sliderRect.y += UNIT_SIZE;
@@ -120,12 +128,12 @@ public class Widget_AdvancedSettings
 			Widgets.Label(sliderRect, "EM.DubsBadHygieneSection".Translate());
 			GUI.color = Color.white;
 			sliderRect.y += UNIT_SIZE;
-			Rect rDbhMastitis = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
+			Rect rDbhMastitis = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rDbhMastitis, "EM.UseDubsBadHygieneForMastitis".Translate(), ref EqualMilkingSettings.useDubsBadHygieneForMastitis, false);
 			{ string t = "EM.UseDubsBadHygieneForMastitisDesc".Translate(); TooltipHandler.TipRegion(rDbhMastitis, string.IsNullOrEmpty(t) ? "EM.UseDubsBadHygieneForMastitisDesc" : t); }
 		}
 		// 乳腺炎与耐受、溢出与 AI：可折叠区块
-		Rect listRect = new Rect(sliderRect.x, sliderRect.y, inRect.width, inRect.yMax - sliderRect.y);
+		Rect listRect = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, contentHeight - sliderRect.y);
 		Listing_Standard list = new Listing_Standard();
 		list.Begin(listRect);
 		// 建议 22：从 Def 加载默认（Def 可被其他 mod patch）
@@ -252,6 +260,7 @@ public class Widget_AdvancedSettings
 			}
 		}
 		list.End();
+		Widgets.EndScrollView();
 	}
 
 	private static List<string> ParseCommaSeparatedDefNames(string text)

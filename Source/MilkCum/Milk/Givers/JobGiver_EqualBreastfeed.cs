@@ -58,7 +58,7 @@ public class JobGiver_EqualBreastfeed : ThinkNode_JobGiver
 			tmpBabies.Add(baby);
 		}
 		// Distance sort
-		if (tmpBabies.Count > 0)
+		if (tmpBabies.Count > 0 && EMDefOf.EM_ForcedBreastfeed != null)
 		{
 			tmpBabies.SortBy(x => x.PositionHeld.DistanceToSquared(pawn.PositionHeld));
 			Job job = JobMaker.MakeJob(EMDefOf.EM_ForcedBreastfeed, tmpBabies[0]);

@@ -30,6 +30,8 @@
     <EM.HealthTabRestrictionsButton>谁可用我的奶 / 奶制品 / 精液制品</EM.HealthTabRestrictionsButton>
     <EM.Specify>指定</EM.Specify>
     <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>
+    <EM.AnimalAdultFemaleAlwaysLactating>动物：成年雌性常乳</EM.AnimalAdultFemaleAlwaysLactating>
+    <EM.MenuProlactinShow>菜单：催乳素→{0}</EM.MenuProlactinShow>
     <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
     <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>泌乳期时暂时增大 RJW 胸部尺寸。</EM.RjwBreastSizeDesc>

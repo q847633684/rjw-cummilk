@@ -30,6 +30,8 @@
     <EM.HealthTabRestrictionsButton>Who can use my milk / milk or cum products</EM.HealthTabRestrictionsButton>
     <EM.Specify>Specify</EM.Specify>
     <EM.DrugRoleHint>To enter lactation: Prolactin or Lucilactin. To boost milk output when already lactating: Galactogogues.</EM.DrugRoleHint>
+    <EM.AnimalAdultFemaleAlwaysLactating>Animals: adult females always lactating</EM.AnimalAdultFemaleAlwaysLactating>
+    <EM.MenuProlactinShow>Menu: show give prolactin to {0}</EM.MenuProlactinShow>
     <EM.RJWSection>--- RJW (when rim.job.world active) ---</EM.RJWSection>
     <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>When lactating, temporarily increase RJW breast size.</EM.RjwBreastSizeDesc>

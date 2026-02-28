@@ -104,6 +104,7 @@
         <comps>
             <li Class="HediffCompProperties_SeverityPerDay">
                 <severityPerDay>-0.015</severityPerDay>
+                <showDaysToRecover>true</showDaysToRecover>
             </li>
         </comps>
         <stages>

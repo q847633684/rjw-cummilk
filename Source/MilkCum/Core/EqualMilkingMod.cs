@@ -18,11 +18,12 @@ public class EqualMilkingMod : Mod
 
 	public override void DoSettingsWindowContents(Rect inRect)
 	{
+		if (Settings == null) return;
 		Settings.DoWindowContents(inRect);
 	}
 	public override void WriteSettings()
 	{
-		Settings.UpdateEqualMilkingSettings();
+		if (Settings != null) Settings.UpdateEqualMilkingSettings();
 		base.WriteSettings();
 	}
 

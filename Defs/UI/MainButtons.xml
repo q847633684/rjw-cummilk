@@ -3,7 +3,7 @@
 	<MainButtonDef>
 		<defName>Milk_MainButton</defName>
 		<label>Equal Milking</label>
-		<tabWindowClass>EqualMilking.MainTabWindow</tabWindowClass>
+		<tabWindowClass>MilkCum.MainTabWindow</tabWindowClass>
 		<order>54</order>
 		<minimized>True</minimized>
 		<iconPath>UI/Icons/Milk</iconPath>

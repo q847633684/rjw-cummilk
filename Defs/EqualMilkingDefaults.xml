@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 	<!-- 建议 22：关键默认值，其他 mod 可用 PatchOperationReplace 等覆盖后，在设置中点击「从 Def 加载默认」应用 -->
-	<EqualMilkingDefaultsDef>
+	<MilkCumDefaultsDef>
 		<defName>EM_Defaults</defName>
 		<label>EM.DefaultsDefLabel</label>
 		<baselineMilkDurationDays>3</baselineMilkDurationDays>
@@ -15,5 +15,5 @@
 		<overflowFilthDefName>Filth_Vomit</overflowFilthDefName>
 		<aiPreferHighFullnessTargets>true</aiPreferHighFullnessTargets>
 		<defaultFlowMultiplierForHumanlike>1</defaultFlowMultiplierForHumanlike>
-	</EqualMilkingDefaultsDef>
+	</MilkCumDefaultsDef>
 </Defs>

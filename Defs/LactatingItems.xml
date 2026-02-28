@@ -1,4 +1,5 @@
 <Defs>
+    <!-- 与 MakeableDrugBase 对齐：补全信息面板所需 statBases（工作量、易燃性等） -->
     <ThingDef Name="EM_DrugBase" ParentName="DrugBase" Abstract="True">
         <graphicData>
             <graphicClass>Graphic_StackCount</graphicClass>
@@ -8,6 +9,8 @@
             <Mass>0.025</Mass>
             <MaxHitPoints>60</MaxHitPoints>
             <DeteriorationRate>0</DeteriorationRate>
+            <WorkToMake>100</WorkToMake>
+            <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
             <drugCategory>Medical</drugCategory>
@@ -50,6 +53,8 @@
         </graphicData>
         <statBases>
             <MarketValue>50</MarketValue>
+            <WorkToMake>100</WorkToMake>
+            <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
             <outcomeDoers>
@@ -84,6 +89,7 @@
                 <addictiveness>0.04</addictiveness>
                 <minToleranceToAddict>0.03</minToleranceToAddict>
                 <existingAddictionSeverityOffset>0.2</existingAddictionSeverityOffset>
+                <needLevelOffset>1</needLevelOffset>
                 <overdoseSeverityOffset>
                     <min>0.18</min>
                     <max>0.35</max>
