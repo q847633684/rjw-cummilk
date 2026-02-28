@@ -4,6 +4,7 @@ using RimWorld;
 using System.Collections.Generic;
 using RimWorld.Planet;
 using System.Linq;
+using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 namespace MilkCum.Milk.Givers;
 [StaticConstructorOnStartup]
@@ -57,8 +58,19 @@ public class WorkGiver_EquallyMilk : WorkGiver_Milk
         }
         return true;
     }
-    public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
-    {
-        return pawn.Map.AllColonyPawns();
-    }
+	public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
+	{
+		IEnumerable<Thing> colony = pawn.Map.AllColonyPawns();
+		if (!EqualMilkingSettings.aiPreferHighFullnessTargets)
+		{
+			return colony;
+		}
+		// 优先满度更高的目标，减少溢出
+		return colony
+			.OrderByDescending(t =>
+			{
+				Pawn p = t as Pawn ?? t?.TryGetComp<CompEntityHolder>()?.HeldPawn;
+				return p?.CompEquallyMilkable()?.Fullness ?? 0f;
+			});
+	}
 }

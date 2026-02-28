@@ -150,4 +150,16 @@
             </li>
         </stages>
     </ThoughtDef>
+    <!-- 建议 9：高耐受且泌乳量(L)偏低时轻微挫败感 -->
+    <ThoughtDef>
+        <defName>EM_HighToleranceLowMilk</defName>
+        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_HighToleranceLowMilk</workerClass>
+        <stages>
+            <li>
+                <label>耐受高产奶少</label>
+                <description>催乳素耐受高了，产奶却变少了，有点郁闷。</description>
+                <baseMoodEffect>-2</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
 </Defs>

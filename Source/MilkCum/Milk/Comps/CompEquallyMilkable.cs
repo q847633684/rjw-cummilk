@@ -219,6 +219,7 @@ public class CompEquallyMilkable : CompMilkable
         float flowPerDay = currentLactation * hungerFactor;
         flowPerDay *= Pawn.GetMilkFlowMultiplierFromConditions();
         flowPerDay *= Pawn.GetMilkFlowMultiplierFromGenes();
+        flowPerDay *= (Pawn.RaceProps.Humanlike ? EqualMilkingSettings.defaultFlowMultiplierForHumanlike : 1f);
         float flowPerTick = flowPerDay / 60000f * 30f;
 
         float leftBaseCap = Pawn.GetLeftBreastCapacityFactor();
@@ -426,6 +427,8 @@ public class CompEquallyMilkable : CompMilkable
         // 营养/饥饿缓解：饱腹时 MTB 延长（风险降低），饥饿时缩短
         float nutritionFactor = 0.5f + 0.5f * Mathf.Clamp(PawnUtility.BodyResourceGrowthSpeed(Pawn), 0f, 1f);
         mtbDays *= Mathf.Max(0.3f, nutritionFactor);
+        float raceMultiplier = Pawn.RaceProps.Humanlike ? EqualMilkingSettings.mastitisMtbDaysMultiplierHumanlike : EqualMilkingSettings.mastitisMtbDaysMultiplierAnimal;
+        mtbDays *= Mathf.Max(0.01f, raceMultiplier);
         if (!Rand.MTBEventOccurs(mtbDays, 60000f, 2000f)) return;
         var existing = Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Mastitis);
         if (existing != null)

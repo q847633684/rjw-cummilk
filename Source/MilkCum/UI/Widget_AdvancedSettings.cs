@@ -2,12 +2,21 @@ using Verse;
 using RimWorld;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using MilkCum.Core;
 using MilkCum.Milk.Helpers;
+using MilkCum.Milk.Comps;
 using static MilkCum.Milk.Helpers.Constants;
 
 namespace MilkCum.UI;
 public class Widget_AdvancedSettings
 {
+	// 折叠状态（Section 展开/收起）
+	private static bool _mastitisSectionExpanded = true;
+	private static bool _overflowSectionExpanded = true;
+	private static bool _raceOverridesSectionExpanded = false;
+	private static bool _devModeLactationExpanded = false;
+
 	public void Draw(Rect inRect)
 	{
 		Rect sliderRect = new(inRect.x, inRect.y, inRect.width, UNIT_SIZE);
@@ -108,34 +117,114 @@ public class Widget_AdvancedSettings
 			Widgets.CheckboxLabeled(rDbhMastitis, "EM.UseDubsBadHygieneForMastitis".Translate(), ref EqualMilkingSettings.useDubsBadHygieneForMastitis, false);
 			{ string t = "EM.UseDubsBadHygieneForMastitisDesc".Translate(); TooltipHandler.TipRegion(rDbhMastitis, string.IsNullOrEmpty(t) ? "EM.UseDubsBadHygieneForMastitisDesc" : t); }
 		}
-		// 乳腺炎与耐受可调参数
-		sliderRect.y += UNIT_SIZE;
-		GUI.color = Color.gray;
-		Widgets.Label(sliderRect, "EM.MastitisAndToleranceSection".Translate());
-		GUI.color = Color.white;
-		sliderRect.y += UNIT_SIZE;
-		Rect rAllowMastitis = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
-		Widgets.CheckboxLabeled(rAllowMastitis, "EM.AllowMastitis".Translate(), ref EqualMilkingSettings.allowMastitis, false);
-		TooltipHandler.TipRegion(rAllowMastitis, "EM.AllowMastitisDesc".Translate());
-		sliderRect.y += UNIT_SIZE;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.mastitisBaseMtbDays, new FloatRange(0.2f, 10f), "EM.MastitisBaseMtbDays".Translate(EqualMilkingSettings.mastitisBaseMtbDays.ToString("F1")), 0.1f);
-		sliderRect.y += UNIT_SIZE;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.overFullnessRiskMultiplier, new FloatRange(0.5f, 5f), "EM.OverFullnessRiskMultiplier".Translate(EqualMilkingSettings.overFullnessRiskMultiplier.ToString("F1")), 0.1f);
-		sliderRect.y += UNIT_SIZE;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.hygieneRiskMultiplier, new FloatRange(0.5f, 3f), "EM.HygieneRiskMultiplier".Translate(EqualMilkingSettings.hygieneRiskMultiplier.ToString("F1")), 0.1f);
-		sliderRect.y += UNIT_SIZE;
-		Rect rToleranceAffect = new Rect(sliderRect.x, sliderRect.y, inRect.width, UNIT_SIZE);
-		Widgets.CheckboxLabeled(rToleranceAffect, "EM.AllowToleranceAffectMilk".Translate(), ref EqualMilkingSettings.allowToleranceAffectMilk, false);
-		TooltipHandler.TipRegion(rToleranceAffect, "EM.AllowToleranceAffectMilkDesc".Translate());
-		sliderRect.y += UNIT_SIZE;
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.toleranceFlowImpactExponent, new FloatRange(0.1f, 3f), "EM.ToleranceFlowImpactExponent".Translate(EqualMilkingSettings.toleranceFlowImpactExponent.ToString("F1")), 0.1f);
-		sliderRect.y += UNIT_SIZE;
-		GUI.color = Color.gray;
-		Widgets.Label(sliderRect, "EM.OverflowFilthSection".Translate());
-		GUI.color = Color.white;
-		sliderRect.y += UNIT_SIZE;
-		string overflowFilth = EqualMilkingSettings.overflowFilthDefName ?? "";
-		Widgets.TextFieldLabeled(sliderRect, "EM.OverflowFilthDefName".Translate(), ref overflowFilth, 64);
-		EqualMilkingSettings.overflowFilthDefName = overflowFilth?.Trim() ?? "Filth_Vomit";
+		// 乳腺炎与耐受、溢出与 AI：可折叠区块
+		Rect listRect = new Rect(sliderRect.x, sliderRect.y, inRect.width, inRect.yMax - sliderRect.y);
+		Listing_Standard list = new Listing_Standard();
+		list.Begin(listRect);
+		// 建议 22：从 Def 加载默认（Def 可被其他 mod patch）
+		Rect rLoadDef = list.GetRect(UNIT_SIZE);
+		if (Widgets.ButtonText(rLoadDef, "EM.LoadDefaultsFromDef".Translate()))
+			EqualMilkingSettings.ApplyDefaultsFromDef();
+		TooltipHandler.TipRegion(rLoadDef, "EM.LoadDefaultsFromDefDesc".Translate());
+		list.Gap(6f);
+		if (list.Section("EM.MastitisAndToleranceSection".Translate(), ref _mastitisSectionExpanded))
+		{
+			Rect rAllowMastitis = list.GetRect(UNIT_SIZE);
+			Widgets.CheckboxLabeled(rAllowMastitis, "EM.AllowMastitis".Translate(), ref EqualMilkingSettings.allowMastitis, false);
+			TooltipHandler.TipRegion(rAllowMastitis, "EM.AllowMastitisDesc".Translate());
+			list.Gap(6f);
+			Rect rMtb = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rMtb, ref EqualMilkingSettings.mastitisBaseMtbDays, new FloatRange(0.2f, 10f), "EM.MastitisBaseMtbDays".Translate(EqualMilkingSettings.mastitisBaseMtbDays.ToString("F1")), 0.1f);
+			list.Gap(6f);
+			Rect rOverFull = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rOverFull, ref EqualMilkingSettings.overFullnessRiskMultiplier, new FloatRange(0.5f, 5f), "EM.OverFullnessRiskMultiplier".Translate(EqualMilkingSettings.overFullnessRiskMultiplier.ToString("F1")), 0.1f);
+			list.Gap(6f);
+			Rect rHygiene = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rHygiene, ref EqualMilkingSettings.hygieneRiskMultiplier, new FloatRange(0.5f, 3f), "EM.HygieneRiskMultiplier".Translate(EqualMilkingSettings.hygieneRiskMultiplier.ToString("F1")), 0.1f);
+			list.Gap(6f);
+			Rect rMtbHuman = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rMtbHuman, ref EqualMilkingSettings.mastitisMtbDaysMultiplierHumanlike, new FloatRange(0.1f, 3f), "EM.MastitisMtbDaysMultiplierHumanlike".Translate(EqualMilkingSettings.mastitisMtbDaysMultiplierHumanlike.ToString("F2")), 0.05f);
+			TooltipHandler.TipRegion(rMtbHuman, "EM.MastitisMtbDaysMultiplierHumanlikeDesc".Translate());
+			list.Gap(6f);
+			Rect rMtbAnimal = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rMtbAnimal, ref EqualMilkingSettings.mastitisMtbDaysMultiplierAnimal, new FloatRange(0.1f, 3f), "EM.MastitisMtbDaysMultiplierAnimal".Translate(EqualMilkingSettings.mastitisMtbDaysMultiplierAnimal.ToString("F2")), 0.05f);
+			TooltipHandler.TipRegion(rMtbAnimal, "EM.MastitisMtbDaysMultiplierAnimalDesc".Translate());
+			list.Gap(6f);
+			Rect rToleranceAffect = list.GetRect(UNIT_SIZE);
+			Widgets.CheckboxLabeled(rToleranceAffect, "EM.AllowToleranceAffectMilk".Translate(), ref EqualMilkingSettings.allowToleranceAffectMilk, false);
+			TooltipHandler.TipRegion(rToleranceAffect, "EM.AllowToleranceAffectMilkDesc".Translate());
+			list.Gap(6f);
+			Rect rExp = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rExp, ref EqualMilkingSettings.toleranceFlowImpactExponent, new FloatRange(0.1f, 3f), "EM.ToleranceFlowImpactExponent".Translate(EqualMilkingSettings.toleranceFlowImpactExponent.ToString("F1")), 0.1f);
+		}
+		if (list.Section("EM.OverflowFilthSection".Translate(), ref _overflowSectionExpanded))
+		{
+			string overflowFilth = EqualMilkingSettings.overflowFilthDefName ?? "";
+			Rect rFilth = list.GetRect(UNIT_SIZE);
+			Widgets.TextFieldLabeled(rFilth, "EM.OverflowFilthDefName".Translate(), ref overflowFilth, 64);
+			EqualMilkingSettings.overflowFilthDefName = overflowFilth?.Trim() ?? "Filth_Vomit";
+			list.Gap(6f);
+			GUI.color = Color.gray;
+			list.Label("EM.BaselineMilkDurationReference".Translate(EqualMilkingSettings.baselineMilkDurationDays.ToString("F0"), EqualMilkingSettings.birthInducedMilkDurationDays.ToString("F0")));
+			GUI.color = Color.white;
+			list.Gap(6f);
+			Rect rAiFullness = list.GetRect(UNIT_SIZE);
+			Widgets.CheckboxLabeled(rAiFullness, "EM.AiPreferHighFullnessTargets".Translate(), ref EqualMilkingSettings.aiPreferHighFullnessTargets, false);
+			TooltipHandler.TipRegion(rAiFullness, "EM.AiPreferHighFullnessTargetsDesc".Translate());
+		}
+		if (list.Section("EM.RaceOverridesSection".Translate(), ref _raceOverridesSectionExpanded))
+		{
+			string raceAlways = string.Join(", ", EqualMilkingSettings.raceCanAlwaysLactate ?? new List<string>());
+			Rect rAlways = list.GetRect(UNIT_SIZE);
+			Widgets.TextFieldLabeled(rAlways, "EM.RaceCanAlwaysLactate".Translate(), ref raceAlways, 128);
+			EqualMilkingSettings.raceCanAlwaysLactate = ParseCommaSeparatedDefNames(raceAlways);
+			list.Gap(6f);
+			string raceNever = string.Join(", ", EqualMilkingSettings.raceCannotLactate ?? new List<string>());
+			Rect rNever = list.GetRect(UNIT_SIZE);
+			Widgets.TextFieldLabeled(rNever, "EM.RaceCannotLactate".Translate(), ref raceNever, 128);
+			EqualMilkingSettings.raceCannotLactate = ParseCommaSeparatedDefNames(raceNever);
+			list.Gap(6f);
+			Rect rHumanlike = list.GetRect(UNIT_SIZE);
+			Widgets.HorizontalSlider(rHumanlike, ref EqualMilkingSettings.defaultFlowMultiplierForHumanlike, new FloatRange(0.25f, 2f), "EM.DefaultFlowMultiplierForHumanlike".Translate(EqualMilkingSettings.defaultFlowMultiplierForHumanlike.ToString("F2")), 0.05f);
+			TooltipHandler.TipRegion(rHumanlike, "EM.DefaultFlowMultiplierForHumanlikeDesc".Translate());
+		}
+		// DevMode：选中小人的泌乳状态（L、双池、E、卫生风险、溢出累计等）
+		if (Prefs.DevModeEnabled && list.Section("EM.DevModeLactationPanel".Translate(), ref _devModeLactationExpanded))
+		{
+			Pawn sel = Find.Selector.SingleSelectedThing as Pawn;
+			if (sel == null)
+			{
+				list.Label("EM.DevModeNoPawnSelected".Translate());
+			}
+			else
+			{
+				var hediff = sel.LactatingHediffWithComps();
+				var comp = hediff?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
+				if (comp == null)
+				{
+					list.Label("EM.DevModeNotLactating".Translate(sel.LabelShort));
+				}
+				else
+				{
+					string debug = comp.CompDebugString();
+					float h = Text.CalcHeight(debug, list.ColumnWidth);
+					Rect rDebug = list.GetRect(Mathf.Min(h, 200f));
+					Widgets.Label(rDebug, debug);
+				}
+			}
+		}
+		list.End();
+	}
+
+	private static List<string> ParseCommaSeparatedDefNames(string text)
+	{
+		var list = new List<string>();
+		if (string.IsNullOrWhiteSpace(text)) return list;
+		foreach (string s in text.Split(','))
+		{
+			string t = s.Trim();
+			if (!string.IsNullOrEmpty(t)) list.Add(t);
+		}
+		return list;
 	}
 }

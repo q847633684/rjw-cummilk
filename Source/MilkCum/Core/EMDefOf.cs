@@ -23,6 +23,7 @@ public static class EMDefOf
     public static PawnColumnDef Milk_MilkType;
     public static PawnColumnDef Milk_Lactating;
     public static PawnColumnDef Milk_Fullness;
+    public static PawnColumnDef Milk_RemainingDays;
     public static MainButtonDef Milk_MainButton;
     
     // 成瘾系统新增定义
@@ -45,6 +46,7 @@ public static class EMDefOf
     public static ThoughtDef EM_Mastitis_Thought;
     public static HediffDef EM_BreastsEngorged;
     public static ThoughtDef EM_MilkOverflow;
+    public static ThoughtDef EM_HighToleranceLowMilk;
     public static HediffDef EM_DrugLactationBurden;
     public static HediffDef EM_LactatingGain;
     public static HediffDef EM_AbsorptionDelay;

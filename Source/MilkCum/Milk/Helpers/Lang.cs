@@ -21,6 +21,7 @@ public static class Lang
         EMDefOf.EM_Lactating_Efficiency_Factor.SetDefaultLabel(Lang.Join(Lang.Lactating, Lang.Efficiency, Lang.StatFactor));
         HediffDefOf.Lactating.SetDefaultDesc(HediffDefOf.Lactating.description.RemoveTailingLines(2)); //Delete pregnant rate description
         EMDefOf.Milk_Fullness.SetDefaultLabel(Lang.MilkFullness);
+        EMDefOf.Milk_RemainingDays.SetDefaultLabel("EM.PoolRemainingDays".Translate());
         EMDefOf.Milk_Lactating.SetDefaultLabel(Lang.Lactating);
         EMDefOf.Milk_MilkType.SetDefaultLabel(Lang.MilkType);
         EMDefOf.Milk_MainButton.SetDefaultLabel("Equal_Milking".Translate());

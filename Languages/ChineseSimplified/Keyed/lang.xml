@@ -52,11 +52,29 @@
     <EM.MastitisBaseMtbDays>乳腺炎基准 MTB（天）：{0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>满池过久风险系数：{0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>卫生风险系数：{0}</EM.HygieneRiskMultiplier>
+    <EM.MastitisMtbDaysMultiplierHumanlike>人形乳腺炎 MTB 乘数：{0}</EM.MastitisMtbDaysMultiplierHumanlike>
+    <EM.MastitisMtbDaysMultiplierHumanlikeDesc>人形小人的乳腺炎基准 MTB 乘数。&gt;1 表示乳腺炎更少发生。</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
+    <EM.MastitisMtbDaysMultiplierAnimal>动物乳腺炎 MTB 乘数：{0}</EM.MastitisMtbDaysMultiplierAnimal>
+    <EM.MastitisMtbDaysMultiplierAnimalDesc>非人形（动物）的乳腺炎基准 MTB 乘数。在启用动物乳腺炎时使用。</EM.MastitisMtbDaysMultiplierAnimalDesc>
     <EM.AllowToleranceAffectMilk>耐受影响泌乳效率</EM.AllowToleranceAffectMilk>
     <EM.AllowToleranceAffectMilkDesc>关闭后，催乳素耐受不降低产奶流速或持续时间（E_tol = 1）。</EM.AllowToleranceAffectMilkDesc>
     <EM.ToleranceFlowImpactExponent>耐受影响指数：{0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>溢出污物</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>满池溢出时生成的地面污物 Def 名称</EM.OverflowFilthDefName>
+    <EM.BaselineMilkDurationReference>参考：药物泌乳基准 {0} 天，分娩 {1} 天（池模型）。</EM.BaselineMilkDurationReference>
+    <EM.AiPreferHighFullnessTargets>挤奶时优先满度更高的目标</EM.AiPreferHighFullnessTargets>
+    <EM.AiPreferHighFullnessTargetsDesc>开启时，殖民者会优先挤满度更高的小人（降低溢出风险）。</EM.AiPreferHighFullnessTargetsDesc>
+    <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）</EM.RaceOverridesSection>
+    <EM.RaceCanAlwaysLactate>视为可产奶的种族（defName，逗号分隔）</EM.RaceCanAlwaysLactate>
+    <EM.RaceCannotLactate>视为不可产奶的种族（defName，逗号分隔）</EM.RaceCannotLactate>
+    <EM.DefaultFlowMultiplierForHumanlike>人形流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>
+    <EM.DefaultFlowMultiplierForHumanlikeDesc>人形小人的产奶流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
+    <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
+    <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
+    <EM.DevModeNotLactating>{0} 未处于泌乳期（无平等产奶泌乳 hediff）。</EM.DevModeNotLactating>
+    <EM.LoadDefaultsFromDef>从 Def 加载默认</EM.LoadDefaultsFromDef>
+    <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
+    <EM.DefaultsDefLabel>平等产奶默认值</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->

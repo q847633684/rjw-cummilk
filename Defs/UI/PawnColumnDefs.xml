@@ -52,6 +52,15 @@
 	</PawnColumnDef>
 
 	<PawnColumnDef>
+		<defName>Milk_RemainingDays</defName>
+		<label>EM.PoolRemainingDays</label>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkRemainingDays</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>56</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
 		<defName>Milk_ProducerRestrictions</defName>
 		<label>EM.ProducerRestrictionsColumn</label>
 		<workerClass>EqualMilking.PawnColumnWorker_ProducerRestrictions</workerClass>

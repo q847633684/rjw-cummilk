@@ -52,11 +52,29 @@
     <EM.MastitisBaseMtbDays>Mastitis base MTB (days): {0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>Over-fullness risk multiplier: {0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>Hygiene risk multiplier: {0}</EM.HygieneRiskMultiplier>
+    <EM.MastitisMtbDaysMultiplierHumanlike>Humanlike mastitis MTB multiplier: {0}</EM.MastitisMtbDaysMultiplierHumanlike>
+    <EM.MastitisMtbDaysMultiplierHumanlikeDesc>Multiply base mastitis MTB for humanlike pawns. &gt;1 = less frequent mastitis.</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
+    <EM.MastitisMtbDaysMultiplierAnimal>Animal mastitis MTB multiplier: {0}</EM.MastitisMtbDaysMultiplierAnimal>
+    <EM.MastitisMtbDaysMultiplierAnimalDesc>Multiply base mastitis MTB for non-humanlike (animals). Used when animal mastitis is enabled.</EM.MastitisMtbDaysMultiplierAnimalDesc>
     <EM.AllowToleranceAffectMilk>Tolerance affects milk efficiency</EM.AllowToleranceAffectMilk>
     <EM.AllowToleranceAffectMilkDesc>When disabled, prolactin tolerance does not reduce lactation flow or duration (E_tol = 1).</EM.AllowToleranceAffectMilkDesc>
     <EM.ToleranceFlowImpactExponent>Tolerance impact exponent: {0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>Overflow filth</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>Filth def name when pool overflows</EM.OverflowFilthDefName>
+    <EM.BaselineMilkDurationReference>Reference: drug-induced baseline {0} days, birth-induced {1} days (pool model).</EM.BaselineMilkDurationReference>
+    <EM.AiPreferHighFullnessTargets>Prioritize fuller targets when milking</EM.AiPreferHighFullnessTargets>
+    <EM.AiPreferHighFullnessTargetsDesc>When enabled, colonists will prefer to milk pawns with higher pool fullness first (reduces overflow risk).</EM.AiPreferHighFullnessTargetsDesc>
+    <EM.RaceOverridesSection>Race overrides (whitelist / blacklist)</EM.RaceOverridesSection>
+    <EM.RaceCanAlwaysLactate>Races that can always lactate (defName, comma-separated)</EM.RaceCanAlwaysLactate>
+    <EM.RaceCannotLactate>Races that cannot lactate (defName, comma-separated)</EM.RaceCannotLactate>
+    <EM.DefaultFlowMultiplierForHumanlike>Humanlike flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
+    <EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow on humanlike pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+    <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
+    <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
+    <EM.DevModeNotLactating>{0} is not lactating (no Equal Milking lactation hediff).</EM.DevModeNotLactating>
+    <EM.LoadDefaultsFromDef>Load defaults from Def</EM.LoadDefaultsFromDef>
+    <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
+    <EM.DefaultsDefLabel>Equal Milking defaults</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->

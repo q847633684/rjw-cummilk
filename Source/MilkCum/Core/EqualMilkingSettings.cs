@@ -46,15 +46,29 @@ internal class EqualMilkingSettings : ModSettings
 	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
 	public static bool useDubsBadHygieneForMastitis = true;
 	// 乳腺炎可配置：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数
-	public static bool allowMastitis = true;
-	public static float mastitisBaseMtbDays = 1.5f;
-	public static float overFullnessRiskMultiplier = 1.5f;
-	public static float hygieneRiskMultiplier = 1f;
 	// 耐受对泌乳效率的影响：关闭则 E_tol 恒为 1；指数控制曲线（1=线性）
-	public static bool allowToleranceAffectMilk = true;
-	public static float toleranceFlowImpactExponent = 1f;
+	// 建议 13：收拢为 MilkRiskSettings，便于序列化与 UI 分组；对外仍用静态属性，存档兼容旧 key
+	private static MilkRiskSettings _risk = new MilkRiskSettings();
+	public static bool allowMastitis { get => _risk.allowMastitis; set => _risk.allowMastitis = value; }
+	public static float mastitisBaseMtbDays { get => _risk.mastitisBaseMtbDays; set => _risk.mastitisBaseMtbDays = value; }
+	public static float overFullnessRiskMultiplier { get => _risk.overFullnessRiskMultiplier; set => _risk.overFullnessRiskMultiplier = value; }
+	public static float hygieneRiskMultiplier { get => _risk.hygieneRiskMultiplier; set => _risk.hygieneRiskMultiplier = value; }
+	public static bool allowToleranceAffectMilk { get => _risk.allowToleranceAffectMilk; set => _risk.allowToleranceAffectMilk = value; }
+	public static float toleranceFlowImpactExponent { get => _risk.toleranceFlowImpactExponent; set => _risk.toleranceFlowImpactExponent = value; }
+	public static float mastitisMtbDaysMultiplierHumanlike { get => _risk.mastitisMtbDaysMultiplierHumanlike; set => _risk.mastitisMtbDaysMultiplierHumanlike = value; }
+	public static float mastitisMtbDaysMultiplierAnimal { get => _risk.mastitisMtbDaysMultiplierAnimal; set => _risk.mastitisMtbDaysMultiplierAnimal = value; }
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
+	// 基准泌乳持续天数（参考/显示，对应池模型 B_T / B_T_birth）
+	public static float baselineMilkDurationDays = 3f;
+	public static float birthInducedMilkDurationDays = 10f;
+	// 挤奶工作：是否优先选择满度更高的目标（殖民者会先挤更满的）
+	public static bool aiPreferHighFullnessTargets = true;
+	// 种族覆盖：白名单（defName 在此列表中视为可产奶）、黑名单（defName 在此列表中视为不可产奶）
+	public static List<string> raceCanAlwaysLactate = new();
+	public static List<string> raceCannotLactate = new();
+	// 人形种族默认流速倍率（1 = 不变，用于与 RJW/Race mod 平衡）
+	public static float defaultFlowMultiplierForHumanlike = 1f;
 	// Cumpilation（统一到本设置，不再使用单独 Mod 入口）
 	public static bool Cumpilation_EnableCumflation = true;
 	public static float Cumpilation_GlobalCumflationModifier = 1.0f;
@@ -126,13 +140,23 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
 		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
-		Scribe_Values.Look(ref allowMastitis, "EM.AllowMastitis", true);
-		Scribe_Values.Look(ref mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
-		Scribe_Values.Look(ref overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
-		Scribe_Values.Look(ref hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
-		Scribe_Values.Look(ref allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
-		Scribe_Values.Look(ref toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
+		Scribe_Deep.Look(ref _risk, "EM.MilkRiskSettings");
+		if (_risk == null) _risk = new MilkRiskSettings();
+		Scribe_Values.Look(ref _risk.allowMastitis, "EM.AllowMastitis", true);
+		Scribe_Values.Look(ref _risk.mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
+		Scribe_Values.Look(ref _risk.overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
+		Scribe_Values.Look(ref _risk.hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
+		Scribe_Values.Look(ref _risk.allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
+		Scribe_Values.Look(ref _risk.toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
+		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);
+		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
+		Scribe_Values.Look(ref baselineMilkDurationDays, "EM.BaselineMilkDurationDays", 3f);
+		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 10f);
+		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
+		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
+		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
+		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 1f);
 		Scribe_Values.Look(ref Cumpilation_EnableCumflation, "Cumpilation.EnableCumflation", true);
 		Scribe_Values.Look(ref Cumpilation_GlobalCumflationModifier, "Cumpilation.GlobalCumflationModifier", 1.0f);
 		Scribe_Values.Look(ref Cumpilation_EnableStuffing, "Cumpilation.EnableStuffing", true);
@@ -170,6 +194,8 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Deep.Look(ref entitySetting, "EM.EntitySetting");
 		genes ??= new List<Gene_MilkTypeData>();
 		namesToProducts ??= new Dictionary<string, RaceMilkType>();
+		raceCanAlwaysLactate ??= new List<string>();
+		raceCannotLactate ??= new List<string>();
 		// Initialize widgets
 		if (Scribe.mode == LoadSaveMode.PostLoadInit)
 		{
@@ -370,9 +396,30 @@ internal class EqualMilkingSettings : ModSettings
 			milkDef.comps.Add(compProperties);
 		}
 	}
+	/// <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置（可被其他 mod patch 的 Def）。</summary>
+	public static void ApplyDefaultsFromDef()
+	{
+		var def = DefDatabase<EqualMilkingDefaultsDef>.GetNamedSilentFail("EM_Defaults");
+		if (def == null) return;
+		baselineMilkDurationDays = def.baselineMilkDurationDays;
+		birthInducedMilkDurationDays = def.birthInducedMilkDurationDays;
+		allowMastitis = def.allowMastitis;
+		mastitisBaseMtbDays = def.mastitisBaseMtbDays;
+		overFullnessRiskMultiplier = def.overFullnessRiskMultiplier;
+		hygieneRiskMultiplier = def.hygieneRiskMultiplier;
+		allowToleranceAffectMilk = def.allowToleranceAffectMilk;
+		toleranceFlowImpactExponent = def.toleranceFlowImpactExponent;
+		overflowFilthDefName = def.overflowFilthDefName ?? "Filth_Vomit";
+		aiPreferHighFullnessTargets = def.aiPreferHighFullnessTargets;
+		defaultFlowMultiplierForHumanlike = def.defaultFlowMultiplierForHumanlike;
+	}
 	#region Internal setting getters
 	internal static bool IsMilkable(string name)
 	{
+		if (raceCannotLactate != null && raceCannotLactate.Contains(name))
+			return false;
+		if (raceCanAlwaysLactate != null && raceCanAlwaysLactate.Contains(name))
+			return true;
 		if (namesToProducts.ContainsKey(name))
 		{
 			return namesToProducts[name].isMilkable;
@@ -535,4 +582,18 @@ internal class EqualMilkingSettings : ModSettings
 		return 1f + (v - 1f) * e;
 	}
 	#endregion
+}
+
+/// <summary>建议 13：乳腺炎/风险与耐受相关设置分组，便于序列化与 UI；ExposeData 仍写旧 key 以兼容存档。</summary>
+public class MilkRiskSettings
+{
+	public bool allowMastitis = true;
+	public float mastitisBaseMtbDays = 1.5f;
+	public float overFullnessRiskMultiplier = 1.5f;
+	public float hygieneRiskMultiplier = 1f;
+	public bool allowToleranceAffectMilk = true;
+	public float toleranceFlowImpactExponent = 1f;
+	/// <summary>建议 8：人形/动物乳腺炎 MTB 乘数，便于区分平衡。</summary>
+	public float mastitisMtbDaysMultiplierHumanlike = 1f;
+	public float mastitisMtbDaysMultiplierAnimal = 1f;
 }
