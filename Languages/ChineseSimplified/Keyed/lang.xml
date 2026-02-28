@@ -77,6 +77,9 @@
     <EM.MilkFlowPerDay>产奶效率：{0}/天</EM.MilkFlowPerDay>
     <EM.PoolLeftBreast>左乳</EM.PoolLeftBreast>
     <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
+    <EM.AbsorptionDelayRemaining>剩余时间：{0}</EM.AbsorptionDelayRemaining>
+    <EM.AbsorptionDelayMinutes>{0} 分钟</EM.AbsorptionDelayMinutes>
+    <EM.AbsorptionDelayHours>{0} 小时</EM.AbsorptionDelayHours>
     <!-- 精液桶关联床（Cumpilation 联动） -->
     <EM_CumBucket_LinkBed>链接到床</EM_CumBucket_LinkBed>
     <EM_CumBucket_LinkBed_Desc>将精液桶关联到一张床。床主在桶空时默认唯一可使用；有占用时其他人会看到「不属于他的精液桶」提示。共享卧室（房间内多床）时全员可用，排放为混合精液。</EM_CumBucket_LinkBed_Desc>

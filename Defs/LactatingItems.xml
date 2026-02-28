@@ -95,9 +95,10 @@
                 <existingAddictionSeverityOffset>0.2</existingAddictionSeverityOffset>
                 <needLevelOffset>1</needLevelOffset>
                 <listOrder>30</listOrder>
+                <!-- 降低单针过量严重度，避免连打多针即触发过量倒地；更宽松 -->
                 <overdoseSeverityOffset>
-                    <min>0.18</min>
-                    <max>0.35</max>
+                    <min>0.03</min>
+                    <max>0.06</max>
                 </overdoseSeverityOffset>
                 <largeOverdoseChance>0.01</largeOverdoseChance>
             </li>
@@ -157,8 +158,8 @@
                 <listOrder>30</listOrder>
                 <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
                 <overdoseSeverityOffset>
-                    <min>0.18</min>
-                    <max>0.35</max>
+                    <min>0.03</min>
+                    <max>0.06</max>
                 </overdoseSeverityOffset>
                 <largeOverdoseChance>0.01</largeOverdoseChance>
             </li>

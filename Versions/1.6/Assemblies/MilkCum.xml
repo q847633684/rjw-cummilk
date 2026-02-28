@@ -158,6 +158,12 @@
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
             <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
         </member>
+        <member name="T:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip">
+            <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 Docs/泌乳系统逻辑图。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip.TicksToTimeString(System.Int32)">
+            <summary>游戏内 2500 tick = 1 小时。</summary>
+        </member>
         <member name="T:MilkCum.Milk.Comps.Hediff_LactatingGain">
             <summary>药物诱发泌乳时的能力增益，健康页显示。capMods 由设置与 Lactating severity 动态计算。</summary>
         </member>
@@ -301,11 +307,6 @@
             <summary>
             Fix starting job 10 time error when trying to fill hopper with labeled human milk
             This fixes a missing check in vanilla code
-            </summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.ITab_Pawn_Health_ProducerRestrictionsPatch">
-            <summary>
-            在健康面板顶部增加「谁可用我的奶/奶制品/精液制品」指定按钮，点击打开 Window_ProducerRestrictions。
             </summary>
         </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.CompProperties_Milkable_Patch.Prefix(RimWorld.CompProperties_Milkable)">
@@ -485,6 +486,12 @@
         </member>
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
             <summary>根据代谢率计算吸收延迟 tick。代谢率高则延迟短。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(Verse.Pawn)">
+            <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawnCore(Verse.Pawn)">
+            <summary>实例方法：该小人在本组件待生效队列中最早一批的剩余 tick。</summary>
         </member>
         <member name="T:MilkCum.UI.PawnColumnWorker_MilkAllowDeflate">
             <summary>奶表格列：是否允许泄精（去做泄到桶/清洁/随地的 Job）。</summary>

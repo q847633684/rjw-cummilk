@@ -74,11 +74,14 @@
       <WorkToMake>250</WorkToMake>
       <MarketValue>14</MarketValue>
       <Mass>0.05</Mass>
+      <Flammability>1.0</Flammability>
     </statBases>
     <techLevel>Industrial</techLevel>
     <minRewardCount>10</minRewardCount>
     <ingestible>
 		<drugCategory>Medical</drugCategory>
+		<joy>0</joy>
+		<joyKind>Medical</joyKind>
 		<foodType>Processed</foodType>
 		<baseIngestTicks>300</baseIngestTicks>
 		<nurseable>true</nurseable>

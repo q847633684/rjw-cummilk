@@ -70,6 +70,9 @@
         <member name="P:MilkCum.Milk.Comps.CompCumBucketLink.IsMixed">
             <summary>是否已有多人使用过（产出应为混合精液）。</summary>
         </member>
+        <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.GatherResourcesIntervalDays">
+            <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）。</summary>
+        </member>
         <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.leftFullness">
             <summary>水池模型：左乳水位（0～左乳基础容量），与右乳合计 0～1；容量由种族×乳房大小按部位区分。</summary>
         </member>
@@ -154,6 +157,12 @@
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
             <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
+        </member>
+        <member name="T:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip">
+            <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 Docs/泌乳系统逻辑图。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip.TicksToTimeString(System.Int32)">
+            <summary>游戏内 2500 tick = 1 小时。</summary>
         </member>
         <member name="T:MilkCum.Milk.Comps.Hediff_LactatingGain">
             <summary>药物诱发泌乳时的能力增益，健康页显示。capMods 由设置与 Lactating severity 动态计算。</summary>
@@ -300,11 +309,6 @@
             This fixes a missing check in vanilla code
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.ITab_Pawn_Health_ProducerRestrictionsPatch">
-            <summary>
-            在健康面板顶部增加「谁可用我的奶/奶制品/精液制品」指定按钮，点击打开 Window_ProducerRestrictions。
-            </summary>
-        </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.CompProperties_Milkable_Patch.Prefix(RimWorld.CompProperties_Milkable)">
             <summary>
             Replace CompMilkable with CompEquallyMilkable
@@ -423,12 +427,6 @@
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.AllowedToBreastFeed(Verse.Pawn,Verse.Pawn)">
             <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单。</summary>
         </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.SuckleRestrictionAllowed(Verse.Pawn,Verse.Pawn)">
-            <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.IsDefaultSuckler(Verse.Pawn,Verse.Pawn)">
-            <summary>默认“谁可以吸奶”：子女或伴侣。</summary>
-        </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetDefaultSucklers(Verse.Pawn)">
             <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（用于名单为空时预填，不再用“空=默认”判断）。</summary>
         </member>
@@ -488,6 +486,12 @@
         </member>
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
             <summary>根据代谢率计算吸收延迟 tick。代谢率高则延迟短。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(Verse.Pawn)">
+            <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawnCore(Verse.Pawn)">
+            <summary>实例方法：该小人在本组件待生效队列中最早一批的剩余 tick。</summary>
         </member>
         <member name="T:MilkCum.UI.PawnColumnWorker_MilkAllowDeflate">
             <summary>奶表格列：是否允许泄精（去做泄到桶/清洁/随地的 Job）。</summary>

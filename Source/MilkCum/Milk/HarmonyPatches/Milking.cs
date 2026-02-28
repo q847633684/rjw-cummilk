@@ -284,6 +284,18 @@ public static class ProlactinAddictionPatch
         // 耐受：本剂在 XML 中在 Lactating 之后添加，故当前已含本剂 +0.044。吃药前 t_before = 当前 - 0.044。
         float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - 0.044f);
         float rawSeverity = giveHediff.severity;
+
+        // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）
+        if (hediff.Severity > rawSeverity)
+        {
+            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            if (hediff.comps != null)
+                foreach (var c in hediff.comps)
+                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaS); break; }
+            WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
+            return;
+        }
+
         // 水池模型吸收延迟：先移除刚加的 Lactating，到点时再挂并 AddFromDrug(Δs, t_before)
         pawn.health.RemoveHediff(hediff);
         var world = Find.World;

@@ -126,6 +126,29 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
         return Mathf.Max(1, (int)(PoolModelConstants.BaseAbsorptionDelayTicks / rate));
     }
 
+    /// <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0。</summary>
+    public static int GetRemainingTicksForPawn(Pawn p)
+    {
+        if (p == null || Find.World == null) return 0;
+        var comp = Find.World.GetComponent<WorldComponent_EqualMilkingAbsorptionDelay>();
+        return comp?.GetRemainingTicksForPawnCore(p) ?? 0;
+    }
+
+    /// <summary>实例方法：该小人在本组件待生效队列中最早一批的剩余 tick。</summary>
+    private int GetRemainingTicksForPawnCore(Pawn p)
+    {
+        if (p == null || pending == null || pending.Count == 0) return 0;
+        int now = Find.TickManager.TicksGame;
+        int minRemaining = int.MaxValue;
+        foreach (var e in pending)
+        {
+            if (e.pawn != p || e.pawn.Destroyed) continue;
+            int remaining = e.endTick - now;
+            if (remaining < minRemaining) minRemaining = remaining;
+        }
+        return minRemaining <= 0 ? 0 : minRemaining;
+    }
+
     private static float GetMetabolicRate(Pawn pawn)
     {
         if (pawn == null) return 1f;

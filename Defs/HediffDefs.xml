@@ -237,7 +237,7 @@
             </li>
         </stages>
     </HediffDef>
-    <!-- 吸收延迟：吃药后尚未挂上 Lactating 的等待期，健康页显示。ScheduleLactating 时添加，ApplyDelayedLactating 时移除。 -->
+    <!-- 吸收延迟：吃药后尚未挂上 Lactating 的等待期，健康页显示。ScheduleLactating 时添加，ApplyDelayedLactating 时移除。悬停显示剩余时间由 HediffComp_AbsorptionDelayTip 提供。 -->
     <HediffDef>
         <defName>EM_AbsorptionDelay</defName>
         <hediffClass>HediffWithComps</hediffClass>
@@ -245,6 +245,9 @@
         <description>泌乳药物尚未完全吸收，泌乳即将生效。</description>
         <defaultLabelColor>(0.7,0.85,1)</defaultLabelColor>
         <isBad>false</isBad>
+        <comps>
+            <li Class="MilkCum.Milk.Comps.HediffCompProperties_AbsorptionDelayTip" />
+        </comps>
         <stages>
             <li>
                 <minSeverity>0</minSeverity>

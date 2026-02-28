@@ -228,6 +228,18 @@ internal class EqualMilkingSettings : ModSettings
 	public void DoWindowContents(Rect inRect)
 	{
 		inRect.yMin += unitSize;
+		// 从主菜单打开设置时 PostLoadInit 未执行，需惰性初始化以免 NRE
+		pawnDefs ??= GetMilkablePawns();
+		defaultMilkProducts ??= GetDefaultMilkProducts();
+		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
+		animalBreastfeed ??= new AnimalBreastfeed();
+		mechanoidBreastfeed ??= new MechanoidBreastfeed();
+		colonistSetting ??= new MilkSettings();
+		slaveSetting ??= new MilkSettings();
+		prisonerSetting ??= new MilkSettings();
+		animalSetting ??= new MilkSettings();
+		mechSetting ??= new MilkSettings();
+		entitySetting ??= new MilkSettings();
 		List<TabRecord> tabs = new()
 		{
 			new(Lang.Pawn, () => tabIndex = 0, tabIndex == 0),
@@ -372,6 +384,8 @@ internal class EqualMilkingSettings : ModSettings
 	internal static RaceMilkType GetDefaultMilkProduct(ThingDef def)
 	{
 		RaceMilkType milkProduct = new();
+		if (defaultMilkProducts == null)
+			defaultMilkProducts = new Dictionary<ThingDef, RaceMilkType>();
 		if (defaultMilkProducts.ContainsKey(def))
 		{
 			milkProduct = defaultMilkProducts[def];

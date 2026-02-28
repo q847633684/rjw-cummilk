@@ -77,6 +77,9 @@
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
     <EM.PoolLeftBreast>Left</EM.PoolLeftBreast>
     <EM.PoolRightBreast>Right</EM.PoolRightBreast>
+    <EM.AbsorptionDelayRemaining>Time remaining: {0}</EM.AbsorptionDelayRemaining>
+    <EM.AbsorptionDelayMinutes>{0} minutes</EM.AbsorptionDelayMinutes>
+    <EM.AbsorptionDelayHours>{0} hours</EM.AbsorptionDelayHours>
     <!-- Cum bucket link to bed (Cumpilation) -->
     <EM_CumBucket_LinkBed>Link to bed</EM_CumBucket_LinkBed>
     <EM_CumBucket_LinkBed_Desc>Link this cum bucket to a bed. When empty, only the bed owner can use it; when occupied, others get "not their cum bucket". Shared bedroom (multiple beds in room) = everyone can use, output is mixed cum.</EM_CumBucket_LinkBed_Desc>
