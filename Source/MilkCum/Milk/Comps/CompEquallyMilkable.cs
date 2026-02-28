@@ -190,7 +190,7 @@ public class CompEquallyMilkable : CompMilkable
         UpdateHealthHediffs();
     }
 
-    /// <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 2.3。</summary>
+    /// <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/泌乳系统逻辑图。</summary>
     private void ApplyDrugInducedLactationEffects()
     {
         if (Pawn == null || !Pawn.RaceProps.Humanlike) return;
@@ -273,7 +273,7 @@ public class CompEquallyMilkable : CompMilkable
         TrySendFullPoolLetter();
     }
 
-    /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 3.3。</summary>
+    /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图。</summary>
     private void TrySendFullPoolLetter()
     {
         if (!EqualMilkingSettings.enableFullPoolLetter || Pawn == null || !Pawn.Spawned || !Pawn.IsColonyPawn()

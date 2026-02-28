@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MilkCum.Milk.World;
 
-/// <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(deltaSeverity, toleranceBefore)。见 Docs/耐受与水池系统说明、水池模型设计规格。</summary>
+/// <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(deltaSeverity)。见 Docs/泌乳系统逻辑图。</summary>
 public class PendingLactatingEntry : IExposable
 {
     public Pawn pawn;
@@ -26,7 +26,7 @@ public class PendingLactatingEntry : IExposable
     }
 }
 
-/// <summary>水池模型吸收延迟：吃药后延迟一段时间再挂 Lactating 并进水，延迟由代谢率决定。见 Docs/耐受与水池系统说明、水池模型设计规格。</summary>
+/// <summary>水池模型吸收延迟：吃药后延迟一段时间再挂 Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图。</summary>
 public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
 {
     private List<PendingLactatingEntry> pending = new List<PendingLactatingEntry>();
@@ -44,7 +44,7 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
         }
     }
 
-    /// <summary>加载后移除 pawn 为 null 或已销毁的条目，避免跨存档/地图引用。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 2.4。</summary>
+    /// <summary>加载后移除 pawn 为 null 或已销毁的条目，避免跨存档/地图引用。见 Docs/泌乳系统逻辑图。</summary>
     private void RemoveInvalidPendingEntries()
     {
         if (pending == null) return;

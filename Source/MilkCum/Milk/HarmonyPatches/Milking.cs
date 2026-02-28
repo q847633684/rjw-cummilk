@@ -254,7 +254,7 @@ public static class FloatMenuMakerMap_Patch
 }
 #endif
 
-/// <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/耐受与水池系统说明、药物注射到泌乳结束逻辑梳理与优化扩展建议。</summary>
+/// <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/泌乳系统逻辑图。</summary>
 public static class ProlactinAddictionPatch
 {
     public static void ApplyIfPossible(HarmonyLib.Harmony harmony)

@@ -73,4 +73,4 @@ description: Check and complete RimWorld Mod Def/XML files against project conve
 ## 补充参考
 
 - 各 Def 类型可用字段与游戏行为见 [reference.md](reference.md)。
-- 若项目内有 `Docs/` 下的设计文档（如“水池模型”“药品 Def 变量参考”），补全 Def 时优先遵循其中命名与数值约定。
+- 若项目内有 `Docs/`（如《泌乳系统逻辑图》《药品Def变量参考》），补全 Def 时优先遵循其中命名与数值约定；索引见 `Docs/README.md`。

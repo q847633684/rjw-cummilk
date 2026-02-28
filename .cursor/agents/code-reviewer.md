@@ -14,7 +14,7 @@ description: 对 rjw-cummilk Source 目录下的 C# 进行代码审查，检查�
    - **翻译与文案**：Keyed 用 `"KeyName".Translate()`，KeyName 在 English 与 ChineseSimplified 的 Keyed 中一致；长句走 Keyed，不写死在 C#。
    - **Harmony**：补丁意图明确（summary）；仅做挂接，不重写游戏已接管逻辑；与《游戏已接管变量与机制清单》一致。
    - **设置与存档**：新增选项进 EqualMilkingSettings 并 Scribe；存档键用 "EM.XXX" 且稳定；与《参数联动表》命名一致。
-   - **与 Docs 对应**：关键公式、参数、池/耐受逻辑在注释中引用 Docs（如「见 Docs/xxx」）。
+   - **与 Docs 对应**：关键公式、参数、池/耐受逻辑在注释中引用 Docs（如「见 Docs/泌乳系统逻辑图」）；Docs 索引见 `Docs/README.md`。
 3. **通用质量**：可读性、重复代码、错误处理、空引用与边界值。
 4. **输出格式**：
    - **严重**：必须修（规范违反、潜在崩溃、存档不兼容）。

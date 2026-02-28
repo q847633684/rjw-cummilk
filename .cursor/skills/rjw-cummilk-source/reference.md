@@ -52,4 +52,4 @@
 
 - **游戏已接管**：成瘾/耐受数值、Need 升降、SeverityPerDay、分娩事件、体型/种族判定等由原版或 Def 驱动；C# 只读或挂接。
 - **参数联动**：baselineMilkDurationDays、allowMastitis、toleranceFlowImpactExponent 等与《参数联动表》一致；新增参数时在 Docs 中补充。
-- **水池模型**：双乳水位、流速、溢出、乳腺炎触发等与《水池模型设计规格》《耐受与水池系统说明》一致。
+- **泌乳逻辑**：双乳水位、流速、L 衰减、溢出、选侧、心情联动等与《泌乳系统逻辑图》一致；Docs 索引见 `Docs/README.md`。
