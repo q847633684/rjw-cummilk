@@ -254,22 +254,22 @@ public static class FloatMenuMakerMap_Patch
 }
 #endif
 
-/// <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/泌乳系统逻辑图。</summary>
+/// <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/泌乳系统逻辑图。兼容 1.6：优先从基类 IngestionOutcomeDoer 查找方法。</summary>
 public static class ProlactinAddictionPatch
 {
     public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
     {
         try
         {
-            var type = typeof(IngestionOutcomeDoer_GiveHediff);
-            var method = type.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (method == null)
-                method = type.BaseType?.GetMethod("DoIngestionOutcome", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var postfix = typeof(ProlactinAddictionPatch).GetMethod(nameof(DoIngestionOutcome_Postfix), BindingFlags.Public | BindingFlags.Static);
+            if (postfix == null) return;
+
+            // 1.6: Harmony 要求对“声明的方法”打补丁，不能对子类 override 打补丁；故只 patch 基类 IngestionOutcomeDoer.DoIngestionOutcome。
+            var method = AccessTools.Method(typeof(IngestionOutcomeDoer), nameof(IngestionOutcomeDoer.DoIngestionOutcome),
+                new[] { typeof(Pawn), typeof(Thing), typeof(int) });
             if (method == null)
                 return;
-            var postfix = typeof(ProlactinAddictionPatch).GetMethod(nameof(DoIngestionOutcome_Postfix), BindingFlags.Public | BindingFlags.Static);
-            if (postfix != null)
-                harmony.Patch(method, postfix: new HarmonyLib.HarmonyMethod(postfix));
+            harmony.Patch(method, postfix: new HarmonyLib.HarmonyMethod(postfix));
         }
         catch (System.Exception ex)
         {
@@ -277,16 +277,16 @@ public static class ProlactinAddictionPatch
         }
     }
 
-    public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer_GiveHediff __instance, Pawn pawn, Thing ingested, int ingestedCount)
+    public static void DoIngestionOutcome_Postfix(IngestionOutcomeDoer __instance, Pawn pawn, Thing ingested, int ingestedCount)
     {
-        if (__instance.hediffDef != HediffDefOf.Lactating || pawn?.health?.hediffSet == null)
+        if (__instance is not IngestionOutcomeDoer_GiveHediff giveHediff || giveHediff.hediffDef != HediffDefOf.Lactating || pawn?.health?.hediffSet == null)
             return;
         var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff == null)
             return;
         // 耐受：本剂在 XML 中在 Lactating 之后添加，故当前已含本剂 +0.044。吃药前 t_before = 当前 - 0.044。
         float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - 0.044f);
-        float rawSeverity = __instance.severity;
+        float rawSeverity = giveHediff.severity;
         // 水池模型吸收延迟：先移除刚加的 Lactating，到点时再挂并 AddFromDrug(Δs, t_before)
         pawn.health.RemoveHediff(hediff);
         var world = Find.World;

@@ -2,7 +2,7 @@
 <Defs>
 	<PawnTableDef>
 		<defName>Milk_PawnTable</defName>
-		<workerClass>EqualMilking.Milk_PawnTable</workerClass>
+		<workerClass>MilkCum.UI.Milk_PawnTable</workerClass>
 		<columns>
 			<li>Label</li>
 			<li>GapTiny</li>

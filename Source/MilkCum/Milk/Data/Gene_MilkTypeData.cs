@@ -4,7 +4,6 @@ using System.Reflection;
 using HarmonyLib;
 using MilkCum.Core;
 using MilkCum.Milk.Helpers;
-using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
 

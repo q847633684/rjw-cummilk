@@ -7,6 +7,7 @@ using System.Linq;
 using rjw;
 using MilkCum.Core;
 using MilkCum.Milk.Helpers;
+using MilkCum.Milk.Comps;
 namespace MilkCum.RJW;
 [StaticConstructorOnStartup]
 internal static class ApplyPatches

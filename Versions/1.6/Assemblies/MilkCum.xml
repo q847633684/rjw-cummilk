@@ -125,13 +125,13 @@
             <summary>7.11: 旧存档兼容 — 确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.ApplyDrugInducedLactationEffects">
-            <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 2.3。</summary>
+            <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/泌乳系统逻辑图。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.UpdateMilkPools">
             <summary>水池模型：按容量比例分配流速，双池进水、溢出、回缩（含健康度系数），更新满池计数。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.TrySendFullPoolLetter">
-            <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 3.3。</summary>
+            <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.HandleOverflow(System.Single)">
             <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定。</summary>
@@ -285,8 +285,8 @@
             7.13: 单源(ExtractCum、DeflateBucket 单主、Gathering from sex)设 producer；混合桶/清洁污物回收不设 producer。
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.CumpilationIntegration.JobGiver_Deflate_TryFindBucketFor_Postfix(Verse.Pawn,Verse.Thing@)">
-            <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied.</summary>
+        <member name="M:MilkCum.Milk.HarmonyPatches.CumpilationIntegration.JobGiver_Deflate_TryFindBucketFor_Postfix(Verse.Pawn,Verse.Thing@,System.Boolean@)">
+            <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied. TryFindBucketFor returns bool and has (Pawn, out Thing).</summary>
         </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.CumpilationIntegration.GetProducerFromBucketDeflate(System.Object,System.Object)">
             <summary>
@@ -352,16 +352,16 @@
             </summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.ProlactinAddictionPatch">
-            <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/耐受与水池系统说明、药物注射到泌乳结束逻辑梳理与优化扩展建议。</summary>
+            <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/泌乳系统逻辑图。兼容 1.6：优先从基类 IngestionOutcomeDoer 查找方法。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.PoolModelBirthHelper">
             <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
-            <summary>分配进食任务时排除不允许食用的奶制品。</summary>
+            <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.JobDriver_Ingest_MilkProductCheck">
-            <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。</summary>
+            <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。目标在 1.6 可能在不同程序集，可选应用。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.Patch_PostIngested_PartnerAteMyProduct">
             <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。</summary>
@@ -472,16 +472,16 @@
             <summary>10.8-4：仅当成瘾处于戒断阶段时显示催乳素戒断心情。</summary>
         </member>
         <member name="T:MilkCum.Milk.World.PendingLactatingEntry">
-            <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(deltaSeverity, toleranceBefore)。见 Docs/耐受与水池系统说明、水池模型设计规格。</summary>
+            <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(deltaSeverity)。见 Docs/泌乳系统逻辑图。</summary>
         </member>
         <member name="F:MilkCum.Milk.World.PendingLactatingEntry.toleranceBefore">
             <summary>吃药前的耐受严重度 t_before，用于计算 Δs 与 E_tol。</summary>
         </member>
         <member name="T:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay">
-            <summary>水池模型吸收延迟：吃药后延迟一段时间再挂 Lactating 并进水，延迟由代谢率决定。见 Docs/耐受与水池系统说明、水池模型设计规格。</summary>
+            <summary>水池模型吸收延迟：吃药后延迟一段时间再挂 Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图。</summary>
         </member>
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.RemoveInvalidPendingEntries">
-            <summary>加载后移除 pawn 为 null 或已销毁的条目，避免跨存档/地图引用。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 2.4。</summary>
+            <summary>加载后移除 pawn 为 null 或已销毁的条目，避免跨存档/地图引用。见 Docs/泌乳系统逻辑图。</summary>
         </member>
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(Verse.Pawn,System.Single)">
             <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴奋 hediff），供延迟生效与无 World 立即生效共用。</summary>
@@ -513,6 +513,36 @@
         </member>
         <member name="T:MilkCum.UI.Window_ProducerRestrictions">
             <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+        </member>
+        <member name="T:MilkCum.RJW.RJWLactatingBreastSizeGameComponent">
+            <summary>泌乳期时临时增大 RJW 胸部 Severity，离开泌乳期后恢复。仅修改本 mod 维护的“基础值”缓存并写回 Hediff.Severity。</summary>
+        </member>
+        <member name="F:MilkCum.RJW.RJWLactatingBreastSizeGameComponent.BreastBaseSeverity">
+            <summary>已施加增益的胸部 Hediff -> 施加前记录的 base severity。</summary>
+        </member>
+        <member name="M:MilkCum.RJW.RJWLactatingBreastSizeGameComponent.#ctor(Verse.Game)">
+            <summary>与当前引用的 Assembly-CSharp 中 GameComponent 无参构造兼容；game 由框架在加入 Game.components 时关联。</summary>
+        </member>
+        <member name="T:MilkCum.RJW.RJWLustIntegration">
+            <summary>哺乳/吸奶时增加 RJW 性需求 (Need_Sex.CurLevel)；泌乳期对性需求有持续小幅正向影响。</summary>
+        </member>
+        <member name="M:MilkCum.RJW.RJWLustIntegration.OnSuckleFromLactatingPawn(Verse.Pawn,Verse.Pawn)">
+            <summary>他人吸奶/被哺乳：每次 SuckleFromLactatingPawn 成功时给母亲与婴儿增加一点性需求。</summary>
+        </member>
+        <member name="M:MilkCum.RJW.RJWLustIntegration.OnBreastfeedComplete(Verse.Pawn,Verse.Pawn)">
+            <summary>一次完整哺乳结束时增加性需求，并记录“刚哺乳”用于性行为额外满足。</summary>
+        </member>
+        <member name="F:MilkCum.RJW.RJWLustIntegration.LastNursedTick">
+            <summary>刚哺乳/吸奶的 tick 记录，用于性行为结束时额外满足 Need_Sex。</summary>
+        </member>
+        <member name="M:MilkCum.RJW.RJWLustIntegration.ApplyLactatingSexNeedBonus(Verse.Pawn,RimWorld.Need)">
+            <summary>泌乳期时每 NeedInterval 给性需求加一点（减缓衰减/略提升）。</summary>
+        </member>
+        <member name="T:MilkCum.RJW.RJWSexAndFertility">
+            <summary>哺乳后性行为额外满足 Need_Sex；泌乳期怀孕概率乘数；性互动中泌乳状态（Thought）。3.2：性行为后可选增加少量泌乳池进水。</summary>
+        </member>
+        <member name="M:MilkCum.RJW.RJWSexAndFertility.ApplyPostSexLactationBoost(Verse.Pawn)">
+            <summary>3.2：性行为后为泌乳者增加少量池进水（若设置开启）。</summary>
         </member>
         <member name="T:Cumpilation.Bukkake.BukkakeUtility">
             <summary>

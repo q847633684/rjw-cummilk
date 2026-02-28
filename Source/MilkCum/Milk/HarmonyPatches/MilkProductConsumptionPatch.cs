@@ -1,3 +1,4 @@
+using System.Reflection;
 using HarmonyLib;
 using MilkCum.Core;
 using MilkCum.Milk.Comps;
@@ -8,18 +9,29 @@ using Verse.AI;
 
 namespace MilkCum.Milk.HarmonyPatches;
 
-/// <summary>分配进食任务时排除不允许食用的奶制品。</summary>
-[HarmonyPatch]
+/// <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
 public static class WorkGiver_Ingest_MilkProductFilter
 {
-    static System.Reflection.MethodBase TargetMethod()
+    static MethodBase GetTargetMethod()
     {
-        var t = AccessTools.TypeByName("RimWorld.WorkGiver_Ingest");
-        if (t == null) return null;
-        return AccessTools.Method(t, "JobOnThing");
+        foreach (var typeName in new[] { "RimWorld.WorkGiver_Ingest", "Verse.AI.WorkGiver_Ingest" })
+        {
+            var t = AccessTools.TypeByName(typeName);
+            if (t == null) continue;
+            var m = AccessTools.Method(t, "JobOnThing");
+            if (m != null) return m;
+        }
+        return null;
     }
 
-    [HarmonyPrefix]
+    public static void ApplyOptionalPatches(HarmonyLib.Harmony harmony)
+    {
+        var target = GetTargetMethod();
+        if (target == null) return;
+        var prefix = AccessTools.Method(typeof(WorkGiver_Ingest_MilkProductFilter), nameof(Prefix));
+        harmony.Patch(target, prefix: new HarmonyLib.HarmonyMethod(prefix));
+    }
+
     static bool Prefix(Pawn pawn, Thing t, bool forced, ref Job __result)
     {
         if (pawn == null || t == null) return true;
@@ -29,11 +41,10 @@ public static class WorkGiver_Ingest_MilkProductFilter
     }
 }
 
-/// <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。</summary>
-[HarmonyPatch]
+/// <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。目标在 1.6 可能在不同程序集，可选应用。</summary>
 public static class JobDriver_Ingest_MilkProductCheck
 {
-    static System.Reflection.MethodBase TargetMethod()
+    static MethodBase GetTargetMethod()
     {
         var t = AccessTools.TypeByName("RimWorld.JobDriver_Ingest");
         if (t == null) t = AccessTools.TypeByName("Verse.AI.JobDriver_Ingest");
@@ -41,7 +52,14 @@ public static class JobDriver_Ingest_MilkProductCheck
         return AccessTools.Method(t, "Notify_Start");
     }
 
-    [HarmonyPostfix]
+    public static void ApplyOptionalPatches(HarmonyLib.Harmony harmony)
+    {
+        var target = GetTargetMethod();
+        if (target == null) return;
+        var postfix = AccessTools.Method(typeof(JobDriver_Ingest_MilkProductCheck), nameof(Postfix));
+        harmony.Patch(target, postfix: new HarmonyLib.HarmonyMethod(postfix));
+    }
+
     static void Postfix(JobDriver __instance)
     {
         if (__instance?.pawn == null || __instance.job == null) return;

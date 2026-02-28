@@ -312,10 +312,10 @@ public static class ExtensionHelper
         if (pawn?.genes == null || !pawn.RaceProps.Humanlike) return 1f;
         float mult = 1f;
         var bigBreasts = DefDatabase<GeneDef>.GetNamedSilentFail("rjw_genes_big_breasts");
-        if (bigBreasts != null && pawn.genes.HasGene(bigBreasts))
+        if (bigBreasts != null && pawn.genes.HasActiveGene(bigBreasts))
             mult *= 1.12f;
         var extraBreasts = DefDatabase<GeneDef>.GetNamedSilentFail("rjw_genes_extra_breasts");
-        if (extraBreasts != null && pawn.genes.HasGene(extraBreasts))
+        if (extraBreasts != null && pawn.genes.HasActiveGene(extraBreasts))
             mult *= 1.08f;
         return Mathf.Clamp(mult, 0.5f, 1.5f);
     }

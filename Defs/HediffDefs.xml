@@ -1,7 +1,8 @@
 <Defs>
+    <!-- hediffClass 在 Init() 中设为 Hediff_ProlactinTolerance，避免 Def 加载时程序集未就绪导致 type 为 null -->
     <HediffDef>
         <defName>EM_Prolactin_Tolerance</defName>
-        <hediffClass>MilkCum.Milk.Comps.Hediff_ProlactinTolerance</hediffClass>
+        <hediffClass>HediffWithComps</hediffClass>
         <label>催乳素耐受</label>
         <description>Developing tolerance to Prolactin</description>
         <initialSeverity>0.01</initialSeverity>
@@ -82,7 +83,8 @@
         </stages>
     </HediffDef>
     
-    <HediffDef ParentName="AddictionBase">
+    <!-- 不继承 AddictionBase，避免 1.6 中 HediffDef 无 chemical 字段导致 Def 报错 -->
+    <HediffDef>
         <defName>EM_Prolactin_Addiction</defName>
         <hediffClass>Hediff_Addiction</hediffClass>
         <label>催乳素成瘾</label>
@@ -90,6 +92,15 @@
         <chemicalNeed>Chemical_EM_Prolactin</chemicalNeed>
         <initialSeverity>0.5</initialSeverity>
         <maxSeverity>1.0</maxSeverity>
+        <defaultLabelColor>(1,0,0.5)</defaultLabelColor>
+        <scenarioCanAdd>true</scenarioCanAdd>
+        <removeOnRedressChanceByDaysCurve>
+            <points>
+                <li>(0, 0)</li>
+                <li>(10, 0)</li>
+                <li>(60, 0.25)</li>
+            </points>
+        </removeOnRedressChanceByDaysCurve>
         <comps>
             <li Class="HediffCompProperties_SeverityPerDay">
                 <severityPerDay>-0.015</severityPerDay>
@@ -238,6 +249,41 @@
                 <minSeverity>0</minSeverity>
                 <label>吸收中</label>
             </li>
+        </stages>
+    </HediffDef>
+
+    <!-- 原 rjw-milkable-colonists 系：供 RJWLactatingGainPatch 为 stages/li 添加意识/操纵/移动 +10% 增益。 -->
+    <HediffDef>
+        <defName>Lactating_Drug</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>药物泌乳</label>
+        <description>Drug-induced lactation.</description>
+        <defaultLabelColor>(1,0.41,0.81)</defaultLabelColor>
+        <isBad>false</isBad>
+        <stages>
+            <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
+        </stages>
+    </HediffDef>
+    <HediffDef>
+        <defName>Lactating_Permanent</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>永久泌乳</label>
+        <description>Permanent lactation.</description>
+        <defaultLabelColor>(1,0.41,0.81)</defaultLabelColor>
+        <isBad>false</isBad>
+        <stages>
+            <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
+        </stages>
+    </HediffDef>
+    <HediffDef>
+        <defName>Heavy_Lactating_Permanent</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>重度永久泌乳</label>
+        <description>Heavy permanent lactation.</description>
+        <defaultLabelColor>(1,0.41,0.81)</defaultLabelColor>
+        <isBad>false</isBad>
+        <stages>
+            <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
         </stages>
     </HediffDef>
 </Defs>

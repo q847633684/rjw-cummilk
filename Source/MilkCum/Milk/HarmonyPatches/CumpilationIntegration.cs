@@ -89,17 +89,18 @@ public static class CumpilationIntegration
         CumProducerForNextSpawn = null;
     }
 
-    /// <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied.</summary>
-    static void JobGiver_Deflate_TryFindBucketFor_Postfix(Pawn pawn, ref Thing __result)
+    /// <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied. TryFindBucketFor returns bool and has (Pawn, out Thing).</summary>
+    static void JobGiver_Deflate_TryFindBucketFor_Postfix(Pawn pawn, ref Thing thing, ref bool __result)
     {
-        if (__result == null || pawn == null) return;
-        var comp = __result.TryGetComp<CompCumBucketLink>();
+        if (thing == null || pawn == null) return;
+        var comp = thing.TryGetComp<CompCumBucketLink>();
         if (comp == null) return;
         if (!comp.CanPawnUse(pawn))
         {
             if (comp.ShouldWarnNotYourBucket(pawn))
                 Messages.Message("EM_CumBucket_NotYours".Translate(pawn.LabelShort), pawn, MessageTypeDefOf.RejectInput);
-            __result = null;
+            thing = null;
+            __result = false;
         }
     }
 

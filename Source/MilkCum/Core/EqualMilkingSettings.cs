@@ -613,7 +613,7 @@ internal class EqualMilkingSettings : ModSettings
 }
 
 /// <summary>建议 13：乳腺炎/风险与耐受相关设置分组，便于序列化与 UI；ExposeData 仍写旧 key 以兼容存档。</summary>
-public class MilkRiskSettings
+public class MilkRiskSettings : IExposable
 {
 	public bool allowMastitis = true;
 	public float mastitisBaseMtbDays = 1.5f;
@@ -624,4 +624,16 @@ public class MilkRiskSettings
 	/// <summary>建议 8：人形/动物乳腺炎 MTB 乘数，便于区分平衡。</summary>
 	public float mastitisMtbDaysMultiplierHumanlike = 1f;
 	public float mastitisMtbDaysMultiplierAnimal = 1f;
+
+	public void ExposeData()
+	{
+		Scribe_Values.Look(ref allowMastitis, "EM.AllowMastitis", true);
+		Scribe_Values.Look(ref mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
+		Scribe_Values.Look(ref overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
+		Scribe_Values.Look(ref hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
+		Scribe_Values.Look(ref allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
+		Scribe_Values.Look(ref toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
+		Scribe_Values.Look(ref mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);
+		Scribe_Values.Look(ref mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
+	}
 }

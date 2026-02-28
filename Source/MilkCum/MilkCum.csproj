@@ -13,10 +13,18 @@
       <HintPath>$(RJWPath)</HintPath>
       <Private>False</Private>
     </Reference>
+    <!-- Vanilla Expanded Framework，奶管道联动；仅当 PipeSystemPath 存在时引用 -->
+    <Reference Include="PipeSystem" Condition="Exists('$(PipeSystemPath)')">
+      <HintPath>$(PipeSystemPath)</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <!-- 排除 Cumpilation 自带的 AssemblyInfo，避免与 SDK 自动生成的重复 -->
     <Compile Remove="Cumpilation\Properties\AssemblyInfo.cs" />
+    <!-- 合并 RJW、PipeSystem 联动源码到本程序集，不再产出独立 DLL -->
+    <Compile Include="..\RJW\**\*.cs" />
+    <Compile Include="..\PipeSystem\**\*.cs" Condition="Exists('$(PipeSystemPath)')" />
   </ItemGroup>
   
   <ItemGroup>
@@ -35,5 +43,11 @@
     <!-- Need-->
     <Publicize Include="Assembly-CSharp:RimWorld.Need.pawn" />
     <Publicize Include="Assembly-CSharp:RimWorld.Need_MechEnergy.BaseFallPerDay" />
+    <!-- PipeSystem (Vanilla Expanded)，奶管道联动需访问内部成员；仅当引用 PipeSystem 时生效 -->
+    <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage" Condition="Exists('$(PipeSystemPath)')" />
+    <Publicize Include="PipeSystem:PipeSystem.CompProperties_ResourceStorage" Condition="Exists('$(PipeSystemPath)')" />
+    <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage.amountStored" Condition="Exists('$(PipeSystemPath)')" />
+    <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage.ticksWithoutPower" Condition="Exists('$(PipeSystemPath)')" />
+    <Publicize Include="PipeSystem:PipeSystem.Alert_NoStorage.ThingsList" Condition="Exists('$(PipeSystemPath)')" />
   </ItemGroup>
 </Project>

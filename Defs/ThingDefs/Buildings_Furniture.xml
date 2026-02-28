@@ -71,7 +71,7 @@
                 <deflateMult>1</deflateMult>
                 <deflateRate>1.25</deflateRate>
             </li>
-            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -145,7 +145,7 @@
                 <deflateMult>1.25</deflateMult>
                 <deflateRate>1.5</deflateRate>
             </li>
-            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -225,7 +225,7 @@
                 <basePowerConsumption>50</basePowerConsumption>
             </li>
             <li Class="CompProperties_Flickable" />
-            <li Class="EqualMilking.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 </Defs>

@@ -30,7 +30,7 @@
       <Steel>120</Steel>
     </costList>
     <comps>
-      <li Class="EqualMilking.PipeSystem.CompProperties_MultiResourceStorage">
+      <li Class="MilkCum.PipeSystem.CompProperties_MultiResourceStorage">
         <pipeNet>EM_MilkNet</pipeNet>
         <storageCapacity>2000</storageCapacity>
         <barSize>(0.75, 0.10)</barSize>
@@ -38,7 +38,7 @@
         <centerOffset>(-0.07, 0, -0.45)</centerOffset>
         <contentRequirePower>false</contentRequirePower>
       </li>
-      <li Class="EqualMilking.PipeSystem.CompProperties_MultiResourceStorage">
+      <li Class="MilkCum.PipeSystem.CompProperties_MultiResourceStorage">
         <pipeNet>EM_HumanMilkNet</pipeNet>
         <storageCapacity>2000</storageCapacity>
         <barSize>(0.75, 0.10)</barSize>

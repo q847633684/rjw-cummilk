@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using RimWorld;
-using UnityEngine;
 using Verse;
 using rjw;
 using MilkCum.Core;
@@ -11,7 +10,7 @@ using MilkCum.Milk.Helpers;
 namespace MilkCum.RJW;
 
 /// <summary>泌乳期时临时增大 RJW 胸部 Severity，离开泌乳期后恢复。仅修改本 mod 维护的“基础值”缓存并写回 Hediff.Severity。</summary>
-public class RJWLactatingBreastSizeGameComponent : GameComponent
+public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
 {
     private const float LactatingSeverityBonus = 0.15f;
     private const int TickInterval = 250;
@@ -19,7 +18,9 @@ public class RJWLactatingBreastSizeGameComponent : GameComponent
     /// <summary>已施加增益的胸部 Hediff -> 施加前记录的 base severity。</summary>
     private static readonly Dictionary<Hediff, float> BreastBaseSeverity = new();
 
-    public RJWLactatingBreastSizeGameComponent(Game game) : base(game) { }
+    /// <summary>与当前引用的 Assembly-CSharp 中 GameComponent 无参构造兼容；game 由框架在加入 Game.components 时关联。</summary>
+    public RJWLactatingBreastSizeGameComponent(Verse.Game game)
+        : base() { }
 
     public override void FinalizeInit()
     {
@@ -56,7 +57,7 @@ public class RJWLactatingBreastSizeGameComponent : GameComponent
                 if (!BreastBaseSeverity.ContainsKey(hediff))
                 {
                     BreastBaseSeverity[hediff] = hediff.Severity;
-                    hediff.Severity = Mathf.Min(1f, hediff.Severity + LactatingSeverityBonus);
+                    hediff.Severity = UnityEngine.Mathf.Min(1f, hediff.Severity + LactatingSeverityBonus);
                 }
             }
             else

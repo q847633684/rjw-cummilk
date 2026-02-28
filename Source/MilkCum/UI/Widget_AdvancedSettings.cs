@@ -3,7 +3,6 @@ using System.Linq;
 using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 using MilkCum.Milk.Comps;
-using MilkCum.Milk.Helpers;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -13,12 +12,6 @@ using static MilkCum.Milk.Helpers.Constants;
 namespace MilkCum.UI;
 public class Widget_AdvancedSettings
 {
-	// 折叠状态（Section 展开/收起）
-	private static bool _mastitisSectionExpanded = true;
-	private static bool _overflowSectionExpanded = true;
-	private static bool _raceOverridesSectionExpanded = false;
-	private static bool _devModeLactationExpanded = false;
-
 	public void Draw(Rect inRect)
 	{
 		Rect sliderRect = new(inRect.x, inRect.y, inRect.width, UNIT_SIZE);

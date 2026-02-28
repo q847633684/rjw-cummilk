@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using UnityEngine;
 using MilkCum.Core;
 using MilkCum.Milk.Comps;
+using MilkCum.Milk.Helpers;
 
 namespace MilkCum.RJW;
 
@@ -76,8 +78,9 @@ public static class PawnCapacityWorker_Fertility_Lactating_Patch
     }
 
     [HarmonyPostfix]
-    static void Postfix(Pawn pawn, ref float __result)
+    static void Postfix(HediffSet diffSet, ref float __result)
     {
+        Pawn pawn = diffSet?.pawn;
         if (pawn == null || __result <= 0f) return;
         if (!pawn.IsInLactatingState()) return;
         float factor = Mathf.Clamp01(EqualMilkingSettings.rjwLactationFertilityFactor);

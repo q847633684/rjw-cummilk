@@ -3,7 +3,7 @@
 	<PawnColumnDef>
 		<defName>Milk_AllowSelf</defName>
 		<headerIcon>ui/icons/trainables/tameness</headerIcon>
-		<workerClass>EqualMilking.PawnColumnWorker_MilkAllowSelf</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkAllowSelf</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
 		<width>80</width>
@@ -12,7 +12,7 @@
 	<PawnColumnDef>
 		<defName>Milk_SealCum</defName>
 		<label>EM.Milk_SealCum</label>
-		<workerClass>EqualMilking.PawnColumnWorker_MilkSealCum</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkSealCum</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
 		<width>56</width>
@@ -21,7 +21,7 @@
 	<PawnColumnDef>
 		<defName>Milk_AllowDeflate</defName>
 		<label>EM.Milk_AllowDeflate</label>
-		<workerClass>EqualMilking.PawnColumnWorker_MilkAllowDeflate</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkAllowDeflate</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
 		<width>80</width>
@@ -29,7 +29,7 @@
 
  	<PawnColumnDef>
 		<defName>Milk_MilkType</defName>
-		<workerClass>EqualMilking.PawnColumnWorker_MilkType</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkType</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
 		<width>80</width>
@@ -37,7 +37,7 @@
 	
  	<PawnColumnDef>
 		<defName>Milk_Lactating</defName>
-		<workerClass>EqualMilking.PawnColumnWorker_Lactating</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_Lactating</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
 		<width>80</width>
@@ -45,7 +45,7 @@
 	
  	<PawnColumnDef>
 		<defName>Milk_Fullness</defName>
-		<workerClass>EqualMilking.PawnColumnWorker_MilkFullness</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkFullness</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
 		<width>80</width>
@@ -63,7 +63,7 @@
 	<PawnColumnDef>
 		<defName>Milk_ProducerRestrictions</defName>
 		<label>EM.ProducerRestrictionsColumn</label>
-		<workerClass>EqualMilking.PawnColumnWorker_ProducerRestrictions</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_ProducerRestrictions</workerClass>
 		<sortable>false</sortable>
 		<paintable>false</paintable>
 		<width>110</width>
@@ -72,7 +72,7 @@
  	<PawnColumnDef>
 		<defName>Milk_Dev</defName>
 		<label>EM.Milk_Dev</label>
-		<workerClass>EqualMilking.PawnColumnWorker_Dev</workerClass>
+		<workerClass>MilkCum.UI.PawnColumnWorker_Dev</workerClass>
 		<sortable>false</sortable>
 		<paintable>true</paintable>
 		<width>120</width>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 仅在启用 RJW (rim.job.world) 时加载。为 Lactating_Drug、Lactating_Permanent、Heavy_Lactating_Permanent（多来自 rjw-milkable-colonists 等）添加与本体泌乳期相同的长期正向增益（意识/操纵/移动各 +10%）。若当前存档未提供这些 def，则 xpath 不匹配、操作跳过。 -->
+<!-- 仅在启用 RJW (rim.job.world) 时加载。为 Lactating_Drug、Lactating_Permanent、Heavy_Lactating_Permanent（本 mod Defs/HediffDefs.xml 已定义，原 rjw-milkable-colonists 合并后保留）添加与本体泌乳期相同的长期正向增益（意识/操纵/移动各 +10%）。 -->
 <Patch>
   <Operation Class="PatchOperationAdd">
     <xpath>Defs/HediffDef[defName="Lactating_Drug"]/stages/li</xpath>

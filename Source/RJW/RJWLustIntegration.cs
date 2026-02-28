@@ -2,6 +2,7 @@ using System;
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using UnityEngine;
 using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 
@@ -43,14 +44,19 @@ public static class RJWLustIntegration
     /// <summary>刚哺乳/吸奶的 tick 记录，用于性行为结束时额外满足 Need_Sex。</summary>
     public static readonly System.Collections.Generic.Dictionary<Pawn, int> LastNursedTick = new();
     private const int RecentlyNursedTicks = 2500; // ~1 小时
-    public static bool WasRecentlyNursed(Pawn p) => p != null && LastNursedTick.TryGetValue(p, out int t) && Find.TickManager.TicksGame - t < RecentlyNursedTicks;
+    public static bool WasRecentlyNursed(Pawn p)
+    {
+        if (p == null) return false;
+        if (!LastNursedTick.TryGetValue(p, out int t)) return false;
+        return Find.TickManager.TicksGame - t < RecentlyNursedTicks;
+    }
 
     public static void AddSexNeed(Pawn pawn, float amount)
     {
         if (pawn?.needs == null || amount <= 0f) return;
-        Type needSexType = AccessTools.TypeByName("rjw.Need_Sex");
-        if (needSexType == null) return;
-        Need need = pawn.needs.TryGetNeed(needSexType);
+        NeedDef sexDef = DefDatabase<NeedDef>.GetNamedSilentFail("Sex");
+        if (sexDef == null) return;
+        Need need = pawn.needs.TryGetNeed(sexDef);
         if (need == null) return;
         float cur = need.CurLevel;
         need.CurLevel = Mathf.Clamp01(cur + amount);

@@ -4,6 +4,8 @@
         <RimWorldManaged Condition="'$(RimWorldManaged)'==''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManaged>
         <HarmonyPath Condition="'$(HarmonyPath)'==''">C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HarmonyPath>
         <RJWPath Condition="'$(RJWPath)'==''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\rjw\1.6\Assemblies\RJW.dll</RJWPath>
+        <!-- Vanilla Expanded Framework (PipeSystem)，用于奶管道联动；可覆盖 -->
+        <PipeSystemPath Condition="'$(PipeSystemPath)'==''">C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2023507013\Current\Assemblies\PipeSystem.dll</PipeSystemPath>
     </PropertyGroup>
     <PropertyGroup>
         <!-- Prevent dumping garbage into the output directory -->

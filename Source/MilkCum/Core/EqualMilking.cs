@@ -22,6 +22,8 @@ public static class EqualMilking
         EventHelper.OnPostLoadLong += Init;
         // Patch vanilla
         EqualMilkingMod.Harmony.PatchAll();
+        WorkGiver_Ingest_MilkProductFilter.ApplyOptionalPatches(EqualMilkingMod.Harmony);
+        JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(EqualMilkingMod.Harmony);
         ProlactinAddictionPatch.ApplyIfPossible(EqualMilkingMod.Harmony);
         CumpilationIntegration.ApplyPatches(EqualMilkingMod.Harmony);
     }
