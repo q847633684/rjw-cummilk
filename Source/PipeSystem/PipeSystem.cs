@@ -32,20 +32,17 @@ internal static class ApplyPatches
     }
     public static void ResolveLang()
     {
-        DesignationCategoryDef def = DefDatabase<DesignationCategoryDef>.GetNamedSilentFail("EM_PipeNetworks");
-        if (def != null)
-        {
-            def.label = Lang.Join(Lang.Milk, Pipe);
-        }
+        if (EMDefOf.EM_PipeNetworks != null)
+            EMDefOf.EM_PipeNetworks.label = Lang.Join(Lang.Milk, Pipe);
         DefDatabase<DesignatorDropdownGroupDef>.GetNamed("EM_MilkTaps").label = Lang.Join(Lang.Milk, Tap);
         DefDatabase<DesignatorDropdownGroupDef>.GetNamed("EM_MilkPipes").label = Lang.Join(Lang.Milk, Pipe);
 
-        DefDatabase<ThingDef>.GetNamed("EM_MilkTap").label = Lang.Join(Lang.Milk, Tap);
-        DefDatabase<ThingDef>.GetNamed("EM_HumanMilkTap").label = Lang.Join(Lang.Human, Lang.Milk, Tap);
-        DefDatabase<ThingDef>.GetNamed("EM_MilkPipe").label = Lang.Join(Lang.Milk, Pipe);
-        DefDatabase<ThingDef>.GetNamed("EM_UndergroundMilkPipe").label = Lang.Join(Hidden, Lang.Milk, Pipe);
-        DefDatabase<ThingDef>.GetNamed("EM_MilkValve").label = Lang.Join(Lang.Milk, Valve);
-        DefDatabase<ThingDef>.GetNamed("EM_MilkContainer").label = Lang.Join(Lang.Milk, Lang.Container);
+        if (EMDefOf.EM_MilkTap != null) EMDefOf.EM_MilkTap.label = Lang.Join(Lang.Milk, Tap);
+        if (EMDefOf.EM_HumanMilkTap != null) EMDefOf.EM_HumanMilkTap.label = Lang.Join(Lang.Human, Lang.Milk, Tap);
+        if (EMDefOf.EM_MilkPipe != null) EMDefOf.EM_MilkPipe.label = Lang.Join(Lang.Milk, Pipe);
+        if (EMDefOf.EM_UndergroundMilkPipe != null) EMDefOf.EM_UndergroundMilkPipe.label = Lang.Join(Hidden, Lang.Milk, Pipe);
+        if (EMDefOf.EM_MilkValve != null) EMDefOf.EM_MilkValve.label = Lang.Join(Lang.Milk, Valve);
+        if (EMDefOf.EM_MilkContainer != null) EMDefOf.EM_MilkContainer.label = Lang.Join(Lang.Milk, Lang.Container);
 
         DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet").resource.name = Lang.Milk;
         DefDatabase<PipeNetDef>.GetNamed("EM_HumanMilkNet").resource.name = Lang.Join(Lang.Human, Lang.Milk);
@@ -76,7 +73,8 @@ internal static class ApplyPatches
     public static void AdjustContainerSize()
     {
         // Adjust milk container capacity dynamically
-        foreach (CompProperties_ResourceStorage comp in DefDatabase<ThingDef>.GetNamed("EM_MilkContainer").comps.Where(x => x is CompProperties_ResourceStorage).Cast<CompProperties_ResourceStorage>())
+        if (EMDefOf.EM_MilkContainer == null) return;
+        foreach (CompProperties_ResourceStorage comp in EMDefOf.EM_MilkContainer.comps.Where(x => x is CompProperties_ResourceStorage).Cast<CompProperties_ResourceStorage>())
         {
             foreach (KeyValuePair<ThingDef, List<PipeNetDef>> pair in pipeNets)
             {

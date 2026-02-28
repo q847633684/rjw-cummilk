@@ -376,7 +376,7 @@ internal class EqualMilkingSettings : ModSettings
 				milkProduct.milkAmount = Mathf.FloorToInt(3f * def.race.baseBodySize / ThingDefOf.Human.race.baseBodySize);
 				milkProduct.milkIntervalDays = 0.25f;
 				milkProduct.isMilkable = true;
-				milkProduct.milkTypeDefName = "EM_HumanMilk";
+				milkProduct.milkTypeDefName = EMDefOf.EM_HumanMilk.defName;
 			}
 			else
 			{
@@ -399,7 +399,7 @@ internal class EqualMilkingSettings : ModSettings
 	/// <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置（可被其他 mod patch 的 Def）。</summary>
 	public static void ApplyDefaultsFromDef()
 	{
-		var def = DefDatabase<EqualMilkingDefaultsDef>.GetNamedSilentFail("EM_Defaults");
+		var def = EMDefOf.EM_Defaults;
 		if (def == null) return;
 		baselineMilkDurationDays = def.baselineMilkDurationDays;
 		birthInducedMilkDurationDays = def.birthInducedMilkDurationDays;

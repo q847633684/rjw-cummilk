@@ -50,4 +50,16 @@ public static class EMDefOf
     public static HediffDef EM_DrugLactationBurden;
     public static HediffDef EM_LactatingGain;
     public static HediffDef EM_AbsorptionDelay;
+
+    /// <summary>建议 22：关键默认值 Def，可被其他 mod patch；ApplyDefaultsFromDef 使用。</summary>
+    public static EqualMilkingDefaultsDef EM_Defaults;
+
+    // 管道系统（VE Framework 可选）：仅主 mod 可解析的 Def 类型；DesignatorDropdownGroupDef/PipeNetDef 在 PipeSystem 项目中用 GetNamed
+    public static DesignationCategoryDef EM_PipeNetworks;
+    public static ThingDef EM_MilkTap;
+    public static ThingDef EM_HumanMilkTap;
+    public static ThingDef EM_MilkPipe;
+    public static ThingDef EM_UndergroundMilkPipe;
+    public static ThingDef EM_MilkValve;
+    public static ThingDef EM_MilkContainer;
 }
