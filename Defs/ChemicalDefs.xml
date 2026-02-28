@@ -5,6 +5,7 @@
         <addictionHediff>EM_Prolactin_Addiction</addictionHediff>
         <toleranceHediff>EM_Prolactin_Tolerance</toleranceHediff>
         <onGeneratedAddictedToleranceChance>0.8</onGeneratedAddictedToleranceChance>
+        <generateAddictionGenes>false</generateAddictionGenes>
     </ChemicalDef>
     
     <!-- fallPerDay 用于信息面板「成瘾需求降低速率」「成瘾需求间隔」等；与 needLevelOffset 配合计算间隔天数 -->

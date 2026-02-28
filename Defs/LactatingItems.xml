@@ -1,6 +1,6 @@
 <Defs>
-    <!-- 与 MakeableDrugBase 对齐：补全信息面板所需 statBases（工作量、易燃性等） -->
-    <ThingDef Name="EM_DrugBase" ParentName="DrugBase" Abstract="True">
+    <!-- 继承 MakeableDrugBase 以触发原版物品信息面板的完整成瘾/化学物质区块显示 -->
+    <ThingDef Name="EM_DrugBase" ParentName="MakeableDrugBase" Abstract="True">
         <graphicData>
             <graphicClass>Graphic_StackCount</graphicClass>
             <drawSize>0.8</drawSize>
@@ -57,6 +57,9 @@
             <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
+            <drugCategory>Medical</drugCategory>
+            <joy>0.3</joy>
+            <joyKind>Medical</joyKind>
             <outcomeDoers>
                 <!-- 泌乳（耐受联动：高耐受时效果减弱） -->
                 <li Class="IngestionOutcomeDoer_GiveHediff">
@@ -82,6 +85,7 @@
         <costList>
             <Neutroamine>2</Neutroamine>
             <MedicineHerbal>1</MedicineHerbal>
+            <HumpShroom>4</HumpShroom>
         </costList>
         <comps>
             <li Class="CompProperties_Drug">
@@ -90,6 +94,7 @@
                 <minToleranceToAddict>0.03</minToleranceToAddict>
                 <existingAddictionSeverityOffset>0.2</existingAddictionSeverityOffset>
                 <needLevelOffset>1</needLevelOffset>
+                <listOrder>30</listOrder>
                 <overdoseSeverityOffset>
                     <min>0.18</min>
                     <max>0.35</max>
@@ -109,8 +114,13 @@
         </graphicData>
         <statBases>
             <MarketValue>400</MarketValue>
+            <WorkToMake>100</WorkToMake>
+            <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
+            <drugCategory>Medical</drugCategory>
+            <joy>1.2</joy>
+            <joyKind>Medical</joyKind>
             <outcomeDoers>
                 <!-- 4 倍泌乳：0.5×4 = 2.0 -->
                 <li Class="IngestionOutcomeDoer_GiveHediff">
@@ -144,6 +154,7 @@
                 <minToleranceToAddict>0</minToleranceToAddict>
                 <existingAddictionSeverityOffset>1</existingAddictionSeverityOffset>
                 <needLevelOffset>1</needLevelOffset>
+                <listOrder>30</listOrder>
                 <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
                 <overdoseSeverityOffset>
                     <min>0.18</min>
