@@ -43,6 +43,9 @@
     <EM.RjwLactationFertilityDesc>母亲泌乳时怀孕概率乘以此值（0～1）。</EM.RjwLactationFertilityDesc>
     <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
+    <EM.RjwSexAddsLactationBoost>性行为后增加奶池</EM.RjwSexAddsLactationBoost>
+    <EM.RjwSexAddsLactationBoostDesc>开启后，参与性行为的泌乳者会获得少量奶池进水（ΔL），受耐受与种族倍率影响。</EM.RjwSexAddsLactationBoostDesc>
+    <EM.RjwSexLactationBoostDeltaS>性行为泌乳 Δs：{0}</EM.RjwSexLactationBoostDeltaS>
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene（乳腺炎卫生触发）---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>乳腺炎/堵塞使用 DBH 卫生需求</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>开启时，Dubs Bad Hygiene 的卫生需求过低会提高乳腺炎/堵塞风险；关闭则改用房间清洁度。</EM.UseDubsBadHygieneForMastitisDesc>
@@ -76,6 +79,8 @@
     <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
     <EM.DefaultsDefLabel>平等产奶默认值</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
+    <EM.FullPoolLetterTitle>需要挤奶</EM.FullPoolLetterTitle>
+    <EM.FullPoolLetterText>{0} 的奶池已满超过一天，建议挤奶以免不适或溢出。</EM.FullPoolLetterText>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>

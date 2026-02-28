@@ -1,11 +1,12 @@
-using Verse;
-using RimWorld;
-using UnityEngine;
-using MilkCum.Core;
-using MilkCum.Milk.Helpers;
 using System.Collections.Generic;
 using System.Linq;
+using MilkCum.Core;
 using MilkCum.Milk.Data;
+using MilkCum.Milk.Helpers;
+using MilkCum.Milk.Jobs;
+using RimWorld;
+using UnityEngine;
+using Verse;
 
 namespace MilkCum.Milk.Comps;
 public class CompEquallyMilkable : CompMilkable
@@ -55,6 +56,11 @@ public class CompEquallyMilkable : CompMilkable
     private int lastGatheredTick = -1;
     /// <summary>规格：连续满池（Fullness≥0.95）的 tick 数，用于乳腺炎/堵塞触发（长时间满池）。</summary>
     private int ticksFullPool;
+    /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏。</summary>
+    private int lastFullPoolLetterTick = -1;
+    /// <summary>2.3：药物泌乳状态缓存，每 30 tick 仅状态变化时增删 EM_DrugLactationBurden/EM_LactatingGain，减少重复查找。</summary>
+    private bool cachedWasLactatingWithDrugInduced = false;
+    private bool cachedGainConditionsMet = false;
     /// <summary>满池溢出累计量（仅 Debug 显示用）。</summary>
     internal float OverflowAccumulator => overflowAccumulator;
 
@@ -80,6 +86,7 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref overflowAccumulator, "PoolOverflowAccumulator", 0f);
         Scribe_Values.Look(ref lastGatheredTick, "PoolLastGatheredTick", -1);
         Scribe_Values.Look(ref ticksFullPool, "PoolTicksFull", 0);
+        Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref assignedFeeders, "CanBeFedBy", LookMode.Reference);
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
@@ -183,12 +190,20 @@ public class CompEquallyMilkable : CompMilkable
         UpdateHealthHediffs();
     }
 
-    /// <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。</summary>
+    /// <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 2.3。</summary>
     private void ApplyDrugInducedLactationEffects()
     {
-        if (EMDefOf.EM_DrugLactationBurden != null && Pawn != null && Pawn.RaceProps.Humanlike)
+        if (Pawn == null || !Pawn.RaceProps.Humanlike) return;
+        bool nowLactatingWithDrug = Pawn.IsLactating() && Pawn.HasDrugInducedLactation();
+        bool nowGainConditions = nowLactatingWithDrug && EqualMilkingSettings.lactatingGainEnabled && EqualMilkingSettings.lactatingGainCapModPercent > 0f;
+        if (cachedWasLactatingWithDrugInduced == nowLactatingWithDrug && cachedGainConditionsMet == nowGainConditions)
+            return;
+        cachedWasLactatingWithDrugInduced = nowLactatingWithDrug;
+        cachedGainConditionsMet = nowGainConditions;
+
+        if (EMDefOf.EM_DrugLactationBurden != null)
         {
-            if (Pawn.IsLactating() && Pawn.HasDrugInducedLactation())
+            if (nowLactatingWithDrug)
             {
                 if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_DrugLactationBurden) == null)
                     Pawn.health.AddHediff(EMDefOf.EM_DrugLactationBurden, Pawn.GetBreastOrChestPart());
@@ -196,9 +211,9 @@ public class CompEquallyMilkable : CompMilkable
             else if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_DrugLactationBurden) is Hediff burden)
                 Pawn.health.RemoveHediff(burden);
         }
-        if (EMDefOf.EM_LactatingGain != null && Pawn != null && Pawn.RaceProps.Humanlike)
+        if (EMDefOf.EM_LactatingGain != null)
         {
-            if (Pawn.IsLactating() && Pawn.HasDrugInducedLactation() && EqualMilkingSettings.lactatingGainEnabled && EqualMilkingSettings.lactatingGainCapModPercent > 0f)
+            if (nowGainConditions)
             {
                 if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_LactatingGain) == null)
                     Pawn.health.AddHediff(EMDefOf.EM_LactatingGain, Pawn.GetBreastOrChestPart());
@@ -255,6 +270,22 @@ public class CompEquallyMilkable : CompMilkable
         ticksFullPool = pool.TicksFullPool;
         SyncBaseFullness();
         HandleOverflow(overflowTotal);
+        TrySendFullPoolLetter();
+    }
+
+    /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/药物注射到泌乳结束逻辑梳理与优化扩展建议 3.3。</summary>
+    private void TrySendFullPoolLetter()
+    {
+        if (!EqualMilkingSettings.enableFullPoolLetter || Pawn == null || !Pawn.Spawned || !Pawn.IsColonyPawn()
+            || ticksFullPool < 60000) return;
+        int now = Find.TickManager.TicksGame;
+        if (lastFullPoolLetterTick >= 0 && now - lastFullPoolLetterTick < 120000) return;
+        lastFullPoolLetterTick = now;
+        string title = "EM.FullPoolLetterTitle".Translate();
+        if (string.IsNullOrEmpty(title) || title == "EM.FullPoolLetterTitle") title = "EM.MilkPoolFull".Translate();
+        string text = "EM.FullPoolLetterText".Translate(Pawn.LabelShort);
+        if (string.IsNullOrEmpty(text)) text = Pawn.LabelShort + " " + "EM.MilkPoolFull".Translate();
+        Find.LetterStack.ReceiveLetter(title, text, LetterDefOf.NegativeEvent, new TargetInfo(Pawn));
     }
 
     /// <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定。</summary>
@@ -382,29 +413,29 @@ public class CompEquallyMilkable : CompMilkable
             rightFullness = 0f;
         SyncBaseFullness();
         // 10.8-5：挤奶心情细分 — 被允许的人挤奶给正面记忆，否则给强制挤奶负面记忆
-        if (parent is Pawn producer && producer.RaceProps.Humanlike && producer.needs?.mood?.thoughts?.memories != null)
+        if (parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
         {
-            if (ExtensionHelper.IsAllowedSuckler(producer, doer))
+            if (ExtensionHelper.IsAllowedSuckler(milkedPawn, doer))
             {
                 if (EMDefOf.EM_AllowedMilking != null)
-                    producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_AllowedMilking);
-                if (producer.HasDrugInducedLactation() && EMDefOf.EM_Prolactin_Joy != null)
-                    producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_Prolactin_Joy);
+                    milkedPawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_AllowedMilking);
+                if (milkedPawn.HasDrugInducedLactation() && EMDefOf.EM_Prolactin_Joy != null)
+                    milkedPawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_Prolactin_Joy);
             }
             else if (EMDefOf.EM_ForcedMilking != null)
-                producer.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
+                milkedPawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
         }
         // 10.8-6：记录最近一次挤奶时刻，供「长时间未挤奶」心情判定
         lastGatheredTick = Find.TickManager.TicksGame;
         // 规格：挤奶时略微缓解乳房不适/乳腺炎
-        if (parent is Pawn producer && EMDefOf.EM_Mastitis != null)
+        if (parent is Pawn pawnForMastitis && EMDefOf.EM_Mastitis != null)
         {
-            var mastitis = producer.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Mastitis);
+            var mastitis = pawnForMastitis.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Mastitis);
             if (mastitis != null && mastitis.Severity > 0.01f)
             {
                 mastitis.Severity = Mathf.Max(0f, mastitis.Severity - 0.05f);
                 if (mastitis.Severity <= 0f)
-                    producer.health.RemoveHediff(mastitis);
+                    pawnForMastitis.health.RemoveHediff(mastitis);
             }
         }
     }

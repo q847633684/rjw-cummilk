@@ -1,12 +1,14 @@
-using Verse;
-using RimWorld;
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using MilkCum.Core;
 using MilkCum.Milk.Comps;
 using MilkCum.Milk.Data;
-using static MilkCum.Milk.Helpers.Categories;
+using RimWorld;
 using rjw;
+using UnityEngine;
+using Verse;
+
+using static MilkCum.Milk.Helpers.Categories;
 
 namespace MilkCum.Milk.Helpers;
 
@@ -321,7 +323,7 @@ public static class ExtensionHelper
     /// <summary>获取“乳房/胸部”身体部位，用于将 hediff 挂在健康页的乳房行。优先 Breast，否则 Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）。</summary>
     public static BodyPartRecord GetBreastOrChestPart(this Pawn pawn)
     {
-        if (pawn?.health?.hediffSet?.GetNotMissingParts == null) return null;
+        if (pawn?.health?.hediffSet == null) return null;
         var parts = pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined, null, null);
         BodyPartRecord breast = null, chest = null, torso = null;
         foreach (var p in parts)
@@ -345,7 +347,7 @@ public static class ExtensionHelper
             if (bpr != null) return bpr;
         }
         catch { }
-        if (pawn.health?.hediffSet?.GetNotMissingParts == null) return null;
+        if (pawn.health?.hediffSet == null) return null;
         var parts = pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined, null, null);
         BodyPartRecord genitals = null, anus = null;
         foreach (var p in parts)

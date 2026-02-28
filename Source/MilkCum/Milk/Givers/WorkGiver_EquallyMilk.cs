@@ -1,11 +1,13 @@
-using Verse;
-using Verse.AI;
-using RimWorld;
 using System.Collections.Generic;
-using RimWorld.Planet;
 using System.Linq;
 using MilkCum.Core;
+using MilkCum.Milk.Comps;
 using MilkCum.Milk.Helpers;
+using RimWorld;
+using RimWorld.Planet;
+using Verse;
+using Verse.AI;
+
 namespace MilkCum.Milk.Givers;
 [StaticConstructorOnStartup]
 public class WorkGiver_EquallyMilk : WorkGiver_Milk

@@ -5,6 +5,7 @@ using Verse.AI;
 using RimWorld;
 using UnityEngine;
 using RimWorld.Planet;
+using MilkCum.Core;
 using static RimWorld.ChildcareUtility;
 
 namespace MilkCum.Milk.Helpers;
@@ -109,6 +110,11 @@ public static class ChildcareHelper
             {
                 baby.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedMe, pawn, null);
                 pawn.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedBaby, baby, null);
+                // 3.1：哺乳/被哺乳记忆，便于社交与关系（带 other 的记忆可影响 opinion）
+                if (EMDefOf.EM_NursedBy != null)
+                    baby.needs?.mood?.thoughts.memories.TryGainMemory(EMDefOf.EM_NursedBy, pawn, null);
+                if (EMDefOf.EM_NursedSomeone != null)
+                    pawn.needs?.mood?.thoughts.memories.TryGainMemory(EMDefOf.EM_NursedSomeone, baby, null);
                 ThingDef milkDef = pawn.MilkDef();
                 if (milkDef.ingestible.outcomeDoers != null)
                 {

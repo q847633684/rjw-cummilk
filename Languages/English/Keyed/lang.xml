@@ -43,6 +43,9 @@
     <EM.RjwLactationFertilityDesc>Pregnancy chance multiplier when mother is lactating (0-1).</EM.RjwLactationFertilityDesc>
     <EM.RjwLactatingInSexDesc>Show lactating in sex interactions</EM.RjwLactatingInSexDesc>
     <EM.RjwLactatingInSexDescDesc>Lactating pawns may get different RJW sex descriptions.</EM.RjwLactatingInSexDescDesc>
+    <EM.RjwSexAddsLactationBoost>Sex adds lactation pool boost</EM.RjwSexAddsLactationBoost>
+    <EM.RjwSexAddsLactationBoostDesc>When enabled, lactating pawns who have sex gain a small milk pool increase (ΔL). Uses tolerance and race multiplier.</EM.RjwSexAddsLactationBoostDesc>
+    <EM.RjwSexLactationBoostDeltaS>Sex lactation Δs: {0}</EM.RjwSexLactationBoostDeltaS>
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene (mastitis hygiene trigger) ---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>Use DBH Hygiene need for mastitis risk</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>When enabled, low Hygiene (from Dubs Bad Hygiene) increases mastitis/clog risk. When disabled, room cleanliness is used instead.</EM.UseDubsBadHygieneForMastitisDesc>
@@ -76,6 +79,8 @@
     <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
     <EM.DefaultsDefLabel>Equal Milking defaults</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
+    <EM.FullPoolLetterTitle>Needs milking</EM.FullPoolLetterTitle>
+    <EM.FullPoolLetterText>{0} has been at full milk pool for over a day; consider milking to avoid discomfort or overflow.</EM.FullPoolLetterText>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>

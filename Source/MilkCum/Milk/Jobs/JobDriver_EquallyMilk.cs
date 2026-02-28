@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MilkCum.Core;
+using MilkCum.Milk.Comps;
 using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;

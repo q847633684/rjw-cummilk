@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using MilkCum.Core;
+using MilkCum.Milk.Comps;
 using RimWorld;
 using Verse;
 

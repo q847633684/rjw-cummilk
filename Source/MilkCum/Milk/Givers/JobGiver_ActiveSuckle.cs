@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
+using RimWorld;
 using Verse;
 using Verse.AI;
-using RimWorld;
-using MilkCum.Milk.Helpers;
 
 namespace MilkCum.Milk.Givers;
 /// <summary>

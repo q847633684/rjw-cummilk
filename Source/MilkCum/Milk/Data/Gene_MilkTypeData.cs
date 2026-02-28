@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using MilkCum.Milk.Helpers;
 using HarmonyLib;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
+
 namespace MilkCum.Milk.Data;
 public class Gene_MilkTypeData : IExposable
 {

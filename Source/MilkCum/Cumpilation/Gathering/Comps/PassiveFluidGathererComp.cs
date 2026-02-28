@@ -1,5 +1,6 @@
 using Cumpilation.Common;
 using MilkCum.Milk.Comps;
+using MilkCum.Milk.HarmonyPatches;
 using RimWorld;
 using rjw;
 using System;
@@ -64,7 +65,7 @@ namespace Cumpilation.Gathering
                 int toSpawn = amount / fgDef.filthNecessaryForOneUnit;
                 if (toSpawn <= 0) continue;
 
-                MilkCum.HarmonyPatches.CumpilationIntegration.CumProducerForNextSpawn = producer;
+                CumpilationIntegration.CumProducerForNextSpawn = producer;
                 try
                 {
                     Thing gatheredFluid = ThingMaker.MakeThing(fgDef.thingDef);
@@ -73,7 +74,7 @@ namespace Cumpilation.Gathering
                 }
                 finally
                 {
-                    MilkCum.HarmonyPatches.CumpilationIntegration.CumProducerForNextSpawn = null;
+                    CumpilationIntegration.CumProducerForNextSpawn = null;
                 }
 
                 int remainder = amount % fgDef.filthNecessaryForOneUnit;

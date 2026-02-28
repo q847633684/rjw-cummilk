@@ -1,7 +1,9 @@
+using MilkCum.Core;
+using MilkCum.Milk.Comps;
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using MilkCum.Milk.Helpers;
 
 namespace MilkCum.UI;
 public abstract class PawnColumnWorker_MilkProducer : PawnColumnWorker_Checkbox

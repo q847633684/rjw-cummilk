@@ -1,8 +1,9 @@
-using Verse;
+using MilkCum.Core;
 using RimWorld;
+using UnityEngine;
+using Verse;
 
-namespace MilkCum.Helpers
-{
+namespace MilkCum.Milk.Helpers;
     /// <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。</summary>
     public static class DubsBadHygieneIntegration
     {
@@ -38,4 +39,3 @@ namespace MilkCum.Helpers
             return Mathf.Clamp01(-cleanliness);
         }
     }
-}

@@ -1,11 +1,11 @@
 using MilkCum.Core;
 using MilkCum.Milk.Comps;
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
 using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
-using MilkCum.Milk.Helpers;
 public class HediffWithComps_EqualMilkingLactating : HediffWithComps
 {
     /// <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage.</summary>

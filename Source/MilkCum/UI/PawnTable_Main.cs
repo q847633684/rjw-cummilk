@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Verse;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
-using MilkCum.Milk.Helpers;
-using System;
+using Verse;
 
 namespace MilkCum.UI;
 

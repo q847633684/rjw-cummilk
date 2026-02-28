@@ -1,6 +1,7 @@
-using Verse;
-using RimWorld;
+using MilkCum.Core;
 using MilkCum.Milk.Data;
+using RimWorld;
+using Verse;
 
 namespace MilkCum.Milk.Helpers;
 public static class GeneHelper

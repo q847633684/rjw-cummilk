@@ -47,6 +47,10 @@ public static class EMDefOf
     public static HediffDef EM_BreastsEngorged;
     public static ThoughtDef EM_MilkOverflow;
     public static ThoughtDef EM_HighToleranceLowMilk;
+    /// <summary>3.1：被哺乳者获得「被某人哺乳」记忆，用于社交/关系。</summary>
+    public static ThoughtDef EM_NursedBy;
+    /// <summary>3.1：哺乳者获得「哺乳了某人」记忆，用于社交/关系。</summary>
+    public static ThoughtDef EM_NursedSomeone;
     public static HediffDef EM_DrugLactationBurden;
     public static HediffDef EM_LactatingGain;
     public static HediffDef EM_AbsorptionDelay;

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using Verse;
-using UnityEngine;
-using MilkCum.Milk.Helpers;
 using MilkCum.Milk.Data;
+using MilkCum.Milk.Helpers;
+using UnityEngine;
+using Verse;
 
 namespace MilkCum.UI;
 [StaticConstructorOnStartup]

@@ -1,8 +1,8 @@
+using MilkCum.Core;
 using RimWorld;
 using Verse;
 
-namespace EqualMilking
-{
+namespace MilkCum.Milk.Thoughts;
     /// <summary>10.8-4：仅当成瘾处于戒断阶段时显示催乳素戒断心情。</summary>
     public class ThoughtWorker_ProlactinWithdrawal : ThoughtWorker
     {
@@ -15,4 +15,3 @@ namespace EqualMilking
             return ThoughtState.ActiveAtStage(0);
         }
     }
-}

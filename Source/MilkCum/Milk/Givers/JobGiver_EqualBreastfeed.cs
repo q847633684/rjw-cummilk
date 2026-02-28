@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using MilkCum.Core;
+using MilkCum.Milk.Helpers;
+using RimWorld;
 using Verse;
 using Verse.AI;
-using RimWorld;
-using System.Linq;
-using MilkCum.Milk.Helpers;
 
 namespace MilkCum.Milk.Givers;
 /// <summary>

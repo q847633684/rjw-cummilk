@@ -1,13 +1,17 @@
-using HarmonyLib;
-using Verse;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Collections.Generic;
-using RimWorld;
-using System.Linq;
+using HarmonyLib;
+using MilkCum.Core;
+using MilkCum.Milk.Comps;
 using MilkCum.Milk.Helpers;
+using MilkCum.Milk.World;
+using RimWorld;
 using UnityEngine;
+using Verse;
 using Verse.AI;
+
 namespace MilkCum.Milk.HarmonyPatches;
 
 [HarmonyPatch(typeof(CompMilkable))]
@@ -250,7 +254,7 @@ public static class FloatMenuMakerMap_Patch
 }
 #endif
 
-// 成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃
+/// <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/耐受与水池系统说明、药物注射到泌乳结束逻辑梳理与优化扩展建议。</summary>
 public static class ProlactinAddictionPatch
 {
     public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
@@ -294,8 +298,8 @@ public static class ProlactinAddictionPatch
         }
         else
         {
-            // 无 World 时（如测试）立即生效：Δs = raw × E_tol(t_before)，进水 ΔL = Δs × C_dose。
-            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore);
+            // 无 World 时（如测试）立即生效：Δs = raw × E_tol(t_before)，进水 ΔL = Δs × C_dose。3.3 动物差异化：乘种族药物倍率。
+            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
             var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating) as HediffWithComps;
             if (reapply?.comps != null)
                 foreach (var c in reapply.comps)

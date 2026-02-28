@@ -1,8 +1,8 @@
+using MilkCum.Core;
 using RimWorld;
 using Verse;
 
-namespace EqualMilking
-{
+namespace MilkCum.Milk.Thoughts;
     /// <summary>10.8-5：当成瘾处于满足阶段时显示小幅正面心情。</summary>
     public class ThoughtWorker_AddictionSatisfied : ThoughtWorker
     {
@@ -14,4 +14,3 @@ namespace EqualMilking
             return ThoughtState.ActiveAtStage(0);
         }
     }
-}

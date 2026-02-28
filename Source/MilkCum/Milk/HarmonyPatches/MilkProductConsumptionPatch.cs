@@ -1,8 +1,10 @@
 using HarmonyLib;
+using MilkCum.Core;
+using MilkCum.Milk.Comps;
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
 using Verse.AI;
-using MilkCum.Milk.Helpers;
 
 namespace MilkCum.Milk.HarmonyPatches;
 

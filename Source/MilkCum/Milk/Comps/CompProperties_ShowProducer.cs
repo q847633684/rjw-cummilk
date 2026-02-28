@@ -1,6 +1,8 @@
-using Verse;
-using RimWorld;
+using MilkCum.Core;
 using MilkCum.Milk.Helpers;
+using RimWorld;
+using Verse;
+
 namespace MilkCum.Milk.Comps;
 public class CompProperties_ShowProducer : CompProperties
 {

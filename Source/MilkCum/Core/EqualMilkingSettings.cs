@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using MilkCum.Milk.Comps;
 using MilkCum.Milk.Helpers;
 using MilkCum.UI;
 using MilkCum.Milk.Data;
@@ -43,6 +44,9 @@ internal class EqualMilkingSettings : ModSettings
 	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
 	public static float rjwLactationFertilityFactor = 0.85f; // 泌乳期怀孕概率乘数 (0~1)
 	public static bool rjwLactatingInSexDescriptionEnabled = true;
+	/// <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
+	public static bool rjwSexAddsLactationBoost = false;
+	public static float rjwSexLactationBoostDeltaS = 0.15f;
 	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
 	public static bool useDubsBadHygieneForMastitis = true;
 	// 乳腺炎可配置：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数
@@ -69,6 +73,11 @@ internal class EqualMilkingSettings : ModSettings
 	public static List<string> raceCannotLactate = new();
 	// 人形种族默认流速倍率（1 = 不变，用于与 RJW/Race mod 平衡）
 	public static float defaultFlowMultiplierForHumanlike = 1f;
+	// 3.3 满池事件：满池过久（约 1 天）时是否发信提醒
+	public static bool enableFullPoolLetter = true;
+	// 3.3 动物差异化：种族 defName 对应药物进水倍率（未列出的种族为 1）。与参数联动表一致。
+	public static List<string> raceDrugDeltaSMultiplierDefNames = new();
+	public static List<float> raceDrugDeltaSMultiplierValues = new();
 	// Cumpilation（统一到本设置，不再使用单独 Mod 入口）
 	public static bool Cumpilation_EnableCumflation = true;
 	public static float Cumpilation_GlobalCumflationModifier = 1.0f;
@@ -139,6 +148,8 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
+		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", false);
+		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
 		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
 		Scribe_Deep.Look(ref _risk, "EM.MilkRiskSettings");
 		if (_risk == null) _risk = new MilkRiskSettings();
@@ -157,6 +168,14 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
 		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 1f);
+		Scribe_Values.Look(ref enableFullPoolLetter, "EM.EnableFullPoolLetter", true);
+		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
+		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
+		if (Scribe.mode == LoadSaveMode.PostLoadInit)
+		{
+			raceDrugDeltaSMultiplierDefNames ??= new List<string>();
+			raceDrugDeltaSMultiplierValues ??= new List<float>();
+		}
 		Scribe_Values.Look(ref Cumpilation_EnableCumflation, "Cumpilation.EnableCumflation", true);
 		Scribe_Values.Look(ref Cumpilation_GlobalCumflationModifier, "Cumpilation.GlobalCumflationModifier", 1.0f);
 		Scribe_Values.Look(ref Cumpilation_EnableStuffing, "Cumpilation.EnableStuffing", true);
@@ -548,6 +567,15 @@ internal class EqualMilkingSettings : ModSettings
 		return GetLactatingEfficiencyFactorWithTolerance(pawn) * PawnUtility.BodyResourceGrowthSpeed(pawn);
 	}
 	/// <summary>当前催乳素耐受严重度 t ∈ [0,1]；完全由游戏内 Hediff/Comp 决定。</summary>
+	/// <summary>3.3 动物差异化：种族对催乳药物进水倍率，未配置则 1。</summary>
+	internal static float GetRaceDrugDeltaSMultiplier(Pawn pawn)
+	{
+		if (pawn?.def?.defName == null || raceDrugDeltaSMultiplierDefNames == null || raceDrugDeltaSMultiplierValues == null) return 1f;
+		int i = raceDrugDeltaSMultiplierDefNames.IndexOf(pawn.def.defName);
+		if (i < 0 || i >= raceDrugDeltaSMultiplierValues.Count) return 1f;
+		return Mathf.Clamp(raceDrugDeltaSMultiplierValues[i], 0.1f, 3f);
+	}
+
 	internal static float GetProlactinTolerance(Pawn pawn)
 		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
 

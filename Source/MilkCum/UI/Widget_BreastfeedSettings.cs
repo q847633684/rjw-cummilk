@@ -1,8 +1,10 @@
 using System.Collections.Generic;
-using Verse;
-using UnityEngine;
-using MilkCum.Milk.Helpers;
+using MilkCum.Core;
 using MilkCum.Milk.Data;
+using MilkCum.Milk.Helpers;
+using UnityEngine;
+using Verse;
+
 using static MilkCum.Milk.Helpers.Constants;
 
 namespace MilkCum.UI;

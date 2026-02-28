@@ -1,8 +1,9 @@
-using Verse;
-using UnityEngine;
 using System;
 using MilkCum.Milk.Helpers;
 using MilkCum.Milk.Data;
+using MilkCum.Milk.Helpers;
+using UnityEngine;
+using Verse;
 
 namespace MilkCum.UI;
 public class Dialog_GeneConfig : Window

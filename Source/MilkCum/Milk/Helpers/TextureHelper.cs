@@ -1,11 +1,11 @@
 using UnityEngine;
 using Verse;
 
-namespace MilkCum.Helpers
+namespace MilkCum.Milk.Helpers;
+
+[StaticConstructorOnStartup]
+public static class TextureHelper
 {
-	[StaticConstructorOnStartup]
-	public static class TextureHelper
-	{
         public static readonly Texture2D XenoBG = ContentFinder<Texture2D>.Get("ui/icons/genes/genebackground_xenogene", true);
         public static readonly Texture2D complexity = ContentFinder<Texture2D>.Get("ui/icons/biostats/complexity", true);
         public static readonly Texture2D metabolism = ContentFinder<Texture2D>.Get("ui/icons/biostats/metabolism", true);
@@ -50,7 +50,7 @@ namespace MilkCum.Helpers
 			RenderTexture temporary = RenderTexture.GetTemporary(targetX, targetY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 			RenderTexture.active = temporary;
 			Graphics.Blit(texture2D, temporary);
-			texture2D.ResizeTo(targetX, targetY, texture2D.format, mipmap);
+			texture2D.Reinitialize(targetX, targetY, texture2D.format, mipmap);
 			texture2D.filterMode = filter;
 			try
 			{
@@ -65,4 +65,3 @@ namespace MilkCum.Helpers
 			return texture2D;
 		}
 	}
-}

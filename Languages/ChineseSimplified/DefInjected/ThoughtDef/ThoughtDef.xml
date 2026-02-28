@@ -109,4 +109,10 @@
   <!-- 生物雕塑流体增加（Ideology） -->
   <Cumpilation_Juiced_Up.stages.0.label>体液充盈</Cumpilation_Juiced_Up.stages.0.label>
   <Cumpilation_Juiced_Up.stages.0.description>私密部位更有活力了。</Cumpilation_Juiced_Up.stages.0.description>
+
+  <!-- 3.1：哺乳/被哺乳记忆，社交与关系 -->
+  <EM_NursedBy.stages.0.label>被哺乳</EM_NursedBy.stages.0.label>
+  <EM_NursedBy.stages.0.description>刚被哺乳过，感到安心。</EM_NursedBy.stages.0.description>
+  <EM_NursedSomeone.stages.0.label>哺乳了他人</EM_NursedSomeone.stages.0.label>
+  <EM_NursedSomeone.stages.0.description>刚哺乳了对方，有种被需要的感觉。</EM_NursedSomeone.stages.0.description>
 </LanguageData>
