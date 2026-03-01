@@ -2,6 +2,8 @@ using UnityEngine;
 using Verse;
 using RimWorld;
 using HarmonyLib;
+using System.Reflection;
+
 namespace MilkCum.Core;
 public class EqualMilkingMod : Mod
 {
@@ -12,7 +14,22 @@ public class EqualMilkingMod : Mod
 		: base(content)
 	{
 		Harmony = new Harmony("com.akaster.rimworld.mod.milkcum");
-		Settings = base.GetSettings<EqualMilkingSettings>();
+		try
+		{
+			Settings = base.GetSettings<EqualMilkingSettings>();
+		}
+		catch (System.InvalidCastException)
+		{
+			Verse.Log.Warning("[Equal Milking] Saved settings type was invalid or from an older version, using defaults.");
+			Settings = new EqualMilkingSettings();
+			// 让基类也使用当前实例，以便保存时写入正确对象
+			try
+			{
+				var field = typeof(Mod).GetField("settings", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				field?.SetValue(this, Settings);
+			}
+			catch { /* 忽略反射失败 */ }
+		}
 		equalMilkingMod = content;
 	}
 
@@ -23,9 +40,9 @@ public class EqualMilkingMod : Mod
 		{
 			Settings.DoWindowContents(inRect);
 		}
-		catch (System.InvalidCastException ex)
+		catch (System.Exception ex)
 		{
-			Verse.Log.Error($"[Equal Milking] Settings cast error: {ex.Message}");
+			Verse.Log.Error($"[Equal Milking] Settings error: {ex}");
 			Widgets.Label(inRect, "Equal_Milking".Translate() + ": " + "EM.SettingsLoadError".Translate());
 		}
 	}

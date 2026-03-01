@@ -255,8 +255,37 @@ internal class EqualMilkingSettings : ModSettings
 			entitySetting ??= new MilkSettings();
 		}
 	}
+
+	/// <summary>确保 Scribe_Deep 反序列化的对象类型正确，避免旧存档或类型变更导致 InvalidCastException。</summary>
+	private static void EnsureScribeDeepTypes()
+	{
+		if (_risk == null || _risk.GetType() != typeof(MilkRiskSettings))
+			_risk = new MilkRiskSettings();
+		if (humanlikeBreastfeed == null || humanlikeBreastfeed.GetType() != typeof(HumanlikeBreastfeed))
+			humanlikeBreastfeed = new HumanlikeBreastfeed();
+		if (animalBreastfeed == null || animalBreastfeed.GetType() != typeof(AnimalBreastfeed))
+			animalBreastfeed = new AnimalBreastfeed();
+		if (mechanoidBreastfeed == null || mechanoidBreastfeed.GetType() != typeof(MechanoidBreastfeed))
+			mechanoidBreastfeed = new MechanoidBreastfeed();
+		if (colonistSetting == null || colonistSetting.GetType() != typeof(MilkSettings))
+			colonistSetting = new MilkSettings();
+		if (slaveSetting == null || slaveSetting.GetType() != typeof(MilkSettings))
+			slaveSetting = new MilkSettings();
+		if (prisonerSetting == null || prisonerSetting.GetType() != typeof(MilkSettings))
+			prisonerSetting = new MilkSettings();
+		if (animalSetting == null || animalSetting.GetType() != typeof(MilkSettings))
+			animalSetting = new MilkSettings();
+		if (mechSetting == null || mechSetting.GetType() != typeof(MilkSettings))
+			mechSetting = new MilkSettings();
+		if (entitySetting == null || entitySetting.GetType() != typeof(MilkSettings))
+			entitySetting = new MilkSettings();
+		genes ??= new List<Gene_MilkTypeData>();
+	}
+
 	public void DoWindowContents(Rect inRect)
 	{
+		// 防止旧存档/错误反序列化导致类型不一致引发 InvalidCastException
+		EnsureScribeDeepTypes();
 		inRect.yMin += unitSize;
 		// 从主菜单打开设置时 PostLoadInit 未执行，需惰性初始化以免 NRE
 		pawnDefs ??= GetMilkablePawns();
@@ -329,29 +358,29 @@ internal class EqualMilkingSettings : ModSettings
 				advancedSettings ??= new Widget_AdvancedSettings();
 				advancedSettings.DrawSection(contentRect, 2, subTabIndex);
 				break;
-			case 3: // 效率与界面
+			case 3: // 效率与界面（身份与菜单 | 乳房与池）
 				advancedSettings ??= new Widget_AdvancedSettings();
 				if (subTabIndex == 0)
-					advancedSettings.DrawSection(contentRect, 3, 0);
-				else
 				{
 					Rect topRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 280f);
-					advancedSettings.DrawSection(topRect, 3, 1);
+					advancedSettings.DrawSection(topRect, 3, 0);
 					Rect belowRect = new Rect(contentRect.x, contentRect.y + 290f, contentRect.width, contentRect.height - 290f);
 					defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
 					defaultSettingWidget.Draw(belowRect);
 				}
+				else
+					advancedSettings.DrawSection(contentRect, 3, 1);
 				break;
-			case 4: // 联动与扩展
-				if (subTabIndex == 0)
+			case 4: // 联动与扩展（RJW | DBH | 基因与高级）
+				if (subTabIndex == 0 && ModLister.GetModWithIdentifier("rim.job.world") != null)
 				{
 					advancedSettings ??= new Widget_AdvancedSettings();
 					advancedSettings.DrawSection(contentRect, 4, 0);
 				}
-				else if (subTabIndex == 1 || subTabIndex == 2)
+				else if (subTabIndex == 1)
 				{
 					advancedSettings ??= new Widget_AdvancedSettings();
-					advancedSettings.DrawSection(contentRect, 4, subTabIndex);
+					advancedSettings.DrawSection(contentRect, 4, 1);
 				}
 				else
 				{
@@ -397,15 +426,14 @@ internal class EqualMilkingSettings : ModSettings
 			},
 			3 => new List<TabRecord>
 			{
-				new("EM.SubTab.Efficiency".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.IdentityAndMenu".Translate(), () => subTabIndex = 1, subTabIndex == 1)
+				new("EM.SubTab.IdentityAndMenu".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.BreastPool".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 			},
 			4 => new List<TabRecord>
 			{
-				new("EM.SubTab.BreastPool".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.RJW".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 2, subTabIndex == 2),
-				new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 3, subTabIndex == 3)
+				new("EM.SubTab.RJW".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+				new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 2, subTabIndex == 2)
 			},
 			_ => new List<TabRecord>()
 		};

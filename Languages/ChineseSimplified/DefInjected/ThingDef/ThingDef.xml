@@ -31,4 +31,28 @@
   <EM_MilkContainer.description>储存奶的大型储罐。</EM_MilkContainer.description>
   <EM_MilkValve.label>奶阀</EM_MilkValve.label>
   <EM_MilkValve.description>控制奶流开关。</EM_MilkValve.description>
+
+  <!-- 家具：精液收集 -->
+  <autochair_with_cumtank.label>带精罐的自动椅</autochair_with_cumtank.label>
+  <autochair_with_cumtank.description>带自动精液收集装置并连接精液储罐的先进椅子。充盈者可坐上去自行排空。</autochair_with_cumtank.description>
+  <chair_with_cumbucket.label>带精桶的椅子</chair_with_cumbucket.label>
+  <chair_with_cumbucket.description>中间有精液收集装置、下方带精桶的椅子。充盈者可坐上去自行排空。</chair_with_cumbucket.description>
+  <stool_with_cumbucket.label>带精桶的凳子</stool_with_cumbucket.label>
+  <stool_with_cumbucket.description>中间有孔、下方带精桶的简易凳子。充盈者可坐上去自行排空。</stool_with_cumbucket.description>
+
+  <!-- 装备与材料 -->
+  <Cumpilation_Apparel_Plug.label>塞子</Cumpilation_Apparel_Plug.label>
+  <Cumpilation_Apparel_Plug.description>用于防止精液渗漏的塞子。多数人佩戴会感到不适。</Cumpilation_Apparel_Plug.description>
+  <Cumpilation_Samenstein.label>精石</Cumpilation_Samenstein.label>
+  <Cumpilation_Samenstein.description>轻便耐用但强度一般的材料，由加工后的精液制成，任何能射精者最终都可制作。</Cumpilation_Samenstein.description>
+  <Cumpilation_Spermatuch.label>精布</Cumpilation_Spermatuch.label>
+  <Cumpilation_Spermatuch.description>由精液微纤维纺成的织物，非常坚韧、保温性好，但极易燃烧。</Cumpilation_Spermatuch.description>
+
+  <!-- 粘液（Slug）相关 -->
+  <Cumpilation_SlugFilth.label>粘液污渍</Cumpilation_SlugFilth.label>
+  <Cumpilation_Slug.label>粘液</Cumpilation_Slug.label>
+  <Cumpilation_Slugmorpher.label>粘液转化剂</Cumpilation_Slugmorpher.label>
+  <Cumpilation_Slugmorpher.description>处理废料包的危险做法：蒸馏成浓缩血清后，会永久将使用者的精液变为有毒粘液。使用会产生毒素积累；若使用者体液无法被替换，会急剧恶化。</Cumpilation_Slugmorpher.description>
+  <Cumpilation_Sluggerdrop.label>粘液滴剂</Cumpilation_Sluggerdrop.label>
+  <Cumpilation_Sluggerdrop.description>处理废料包的危险做法：蒸馏成浓缩血清，可暂时将使用者精液变为有毒粘液。使用会产生轻微毒素积累；若使用者体液无法被替换可能加重。</Cumpilation_Sluggerdrop.description>
 </LanguageData>

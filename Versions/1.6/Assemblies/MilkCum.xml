@@ -40,6 +40,9 @@
         <member name="M:MilkCum.Core.EqualMilkingSettings.GetEffectiveBaseValueTForDecay">
             <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
         </member>
+        <member name="M:MilkCum.Core.EqualMilkingSettings.EnsureScribeDeepTypes">
+            <summary>确保 Scribe_Deep 反序列化的对象类型正确，避免旧存档或类型变更导致 InvalidCastException。</summary>
+        </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.ApplyDefaultsFromDef">
             <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置（可被其他 mod patch 的 Def）。</summary>
         </member>

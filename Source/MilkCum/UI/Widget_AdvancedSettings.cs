@@ -191,19 +191,6 @@ public class Widget_AdvancedSettings
 		if (subTab == 0)
 		{
 			GUI.color = Color.gray;
-			list.Label("EM.SectionDesc_Efficiency".Translate());
-			GUI.color = Color.white;
-			list.Gap(4f);
-			GUI.color = Color.gray;
-			list.Label("EM.LactationEfficiencyMovedHint".Translate());
-			GUI.color = Color.white;
-			list.Gap(6f);
-			Rect rAnimal = list.GetRect(UNIT_SIZE);
-			Widgets.CheckboxLabeled(rAnimal, "EM.AnimalAdultFemaleAlwaysLactating".Translate(), ref EqualMilkingSettings.femaleAnimalAdultAlwaysLactating);
-		}
-		else
-		{
-			GUI.color = Color.gray;
 			list.Label("EM.SectionDesc_IdentityAndMenu".Translate());
 			GUI.color = Color.white;
 			list.Gap(4f);
@@ -220,6 +207,8 @@ public class Widget_AdvancedSettings
 			Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Animal), ref EqualMilkingSettings.showAnimalOptions);
 			Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Misc), ref EqualMilkingSettings.showMiscOptions);
 		}
+		else
+			DrawBreastPoolBlock(list);
 		list.End();
 	}
 
@@ -227,9 +216,7 @@ public class Widget_AdvancedSettings
 	{
 		var list = new Listing_Standard();
 		list.Begin(content);
-		if (subTab == 0)
-			DrawBreastPoolBlock(list);
-		else if (subTab == 1 && ModLister.GetModWithIdentifier("rim.job.world") != null)
+		if (subTab == 0 && ModLister.GetModWithIdentifier("rim.job.world") != null)
 		{
 			GUI.color = Color.gray;
 			list.Label("EM.SectionDesc_RJW".Translate());
@@ -241,7 +228,7 @@ public class Widget_AdvancedSettings
 			list.Gap(4f);
 			DrawRjwBlock(list);
 		}
-		else if (subTab == 2 && DubsBadHygieneIntegration.IsDubsBadHygieneActive())
+		else if (subTab == 1 && DubsBadHygieneIntegration.IsDubsBadHygieneActive())
 			DrawDbhBlock(list);
 		list.End();
 	}
@@ -390,8 +377,6 @@ public class Widget_AdvancedSettings
 		sliderRect.y += UNIT_SIZE;
 		string s_milkCap = EqualMilkingSettings.milkingCapacityFactor.ToString();
 		Widgets.TextFieldNumericLabeled(sliderRect, "EM.MilkingCapacityFactor".Translate(), ref EqualMilkingSettings.milkingCapacityFactor, ref s_milkCap, 0.05f);
-		sliderRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.AnimalAdultFemaleAlwaysLactating".Translate(), ref EqualMilkingSettings.femaleAnimalAdultAlwaysLactating);
 		sliderRect.y += UNIT_SIZE;
 		string prolactinLabel = EMDefOf.EM_Prolactin?.label ?? "Prolactin";
 		Widgets.CheckboxLabeled(new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE), "EM.MenuProlactinShow".Translate(Lang.Mechanoid), ref EqualMilkingSettings.showMechOptions);

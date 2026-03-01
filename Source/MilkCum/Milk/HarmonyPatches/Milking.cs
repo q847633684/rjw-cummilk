@@ -154,9 +154,9 @@ public static class Need_NeedInterval_Patch
     private const int NeedTicksInterval = 150;
 
     [HarmonyPostfix]
-    public static void Postfix(Need_Food needFood)
+    public static void Postfix(Need_Food __instance)
     {
-        Pawn pawn = needFood.pawn;
+        Pawn pawn = __instance.pawn;
         if (pawn?.health?.hediffSet == null) return;
         if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>() is not HediffComp_EqualMilkingLactating comp)
             return;
@@ -165,7 +165,7 @@ public static class Need_NeedInterval_Patch
         int basis = Mathf.Clamp(EqualMilkingSettings.lactationExtraNutritionBasis, 0, 300);
         float factor = basis / 150f;
         float extraFall = flowPerDay * factor * (NeedTicksInterval / 60000f);
-        needFood.CurLevel = Mathf.Max(0f, needFood.CurLevel - extraFall);
+        __instance.CurLevel = Mathf.Max(0f, __instance.CurLevel - extraFall);
     }
 }
 /// <summary>
