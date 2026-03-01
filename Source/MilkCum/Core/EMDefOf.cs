@@ -30,7 +30,7 @@ public static class EMDefOf
     public static ChemicalDef EM_Prolactin_Chemical;
     public static HediffDef EM_Prolactin_Tolerance;
     public static HediffDef EM_Prolactin_Addiction;
-    public static NeedDef Chemical_EM_Prolactin;
+    public static NeedDef Chemical_EM_Prolactin_Chemical;
     public static ThoughtDef EM_Prolactin_Joy;
     public static ThoughtDef EM_Prolactin_Withdrawal;
     public static HediffDef EM_Prolactin_High;
@@ -55,8 +55,7 @@ public static class EMDefOf
     public static HediffDef EM_LactatingGain;
     public static HediffDef EM_AbsorptionDelay;
 
-    /// <summary>建议 22：关键默认值 Def，可被其他 mod patch；ApplyDefaultsFromDef 使用。</summary>
-    public static EqualMilkingDefaultsDef EM_Defaults;
+    // EM_Defaults 不参与 DefOf 绑定，避免 Def 未加载时启动崩溃；使用处通过 GetNamedSilentFail 获取
 
     // 管道系统（VE Framework 可选）：仅主 mod 可解析的 Def 类型；DesignatorDropdownGroupDef/PipeNetDef 在 PipeSystem 项目中用 GetNamed
     public static DesignationCategoryDef EM_PipeNetworks;

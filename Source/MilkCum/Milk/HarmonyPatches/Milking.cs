@@ -8,6 +8,7 @@ using MilkCum.Milk.Comps;
 using MilkCum.Milk.Helpers;
 using MilkCum.Milk.World;
 using RimWorld;
+using rjw;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -68,14 +69,14 @@ public static class Hediff_Pregnant_Patch
     {
         if (mother.IsNormalAnimal())
         {
-            mother.health.AddHediff(HediffDefOf.Lactating);
+            mother.health.AddHediff(HediffDefOf.Lactating, mother.GetBreastOrChestPart());
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
             return;
         }
         if (mother.RaceProps?.Humanlike == true && mother.health?.hediffSet != null
             && !mother.health.hediffSet.HasHediff(HediffDefOf.Lactating))
         {
-            mother.health.GetOrAddHediff(HediffDefOf.Lactating);
+            mother.health.GetOrAddHediff(HediffDefOf.Lactating, mother.GetBreastOrChestPart());
         }
         // 人类分娩：若已有 Lactating（如药物）也叠加剩余天数+10、当前泌乳量+基础值
         if (mother.RaceProps?.Humanlike == true)
@@ -114,7 +115,6 @@ public static class Need_Food_Patch
     public static void GetTipString_PostFix(Need_Food __instance, ref string __result)
     {
         if (__instance.pawn is not Pawn pawn || !pawn.IsMilkable()) { return; }
-        if (!pawn.IsMilkable()) { return; }
         __result += "\n" + Lang.HungerRate + ": ";
         HungerCategory curCategory = pawn.needs.food.CurCategory;
         if (curCategory != HungerCategory.Fed)
@@ -169,14 +169,39 @@ public static class Need_NeedInterval_Patch
     }
 }
 /// <summary>
-/// Bypass vanilla milkable comp stat entries
+/// 绕过香草可挤奶比较统计条目：将 GetCompProperties&lt;CompProperties_Milkable&gt; 替换为返回 null，原版产奶行不显示；本 mod 用 RaceProperties.SpecialDisplayStats 显示产奶。
 /// </summary>
 [HarmonyPatch]
 public static class AnimalProductionUtility_Patch
 {
+    private static MethodBase _cachedTargetMethod;
+
     public static MethodInfo getPropertiesMethod = AccessTools.Method(typeof(ThingDef), nameof(ThingDef.GetCompProperties)).MakeGenericMethod(typeof(CompProperties_Milkable));
     public static MethodInfo getMilkablePropertiesMethod = AccessTools.Method(typeof(AnimalProductionUtility_Patch), nameof(GetMilkableProperties));
-    public static MethodBase TargetMethod() => AccessTools.Method(AccessTools.TypeByName(typeof(AnimalProductionUtility).FullName + "+<AnimalProductionStats>d__0"), "MoveNext");
+
+    public static MethodBase TargetMethod()
+    {
+        if (_cachedTargetMethod != null) return _cachedTargetMethod;
+        var parent = typeof(AnimalProductionUtility);
+        // 迭代器可能是 <AnimalProductionStats>d__0 / d__1 等，按嵌套类型名查找
+        foreach (var nested in parent.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
+        {
+            if (nested.Name.Contains("AnimalProductionStats") && nested.Name.Contains("d__"))
+            {
+                var moveNext = AccessTools.Method(nested, "MoveNext");
+                if (moveNext != null)
+                {
+                    _cachedTargetMethod = moveNext;
+                    return _cachedTargetMethod;
+                }
+            }
+        }
+        // 回退：固定名称 d__0（旧版）
+        var fallbackType = AccessTools.TypeByName(parent.FullName + "+<AnimalProductionStats>d__0");
+        _cachedTargetMethod = fallbackType != null ? AccessTools.Method(fallbackType, "MoveNext") : null;
+        return _cachedTargetMethod;
+    }
+
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         List<CodeInstruction> codes = instructions.ToList();
@@ -189,9 +214,10 @@ public static class AnimalProductionUtility_Patch
                 return codes.AsEnumerable();
             }
         }
-        Log.Error("[Equal Milking] Failed to patch AnimalProductionUtility.AnimalProductionStats");
+        Log.Warning("[Equal Milking] Could not find GetCompProperties<CompProperties_Milkable> in AnimalProductionUtility.AnimalProductionStats; vanilla milk stat display may apply. This is non-fatal.");
         return instructions;
     }
+
     public static CompProperties_Milkable GetMilkableProperties(ThingDef def) => null;
 }
 /// <summary>
@@ -308,13 +334,14 @@ public static class ProlactinAddictionPatch
         float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - 0.044f);
         float rawSeverity = giveHediff.severity;
 
-        // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）
+        // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）。TryMergeWith 已对 L 加了 rawSeverity，此处只补耐受后的增量 deltaS，故传 deltaS - rawSeverity 避免 L 重复累加。
         if (hediff.Severity > rawSeverity)
         {
             float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            float deltaLOnly = deltaS - rawSeverity;
             if (hediff.comps != null)
                 foreach (var c in hediff.comps)
-                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaS); break; }
+                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaLOnly); break; }
             WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
             return;
         }
@@ -332,7 +359,7 @@ public static class ProlactinAddictionPatch
         {
             // 无 World 时（如测试）立即生效：Δs = raw × E_tol(t_before)，进水 ΔL = Δs × C_dose。3.3 动物差异化：乘种族药物倍率。
             float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
-            var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating) as HediffWithComps;
+            var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
             if (reapply?.comps != null)
                 foreach (var c in reapply.comps)
                     if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaS); break; }
@@ -356,5 +383,66 @@ internal static class PoolModelBirthHelper
                 break;
             }
         }
+    }
+}
+
+/// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch。</summary>
+public static class Hediff_TipString_BreastPool_Patch
+{
+    private static bool _applied;
+
+    public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
+    {
+        if (harmony == null || _applied) return;
+        MethodBase target = HarmonyLib.AccessTools.PropertyGetter(typeof(Hediff), "TipString");
+        if (target == null) return;
+        try
+        {
+            harmony.Patch(target, postfix: new HarmonyLib.HarmonyMethod(typeof(Hediff_TipString_BreastPool_Patch).GetMethod(nameof(TipString_Postfix), BindingFlags.Public | BindingFlags.Static)));
+            _applied = true;
+        }
+        catch (System.Exception ex)
+        {
+            Verse.Log.Warning($"[MilkCum] Hediff TipString postfix not applied: {ex.Message}");
+        }
+    }
+
+    public static void TipString_Postfix(Hediff __instance, ref string __result)
+    {
+        if (__instance?.pawn == null || __result == null) return;
+        Pawn pawn = __instance.pawn;
+        if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
+        try
+        {
+            var list = pawn.GetBreastList();
+            if (list == null || !list.Contains(__instance)) return;
+        }
+        catch { return; }
+        var entries = pawn.GetPoolEntriesForBreastHediff(__instance);
+        if (entries == null || entries.Count == 0) return;
+        var parts = new List<string>();
+        foreach (var (_, fullness, capacity, isLeft) in entries)
+        {
+            string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
+            float cap = Mathf.Max(0.01f, capacity);
+            parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+        }
+        if (parts.Count > 0)
+            __result = __result + "\n" + string.Join(", ", parts);
+    }
+}
+
+/// <summary>健康页与列表中乳房 hediff 显示为「父级 + 当前」：如「乳房 左乳」「乳房 右乳」，便于区分自然乳与液压乳等。仅对 Breast_Left/Breast_Right 追加父级标签。</summary>
+[HarmonyPatch(typeof(Hediff), nameof(Hediff.LabelCap), MethodType.Getter)]
+public static class Hediff_LabelCap_BreastParent_Patch
+{
+    public static void Postfix(Hediff __instance, ref string __result)
+    {
+        if (__instance?.def == null || string.IsNullOrEmpty(__result)) return;
+        string dn = __instance.def.defName;
+        if (dn != "Breast_Left" && dn != "Breast_Right") return;
+        string parent = "EM.BreastParentLabel".Translate();
+        if (string.IsNullOrEmpty(parent)) parent = "Breasts";
+        __result = parent + " " + __result;
     }
 }

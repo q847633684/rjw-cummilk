@@ -1,3 +1,6 @@
+using System;
+using System.Reflection;
+using HarmonyLib;
 using Verse;
 using RimWorld;
 using MilkCum.Milk.Helpers;
@@ -20,8 +23,35 @@ public static class EqualMilking
         EventHelper.OnPostLoadGame += EqualMilkingMod.Settings.UpdateEqualMilkingSettings;
         EventHelper.OnSettingsChanged += GeneHelper.ReloadImpliedGenes;
         EventHelper.OnPostLoadLong += Init;
-        // Patch vanilla
-        EqualMilkingMod.Harmony.PatchAll();
+        // Patch vanilla：逐类 Patch，排除 Hediff_TipString_BreastPool_Patch（目标 get_TipString 在部分 RimWorld 版本不存在，改由 ApplyIfPossible 按需打）
+        Harmony harmony = EqualMilkingMod.Harmony;
+        Assembly asm = typeof(EqualMilking).Assembly;
+        const string skipTypeFullName = "MilkCum.Milk.HarmonyPatches.Hediff_TipString_BreastPool_Patch";
+        Type[] types;
+        try
+        {
+            types = asm.GetTypes();
+        }
+        catch (ReflectionTypeLoadException rtle)
+        {
+            types = rtle.Types ?? Array.Empty<Type>();
+        }
+        foreach (Type type in types)
+        {
+            if (type == null) continue;
+            if (type.FullName == skipTypeFullName) continue;
+            if (type == typeof(Hediff_TipString_BreastPool_Patch)) continue;
+            if (type.GetCustomAttribute<HarmonyPatch>(false) == null) continue;
+            try
+            {
+                new PatchClassProcessor(harmony, type).Patch();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[MilkCum] Patch failed for {type.FullName}: {ex.Message}");
+            }
+        }
+        Hediff_TipString_BreastPool_Patch.ApplyIfPossible(harmony);
         WorkGiver_Ingest_MilkProductFilter.ApplyOptionalPatches(EqualMilkingMod.Harmony);
         JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(EqualMilkingMod.Harmony);
         ProlactinAddictionPatch.ApplyIfPossible(EqualMilkingMod.Harmony);

@@ -89,7 +89,7 @@
         <hediffClass>Hediff_Addiction</hediffClass>
         <label>催乳素成瘾</label>
         <description>Addicted to Prolactin</description>
-        <chemicalNeed>Chemical_EM_Prolactin</chemicalNeed>
+        <chemicalNeed>Chemical_EM_Prolactin_Chemical</chemicalNeed>
         <initialSeverity>0.5</initialSeverity>
         <maxSeverity>1.0</maxSeverity>
         <defaultLabelColor>(1,0,0.5)</defaultLabelColor>

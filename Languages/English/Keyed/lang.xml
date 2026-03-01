@@ -26,7 +26,8 @@
     <EM.SectionDesc_Efficiency>Efficiency and milk amount multipliers by lactation severity; consciousness/manipulation/moving gain and cap percent; whether adult female animals are always lactating. Affects only this mod's lactation and milk output.</EM.SectionDesc_Efficiency>
     <EM.LactationEfficiencyMovedHint>Lactation efficiency and consciousness/manipulation/moving gain are under Integration → Breast &amp; pool, with capacity, flow and remaining days. Only animal "always lactating" remains here.</EM.LactationEfficiencyMovedHint>
     <EM.SectionDesc_RJW>Active when rim.job.world (RJW) is enabled. Controls lactation–breast size, sex need, post-nursing satisfaction, fertility, sex description, and post-sex milk pool boost.</EM.SectionDesc_RJW>
-    <EM.SectionDesc_BreastPool>Breast and pool parameters: below control capacity (left/right pool = Severity × capacity coefficient), fill time (flow multiplier; default 2 ≈ single dose fills in ~1 day), remaining days (drug/birth baseline drive L decay), and lactation efficiency/gain. Multi-dose or larger breasts: see Docs.</EM.SectionDesc_BreastPool>
+    <EM.SectionDesc_BreastPool>The first option "Lactating enlarges RJW breasts" controls left/right pool capacity and flow source (on = RJW breast data, off = symmetric dual pool, both sides fill together). Below: capacity coefficient, flow multiplier, remaining days, lactation efficiency and gain. See Docs for multi-dose or larger breasts.</EM.SectionDesc_BreastPool>
+    <EM.RjwBreastSizeSectionHint>Dual-pool data source (checkbox below; check to enable):</EM.RjwBreastSizeSectionHint>
     <EM.SubTab.IdentityAndMenu>Identity &amp; menu</EM.SubTab.IdentityAndMenu>
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>Genes &amp; advanced</EM.SubTab.GenesAndAdvanced>
@@ -112,6 +113,7 @@
     <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} is not lactating (no Equal Milking lactation hediff).</EM.DevModeNotLactating>
+    <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
     <EM.LoadDefaultsFromDef>Load defaults from Def</EM.LoadDefaultsFromDef>
     <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
     <EM.DefaultsDefLabel>Equal Milking defaults</EM.DefaultsDefLabel>
@@ -125,6 +127,8 @@
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
     <EM.PoolLeftBreast>Left</EM.PoolLeftBreast>
     <EM.PoolRightBreast>Right</EM.PoolRightBreast>
+    <EM.BreastParentLabel>Breasts</EM.BreastParentLabel>
+    <EM.PoolTotalMilkCapacity>Milk: {0} / Capacity: {1}</EM.PoolTotalMilkCapacity>
     <EM.AbsorptionDelayRemaining>Time remaining: {0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} minutes</EM.AbsorptionDelayMinutes>
     <EM.AbsorptionDelayHours>{0} hours</EM.AbsorptionDelayHours>

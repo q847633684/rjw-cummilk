@@ -15,7 +15,7 @@
 		<workerClass>MilkCum.UI.PawnColumnWorker_MilkSealCum</workerClass>
 		<sortable>true</sortable>
 		<paintable>true</paintable>
-		<width>56</width>
+		<width>64</width>
 	</PawnColumnDef>
 
 	<PawnColumnDef>
@@ -66,7 +66,7 @@
 		<workerClass>MilkCum.UI.PawnColumnWorker_ProducerRestrictions</workerClass>
 		<sortable>false</sortable>
 		<paintable>false</paintable>
-		<width>110</width>
+		<width>140</width>
 	</PawnColumnDef>
 	
  	<PawnColumnDef>

@@ -9,6 +9,7 @@
         <showOnAnimals>true</showOnAnimals>
         <minValue>0</minValue>
         <displayPriorityInCategory>3500</displayPriorityInCategory>
+        <workerClass>MilkCum.Milk.StatWorker_EqualMilkingPawnOnly</workerClass>
     </StatDef>
     <StatDef>
         <defName>EM_Milk_Amount_Factor</defName>
@@ -20,5 +21,6 @@
         <showOnAnimals>true</showOnAnimals>
         <minValue>0</minValue>
         <displayPriorityInCategory>3500</displayPriorityInCategory>
+        <workerClass>MilkCum.Milk.StatWorker_EqualMilkingPawnOnly</workerClass>
     </StatDef>
 </Defs>

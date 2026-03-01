@@ -38,7 +38,7 @@ public class Widget_AdvancedSettings
 		}
 	}
 
-	/// <summary>开发模式：选中小人的泌乳状态调试信息。</summary>
+	/// <summary>开发模式：选中小人的泌乳状态调试信息。仅在游戏中且有当前地图时访问 Selector，避免在 Mod 设置界面触发 Find.MapUI 的 InvalidCastException。</summary>
 	public void DrawDevModeSection(Rect inRect)
 	{
 		if (!Prefs.DevMode) return;
@@ -47,6 +47,12 @@ public class Widget_AdvancedSettings
 		list.Gap(6f);
 		list.Label("EM.DevModeLactationPanel".Translate());
 		list.Gap(4f);
+		if (Current.ProgramState != ProgramState.Playing || Find.CurrentMap == null)
+		{
+			list.Label("EM.DevModeNoGame".Translate());
+			list.End();
+			return;
+		}
 		Pawn sel = Find.Selector.SingleSelectedThing as Pawn;
 		if (sel == null)
 			list.Label("EM.DevModeNoPawnSelected".Translate());
@@ -240,7 +246,11 @@ public class Widget_AdvancedSettings
 		list.Label("EM.SectionDesc_BreastPool".Translate());
 		GUI.color = Color.white;
 		list.Gap(6f);
-		// 乳房开关与容量
+		// 双池数据来源：勾选 = RJW 乳房尺寸与流速，不勾 = 人形对称双池
+		GUI.color = Color.gray;
+		list.Label("EM.RjwBreastSizeSectionHint".Translate());
+		GUI.color = Color.white;
+		list.Gap(2f);
 		Rect rRjwBreast = list.GetRect(UNIT_SIZE);
 		Widgets.CheckboxLabeled(rRjwBreast, "EM.RjwBreastSize".Translate(), ref EqualMilkingSettings.rjwBreastSizeEnabled, false);
 		{ string t = "EM.RjwBreastSizeDesc".Translate(); TooltipHandler.TipRegion(rRjwBreast, string.IsNullOrEmpty(t) ? "EM.RjwBreastSizeDesc" : t); }
@@ -573,26 +583,33 @@ public class Widget_AdvancedSettings
 			list.Gap(6f);
 			list.Label("EM.DevModeLactationPanel".Translate());
 			list.Gap(4f);
-			Pawn sel = Find.Selector.SingleSelectedThing as Pawn;
-			if (sel == null)
+			if (Current.ProgramState == ProgramState.Playing && Find.CurrentMap != null)
 			{
-				list.Label("EM.DevModeNoPawnSelected".Translate());
-			}
-			else
-			{
-				var hediff = sel.LactatingHediffWithComps();
-				var comp = hediff?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
-				if (comp == null)
+				Pawn sel = Find.Selector.SingleSelectedThing as Pawn;
+				if (sel == null)
 				{
-					list.Label("EM.DevModeNotLactating".Translate(sel.LabelShort));
+					list.Label("EM.DevModeNoPawnSelected".Translate());
 				}
 				else
 				{
-					string debug = comp.CompDebugString();
-					float h = Text.CalcHeight(debug, list.ColumnWidth);
-					Rect rDebug = list.GetRect(Mathf.Min(h, 200f));
-					Widgets.Label(rDebug, debug);
+					var hediff = sel.LactatingHediffWithComps();
+					var comp = hediff?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
+					if (comp == null)
+					{
+						list.Label("EM.DevModeNotLactating".Translate(sel.LabelShort));
+					}
+					else
+					{
+						string debug = comp.CompDebugString();
+						float h = Text.CalcHeight(debug, list.ColumnWidth);
+						Rect rDebug = list.GetRect(Mathf.Min(h, 200f));
+						Widgets.Label(rDebug, debug);
+					}
 				}
+			}
+			else
+			{
+				list.Label("EM.DevModeNoGame".Translate());
 			}
 		}
 		list.End();

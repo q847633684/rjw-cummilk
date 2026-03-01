@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 独立左右乳 HediffDef，供 rjw-cummilk 按 defName 区分左/右池容量与流速。RJW 原版仅有一对“Breasts”时可通过兼容逻辑拆分为本 Def。 -->
+<Defs>
+	<rjw.HediffDef_SexPart ParentName="NaturalPrivatePartBreast">
+		<defName>Breast_Left</defName>
+		<label>left breast</label>
+		<labelNoun>left breast</labelNoun>
+		<description>Left breast. Used by Equal Milking for independent left/right milk pool.</description>
+		<defaultBodyPart>Chest</defaultBodyPart>
+	</rjw.HediffDef_SexPart>
+	<rjw.HediffDef_SexPart ParentName="NaturalPrivatePartBreast">
+		<defName>Breast_Right</defName>
+		<label>right breast</label>
+		<labelNoun>right breast</labelNoun>
+		<description>Right breast. Used by Equal Milking for independent left/right milk pool.</description>
+		<defaultBodyPart>Chest</defaultBodyPart>
+	</rjw.HediffDef_SexPart>
+</Defs>

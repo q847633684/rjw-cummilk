@@ -562,10 +562,10 @@ internal class EqualMilkingSettings : ModSettings
 			milkDef.comps.Add(compProperties);
 		}
 	}
-	/// <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置（可被其他 mod patch 的 Def）。</summary>
+	/// <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置；若 XML 未加载则使用内置默认值（其他 mod 可 patch GetBuiltinDefaults）。</summary>
 	public static void ApplyDefaultsFromDef()
 	{
-		var def = EMDefOf.EM_Defaults;
+		var def = DefDatabase<EqualMilkingDefaultsDef>.GetNamedSilentFail("EM_Defaults") ?? EqualMilkingDefaultsDef.GetBuiltinDefaults();
 		if (def == null) return;
 		baselineMilkDurationDays = def.baselineMilkDurationDays;
 		birthInducedMilkDurationDays = def.birthInducedMilkDurationDays;

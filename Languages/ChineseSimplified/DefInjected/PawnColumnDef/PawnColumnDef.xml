@@ -3,4 +3,11 @@
   <!-- 原版 Pregnant 列无 label，注入中文标题 -->
   <Pregnant.label>怀孕</Pregnant.label>
   <Pregnant.headerTip>怀孕状态。怀孕时显示剩余天数。</Pregnant.headerTip>
+
+  <!-- 奶表格列：表头直接注入中文，避免 Keyed 未解析时显示键名 -->
+  <Milk_SealCum.label>塞住</Milk_SealCum.label>
+  <Milk_AllowDeflate.label>允许泄精</Milk_AllowDeflate.label>
+  <Milk_ProducerRestrictions.label>指定</Milk_ProducerRestrictions.label>
+  <Milk_RemainingDays.label>剩余天数</Milk_RemainingDays.label>
+  <Milk_Dev.label>泌乳(开发)</Milk_Dev.label>
 </LanguageData>

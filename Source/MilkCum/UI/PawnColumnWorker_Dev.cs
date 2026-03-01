@@ -1,3 +1,4 @@
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -11,11 +12,11 @@ public class PawnColumnWorker_Dev : PawnColumnWorker
         {
             if (!pawn.health.hediffSet.HasHediff(HediffDefOf.Lactating))
             {
-                pawn.health.AddHediff(HediffDefOf.Lactating);
+                pawn.health.AddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
             }
             else
             {
-                pawn.health.GetOrAddHediff(HediffDefOf.Lactating).Severity += 1f;
+                pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating).Severity += 1f;
             }
         }
         if (Widgets.ButtonText(rect.RightHalf(), "-"))

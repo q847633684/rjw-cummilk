@@ -25,7 +25,8 @@
     <EM.SectionDesc_Efficiency>泌乳期严重度对应的效率与产奶量倍率、泌乳期意识/操纵/移动增益及其上限百分比、动物成年雌性是否常乳。仅影响本 mod 的泌乳与产奶计算。</EM.SectionDesc_Efficiency>
     <EM.LactationEfficiencyMovedHint>泌乳效率与意识/操纵/移动增益已移至「联动与扩展 → 乳房与池」，与容量、流速、剩余天数一起调节。此处仅保留动物常乳。</EM.LactationEfficiencyMovedHint>
     <EM.SectionDesc_RJW>当 rim.job.world (RJW) 已启用时生效。控制泌乳与乳房尺寸、性需求、哺乳后满足、怀孕概率、性行为描述及性行为后奶池增益等联动。</EM.SectionDesc_RJW>
-    <EM.SectionDesc_BreastPool>乳房与池参数：下方控制容量（左/右池 = Severity×容量系数）、灌满时间（流速倍率，默认 2 ≈ 单次剂量约 1 日灌满）、剩余天数（药物/分娩基准参与 L 衰减）、泌乳效率与增益。多剂或更大乳房见 Docs/乳房容量模拟计算。</EM.SectionDesc_BreastPool>
+    <EM.SectionDesc_BreastPool>第一项「泌乳期增大 RJW 乳房」控制左右池容量与流速来源（勾选=用 RJW 乳房数据，不勾=人形对称双池、左右一起增加）。下方还控制容量系数、流速倍率、剩余天数、泌乳效率与增益。多剂或更大乳房见 Docs/乳房容量模拟计算。</EM.SectionDesc_BreastPool>
+    <EM.RjwBreastSizeSectionHint>双池数据来源（下方为勾选项，勾选=启用）：</EM.RjwBreastSizeSectionHint>
     <EM.SubTab.IdentityAndMenu>身份与菜单</EM.SubTab.IdentityAndMenu>
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>基因与高级</EM.SubTab.GenesAndAdvanced>
@@ -111,6 +112,7 @@
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} 未处于泌乳期（无平等产奶泌乳 hediff）。</EM.DevModeNotLactating>
+    <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>
     <EM.LoadDefaultsFromDef>从 Def 加载默认</EM.LoadDefaultsFromDef>
     <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
     <EM.DefaultsDefLabel>平等产奶默认值</EM.DefaultsDefLabel>
@@ -124,6 +126,8 @@
     <EM.MilkFlowPerDay>产奶效率：{0}/天</EM.MilkFlowPerDay>
     <EM.PoolLeftBreast>左乳</EM.PoolLeftBreast>
     <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
+    <EM.BreastParentLabel>乳房</EM.BreastParentLabel>
+    <EM.PoolTotalMilkCapacity>奶量：{0} / 容量：{1}</EM.PoolTotalMilkCapacity>
     <EM.AbsorptionDelayRemaining>剩余时间：{0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} 分钟</EM.AbsorptionDelayMinutes>
     <EM.AbsorptionDelayHours>{0} 小时</EM.AbsorptionDelayHours>

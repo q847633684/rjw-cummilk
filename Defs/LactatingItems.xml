@@ -47,6 +47,10 @@
     <ThingDef ParentName="EM_DrugBase">
         <defName>EM_Prolactin</defName>
         <label>Prolactin</label>
+        <descriptionHyperlinks>
+            <HediffDef>EM_Prolactin_Tolerance</HediffDef>
+            <HediffDef>EM_Prolactin_Addiction</HediffDef>
+        </descriptionHyperlinks>
         <techLevel>Medieval</techLevel>
         <graphicData>
             <texPath>Things/Item/Ingestible/Prolactin</texPath>

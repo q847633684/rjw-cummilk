@@ -37,7 +37,12 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
             this.Severity = Mathf.Floor(this.Severity);
         if (other.Severity >= 1f || this.Severity >= 1f)
             this.ageTicks = 0;
-        // 水池模型：吃药累加在 ingestion postfix 中统一处理，此处不再调用以免重复
+        // 水池模型：合并进来的 Severity 也需同步进 L，否则仅吃药走 ingestion postfix 会令 L 增加，调试/基因/其他来源合并会导致 Severity 高但 L 低、产奶流速异常
+        if (other.Severity > 0f && comps != null)
+        {
+            foreach (var c in comps)
+                if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(other.Severity); break; }
+        }
         return true;
     }
     public void SetDirty()
@@ -112,16 +117,27 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public CompEquallyMilkable CompEquallyMilkable => this.Pawn.CompEquallyMilkable();
     public HediffWithComps_EqualMilkingLactating Parent => (HediffWithComps_EqualMilkingLactating)this.parent;
 
-    /// <summary>剩余天数（游戏日），由 L 计算：L / (1/(B_T×E)+k×L)，仅作显示。</summary>
+    /// <summary>剩余天数（游戏日）。动力学 dL/dt = -(a+k×L)，精确解 T = (1/k)×ln(1 + k×L/a)；a=1/(B_T×E)。k→0 或 a≤0 时退化为 L/D(L)。</summary>
     public float RemainingDays
     {
         get
         {
             float L = currentLactationAmount;
             if (L <= 0f) return 0f;
-            float D = GetDailyLactationDecay(L);
-            if (D <= 0f) return 0f;
-            return L / D;
+            float eff = GetEffectiveDrugFactor();
+            if (eff <= 0f) return 0f;
+            float bT = EqualMilkingSettings.GetEffectiveBaseValueTForDecay();
+            float a = 1f / (bT * eff);
+            float k = PoolModelConstants.NegativeFeedbackK;
+            if (a <= 0f) return 0f;
+            if (k <= 0f)
+            {
+                float D = a;
+                return D <= 0f ? 0f : L / D;
+            }
+            float arg = 1f + k * L / a;
+            if (arg <= 1f) return 0f;
+            return (1f / k) * Mathf.Log(arg);
         }
     }
     /// <summary>当前泌乳量 L（规格：基础值 = 总容量，归一化 1）。</summary>
@@ -185,13 +201,17 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             base.CompPostTick(ref severityAdjustment);
             return;
         }
-        // 水池模型（L 驱动）：每游戏日 L −= D(L,E)；D = 1/(B_T×E)+k×L；L≤0 或 L&lt;ε 时泌乳结束。
+        // 水池模型（L 驱动）：每 200 tick 更新。永久泌乳/动物：不衰减 L，仅 L≤0 时设为基础值，避免池满时流速=0 仍衰减导致 L→0→重置 的波动。
         if (Pawn.IsHashIntervalTick(200))
         {
             bool permanentOrAnimal = Pawn.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true
                 || (EqualMilkingSettings.femaleAnimalAdultAlwaysLactating && Pawn.IsAdultFemaleAnimalOfColony());
-            if (currentLactationAmount <= 0f && permanentOrAnimal)
-                currentLactationAmount = PoolModelConstants.BaseValueTBirth;
+            if (permanentOrAnimal)
+            {
+                if (currentLactationAmount <= 0f)
+                    currentLactationAmount = PoolModelConstants.BaseValueTBirth;
+                // 不衰减 L，池满时流速=0 但 L 保持，池空后流速自然恢复
+            }
             else
             {
                 float step = 200f / 60000f;
@@ -276,13 +296,13 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                     lines.Add("CurrentMechEnergyFallPerDay".Translate() + ": " + this.ExtraEnergyPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
                 }
             }
-            // 产奶详情全部放在悬停 tooltip 中
+            // 哺乳期悬停：仅显示总奶量/总容量（不显示各乳详情）；各乳奶量/容量在健康页对应乳房 hediff 悬停显示。
             if (CompEquallyMilkable != null)
             {
-                float leftCap = Mathf.Max(0.01f, Pawn.GetLeftBreastCapacityFactor());
-                float rightCap = Mathf.Max(0.01f, Pawn.GetRightBreastCapacityFactor());
-                lines.Add(Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent());
-                lines.Add("EM.PoolLeftBreast".Translate() + " " + (CompEquallyMilkable.LeftFullness / leftCap).ToStringPercent() + ", " + "EM.PoolRightBreast".Translate() + " " + (CompEquallyMilkable.RightFullness / rightCap).ToStringPercent());
+                float totalMilk = CompEquallyMilkable.Fullness;
+                lines.Add("EM.PoolTotalMilkCapacity".Translate(
+                    totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 lines.Add("EM.PoolRemainingDays".Translate() + ": " + RemainingDays.ToString("F1"));
                 float flowPerDay = GetFlowPerDay();
                 lines.Add("EM.MilkFlowPerDay".Translate(flowPerDay.ToStringPercent()));
@@ -334,6 +354,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         CompEquallyMilkable.SetFullness(fullness);
         if (fullness < Charge) { this.Parent.OnGathered(Charge - fullness); }
         this.Charge = fullness;
+    }
+    /// <summary>吸奶/消费后：仅将 Charge 同步为当前池总满度，并触发 OnGathered（不按比例缩放池，因已由 DrainForConsume 按对按侧扣过）。</summary>
+    public void SyncChargeFromPool()
+    {
+        float oldCharge = Charge;
+        Charge = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
+        if (CompEquallyMilkable != null && oldCharge > Charge)
+            Parent.OnGathered(oldCharge - Charge);
     }
     new public HediffCompProperties_EqualMilkingLactating Props
     {

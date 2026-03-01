@@ -60,9 +60,21 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
     {
         if (p == null || endTick <= 0) return;
         if (pending == null) pending = new List<PendingLactatingEntry>();
+        int now = Find.TickManager.TicksGame;
+        int remaining = GetRemainingTicksForPawnCore(p);
+        if (remaining > 0)
+        {
+            // 重复注射：已有吸收延迟时，剩余时间减半；本剂与已有条目统一在新时间点生效。
+            int newEndTick = now + Mathf.Max(1, remaining / 2);
+            foreach (var e in pending)
+            {
+                if (e.pawn == p) e.endTick = newEndTick;
+            }
+            endTick = newEndTick;
+        }
         pending.Add(new PendingLactatingEntry { pawn = p, rawSeverity = rawSeverity, endTick = endTick, toleranceBefore = toleranceBefore });
         if (EMDefOf.EM_AbsorptionDelay != null && p.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_AbsorptionDelay) == null)
-            p.health.AddHediff(EMDefOf.EM_AbsorptionDelay);
+            p.health.AddHediff(EMDefOf.EM_AbsorptionDelay, p.GetBreastOrChestPart());
     }
 
     public override void WorldComponentTick()
@@ -91,7 +103,7 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
             pawn.health.RemoveHediff(absorptionHediff);
             // Δs = rawSeverity × E_tol(t_before)：已包含一次耐受削弱，进水时不再乘 E。3.3 动物差异化：乘种族药物倍率。
             float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(toleranceBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
-        var hediff = pawn.health.GetOrAddHediff(HediffDefOf.Lactating) as HediffWithComps;
+        var hediff = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
         if (hediff?.comps == null) return;
         foreach (var c in hediff.comps)
         {
@@ -113,7 +125,7 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
             pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_Prolactin_Joy);
         if (severity >= 2f && EMDefOf.EM_Prolactin_High != null)
         {
-            var high = pawn.health.GetOrAddHediff(EMDefOf.EM_Prolactin_High);
+            var high = pawn.health.GetOrAddHediff(EMDefOf.EM_Prolactin_High, pawn.GetBreastOrChestPart());
             if (high.Severity < 1f) high.Severity = 1f;
         }
     }

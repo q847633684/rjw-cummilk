@@ -48,7 +48,7 @@
 | **乳腺炎** | allowMastitis、MTB、满池/卫生风险系数、人形/动物 MTB 乘数 | 每项 Tooltip。 |
 | **卫生(DBH)** | useDubsBadHygieneForMastitis（仅当 DBH 激活时显示） | 用 DBH 卫生需求 vs 房间清洁度。 |
 | **耐受与溢出** | allowToleranceAffectMilk、toleranceFlowImpactExponent；overflowFilthDefName、aiPreferHighFullnessTargets、只读参考天数 | 耐受影响产奶、溢出污物 Def、AI 优先挤更满。 |
-| **从 Def 加载** | 按钮 ApplyDefaultsFromDef | 从 EM_Defaults Def 应用默认值，不覆盖种族列表。 |
+| **从 Def 加载** | 按钮 ApplyDefaultsFromDef | 从内置默认值（GetBuiltinDefaults）或 EM_Defaults Def 应用，不覆盖种族列表；其他 mod 可 patch GetBuiltinDefaults。 |
 
 ### 主 Tab 4：效率与界面
 
@@ -97,7 +97,7 @@
 
 | 区块 | 内容 | 说明/描述需求 |
 |------|------|----------------|
-| **从 Def 加载默认** | 按钮 ApplyDefaultsFromDef | 保留；描述写清：从 EM_Defaults Def 应用关键默认值，不覆盖种族列表；其他 mod 可 patch 该 Def。 |
+| **从 Def 加载默认** | 按钮 ApplyDefaultsFromDef | 保留；描述写清：从内置默认值或 EM_Defaults Def 应用关键默认值，不覆盖种族列表；其他 mod 可 patch GetBuiltinDefaults。 |
 | **乳腺炎** | allowMastitis、mastitisBaseMtbDays、overFullnessRiskMultiplier、hygieneRiskMultiplier、人形/动物 MTB 乘数 | 保留；每项 Tooltip：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数、人形/动物 MTB 倍率。 |
 | **卫生来源** | useDubsBadHygieneForMastitis（仅当 DBH 激活时显示） | 保留；描述：用 DBH 卫生需求 vs 房间清洁度。 |
 | **耐受** | allowToleranceAffectMilk、toleranceFlowImpactExponent | 保留；描述：催乳素耐受是否影响产奶效率、指数曲线。 |

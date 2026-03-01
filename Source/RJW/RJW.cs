@@ -9,6 +9,10 @@ using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 using MilkCum.Milk.Comps;
 namespace MilkCum.RJW;
+
+// 重要：此处禁止使用 Harmony.PatchAll()。PatchAll 会扫描整个程序集并处理 Hediff_TipString_BreastPool_Patch，
+// 而该 patch 的目标 Hediff.get_TipString 在部分 RimWorld 版本中不存在，会导致 TypeInitializationException。
+// 若你修改了本文件，请务必重新编译并将新 MilkCum.dll 复制到 Mod 的 Assemblies 与 Versions/1.6/Assemblies。
 [StaticConstructorOnStartup]
 internal static class ApplyPatches
 {
@@ -23,7 +27,9 @@ internal static class ApplyPatches
             Log.Warning("[Equal Milking]: RJW version too old, aborting.");
             return;
         }
-        Harmony.PatchAll();
+        // 只处理本命名空间内的 patch 类，避免 PatchAll 扫描整个程序集时误处理 Hediff_TipString_BreastPool_Patch（目标 get_TipString 在部分版本不存在）
+        new PatchClassProcessor(Harmony, typeof(CompAssignableToPawn_Box_Patch)).Patch();
+        new PatchClassProcessor(Harmony, typeof(Hediff_BasePregnancy_Patch)).Patch();
     }
 }
 [HarmonyPatch(typeof(ExtensionHelper))]
@@ -78,7 +84,7 @@ public static class Hediff_BasePregnancy_Patch
     {
         if (mother.IsMilkable())
         {
-            Hediff lactating = mother.health.GetOrAddHediff(HediffDefOf.Lactating);
+            Hediff lactating = mother.health.GetOrAddHediff(HediffDefOf.Lactating, mother.GetBreastOrChestPart());
             if (lactating != null)
             {
                 lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);

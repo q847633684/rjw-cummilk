@@ -355,6 +355,7 @@ public static class WorkGiver_Breastfeed_Patch
 [HarmonyPatch(typeof(HediffComp_Chargeable))]
 public static class HediffComp_Chargeable_Patch
 {
+    /// <summary>吸奶时从池扣量：按「从第一对开始、选最满一侧、依次吃到饱」从 CompEquallyMilkable 扣奶，再同步 Charge（见 Docs/泌乳系统逻辑图）。</summary>
     [HarmonyPrefix]
     [HarmonyPatch(nameof(HediffComp_Chargeable.GreedyConsume))]
     public static bool GreedyConsume_Prefix(HediffComp_Chargeable __instance, ref float __result, float desiredCharge)
@@ -363,20 +364,30 @@ public static class HediffComp_Chargeable_Patch
         {
             float amountNormalizer = __instance.Pawn.MilkAmount() / 3f; //Milk amount normalized to human lactating speed
             float nutritionMilt = __instance.Pawn.MilkDef().ingestible.CachedNutrition / DefDatabase<ThingDef>.GetNamed("Milk").ingestible.CachedNutrition; //Normalize to milk nutrition
-            if (nutritionMilt == 0) { nutritionMilt = 1f; }// Drugs as milk
+            if (nutritionMilt == 0) { nutritionMilt = 1f; } // Drugs as milk
             amountNormalizer *= nutritionMilt;
             amountNormalizer /= 8f; //Charge is 8x vanilla, 0.125 max, 0.31 min
             desiredCharge /= amountNormalizer;
             float num;
-            if (desiredCharge >= __instance.Charge)
+            var comp = __instance.Pawn.CompEquallyMilkable();
+            if (comp != null)
             {
-                num = __instance.Charge;
-                lactating.SetMilkFullness(0f);
+                num = Mathf.Min(desiredCharge, __instance.Charge);
+                comp.DrainForConsume(num);
+                lactating.SyncChargeFromPool();
             }
             else
             {
-                num = desiredCharge;
-                lactating.SetMilkFullness(__instance.Charge - num);
+                if (desiredCharge >= __instance.Charge)
+                {
+                    num = __instance.Charge;
+                    lactating.SetMilkFullness(0f);
+                }
+                else
+                {
+                    num = desiredCharge;
+                    lactating.SetMilkFullness(__instance.Charge - num);
+                }
             }
             __result = num * amountNormalizer;
             return false;
