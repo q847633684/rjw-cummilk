@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 	<!-- 建议 22：关键默认值，其他 mod 可用 PatchOperationReplace 等覆盖后，在设置中点击「从 Def 加载默认」应用 -->
-	<MilkCumDefaultsDef>
+	<EqualMilkingDefaultsDef>
 		<defName>EM_Defaults</defName>
 		<label>EM.DefaultsDefLabel</label>
-		<baselineMilkDurationDays>3</baselineMilkDurationDays>
+		<baselineMilkDurationDays>5</baselineMilkDurationDays>
 		<birthInducedMilkDurationDays>10</birthInducedMilkDurationDays>
 		<allowMastitis>true</allowMastitis>
 		<mastitisBaseMtbDays>1.5</mastitisBaseMtbDays>
@@ -14,6 +14,6 @@
 		<toleranceFlowImpactExponent>1</toleranceFlowImpactExponent>
 		<overflowFilthDefName>Filth_Vomit</overflowFilthDefName>
 		<aiPreferHighFullnessTargets>true</aiPreferHighFullnessTargets>
-		<defaultFlowMultiplierForHumanlike>1</defaultFlowMultiplierForHumanlike>
-	</MilkCumDefaultsDef>
+		<defaultFlowMultiplierForHumanlike>2</defaultFlowMultiplierForHumanlike>
+	</EqualMilkingDefaultsDef>
 </Defs>

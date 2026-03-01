@@ -24,10 +24,13 @@
     <EM.SectionDesc_MilkingSelf>"Milking (self)": allow this role to milk themselves (auto take milk-self job). Off = only others can milk them or manual assign. The Milk table column overrides per pawn.</EM.SectionDesc_MilkingSelf>
     <EM.SubTab.Efficiency>Efficiency</EM.SubTab.Efficiency>
     <EM.SectionDesc_Efficiency>Efficiency and milk amount multipliers by lactation severity; consciousness/manipulation/moving gain and cap percent; whether adult female animals are always lactating. Affects only this mod's lactation and milk output.</EM.SectionDesc_Efficiency>
+    <EM.LactationEfficiencyMovedHint>Lactation efficiency and consciousness/manipulation/moving gain are under Integration → Breast &amp; pool, with capacity, flow and remaining days. Only animal "always lactating" remains here.</EM.LactationEfficiencyMovedHint>
     <EM.SectionDesc_RJW>Active when rim.job.world (RJW) is enabled. Controls lactation–breast size, sex need, post-nursing satisfaction, fertility, sex description, and post-sex milk pool boost.</EM.SectionDesc_RJW>
+    <EM.SectionDesc_BreastPool>Breast and pool parameters: below control capacity (left/right pool = Severity × capacity coefficient), fill time (flow multiplier; default 2 ≈ single dose fills in ~1 day), remaining days (drug/birth baseline drive L decay), and lactation efficiency/gain. Multi-dose or larger breasts: see Docs.</EM.SectionDesc_BreastPool>
     <EM.SubTab.IdentityAndMenu>Identity &amp; menu</EM.SubTab.IdentityAndMenu>
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>Genes &amp; advanced</EM.SubTab.GenesAndAdvanced>
+    <EM.SubTab.BreastPool>Breast &amp; pool</EM.SubTab.BreastPool>
     <EM.BreastfeedOverviewDesc>Who can feed whom is set below by humanlike / animal / mechanoid. Single feeding duration and mechanoid nutrition→energy here.</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>Lactation extra hunger: {0} (0=off, 150=1:1, 300=double)</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
@@ -36,6 +39,8 @@
     <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>Gain offset: {0}</EM.LactatingGainPercent>
+    <EM.LactatingEfficiencyMultiplier>Milking &amp; nursing yield multiplier: {0}</EM.LactatingEfficiencyMultiplier>
+    <EM.LactatingEfficiencyMultiplierDesc>How much milk one milking or one nursing/suckling yields (default 1.25). Higher = more milk per squeeze or per feed at the same pool fullness. Does not change how fast the pool fills (that is «Flow multiplier» above). More prolactin / higher Lactating stacks = this multiplier stacks more.</EM.LactatingEfficiencyMultiplierDesc>
     <EM.FedByColumnTip>For the pawn being fed: choose which lactating pawns are allowed to feed this one. Empty list = any; non-empty = only listed.</EM.FedByColumnTip>
     <EM.ProducerRestrictionsColumn>Who can use my milk / eat my milk or cum products</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>Female (lactating): who can use my milk, who can eat my milk products. Male: who can eat my cum products. Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>
@@ -54,7 +59,17 @@
     <EM.MenuProlactinShow>Menu: show give prolactin to {0}</EM.MenuProlactinShow>
     <EM.RJWSection>--- RJW (when rim.job.world active) ---</EM.RJWSection>
     <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
-    <EM.RjwBreastSizeDesc>When lactating, temporarily increase RJW breast size.</EM.RjwBreastSizeDesc>
+    <EM.RjwBreastSizeDesc>When on: lactating temporarily adds to RJW breast Severity (visual size), and pool capacity plus milk flow use RJW breast data (Severity × capacity coefficient, fluidMultiplier). When off: no size change and capacity/flow do not use RJW breasts.</EM.RjwBreastSizeDesc>
+    <EM.RjwBreastCapacityCoefficient>Breast capacity coefficient: {0}</EM.RjwBreastCapacityCoefficient>
+    <EM.RjwBreastCapacityCoefficientDesc>Left/right pool capacity = RJW breast Severity × this value (1 = unchanged). Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
+    <EM.RjwBreastCapacityCoefficientDescLong>Left/right pool capacity = RJW breast Severity × this value; total capacity = left + right. Higher = larger pool, longer to fill; default 2 with Severity 0.5 gives total capacity 2. See Docs.</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.DefaultFlowMultiplierForHumanlikeDescLong>Global multiplier for milk flow (pool units/day). With capacity and baseline days, determines fill time and remaining days for a single dose. Default 2 ≈ single dose fills in ~1 game day.</EM.DefaultFlowMultiplierForHumanlikeDescLong>
+    <EM.BaselineMilkDurationDays>Drug-induced baseline days: {0}</EM.BaselineMilkDurationDays>
+    <EM.BaselineMilkDurationDaysDesc>Drives L decay: remaining days for a single dose (L≈0.5) ≈ this value. Default 5 ≈ 5 days; multi-dose total &lt; doses × this.</EM.BaselineMilkDurationDaysDesc>
+    <EM.BirthInducedMilkDurationDays>Birth-induced baseline days: {0}</EM.BirthInducedMilkDurationDays>
+    <EM.BirthInducedMilkDurationDaysDesc>Reference duration for birth-induced lactation (display only; L decay uses drug baseline).</EM.BirthInducedMilkDurationDaysDesc>
+    <EM.BreastPoolParamsHint>Capacity, fill time and remaining days are determined by the sliders above; see parameter table and breast capacity doc.</EM.BreastPoolParamsHint>
+    <EM.BreastPoolParamsInToleranceHint>Drug/birth baseline days are under Integration → Breast &amp; pool, with capacity and flow.</EM.BreastPoolParamsInToleranceHint>
     <EM.RjwLustFromNursing>Nursing adds lust (Need_Sex)</EM.RjwLustFromNursing>
     <EM.RjwLustFromNursingDesc>After nursing, mother and baby gain sex need satisfaction.</EM.RjwLustFromNursingDesc>
     <EM.RjwSexNeedLactatingBonus>Lactating boosts sex need over time</EM.RjwSexNeedLactatingBonus>
@@ -92,8 +107,8 @@
     <EM.RaceOverridesSection>Race overrides (whitelist / blacklist)</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>Races that can always lactate (defName, comma-separated)</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>Races that cannot lactate (defName, comma-separated)</EM.RaceCannotLactate>
-    <EM.DefaultFlowMultiplierForHumanlike>Humanlike flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
-    <EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow on humanlike pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+    <EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
+    <EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
     <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} is not lactating (no Equal Milking lactation hediff).</EM.DevModeNotLactating>

@@ -23,10 +23,13 @@
     <EM.SectionDesc_DefaultByRole>此处为该身份（殖民者/奴隶/囚犯/动物/机械/实体）的默认值。新加入或未单独设置过的单位会使用此默认；在 Milk 主界面表格中可对每个单位单独覆盖。</EM.SectionDesc_DefaultByRole>
     <EM.SectionDesc_MilkingSelf>「挤奶（自身）」：允许该身份单位自己给自己挤奶（自动接挤奶自己的工作）。关闭则只能由别人挤或手动指派。主界面表格中可对单个单位单独开关。</EM.SectionDesc_MilkingSelf>
     <EM.SectionDesc_Efficiency>泌乳期严重度对应的效率与产奶量倍率、泌乳期意识/操纵/移动增益及其上限百分比、动物成年雌性是否常乳。仅影响本 mod 的泌乳与产奶计算。</EM.SectionDesc_Efficiency>
+    <EM.LactationEfficiencyMovedHint>泌乳效率与意识/操纵/移动增益已移至「联动与扩展 → 乳房与池」，与容量、流速、剩余天数一起调节。此处仅保留动物常乳。</EM.LactationEfficiencyMovedHint>
     <EM.SectionDesc_RJW>当 rim.job.world (RJW) 已启用时生效。控制泌乳与乳房尺寸、性需求、哺乳后满足、怀孕概率、性行为描述及性行为后奶池增益等联动。</EM.SectionDesc_RJW>
+    <EM.SectionDesc_BreastPool>乳房与池参数：下方控制容量（左/右池 = Severity×容量系数）、灌满时间（流速倍率，默认 2 ≈ 单次剂量约 1 日灌满）、剩余天数（药物/分娩基准参与 L 衰减）、泌乳效率与增益。多剂或更大乳房见 Docs/乳房容量模拟计算。</EM.SectionDesc_BreastPool>
     <EM.SubTab.IdentityAndMenu>身份与菜单</EM.SubTab.IdentityAndMenu>
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>基因与高级</EM.SubTab.GenesAndAdvanced>
+    <EM.SubTab.BreastPool>乳房与池</EM.SubTab.BreastPool>
     <EM.BreastfeedOverviewDesc>谁可以喂谁在下方按人形/动物/机械族设置。此处为单次哺乳时长与机械族营养→能量。</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>泌乳额外饥饿：{0}（0=关闭，150=1:1，300=双倍）</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>吸奶容量系数</EM.BreastfeedCapacityFactor>
@@ -35,6 +38,8 @@
     <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
     <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>增益偏移：{0}</EM.LactatingGainPercent>
+    <EM.LactatingEfficiencyMultiplier>挤奶与吸奶产出倍率：{0}</EM.LactatingEfficiencyMultiplier>
+    <EM.LactatingEfficiencyMultiplierDesc>控制「挤奶一次」和「吸奶/哺乳一次」能产出多少奶的倍率，默认 1.25。调高 = 同样池满度下挤奶或吸奶产出的奶更多；不影响池子灌满速度（灌满速度由上方「流速倍率」控制）。吃越多催乳素、Lactating 层数越高，本倍率叠得越明显。</EM.LactatingEfficiencyMultiplierDesc>
     <EM.FedByColumnTip>被喂食者：指定“允许哪些泌乳者喂我”。列表为空=任意泌乳者；非空=仅列表中的泌乳者。</EM.FedByColumnTip>
     <EM.ProducerRestrictionsColumn>谁可使用我的奶 / 谁可吃奶制品或精液制品</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以使用我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
@@ -53,7 +58,17 @@
     <EM.MenuProlactinShow>菜单：催乳素→{0}</EM.MenuProlactinShow>
     <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
     <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
-    <EM.RjwBreastSizeDesc>泌乳期时暂时增大 RJW 胸部尺寸。</EM.RjwBreastSizeDesc>
+    <EM.RjwBreastSizeDesc>开启时：泌乳期临时增加 RJW 乳房 Severity（外观变大），且池容量与产奶流速按 RJW 乳房数据计算（Severity×容量系数、fluidMultiplier）。关闭时：不改变外观，且容量与流速不使用 RJW 乳房。</EM.RjwBreastSizeDesc>
+    <EM.RjwBreastCapacityCoefficient>乳房容量系数：{0}</EM.RjwBreastCapacityCoefficient>
+    <EM.RjwBreastCapacityCoefficientDesc>左/右池容量 = RJW 乳房 Severity × 本系数（1=不变）。可与流速倍率、泌乳效率等一起调节。</EM.RjwBreastCapacityCoefficientDesc>
+    <EM.RjwBreastCapacityCoefficientDescLong>左/右池容量 = RJW 乳房 Severity × 本系数；总容量 = 左+右。系数越大池越大，灌满需时越长；默认 2 时 Severity 0.5 双乳总容量=2。详见 Docs/乳房容量模拟计算.md。</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.DefaultFlowMultiplierForHumanlikeDescLong>产奶流速（池单位/天）的全局倍率；与容量系数、基准天数一起决定单次剂量下的灌满时间与剩余天数。默认 2 ≈ 单次剂量约 1 游戏日灌满。</EM.DefaultFlowMultiplierForHumanlikeDescLong>
+    <EM.BaselineMilkDurationDays>药物泌乳基准天数：{0} 日</EM.BaselineMilkDurationDays>
+    <EM.BaselineMilkDurationDaysDesc>参与 L 衰减：单次剂量（L≈0.5）时剩余天数 ≈ 本值。默认 5 即约 5 日；多剂叠加时总天数 &lt; 剂数×本值。</EM.BaselineMilkDurationDaysDesc>
+    <EM.BirthInducedMilkDurationDays>分娩泌乳基准天数：{0} 日</EM.BirthInducedMilkDurationDays>
+    <EM.BirthInducedMilkDurationDaysDesc>分娩诱发泌乳的参考持续天数（当前仅作显示参考，L 衰减由药物基准参与）。</EM.BirthInducedMilkDurationDaysDesc>
+    <EM.BreastPoolParamsHint>容量、灌满时间、剩余天数由上方参数共同决定；详见 参数联动表 与 乳房容量模拟计算。</EM.BreastPoolParamsHint>
+    <EM.BreastPoolParamsInToleranceHint>药物/分娩基准天数已移至「联动与扩展 → 乳房与池」子页，与乳房容量、流速一起调节。</EM.BreastPoolParamsInToleranceHint>
     <EM.RjwLustFromNursing>哺乳/吸奶增加性需求</EM.RjwLustFromNursing>
     <EM.RjwLustFromNursingDesc>哺乳或刚被哺乳后，母亲与婴儿获得少量性需求满足。</EM.RjwLustFromNursingDesc>
     <EM.RjwSexNeedLactatingBonus>泌乳期性需求随时间小幅提升</EM.RjwSexNeedLactatingBonus>
@@ -91,8 +106,8 @@
     <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>视为可产奶的种族（defName，逗号分隔）</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>视为不可产奶的种族（defName，逗号分隔）</EM.RaceCannotLactate>
-    <EM.DefaultFlowMultiplierForHumanlike>人形流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>
-    <EM.DefaultFlowMultiplierForHumanlikeDesc>人形小人的产奶流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
+    <EM.DefaultFlowMultiplierForHumanlike>流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>
+    <EM.DefaultFlowMultiplierForHumanlikeDesc>所有单位的产奶流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} 未处于泌乳期（无平等产奶泌乳 hediff）。</EM.DevModeNotLactating>

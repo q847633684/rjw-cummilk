@@ -154,12 +154,13 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return EqualMilkingSettings.GetProlactinToleranceFactor(Pawn);
     }
 
-    /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。</summary>
+    /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。B_T 由设置 baselineMilkDurationDays 反推，使单次剂量时剩余约 N 日。</summary>
     public float GetDailyLactationDecay(float lactationAmount)
     {
         float eff = GetEffectiveDrugFactor();
         if (eff <= 0f) return 0f;
-        return 1f / (PoolModelConstants.BaseValueT * eff) + PoolModelConstants.NegativeFeedbackK * lactationAmount;
+        float bT = EqualMilkingSettings.GetEffectiveBaseValueTForDecay();
+        return 1f / (bT * eff) + PoolModelConstants.NegativeFeedbackK * lactationAmount;
     }
 
     /// <summary>当前 L 下的每日衰减（用于显示/兼容）。</summary>
@@ -229,7 +230,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float flow = GetFlowPerDay();
         return flow * EqualMilkingSettings.nutritionToEnergyFactor;
     }
-    /// <summary>当前产奶流速（池单位/天），与 CompEquallyMilkable 进水公式一致；满池或不可产奶时返回 0。灌满 1 池单位即消耗 1 营养，由 Need_Food 补丁按此值施加额外饥饿。</summary>
+    /// <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。左池流速 = 左乳 RJW × L×饥饿×Conditions×Genes×流速倍率，右池流速 = 右乳 RJW × 同上；满池或不可产奶时返回 0。</summary>
     internal float GetFlowPerDay()
     {
         if (CompEquallyMilkable == null) return 0f;
@@ -237,11 +238,13 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         if (Charge >= maxF) return 0f;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactationAmount <= 0f || hungerFactor <= 0f) return 0f;
-        float flowPerDay = currentLactationAmount * hungerFactor;
-        flowPerDay *= Pawn.GetMilkFlowMultiplierFromConditions();
-        flowPerDay *= Pawn.GetMilkFlowMultiplierFromGenes();
-        flowPerDay *= (Pawn.RaceProps.Humanlike ? EqualMilkingSettings.defaultFlowMultiplierForHumanlike : 1f);
-        return flowPerDay;
+        float basePerDay = currentLactationAmount * hungerFactor
+            * Pawn.GetMilkFlowMultiplierFromConditions()
+            * Pawn.GetMilkFlowMultiplierFromGenes()
+            * EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
+        float flowLeft = Pawn.GetMilkFlowMultiplierFromRJW_Left() * basePerDay;
+        float flowRight = Pawn.GetMilkFlowMultiplierFromRJW_Right() * basePerDay;
+        return flowLeft + flowRight;
     }
     public override string CompTipStringExtra
     {
@@ -276,21 +279,18 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             // 产奶详情全部放在悬停 tooltip 中
             if (CompEquallyMilkable != null)
             {
-                float maxF = Mathf.Max(0.01f, CompEquallyMilkable.maxFullness);
                 float leftCap = Mathf.Max(0.01f, Pawn.GetLeftBreastCapacityFactor());
                 float rightCap = Mathf.Max(0.01f, Pawn.GetRightBreastCapacityFactor());
                 lines.Add(Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent());
                 lines.Add("EM.PoolLeftBreast".Translate() + " " + (CompEquallyMilkable.LeftFullness / leftCap).ToStringPercent() + ", " + "EM.PoolRightBreast".Translate() + " " + (CompEquallyMilkable.RightFullness / rightCap).ToStringPercent());
                 lines.Add("EM.PoolRemainingDays".Translate() + ": " + RemainingDays.ToString("F1"));
-                float growthSpeed = PawnUtility.BodyResourceGrowthSpeed(Pawn);
-                float flowPerDay = currentLactationAmount * growthSpeed;
+                float flowPerDay = GetFlowPerDay();
                 lines.Add("EM.MilkFlowPerDay".Translate(flowPerDay.ToStringPercent()));
                 if (Pawn.MilkDef() != null)
                     lines.Add(Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * CompEquallyMilkable.Fullness).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
             }
             else if (Pawn.MilkDef() != null)
             {
-                float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
                 lines.Add(Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent());
                 lines.Add(Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * (CompEquallyMilkable?.Fullness ?? 0f)).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
             }

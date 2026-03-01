@@ -6,9 +6,10 @@ namespace MilkCum.Core;
 public class EqualMilkingDefaultsDef : Def
 {
 	// 基准泌乳天数（池模型 B_T / B_T_birth）
-	public float baselineMilkDurationDays = 3f;
+	public float baselineMilkDurationDays = 5f;
 	public float birthInducedMilkDurationDays = 10f;
-	// 乳腺炎与风险
+	/// <summary>流速倍率；默认 2 = 单次剂量约 1 日灌满。</summary>
+	public float defaultFlowMultiplierForHumanlike = 2f;
 	public bool allowMastitis = true;
 	public float mastitisBaseMtbDays = 1.5f;
 	public float overFullnessRiskMultiplier = 1.5f;
@@ -19,6 +20,4 @@ public class EqualMilkingDefaultsDef : Def
 	// 溢出与 AI
 	public string overflowFilthDefName = "Filth_Vomit";
 	public bool aiPreferHighFullnessTargets = true;
-	// 种族/人形
-	public float defaultFlowMultiplierForHumanlike = 1f;
 }

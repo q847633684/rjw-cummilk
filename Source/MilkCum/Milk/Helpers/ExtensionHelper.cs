@@ -226,35 +226,36 @@ public static class ExtensionHelper
     }
     #endregion
     #region Milk
-    /// <summary>左乳池容量（与右乳合计 = 总容量）。总容量 = 左+右，正常人双乳 1+1→2。</summary>
+    /// <summary>左池容量：来自 RJW 左乳 hediff 的 Severity（左乳对应左池，与流速倍率一致）。</summary>
     public static float GetLeftBreastCapacityFactor(this Pawn pawn)
     {
         GetBreastCapacityFactors(pawn, out float left, out _);
         return left;
     }
-    /// <summary>右乳池基础容量；与左乳合计 = 总容量。</summary>
+    /// <summary>右池容量：来自 RJW 右乳 hediff 的 Severity（右乳对应右池，与流速倍率一致）。</summary>
     public static float GetRightBreastCapacityFactor(this Pawn pawn)
     {
         GetBreastCapacityFactors(pawn, out _, out float right);
         return right;
     }
-    /// <summary>按 RJW 乳房 Hediff 与 Severity 计算左右池容量。总容量 = 左+右。</summary>
+    /// <summary>左乳对应左池容量、右乳对应右池容量。左=list[0].Severity×系数，右=list[1].Severity×系数，单乳时右=0。总容量=左+右。系数由 rjwBreastCapacityCoefficient 提供，与泌乳效率等可调项对应。</summary>
     private static void GetBreastCapacityFactors(Pawn pawn, out float leftFactor, out float rightFactor)
     {
         leftFactor = 0f;
         rightFactor = 0f;
         if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return;
+        float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
         try
         {
             var list = pawn.GetBreastList();
             if (list.Count == 1)
             {
-                leftFactor = Mathf.Clamp(list[0].Severity, 0.01f, 10f);
+                leftFactor = Mathf.Clamp(list[0].Severity * coeff, 0.01f, 10f);
                 rightFactor = 0f;
                 return;
             }
-            leftFactor = Mathf.Clamp(list[0].Severity, 0.01f, 10f);
-            rightFactor = Mathf.Clamp(list[1].Severity, 0.01f, 10f);
+            leftFactor = Mathf.Clamp(list[0].Severity * coeff, 0.01f, 10f);
+            rightFactor = Mathf.Clamp(list[1].Severity * coeff, 0.01f, 10f);
         }
         catch
         {
@@ -293,6 +294,32 @@ public static class ExtensionHelper
         if (extraBreasts != null && pawn.genes.HasActiveGene(extraBreasts))
             mult *= 1.08f;
         return Mathf.Clamp(mult, 0.5f, 1.5f);
+    }
+
+    /// <summary>左乳 RJW HediffDef_SexPart.fluidMultiplier（流速倍率）。无/非 SexPart 时 1f，Clamp 0.1～3。</summary>
+    public static float GetMilkFlowMultiplierFromRJW_Left(this Pawn pawn)
+    {
+        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return 1f;
+        try
+        {
+            var list = pawn.GetBreastList();
+            if (list.Count < 1 || list[0]?.def is not HediffDef_SexPart d) return 1f;
+            return Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f);
+        }
+        catch { return 1f; }
+    }
+
+    /// <summary>右乳 RJW HediffDef_SexPart.fluidMultiplier（流速倍率）。无右乳或非 SexPart 时 0f（单乳仅左池进水），否则 Clamp 0.1～3。</summary>
+    public static float GetMilkFlowMultiplierFromRJW_Right(this Pawn pawn)
+    {
+        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return 0f;
+        try
+        {
+            var list = pawn.GetBreastList();
+            if (list.Count < 2 || list[1]?.def is not HediffDef_SexPart d) return 0f;
+            return Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f);
+        }
+        catch { return 0f; }
     }
 
     /// <summary>获取“乳房/胸部”身体部位，用于将 hediff 挂在健康页的乳房行。优先 Breast，否则 Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）。</summary>

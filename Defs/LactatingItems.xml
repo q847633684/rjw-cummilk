@@ -59,7 +59,7 @@
         <ingestible>
             <drugCategory>Medical</drugCategory>
             <joy>0.3</joy>
-            <joyKind>Medical</joyKind>
+            <joyKind>Chemical</joyKind>
             <outcomeDoers>
                 <!-- 泌乳（耐受联动：高耐受时效果减弱） -->
                 <li Class="IngestionOutcomeDoer_GiveHediff">
@@ -121,7 +121,7 @@
         <ingestible>
             <drugCategory>Medical</drugCategory>
             <joy>1.2</joy>
-            <joyKind>Medical</joyKind>
+            <joyKind>Chemical</joyKind>
             <outcomeDoers>
                 <!-- 4 倍泌乳：0.5×4 = 2.0 -->
                 <li Class="IngestionOutcomeDoer_GiveHediff">

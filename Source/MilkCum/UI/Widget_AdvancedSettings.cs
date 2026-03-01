@@ -174,7 +174,7 @@ public class Widget_AdvancedSettings
 		EqualMilkingSettings.overflowFilthDefName = overflowFilth?.Trim() ?? "Filth_Vomit";
 		list.Gap(6f);
 		GUI.color = Color.gray;
-		list.Label("EM.BaselineMilkDurationReference".Translate(EqualMilkingSettings.baselineMilkDurationDays.ToString("F0"), EqualMilkingSettings.birthInducedMilkDurationDays.ToString("F0")));
+		list.Label("EM.BreastPoolParamsInToleranceHint".Translate());
 		GUI.color = Color.white;
 		list.Gap(6f);
 		Rect rAiFullness = list.GetRect(UNIT_SIZE);
@@ -194,18 +194,9 @@ public class Widget_AdvancedSettings
 			list.Label("EM.SectionDesc_Efficiency".Translate());
 			GUI.color = Color.white;
 			list.Gap(4f);
-			string lactatingLabel = HediffDefOf.Lactating?.label ?? "Lactating";
-			Rect rEff = list.GetRect(UNIT_SIZE);
-			Widgets.HorizontalSlider(rEff, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(lactatingLabel, Lang.Efficiency, Lang.StatFactor) + ": " + EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString(), 0.01f);
-			list.Gap(6f);
-			Rect rLactatingGain = list.GetRect(UNIT_SIZE);
-			Widgets.CheckboxLabeled(rLactatingGain, "EM.LactatingGain".Translate(), ref EqualMilkingSettings.lactatingGainEnabled, false);
-			{ string t = "EM.LactatingGainDesc".Translate(); TooltipHandler.TipRegion(rLactatingGain, string.IsNullOrEmpty(t) ? "EM.LactatingGainDesc" : t); }
-			list.Gap(6f);
-			float pct = EqualMilkingSettings.lactatingGainCapModPercent;
-			Rect rPct = list.GetRect(UNIT_SIZE);
-			Widgets.HorizontalSlider(rPct, ref pct, new FloatRange(0f, 0.20f), "EM.LactatingGainPercent".Translate(pct.ToStringPercent()), 0.01f);
-			EqualMilkingSettings.lactatingGainCapModPercent = pct;
+			GUI.color = Color.gray;
+			list.Label("EM.LactationEfficiencyMovedHint".Translate());
+			GUI.color = Color.white;
 			list.Gap(6f);
 			Rect rAnimal = list.GetRect(UNIT_SIZE);
 			Widgets.CheckboxLabeled(rAnimal, "EM.AnimalAdultFemaleAlwaysLactating".Translate(), ref EqualMilkingSettings.femaleAnimalAdultAlwaysLactating);
@@ -236,7 +227,9 @@ public class Widget_AdvancedSettings
 	{
 		var list = new Listing_Standard();
 		list.Begin(content);
-		if (subTab == 0 && ModLister.GetModWithIdentifier("rim.job.world") != null)
+		if (subTab == 0)
+			DrawBreastPoolBlock(list);
+		else if (subTab == 1 && ModLister.GetModWithIdentifier("rim.job.world") != null)
 		{
 			GUI.color = Color.gray;
 			list.Label("EM.SectionDesc_RJW".Translate());
@@ -248,17 +241,75 @@ public class Widget_AdvancedSettings
 			list.Gap(4f);
 			DrawRjwBlock(list);
 		}
-		else if (subTab == 1 && DubsBadHygieneIntegration.IsDubsBadHygieneActive())
+		else if (subTab == 2 && DubsBadHygieneIntegration.IsDubsBadHygieneActive())
 			DrawDbhBlock(list);
 		list.End();
 	}
 
-	private void DrawRjwBlock(Listing_Standard list)
+	/// <summary>乳房与池：容量、灌满时间、剩余天数等可调系数集中在此，带详细说明。</summary>
+	private void DrawBreastPoolBlock(Listing_Standard list)
 	{
+		GUI.color = Color.gray;
+		list.Label("EM.SectionDesc_BreastPool".Translate());
+		GUI.color = Color.white;
+		list.Gap(6f);
+		// 乳房开关与容量
 		Rect rRjwBreast = list.GetRect(UNIT_SIZE);
 		Widgets.CheckboxLabeled(rRjwBreast, "EM.RjwBreastSize".Translate(), ref EqualMilkingSettings.rjwBreastSizeEnabled, false);
 		{ string t = "EM.RjwBreastSizeDesc".Translate(); TooltipHandler.TipRegion(rRjwBreast, string.IsNullOrEmpty(t) ? "EM.RjwBreastSizeDesc" : t); }
+		list.Gap(4f);
+		Rect rCapCoeff = list.GetRect(UNIT_SIZE);
+		float capCoeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
+		Widgets.HorizontalSlider(rCapCoeff, ref capCoeff, new FloatRange(0.25f, 4f), "EM.RjwBreastCapacityCoefficient".Translate(EqualMilkingSettings.rjwBreastCapacityCoefficient.ToString("F2")), 0.05f);
+		EqualMilkingSettings.rjwBreastCapacityCoefficient = capCoeff;
+		TooltipHandler.TipRegion(rCapCoeff, "EM.RjwBreastCapacityCoefficientDescLong".Translate());
 		list.Gap(6f);
+		// 流速倍率
+		Rect rFlowMult = list.GetRect(UNIT_SIZE);
+		float defaultFlowMultiplierForHumanlike = EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
+		Widgets.HorizontalSlider(rFlowMult, ref defaultFlowMultiplierForHumanlike, new FloatRange(0.25f, 2f), "EM.DefaultFlowMultiplierForHumanlike".Translate(EqualMilkingSettings.defaultFlowMultiplierForHumanlike.ToString("F2")), 0.05f);
+		EqualMilkingSettings.defaultFlowMultiplierForHumanlike = defaultFlowMultiplierForHumanlike;
+		TooltipHandler.TipRegion(rFlowMult, "EM.DefaultFlowMultiplierForHumanlikeDescLong".Translate());
+		list.Gap(6f);
+		// 剩余天数：药物基准、分娩基准
+		Rect rBaseline = list.GetRect(UNIT_SIZE);
+		float baseline = EqualMilkingSettings.baselineMilkDurationDays;
+		Widgets.HorizontalSlider(rBaseline, ref baseline, new FloatRange(1f, 15f), "EM.BaselineMilkDurationDays".Translate(EqualMilkingSettings.baselineMilkDurationDays.ToString("F0")), 0.5f);
+		EqualMilkingSettings.baselineMilkDurationDays = baseline;
+		TooltipHandler.TipRegion(rBaseline, "EM.BaselineMilkDurationDaysDesc".Translate());
+		list.Gap(4f);
+		Rect rBirth = list.GetRect(UNIT_SIZE);
+		float birth = EqualMilkingSettings.birthInducedMilkDurationDays;
+		Widgets.HorizontalSlider(rBirth, ref birth, new FloatRange(1f, 30f), "EM.BirthInducedMilkDurationDays".Translate(EqualMilkingSettings.birthInducedMilkDurationDays.ToString("F0")), 0.5f);
+		EqualMilkingSettings.birthInducedMilkDurationDays = birth;
+		TooltipHandler.TipRegion(rBirth, "EM.BirthInducedMilkDurationDaysDesc".Translate());
+		list.Gap(4f);
+		GUI.color = Color.gray;
+		list.Label("EM.BaselineMilkDurationReference".Translate(EqualMilkingSettings.baselineMilkDurationDays.ToString("F0"), EqualMilkingSettings.birthInducedMilkDurationDays.ToString("F0")));
+		GUI.color = Color.white;
+		list.Gap(6f);
+		// 泌乳效率与增益（与容量/流速/剩余天数同属泌乳效果控制）
+		Rect rEff = list.GetRect(UNIT_SIZE);
+		Widgets.HorizontalSlider(rEff, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), "EM.LactatingEfficiencyMultiplier".Translate(EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString("F2")), 0.01f);
+		TooltipHandler.TipRegion(rEff, "EM.LactatingEfficiencyMultiplierDesc".Translate());
+		list.Gap(4f);
+		Rect rLactatingGain = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rLactatingGain, "EM.LactatingGain".Translate(), ref EqualMilkingSettings.lactatingGainEnabled, false);
+		{ string t = "EM.LactatingGainDesc".Translate(); TooltipHandler.TipRegion(rLactatingGain, string.IsNullOrEmpty(t) ? "EM.LactatingGainDesc" : t); }
+		list.Gap(4f);
+		float pct = EqualMilkingSettings.lactatingGainCapModPercent;
+		Rect rPct = list.GetRect(UNIT_SIZE);
+		Widgets.HorizontalSlider(rPct, ref pct, new FloatRange(0f, 0.20f), "EM.LactatingGainPercent".Translate(pct.ToStringPercent()), 0.01f);
+		EqualMilkingSettings.lactatingGainCapModPercent = pct;
+		list.Gap(6f);
+		GUI.color = Color.gray;
+		list.Label("EM.BreastPoolParamsHint".Translate());
+		GUI.color = Color.white;
+	}
+
+	private void DrawRjwBlock(Listing_Standard list)
+	{
+		// 乳房容量/流速/池参数已移至「乳房与池」子页
 		Rect rRjwLust = list.GetRect(UNIT_SIZE);
 		Widgets.CheckboxLabeled(rRjwLust, "EM.RjwLustFromNursing".Translate(), ref EqualMilkingSettings.rjwLustFromNursingEnabled, false);
 		{ string t = "EM.RjwLustFromNursingDesc".Translate(); TooltipHandler.TipRegion(rRjwLust, string.IsNullOrEmpty(t) ? "EM.RjwLustFromNursingDesc" : t); }
@@ -303,8 +354,8 @@ public class Widget_AdvancedSettings
 		try
 		{
 		Rect sliderRect = new(0f, 0f, scrollContent.width, UNIT_SIZE);
-		string lactatingLabel = HediffDefOf.Lactating?.label ?? "Lactating";
-		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), Lang.Join(lactatingLabel, Lang.Efficiency, Lang.StatFactor) + ": " + EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString(), 0.01f);
+		Widgets.HorizontalSlider(sliderRect, ref EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), "EM.LactatingEfficiencyMultiplier".Translate(EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack.ToString("F2")), 0.01f);
+		TooltipHandler.TipRegion(sliderRect, "EM.LactatingEfficiencyMultiplierDesc".Translate());
 		sliderRect.y += UNIT_SIZE * 2;
 		// 泌乳期意识/操纵/移动增益
 		Rect rLactatingGain = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
@@ -369,6 +420,18 @@ public class Widget_AdvancedSettings
 			Rect rRjwBreast = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwBreast, "EM.RjwBreastSize".Translate(), ref EqualMilkingSettings.rjwBreastSizeEnabled, false);
 			{ string t = "EM.RjwBreastSizeDesc".Translate(); TooltipHandler.TipRegion(rRjwBreast, string.IsNullOrEmpty(t) ? "EM.RjwBreastSizeDesc" : t); }
+			sliderRect.y += UNIT_SIZE;
+			Rect rFlowMult = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
+			float defaultFlowMultiplierForHumanlike = EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
+			Widgets.HorizontalSlider(rFlowMult, ref defaultFlowMultiplierForHumanlike, new FloatRange(0.25f, 2f), "EM.DefaultFlowMultiplierForHumanlike".Translate(EqualMilkingSettings.defaultFlowMultiplierForHumanlike.ToString("F2")), 0.05f);
+			EqualMilkingSettings.defaultFlowMultiplierForHumanlike = defaultFlowMultiplierForHumanlike;
+			TooltipHandler.TipRegion(rFlowMult, "EM.DefaultFlowMultiplierForHumanlikeDesc".Translate());
+			sliderRect.y += UNIT_SIZE;
+			Rect rCapCoeff = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
+			float capCoeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
+			Widgets.HorizontalSlider(rCapCoeff, ref capCoeff, new FloatRange(0.25f, 2f), "EM.RjwBreastCapacityCoefficient".Translate(EqualMilkingSettings.rjwBreastCapacityCoefficient.ToString("F2")), 0.05f);
+			EqualMilkingSettings.rjwBreastCapacityCoefficient = capCoeff;
+			TooltipHandler.TipRegion(rCapCoeff, "EM.RjwBreastCapacityCoefficientDesc".Translate());
 			sliderRect.y += UNIT_SIZE;
 			Rect rRjwLust = new Rect(sliderRect.x, sliderRect.y, scrollContent.width, UNIT_SIZE);
 			Widgets.CheckboxLabeled(rRjwLust, "EM.RjwLustFromNursing".Translate(), ref EqualMilkingSettings.rjwLustFromNursingEnabled, false);
@@ -493,7 +556,7 @@ public class Widget_AdvancedSettings
 			EqualMilkingSettings.overflowFilthDefName = overflowFilth?.Trim() ?? "Filth_Vomit";
 			list.Gap(6f);
 			GUI.color = Color.gray;
-			list.Label("EM.BaselineMilkDurationReference".Translate(EqualMilkingSettings.baselineMilkDurationDays.ToString("F0"), EqualMilkingSettings.birthInducedMilkDurationDays.ToString("F0")));
+			list.Label("EM.BreastPoolParamsInToleranceHint".Translate());
 			GUI.color = Color.white;
 			list.Gap(6f);
 			Rect rAiFullness = list.GetRect(UNIT_SIZE);
@@ -518,11 +581,6 @@ public class Widget_AdvancedSettings
 			raceNever = Widgets.TextField(rNever.RightHalf(), raceNever, 128);
 			EqualMilkingSettings.raceCannotLactate = ParseCommaSeparatedDefNames(raceNever);
 			list.Gap(6f);
-			Rect rHumanlike = list.GetRect(UNIT_SIZE);
-			float defaultFlowMultiplierForHumanlike = EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
-			Widgets.HorizontalSlider(rHumanlike, ref defaultFlowMultiplierForHumanlike, new FloatRange(0.25f, 2f), "EM.DefaultFlowMultiplierForHumanlike".Translate(EqualMilkingSettings.defaultFlowMultiplierForHumanlike.ToString("F2")), 0.05f);
-			EqualMilkingSettings.defaultFlowMultiplierForHumanlike = defaultFlowMultiplierForHumanlike;
-			TooltipHandler.TipRegion(rHumanlike, "EM.DefaultFlowMultiplierForHumanlikeDesc".Translate());
 		}
 		// DevMode：选中小人的泌乳状态（L、双池、E、卫生风险、溢出累计等）
 		if (Prefs.DevMode)

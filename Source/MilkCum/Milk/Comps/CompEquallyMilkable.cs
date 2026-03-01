@@ -231,7 +231,7 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>水池模型：按容量比例分配流速，双池进水、溢出、回缩（含健康度系数），更新满池计数。</summary>
+    /// <summary>水池模型：左/右池流速分别直接计算，双池流速=左+右；溢出、回缩（含健康度系数），更新满池计数。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffWithComps()?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
@@ -239,33 +239,22 @@ public class CompEquallyMilkable : CompMilkable
         float currentLactation = lactatingComp.CurrentLactationAmount;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
-        float flowPerDay = currentLactation * hungerFactor;
-        flowPerDay *= Pawn.GetMilkFlowMultiplierFromConditions();
-        flowPerDay *= Pawn.GetMilkFlowMultiplierFromGenes();
-        flowPerDay *= (Pawn.RaceProps.Humanlike ? EqualMilkingSettings.defaultFlowMultiplierForHumanlike : 1f);
-        float flowPerTick = flowPerDay / 60000f * 30f;
+        float basePerDay = currentLactation * hungerFactor
+            * Pawn.GetMilkFlowMultiplierFromConditions()
+            * Pawn.GetMilkFlowMultiplierFromGenes()
+            * EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
+        float flowLeftPerDay = Pawn.GetMilkFlowMultiplierFromRJW_Left() * basePerDay;
+        float flowRightPerDay = Pawn.GetMilkFlowMultiplierFromRJW_Right() * basePerDay;
+        float flowLeftPerTick = flowLeftPerDay / 60000f * 30f;
+        float flowRightPerTick = flowRightPerDay / 60000f * 30f;
 
         float leftBaseCap = Pawn.GetLeftBreastCapacityFactor();
         float rightBaseCap = Pawn.GetRightBreastCapacityFactor();
-        float totalBaseCap = leftBaseCap + rightBaseCap;
-        float flowLeftPerTick;
-        float flowRightPerTick;
-        if (totalBaseCap < 1E-6f)
-        {
-            flowLeftPerTick = flowPerTick * 0.5f;
-            flowRightPerTick = flowPerTick * 0.5f;
-        }
-        else
-        {
-            flowLeftPerTick = flowPerTick * (leftBaseCap / totalBaseCap);
-            flowRightPerTick = flowPerTick * (rightBaseCap / totalBaseCap);
-        }
-
         float stretchCapLeft = leftBaseCap * PoolModelConstants.StretchCapFactor;
         float stretchCapRight = rightBaseCap * PoolModelConstants.StretchCapFactor;
         var pool = new LactationPoolState();
         pool.SetFrom(leftFullness, rightFullness, ticksFullPool);
-        float overflowTotal = pool.TickGrowth(flowLeftPerTick, flowRightPerTick, stretchCapLeft, stretchCapRight);
+        float overflowTotal = pool.TickGrowth(flowLeftPerTick, flowRightPerTick, leftBaseCap, rightBaseCap, stretchCapLeft, stretchCapRight);
         float healthPercent = 1f;
         if (Pawn?.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);

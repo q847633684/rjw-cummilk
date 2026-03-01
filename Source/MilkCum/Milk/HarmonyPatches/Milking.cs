@@ -146,17 +146,16 @@ public static class Need_Food_Patch
     }
 }
 
-/// <summary>泌乳灌满期间按 flowPerDay 施加额外饥饿，使灌满 1 池单位 = 消耗 1 营养。NeedInterval 在基类 Need 上。</summary>
-[HarmonyPatch(typeof(Need))]
-[HarmonyPatch("NeedInterval")]
+/// <summary>泌乳灌满期间按 flowPerDay 施加额外饥饿，使灌满 1 池单位 = 消耗 1 营养。Patch 具体类 Need_Food.NeedInterval()，因基类 Need.NeedInterval() 为抽象无方法体。</summary>
+[HarmonyPatch(typeof(Need_Food))]
+[HarmonyPatch(nameof(Need_Food.NeedInterval))]
 public static class Need_NeedInterval_Patch
 {
     private const int NeedTicksInterval = 150;
 
     [HarmonyPostfix]
-    public static void Postfix(Need __instance)
+    public static void Postfix(Need_Food needFood)
     {
-        if (__instance is not Need_Food needFood) return;
         Pawn pawn = needFood.pawn;
         if (pawn?.health?.hediffSet == null) return;
         if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>() is not HediffComp_EqualMilkingLactating comp)

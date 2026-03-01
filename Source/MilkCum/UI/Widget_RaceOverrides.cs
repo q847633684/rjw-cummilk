@@ -8,7 +8,7 @@ using static MilkCum.Milk.Helpers.Constants;
 
 namespace MilkCum.UI;
 
-/// <summary>种族覆盖子 Tab：白名单、黑名单、人形流速倍率。</summary>
+/// <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>
 public class Widget_RaceOverrides
 {
 	private static List<string> ParseCommaSeparatedDefNames(string text)
@@ -40,12 +40,6 @@ public class Widget_RaceOverrides
 		Widgets.Label(rNever.LeftHalf(), "EM.RaceCannotLactate".Translate());
 		raceNever = Widgets.TextField(rNever.RightHalf(), raceNever, 128);
 		EqualMilkingSettings.raceCannotLactate = ParseCommaSeparatedDefNames(raceNever);
-		list.Gap(6f);
-		Rect rHumanlike = list.GetRect(UNIT_SIZE);
-		float defaultFlowMultiplierForHumanlike = EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
-		Widgets.HorizontalSlider(rHumanlike, ref defaultFlowMultiplierForHumanlike, new FloatRange(0.25f, 2f), "EM.DefaultFlowMultiplierForHumanlike".Translate(EqualMilkingSettings.defaultFlowMultiplierForHumanlike.ToString("F2")), 0.05f);
-		EqualMilkingSettings.defaultFlowMultiplierForHumanlike = defaultFlowMultiplierForHumanlike;
-		TooltipHandler.TipRegion(rHumanlike, "EM.DefaultFlowMultiplierForHumanlikeDesc".Translate());
 		list.End();
 	}
 }

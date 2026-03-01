@@ -103,11 +103,16 @@ public static class Lang
         try
         {
             Type defType = def.GetType();
+            if (defType.ContainsGenericParameters) return null;
             foreach (DefInjectionPackage pkg in LanguageDatabase.activeLanguage.defInjections)
             {
                 Type pkgType = pkg?.defType;
                 if (pkgType == null || pkgType.ContainsGenericParameters) continue;
-                if (pkgType != defType && !pkgType.IsAssignableFrom(defType)) continue;
+                try
+                {
+                    if (pkgType != defType && !pkgType.IsAssignableFrom(defType)) continue;
+                }
+                catch (ArgumentException) { continue; }
                 if (pkg.injections.TryGetValue(def.defName + "." + field, out DefInjectionPackage.DefInjection defInjection))
                     return defInjection;
             }

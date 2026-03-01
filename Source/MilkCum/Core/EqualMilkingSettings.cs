@@ -40,6 +40,8 @@ internal class EqualMilkingSettings : ModSettings
 	public static float lactatingGainCapModPercent = 0.10f;
 	// RJW 联动（仅当 rim.job.world 激活时生效）
 	public static bool rjwBreastSizeEnabled = true;
+	/// <summary>乳房容量系数：左右乳容量 = RJW Severity × 本系数，2=默认，与泌乳效率等可调项对应。</summary>
+	public static float rjwBreastCapacityCoefficient = 2f;
 	public static bool rjwLustFromNursingEnabled = true;
 	public static bool rjwSexNeedLactatingBonusEnabled = true;
 	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
@@ -65,16 +67,27 @@ internal class EqualMilkingSettings : ModSettings
 	public static float mastitisMtbDaysMultiplierAnimal { get => Risk.mastitisMtbDaysMultiplierAnimal; set => Risk.mastitisMtbDaysMultiplierAnimal = value; }
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
-	// 基准泌乳持续天数（参考/显示，对应池模型 B_T / B_T_birth）
-	public static float baselineMilkDurationDays = 3f;
+	// 基准泌乳持续天数（药物诱发）：参与 L 衰减计算，单次剂量 L≈0.5 时剩余天数 ≈ 本值；默认约 5 日。
+	public static float baselineMilkDurationDays = 5f;
+	// 基准泌乳持续天数（出生诱发）：参与 L 衰减计算，单次剂量 L≈0.5 时剩余天数 ≈ 本值；默认 10，改为 15 可得约 15 日。
 	public static float birthInducedMilkDurationDays = 10f;
+
+	/// <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
+	public static float GetEffectiveBaseValueTForDecay()
+	{
+		float baseline = baselineMilkDurationDays;
+		if (baseline <= 0f) return PoolModelConstants.BaseValueT;
+		float denom = 0.5f / baseline - PoolModelConstants.NegativeFeedbackK * 0.5f;
+		if (denom <= 0.01f) return 100f;
+		return 1f / denom;
+	}
 	// 挤奶工作：是否优先选择满度更高的目标（殖民者会先挤更满的）
 	public static bool aiPreferHighFullnessTargets = true;
 	// 种族覆盖：白名单（defName 在此列表中视为可产奶）、黑名单（defName 在此列表中视为不可产奶）
 	public static List<string> raceCanAlwaysLactate = new();
 	public static List<string> raceCannotLactate = new();
-	// 人形种族默认流速倍率（1 = 不变，用于与 RJW/Race mod 平衡）
-	public static float defaultFlowMultiplierForHumanlike = 1f;
+	// 人形种族默认流速倍率（2 = 单次剂量约 1 日灌满；与 RJW/种族 mod 平衡时也可调）
+	public static float defaultFlowMultiplierForHumanlike = 2f;
 	// 3.3 满池事件：满池过久（约 1 天）时是否发信提醒
 	public static bool enableFullPoolLetter = true;
 	// 3.3 动物差异化：种族 defName 对应药物进水倍率（未列出的种族为 1）。与参数联动表一致。
@@ -148,6 +161,7 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
 		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
+		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
 		Scribe_Values.Look(ref rjwLustFromNursingEnabled, "EM.RjwLustFromNursingEnabled", true);
 		Scribe_Values.Look(ref rjwSexNeedLactatingBonusEnabled, "EM.RjwSexNeedLactatingBonusEnabled", true);
 		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
@@ -167,12 +181,12 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
-		Scribe_Values.Look(ref baselineMilkDurationDays, "EM.BaselineMilkDurationDays", 3f);
+		Scribe_Values.Look(ref baselineMilkDurationDays, "EM.BaselineMilkDurationDays", 5f);
 		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 10f);
 		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
-		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 1f);
+		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 2f);
 		Scribe_Values.Look(ref enableFullPoolLetter, "EM.EnableFullPoolLetter", true);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
@@ -329,7 +343,12 @@ internal class EqualMilkingSettings : ModSettings
 				}
 				break;
 			case 4: // 联动与扩展
-				if (subTabIndex == 0 || subTabIndex == 1)
+				if (subTabIndex == 0)
+				{
+					advancedSettings ??= new Widget_AdvancedSettings();
+					advancedSettings.DrawSection(contentRect, 4, 0);
+				}
+				else if (subTabIndex == 1 || subTabIndex == 2)
 				{
 					advancedSettings ??= new Widget_AdvancedSettings();
 					advancedSettings.DrawSection(contentRect, 4, subTabIndex);
@@ -383,9 +402,10 @@ internal class EqualMilkingSettings : ModSettings
 			},
 			4 => new List<TabRecord>
 			{
-				new("EM.SubTab.RJW".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-				new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+				new("EM.SubTab.BreastPool".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+				new("EM.SubTab.RJW".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+				new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 3, subTabIndex == 3)
 			},
 			_ => new List<TabRecord>()
 		};
