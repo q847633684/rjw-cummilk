@@ -293,6 +293,9 @@
             Should change labels for pawns that cannot do childcare but can breastfeed
             </summary>
         </member>
+        <member name="T:MilkCum.Milk.HarmonyPatches.ITab_Pawn_Feeding_DrawRow_Patch">
+            <summary>仅当 DrawRow 为旧版 3 参数签名 (baby, row, feeder) 时才做 Transpiler；1.6 为 6 参数 (baby, RectDivider&amp;, feeder, mother, father, surrogate) 时跳过，避免 Patching exception。</summary>
+        </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.Pawn_MindState_Patch.AutofeedSetting_Prefix(Verse.AI.Pawn_MindState,Verse.AutofeedMode@,Verse.Pawn)">
             <summary>
             Allow childcare for Pawns that doesn't have Developmental stage baby
@@ -425,7 +428,7 @@
             <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.Hediff_TipString_BreastPool_Patch">
-            <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch。</summary>
+            <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
             <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
@@ -515,7 +518,7 @@
             <summary>Part.def.defName 是否为右乳（StartsWith("RightBreast") 或 "Right"）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetVirtualBreastPools(Verse.Pawn)">
-            <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。1 个乳→左右各半；多乳按 Part LeftBreast/RightBreast 或 index%2 分配。容量允许 0（乳退化）。</summary>
+            <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每个 hediff 表示一对乳房：左/右各为该 hediff 的 Severity×系数；多 hediff 时左右均为所有 hediff 容量之和（总容量=2×和）。容量允许 0（乳退化）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetLeftBreastCapacityFactor(Verse.Pawn)">
             <summary>左池容量：虚拟左池，不修改 Hediff。</summary>
@@ -524,10 +527,10 @@
             <summary>右池容量：虚拟右池，不修改 Hediff。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastCapacityFactors(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左池/右池容量。仅计算层虚拟左右池：未启用 RJW 乳房尺寸时人形 0.5+0.5；否则由 GetVirtualBreastPools 规则（1 乳对半、多乳按 Part 或 index）。不调用 AddHediff/RemoveHediff。</summary>
+            <summary>左池/右池容量。仅计算层虚拟左右池：未启用 RJW 乳房尺寸时人形 0.5+0.5；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和（总容量=2×和）。不调用 AddHediff/RemoveHediff。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastPoolEntries(Verse.Pawn)">
-            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。1 乳→_L/_R 两键对半；多乳按 Part 含 Left/Right 或 index%2。同一对共享 PairIndex。</summary>
+            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromConditions(Verse.Pawn)">
             <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。</summary>
@@ -536,13 +539,13 @@
             <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返回 1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromRJW_Left(Verse.Pawn)">
-            <summary>左乳流速倍率：虚拟左池侧 fluidMultiplier 之和（Part 含 Left 或 index%2==0）。未启用 RJW 乳房尺寸时 1f。</summary>
+            <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。未启用 RJW 乳房尺寸时 0.5。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromRJW_Right(Verse.Pawn)">
-            <summary>右乳流速倍率：虚拟右池侧 fluidMultiplier 之和（Part 含 Right 或 index%2==1）。未启用时 1f。</summary>
+            <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。未启用时 0.5。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultipliersFromRJW(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左右池流速倍率（虚拟池：该侧为 fluidMultiplier 的加权平均，与容量判定一致）。未启用或空列表时统一 0.5/0.5。</summary>
+            <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。未启用或空列表时 0.5/0.5。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolKeyForBreastHediff(Verse.Pawn,Verse.Hediff)">
             <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中），返回其对应的池 key（与 GetBreastPoolEntries 一致）。</summary>
