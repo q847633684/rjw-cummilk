@@ -226,58 +226,41 @@ public static class ExtensionHelper
     }
     #endregion
     #region Milk
-    /// <summary>按 defName 取左乳 hediff（Breast_Left）。不依赖索引、不判断人形/动物。</summary>
-    public static Hediff GetLeftBreast(this Pawn pawn)
-    {
-        if (pawn?.health?.hediffSet?.hediffs == null) return null;
-        return pawn.health.hediffSet.hediffs
-            .FirstOrDefault(h => h?.def?.defName == "Breast_Left");
-    }
-    /// <summary>按 defName 取右乳 hediff（Breast_Right）。不依赖索引、不判断人形/动物。</summary>
-    public static Hediff GetRightBreast(this Pawn pawn)
-    {
-        if (pawn?.health?.hediffSet?.hediffs == null) return null;
-        return pawn.health.hediffSet.hediffs
-            .FirstOrDefault(h => h?.def?.defName == "Breast_Right");
-    }
+    /// <summary>Part.def.defName 是否为左乳（StartsWith("LeftBreast") 或 "Left"），避免 Contains("Left") 误伤 LeftoverBreast。</summary>
+    private static bool IsLeftPart(string partName) => !string.IsNullOrEmpty(partName) && (partName.StartsWith("LeftBreast") || partName == "Left");
+    /// <summary>Part.def.defName 是否为右乳（StartsWith("RightBreast") 或 "Right"）。</summary>
+    private static bool IsRightPart(string partName) => !string.IsNullOrEmpty(partName) && (partName.StartsWith("RightBreast") || partName == "Right");
 
-    /// <summary>兼容旧 RJW：若仅有原版一对“Breasts”（1 个 hediff）且尚无 Breast_Left，则拆分为 Breast_Left + Breast_Right（各一半 Severity），并清除 RJW 缓存。人形才拆分；动物单乳不拆。</summary>
-    public static void TrySplitOldBreastsToLeftRight(this Pawn pawn)
+    /// <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每个 hediff 表示一对乳房：左/右各为该 hediff 的 Severity×系数；多 hediff 时左右均为所有 hediff 容量之和（总容量=2×和）。容量允许 0（乳退化）。</summary>
+    public static (float leftCapacity, float rightCapacity) GetVirtualBreastPools(this Pawn pawn)
     {
-        if (pawn?.health?.hediffSet == null) return;
-        if (pawn.GetLeftBreast() != null) return;
+        if (pawn == null) return (0f, 0f);
         var list = pawn.GetBreastList();
-        if (list == null || list.Count != 1) return;
-        var old = list[0];
-        if (old?.def == null || (old.def.defName != "Breasts" && old.def.defName != "GenericBreasts")) return;
-        if (pawn.RaceProps?.Humanlike != true) return;
-        var leftDef = DefDatabase<HediffDef>.GetNamedSilentFail("Breast_Left");
-        var rightDef = DefDatabase<HediffDef>.GetNamedSilentFail("Breast_Right");
-        if (leftDef == null || rightDef == null) return;
-        var part = pawn.GetBreastOrChestPart();
-        if (part == null) return;
-        float halfSeverity = Mathf.Clamp(old.Severity * 0.5f, 0.01f, 10f);
-        var leftHediff = pawn.health.AddHediff(leftDef, part);
-        if (leftHediff != null) leftHediff.Severity = halfSeverity;
-        var rightHediff = pawn.health.AddHediff(rightDef, part);
-        if (rightHediff != null) rightHediff.Severity = halfSeverity;
-        pawn.health.RemoveHediff(old);
-        try { pawn.GetRJWPawnData().breasts = null; } catch { }
+        if (list == null || list.Count == 0) return (0f, 0f);
+        float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
+        float totalCap = 0f;
+        for (int i = 0; i < list.Count; i++)
+        {
+            var h = list[i];
+            if (h?.def == null) continue;
+            totalCap += Mathf.Clamp(h.Severity * coeff, 0f, 10f);
+        }
+        return (totalCap, totalCap);
     }
 
-    /// <summary>左池容量：来自左乳 hediff（Breast_Left）Severity；无独立左乳时走兼容逻辑（拆分或按 GetBreastList 回退）。</summary>
+    /// <summary>左池容量：虚拟左池，不修改 Hediff。</summary>
     public static float GetLeftBreastCapacityFactor(this Pawn pawn)
     {
         GetBreastCapacityFactors(pawn, out float left, out _);
         return left;
     }
-    /// <summary>右池容量：来自右乳 hediff（Breast_Right）Severity；无独立右乳时走兼容逻辑。</summary>
+    /// <summary>右池容量：虚拟右池，不修改 Hediff。</summary>
     public static float GetRightBreastCapacityFactor(this Pawn pawn)
     {
         GetBreastCapacityFactors(pawn, out _, out float right);
         return right;
     }
-    /// <summary>左池/右池容量。优先用独立左右乳（GetLeftBreast/GetRightBreast）；若无左乳且仅有一对旧 Breasts 则先 TrySplitOldBreastsToLeftRight 再取。未启用 RJW 乳房尺寸时人形 0.5+0.5。GetBreastList 返回「胸部部位上的性部位 hediff 列表」。左右判定优先用 BodyPartRecord：h.Part.def.defName 以 LeftBreast/RightBreast 开头时归左/右池（BodyDef 例：Torso 下 LeftBreast_1、LeftBreast_2、RightBreast_1、RightBreast_2，每侧 N 个独立）；其次用 HediffDef.defName Breast_Left/Breast_Right；其余 def 人形与动物均按一对对半归左右池。</summary>
+    /// <summary>左池/右池容量。仅计算层虚拟左右池：未启用 RJW 乳房尺寸时人形 0.5+0.5；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和（总容量=2×和）。不调用 AddHediff/RemoveHediff。</summary>
     private static void GetBreastCapacityFactors(Pawn pawn, out float leftFactor, out float rightFactor)
     {
         leftFactor = 0f;
@@ -288,44 +271,27 @@ public static class ExtensionHelper
             if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
             return;
         }
+        var list = pawn.GetBreastList();
+        if (list == null || list.Count == 0)
+        {
+            if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
+            return;
+        }
         float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
         try
         {
-            if (pawn.GetLeftBreast() == null && pawn.GetBreastList() is { Count: 1 })
-                pawn.TrySplitOldBreastsToLeftRight();
-            var left = pawn.GetLeftBreast();
-            var right = pawn.GetRightBreast();
-            if (left != null && right != null)
+            float totalCap = 0f;
+            for (int i = 0; i < list.Count; i++)
             {
-                leftFactor = Mathf.Clamp(left.Severity * coeff, 0.01f, 10f);
-                rightFactor = Mathf.Clamp(right.Severity * coeff, 0.01f, 10f);
-                return;
+                var h = list[i];
+                if (h?.def == null) continue;
+                totalCap += Mathf.Clamp(h.Severity * coeff, 0f, 10f);
             }
-            var list = pawn.GetBreastList();
-            if (list.Count >= 1)
+            if (totalCap >= 0.01f)
             {
-                foreach (var h in list)
-                {
-                    if (h?.def == null) continue;
-                    float cap = Mathf.Clamp(h.Severity * coeff, 0.01f, 10f);
-                    string partDefName = h.Part?.def?.defName;
-                    string dn = h.def.defName;
-                    // BodyPartRecord 区分左右：BodyDef 下可挂 LeftBreast_1/LeftBreast_2、RightBreast_1/RightBreast_2 等，每侧 N 个独立
-                    bool isRight = (partDefName != null && partDefName.StartsWith("RightBreast")) || (dn == "Breast_Right");
-                    bool isLeft = (partDefName != null && partDefName.StartsWith("LeftBreast")) || (dn == "Breast_Left");
-                    if (isRight)
-                        rightFactor += cap;
-                    else if (isLeft)
-                        leftFactor += cap;
-                    else
-                    {
-                        // 无 Part/defName 左右信息时，人形与动物均按一对对半归左右池
-                        leftFactor += cap * 0.5f;
-                        rightFactor += cap * 0.5f;
-                    }
-                }
-                if (leftFactor >= 0.01f || rightFactor >= 0.01f)
-                    return;
+                leftFactor = totalCap;
+                rightFactor = totalCap;
+                return;
             }
             if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
         }
@@ -335,7 +301,7 @@ public static class ExtensionHelper
         }
     }
 
-    /// <summary>按单乳枚举池条目（左1、右1、左2、右2…），用于独立进水与展示每乳产奶。key 稳定为 Part.def.defName 或 defName_index；无左右信息时拆成 _L/_R 两键。同一对左右共享 PairIndex，用于按对撑大与挤奶顺序（从第一对开始）。</summary>
+    /// <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。</summary>
     public static List<BreastPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
         var result = new List<BreastPoolEntry>();
@@ -351,35 +317,29 @@ public static class ExtensionHelper
         }
         try
         {
-            if (pawn.GetLeftBreast() == null && pawn.GetBreastList() is { Count: 1 })
-                pawn.TrySplitOldBreastsToLeftRight();
             var list = pawn.GetBreastList();
+            if (list == null || list.Count == 0)
+            {
+                if (pawn.RaceProps?.Humanlike == true)
+                {
+                    result.Add(new BreastPoolEntry("Left_Default", 0.5f, 0.5f, true, 0));
+                    result.Add(new BreastPoolEntry("Right_Default", 0.5f, 0.5f, false, 0));
+                }
+                return result;
+            }
             float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
             int currentPair = 0;
             for (int i = 0; i < list.Count; i++)
             {
                 var h = list[i];
                 if (h?.def == null) continue;
-                string partDefName = h.Part?.def?.defName;
-                string dn = h.def.defName;
-                string key = !string.IsNullOrEmpty(partDefName) ? partDefName : dn + "_" + i;
-                float cap = Mathf.Clamp(h.Severity * coeff, 0.01f, 10f);
+                string partName = h.Part?.def?.defName;
+                string key = !string.IsNullOrEmpty(partName) ? partName : h.def.defName + "_" + i;
+                float cap = Mathf.Clamp(h.Severity * coeff, 0f, 10f);
                 float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
-                bool isRight = (partDefName != null && partDefName.StartsWith("RightBreast")) || (dn == "Breast_Right");
-                bool isLeft = (partDefName != null && partDefName.StartsWith("LeftBreast")) || (dn == "Breast_Left");
-                if (isRight)
-                    result.Add(new BreastPoolEntry(key, cap, mult, false, currentPair));
-                else if (isLeft)
-                {
-                    result.Add(new BreastPoolEntry(key, cap, mult, true, currentPair));
-                    currentPair++;
-                }
-                else
-                {
-                    result.Add(new BreastPoolEntry(key + "_L", cap * 0.5f, mult * 0.5f, true, currentPair));
-                    result.Add(new BreastPoolEntry(key + "_R", cap * 0.5f, mult * 0.5f, false, currentPair));
-                    currentPair++;
-                }
+                result.Add(new BreastPoolEntry(key + "_L", cap, mult, true, currentPair));
+                result.Add(new BreastPoolEntry(key + "_R", cap, mult, false, currentPair));
+                currentPair++;
             }
             if (result.Count == 0 && pawn.RaceProps?.Humanlike == true)
             {
@@ -432,53 +392,43 @@ public static class ExtensionHelper
         return Mathf.Clamp(mult, 0.5f, 1.5f);
     }
 
-    /// <summary>左乳流速倍率：左侧所有乳 hediff 的 fluidMultiplier 之和（与容量一致：Part.def 以 LeftBreast 开头或 defName Breast_Left），支持多乳；无左侧或非 SexPart 时 0f；未启用 RJW 乳房尺寸时 1f。与 GetMilkFlowMultiplierFromRJW_Right 同源，建议用 GetMilkFlowMultipliersFromRJW 一次取两侧。</summary>
+    /// <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。未启用 RJW 乳房尺寸时 0.5。</summary>
     public static float GetMilkFlowMultiplierFromRJW_Left(this Pawn pawn)
     {
         pawn.GetMilkFlowMultipliersFromRJW(out float left, out _);
         return left;
     }
-    /// <summary>右乳流速倍率：右侧所有乳 hediff 的 fluidMultiplier 之和（Part.def 以 RightBreast 开头或 defName Breast_Right），支持多乳；无右侧或非 SexPart 时 0f；未启用时 1f。</summary>
+    /// <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。未启用时 0.5。</summary>
     public static float GetMilkFlowMultiplierFromRJW_Right(this Pawn pawn)
     {
         pawn.GetMilkFlowMultipliersFromRJW(out _, out float right);
         return right;
     }
 
-    /// <summary>左右池流速倍率（一次遍历 GetBreastList，与容量判定一致：LeftBreast*/RightBreast* 或 Breast_Left/Breast_Right）。每侧 N 个乳则 N 个 fluidMultiplier 相加；两侧均为 0 时返回 0.5、0.5（50/50）。</summary>
+    /// <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。未启用或空列表时 0.5/0.5。</summary>
     public static void GetMilkFlowMultipliersFromRJW(this Pawn pawn, out float leftMultiplier, out float rightMultiplier)
     {
-        leftMultiplier = 0f;
-        rightMultiplier = 0f;
-        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled)
-        {
-            leftMultiplier = 1f;
-            rightMultiplier = 1f;
-            return;
-        }
+        leftMultiplier = 0.5f;
+        rightMultiplier = 0.5f;
+        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return;
         try
         {
             var list = pawn.GetBreastList();
-            foreach (var h in list)
+            if (list == null || list.Count == 0) return;
+            float totalMult = 0f;
+            int count = 0;
+            for (int i = 0; i < list.Count; i++)
             {
+                var h = list[i];
                 if (h?.def == null) continue;
-                string partDefName = h.Part?.def?.defName;
-                string dn = h.def.defName;
-                bool isRight = (partDefName != null && partDefName.StartsWith("RightBreast")) || (dn == "Breast_Right");
-                bool isLeft = (partDefName != null && partDefName.StartsWith("LeftBreast")) || (dn == "Breast_Left");
                 float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
-                if (isRight) rightMultiplier += mult;
-                else if (isLeft) leftMultiplier += mult;
-                else
-                {
-                    leftMultiplier += mult * 0.5f;
-                    rightMultiplier += mult * 0.5f;
-                }
+                totalMult += mult;
+                count++;
             }
-            if (leftMultiplier <= 0f && rightMultiplier <= 0f)
+            if (count > 0)
             {
-                leftMultiplier = 0.5f;
-                rightMultiplier = 0.5f;
+                leftMultiplier = totalMult;
+                rightMultiplier = totalMult;
             }
         }
         catch

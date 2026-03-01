@@ -12,13 +12,13 @@ using Verse;
 using Verse.AI;
 
 namespace MilkCum.Milk.HarmonyPatches;
-public class FillTab_Delegate
+/// <summary>无静态状态：baby 通过参数传入，避免多窗口/多线程下串值。</summary>
+public static class FillTab_Delegate
 {
-    public static Pawn baby;
     /// <summary>
-    /// Controls what to hide in auto feed ITab menu
+    /// Controls what to hide in auto feed ITab menu.
     /// </summary>
-    public static bool ShouldHideInAutoFeed(Pawn feeder)
+    public static bool ShouldHideInAutoFeed(Pawn feeder, Pawn baby)
     {
         if (feeder == null) { return true; }
         return baby == null
@@ -27,9 +27,9 @@ public class FillTab_Delegate
             || feeder.DevelopmentalStage <= DevelopmentalStage.Baby)
             && !(feeder.IsLactating() && feeder.AllowedToAutoBreastFeed(baby)));
     }
-    public static int RemoveAllHidden(List<Pawn> pawns)
+    public static int RemoveAllHidden(List<Pawn> pawns, Pawn baby)
     {
-        return pawns.RemoveAll(ShouldHideInAutoFeed);
+        return pawns.RemoveAll(p => ShouldHideInAutoFeed(p, baby));
     }
 }
 [HarmonyPatch]
@@ -40,10 +40,6 @@ public static class FillTabPatch
         return AccessTools.Method(typeof(ITab_Pawn_Feeding), nameof(ITab_Pawn_Feeding.FillTab),
             new Type[] { typeof(Pawn), typeof(Rect), typeof(Vector2).MakeByRefType(), typeof(Vector2).MakeByRefType(), typeof(List<Pawn>) });
     }
-    static void Prefix(Pawn baby)
-    {
-        FillTab_Delegate.baby = baby;
-    }
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         List<CodeInstruction> codes = new(instructions);
@@ -52,22 +48,25 @@ public static class FillTabPatch
 
         for (int i = 0; i < codes.Count; i++)
         {
-            if (codes[i].Calls(original))
-            {
-                codes[i] = new CodeInstruction(OpCodes.Call, hideInAutoFeed);
-                codes.Insert(i, new CodeInstruction(OpCodes.Pop));// Pop the original delegate out of the evaluation stack, pass the list to the custom method
+            if (!codes[i].Calls(original)) continue;
+            // 栈上应为 [list, predicate]；仅当前一指令为加载委托时替换，避免 Ludeon 改 IL 后误替换
+            if (i < 1) break;
+            CodeInstruction prev = codes[i - 1];
+            if (prev.opcode != OpCodes.Ldftn && prev.opcode != OpCodes.Ldvirtftn && prev.opcode != OpCodes.Ldnull)
                 break;
-            }
+            codes[i] = new CodeInstruction(OpCodes.Pop);
+            codes.Insert(i + 1, new CodeInstruction(OpCodes.Ldarg_0));
+            codes.Insert(i + 2, new CodeInstruction(OpCodes.Call, hideInAutoFeed));
+            break;
         }
         return codes.AsEnumerable();
     }
 
 }
+/// <summary>无静态状态：baby/feeder 通过参数传入，避免多窗口/多线程下串值。</summary>
 public static class DrawRow_Delegate
 {
-    public static Pawn baby;
-    public static Pawn feeder;
-    public static TaggedString GetLabel(AutofeedMode autofeedMode)
+    public static TaggedString GetLabel(AutofeedMode autofeedMode, Pawn baby, Pawn feeder)
     {
         if (autofeedMode == AutofeedMode.Childcare)
         {
@@ -95,32 +94,43 @@ public static class ITab_Pawn_Feeding_Patch
             __result.Label = pair.feeder.ChildcareText(pair.baby);
         }
     }
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(ITab_Pawn_Feeding.DrawRow))]
-    public static void DrawRow_Prefix(Pawn baby, Pawn feeder)
+}
+/// <summary>仅当 DrawRow 为旧版 3 参数签名 (baby, row, feeder) 时才做 Transpiler；1.6 为 6 参数 (baby, RectDivider&amp;, feeder, mother, father, surrogate) 时跳过，避免 Patching exception。</summary>
+[HarmonyPatch(typeof(ITab_Pawn_Feeding))]
+public static class ITab_Pawn_Feeding_DrawRow_Patch
+{
+    public static MethodBase TargetMethod()
     {
-        DrawRow_Delegate.baby = baby;
-        DrawRow_Delegate.feeder = feeder;
+        foreach (var m in typeof(ITab_Pawn_Feeding).GetMethods(AccessTools.all))
+        {
+            if (m.Name != nameof(ITab_Pawn_Feeding.DrawRow)) continue;
+            var ps = m.GetParameters();
+            if (ps.Length == 3 && ps[0].ParameterType == typeof(Pawn) && ps[2].ParameterType == typeof(Pawn))
+                return m;
+        }
+        return null;
     }
+
     [HarmonyTranspiler]
-    [HarmonyPatch(nameof(ITab_Pawn_Feeding.DrawRow))]
     public static IEnumerable<CodeInstruction> DrawRow_Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         List<CodeInstruction> codes = new(instructions);
         MethodInfo original = AccessTools.Method(typeof(AutoBreastfeedModeExtension), nameof(AutoBreastfeedModeExtension.Translate));
-        MethodInfo getLabel = AccessTools.Method(typeof(DrawRow_Delegate), nameof(DrawRow_Delegate.GetLabel));
+        MethodInfo getLabel = AccessTools.Method(typeof(DrawRow_Delegate), nameof(DrawRow_Delegate.GetLabel),
+            new[] { typeof(AutofeedMode), typeof(Pawn), typeof(Pawn) });
         for (int i = 0; i < codes.Count; i++)
         {
             if (codes[i].Calls(original))
             {
-                codes[i] = new CodeInstruction(OpCodes.Call, getLabel);
+                codes.Insert(i, new CodeInstruction(OpCodes.Ldarg_1));
+                codes.Insert(i, new CodeInstruction(OpCodes.Ldarg_0));
+                codes[i + 2] = new CodeInstruction(OpCodes.Call, getLabel);
                 break;
             }
         }
         return codes.AsEnumerable();
     }
 }
-[HarmonyPatch(typeof(Pawn_MindState))]
 public static class Pawn_MindState_Patch
 {
     /// <summary>

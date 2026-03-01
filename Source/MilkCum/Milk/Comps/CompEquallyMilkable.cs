@@ -216,7 +216,7 @@ public class CompEquallyMilkable : CompMilkable
         // 每 tick 同步总容量（单乳 0.5 / 双乳 (左+右Severity)/2），供满池判定与显示
         if (parent is Pawn p)
         {
-            maxFullness = Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+            maxFullness = Mathf.Max(0f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
             if (leftFullness + rightFullness > maxFullness)
                 SetFullness(maxFullness);
         }
@@ -464,7 +464,7 @@ public class CompEquallyMilkable : CompMilkable
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftF = GetFullnessForKey(leftE.Key);
                 float rightF = GetFullnessForKey(rightE.Key);
-                bool preferLeft = Pawn.gender == Gender.Male;
+                bool preferLeft = false;
                 bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && preferLeft);
                 string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
                 string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
@@ -524,13 +524,15 @@ public class CompEquallyMilkable : CompMilkable
         Building_Milking milkingSpot = (doer.jobs?.curDriver as JobDriver_EquallyMilk)?.MilkBuilding;
         if (milkingSpot != null)
             yieldFactor += milkingSpot.YieldOffset();
-        if (!Rand.Chance(yieldFactor) && parent.Map != null)
+        // AnimalGatherYield 为数量倍率（原版 1.5+），非成功概率；effectiveYield = drained × yieldFactor，上限 drained。
+        float effectiveYield = Mathf.Min(drained, drained * Mathf.Max(0f, yieldFactor));
+        int num = GenMath.RoundRandom(effectiveYield);
+        if (num <= 0 && parent.Map != null && effectiveYield < drained)
         {
             MoteMaker.ThrowText((doer.DrawPos + parent.DrawPos) / 2f, parent.Map, Lang.ProductWasted, 3.65f);
         }
-        else
+        else if (num > 0)
         {
-            int num = GenMath.RoundRandom(drained);
             pawn.LactatingHediffWithComps()?.OnGathered();
             while (num > 0)
             {
@@ -618,7 +620,7 @@ public class CompEquallyMilkable : CompMilkable
         {
             if (h.Part?.def?.defName == null) continue;
             string dn = h.Part.def.defName;
-            if (dn.Contains("Torso") || dn.Contains("Breast") || dn.Contains("Chest")) return true;
+            if (dn.StartsWith("Torso") || dn.StartsWith("Breast") || dn.StartsWith("Chest")) return true;
         }
         return false;
     }

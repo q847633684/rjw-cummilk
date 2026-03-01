@@ -59,10 +59,21 @@ public class LactationPoolState
             float remainder = totalFlow - addLeft - addRight;
             if (remainder > 1E-6f)
             {
-                float extraLeft = Mathf.Min(remainder, roomLeftBase - addLeft);
-                if (extraLeft > 0f) { addLeft += extraLeft; remainder -= extraLeft; }
-                if (remainder > 1E-6f)
-                    addRight += Mathf.Min(remainder, roomRightBase - addRight);
+                float roomLeftRemain = roomLeftBase - addLeft;
+                float roomRightRemain = roomRightBase - addRight;
+                float roomTotal = roomLeftRemain + roomRightRemain;
+                if (roomTotal > 1E-6f)
+                {
+                    float fracLeft = roomLeftRemain / roomTotal;
+                    float addLeftRemainder = Mathf.Min(remainder * fracLeft, roomLeftRemain);
+                    float addRightRemainder = Mathf.Min(remainder - addLeftRemainder, roomRightRemain);
+                    addLeft += addLeftRemainder;
+                    addRight += addRightRemainder;
+                }
+                else if (roomLeftRemain > 1E-6f)
+                    addLeft += Mathf.Min(remainder, roomLeftRemain);
+                else if (roomRightRemain > 1E-6f)
+                    addRight += Mathf.Min(remainder, roomRightRemain);
             }
         }
 
@@ -70,9 +81,9 @@ public class LactationPoolState
         float newLeft = LeftFullness + addLeft;
         float newRight = RightFullness + addRight;
 
-        // 阶段二：仅当两侧都达到基础容量时，才允许撑大（超过基础容量至 stretchCap）
+        // 阶段二：仅当两侧都达到基础容量时，才允许撑大。用入口时的 LeftFullness/RightFullness 判断，避免 newLeft/newRight 浮点偏差导致不触发 stretch。
         const float eps = 1E-5f;
-        bool bothAtBase = newLeft >= leftBaseCap - eps && newRight >= rightBaseCap - eps;
+        bool bothAtBase = LeftFullness >= leftBaseCap - eps && RightFullness >= rightBaseCap - eps;
         if (remainderAfterBase > 1E-6f && bothAtBase)
         {
             float stretchRoomLeft = Mathf.Max(0f, stretchCapLeft - newLeft);
@@ -91,7 +102,7 @@ public class LactationPoolState
         float overflowTotal = flowLeftPerTick + flowRightPerTick - addLeft - addRight;
         LeftFullness += addLeft;
         RightFullness += addRight;
-        return overflowTotal;
+        return Mathf.Max(0f, overflowTotal);
     }
 
     /// <summary>

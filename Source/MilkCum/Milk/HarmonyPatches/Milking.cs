@@ -33,22 +33,18 @@ public static class CompMilkable_Patch
 [HarmonyPatch(MethodType.Constructor)]
 public static class CompProperties_Milkable_Patch
 {
-    /// <summary>
-    /// Replace CompMilkable with CompEquallyMilkable
-    /// </summary>
-    public static bool Prefix(CompProperties_Milkable __instance)
+    /// <summary>Replace CompMilkable with CompEquallyMilkable；仅改 compClass，不阻止原构造执行，兼容未来原版/第三方构造逻辑。</summary>
+    [HarmonyPostfix]
+    public static void Postfix(CompProperties_Milkable __instance)
     {
         __instance.compClass = typeof(CompEquallyMilkable);
-        return false;
     }
 }
 
 [HarmonyPatch(typeof(ThingWithComps))]
 public static class ThingWithComps_Patch
 {
-    /// <summary>
-    /// Ensure initialization of EquallyMilkable Comp on ThingWithComps
-    /// </summary>
+    /// <summary>Ensure EquallyMilkable Comp on Pawn；ExtensionHelper.CompEquallyMilkable() 内部已 if (TryGetComp==null) AddComp，不会重复添加。</summary>
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ThingWithComps.InitializeComps))]
     public static void InitializeComps_Post(ThingWithComps __instance)
@@ -83,27 +79,6 @@ public static class Hediff_Pregnant_Patch
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
     }
 }
-[HarmonyPatch(typeof(Hediff_LaborPushing))]
-public static class Hediff_LaborPushing_Patch
-{
-    /// <summary>
-    /// Allow mother to breastfeed babies after giving birth
-    /// </summary>
-    /// <param name="__instance"></param>
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(Hediff_LaborPushing.PreRemoved))]
-    public static void PreRemoved_Postfix(Hediff_LaborPushing __instance)
-    {
-        if (__instance.pawn.IsLactating() && __instance.pawn.CompEquallyMilkable() is CompEquallyMilkable comp)
-        {
-            IEnumerable<Pawn> babies = __instance.pawn.relations.Children.Where(child => child.ageTracker.AgeBiologicalTicks < 100);
-            if (babies.Any(baby => __instance.pawn.CanBreastfeedEver(baby)))
-            {
-                // 名单空时默认子女+伴侣可吸奶，无需再设 allowBreastFeeding
-            }
-        }
-    }
-}
 [HarmonyPatch(typeof(Need_Food))]
 public static class Need_Food_Patch
 {
@@ -114,8 +89,11 @@ public static class Need_Food_Patch
     [HarmonyPatch(nameof(Need_Food.GetTipString))]
     public static void GetTipString_PostFix(Need_Food __instance, ref string __result)
     {
-        if (__instance.pawn is not Pawn pawn || !pawn.IsMilkable()) { return; }
-        __result += "\n" + Lang.HungerRate + ": ";
+        if (__instance.pawn is not Pawn pawn || !pawn.IsMilkable()) return;
+        string hungerLabel = Lang.HungerRate;
+        if (!string.IsNullOrEmpty(__result) && !string.IsNullOrEmpty(hungerLabel) && __result.Contains(hungerLabel))
+            return;
+        __result += "\n" + hungerLabel + ": ";
         HungerCategory curCategory = pawn.needs.food.CurCategory;
         if (curCategory != HungerCategory.Fed)
         {
@@ -146,7 +124,7 @@ public static class Need_Food_Patch
     }
 }
 
-/// <summary>泌乳灌满期间按 flowPerDay 施加额外饥饿，使灌满 1 池单位 = 消耗 1 营养。Patch 具体类 Need_Food.NeedInterval()，因基类 Need.NeedInterval() 为抽象无方法体。</summary>
+/// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。</summary>
 [HarmonyPatch(typeof(Need_Food))]
 [HarmonyPatch(nameof(Need_Food.NeedInterval))]
 public static class Need_NeedInterval_Patch
@@ -160,7 +138,7 @@ public static class Need_NeedInterval_Patch
         if (pawn?.health?.hediffSet == null) return;
         if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>() is not HediffComp_EqualMilkingLactating comp)
             return;
-        float flowPerDay = comp.GetFlowPerDay();
+        float flowPerDay = comp.ExtraNutritionPerDay();
         if (flowPerDay <= 0f) return;
         int basis = Mathf.Clamp(EqualMilkingSettings.lactationExtraNutritionBasis, 0, 300);
         float factor = basis / 150f;
@@ -168,6 +146,24 @@ public static class Need_NeedInterval_Patch
         __instance.CurLevel = Mathf.Max(0f, __instance.CurLevel - extraFall);
     }
 }
+
+/// <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
+[HarmonyPatch(typeof(Pawn_HealthTracker))]
+[HarmonyPatch(nameof(Pawn_HealthTracker.RemoveHediff))]
+public static class HediffSet_Remove_Patch
+{
+    [HarmonyPostfix]
+    public static void Postfix(Pawn_HealthTracker __instance, Hediff hediff)
+    {
+        if (hediff?.def != HediffDefOf.Lactating) return;
+        Pawn pawn = hediff.pawn;
+        if (pawn == null) return;
+        var comp = pawn.CompEquallyMilkable();
+        if (comp != null)
+            comp.ClearPools();
+    }
+}
+
 /// <summary>
 /// 绕过香草可挤奶比较统计条目：将 GetCompProperties&lt;CompProperties_Milkable&gt; 替换为返回 null，原版产奶行不显示；本 mod 用 RaceProperties.SpecialDisplayStats 显示产奶。
 /// </summary>
@@ -205,17 +201,19 @@ public static class AnimalProductionUtility_Patch
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         List<CodeInstruction> codes = instructions.ToList();
+        bool replacedAny = false;
         for (int i = 0; i < codes.Count; i++)
         {
             if (codes[i].Calls(getPropertiesMethod))
             {
                 codes[i].opcode = OpCodes.Call;
                 codes[i].operand = getMilkablePropertiesMethod;
-                return codes.AsEnumerable();
+                replacedAny = true;
             }
         }
-        Log.Warning("[Equal Milking] Could not find GetCompProperties<CompProperties_Milkable> in AnimalProductionUtility.AnimalProductionStats; vanilla milk stat display may apply. This is non-fatal.");
-        return instructions;
+        if (!replacedAny)
+            Log.Warning("[Equal Milking] Could not find GetCompProperties<CompProperties_Milkable> in AnimalProductionUtility.AnimalProductionStats; vanilla milk stat display may apply. This is non-fatal.");
+        return codes.AsEnumerable();
     }
 
     public static CompProperties_Milkable GetMilkableProperties(ThingDef def) => null;
@@ -330,8 +328,8 @@ public static class ProlactinAddictionPatch
         var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff == null)
             return;
-        // 耐受：本剂在 XML 中在 Lactating 之后添加，故当前已含本剂 +0.044。吃药前 t_before = 当前 - 0.044。
-        float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - 0.044f);
+        // 耐受：本剂在 XML 中在 Lactating 之后添加，故当前已含本剂 +ProlactinToleranceGainPerDose。吃药前 t_before = 当前 - 该值。
+        float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - EqualMilkingSettings.ProlactinToleranceGainPerDose);
         float rawSeverity = giveHediff.severity;
 
         // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）。TryMergeWith 已对 L 加了 rawSeverity，此处只补耐受后的增量 deltaS，故传 deltaS - rawSeverity 避免 L 重复累加。
@@ -386,7 +384,7 @@ internal static class PoolModelBirthHelper
     }
 }
 
-/// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch。</summary>
+/// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。</summary>
 public static class Hediff_TipString_BreastPool_Patch
 {
     private static bool _applied;
@@ -394,22 +392,50 @@ public static class Hediff_TipString_BreastPool_Patch
     public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
     {
         if (harmony == null || _applied) return;
-        MethodBase target = HarmonyLib.AccessTools.PropertyGetter(typeof(Hediff), "TipString");
-        if (target == null) return;
-        try
+        MethodBase tipStringGetter = HarmonyLib.AccessTools.PropertyGetter(typeof(Hediff), "TipString");
+        if (tipStringGetter != null)
         {
-            harmony.Patch(target, postfix: new HarmonyLib.HarmonyMethod(typeof(Hediff_TipString_BreastPool_Patch).GetMethod(nameof(TipString_Postfix), BindingFlags.Public | BindingFlags.Static)));
-            _applied = true;
+            try
+            {
+                harmony.Patch(tipStringGetter, postfix: new HarmonyLib.HarmonyMethod(typeof(Hediff_TipString_BreastPool_Patch).GetMethod(nameof(TipString_Postfix), BindingFlags.Public | BindingFlags.Static)));
+                _applied = true;
+            }
+            catch (System.Exception ex)
+            {
+                Verse.Log.Warning($"[MilkCum] Hediff TipString postfix not applied: {ex.Message}");
+            }
         }
-        catch (System.Exception ex)
+        if (!_applied)
         {
-            Verse.Log.Warning($"[MilkCum] Hediff TipString postfix not applied: {ex.Message}");
+            MethodBase getTipString = HarmonyLib.AccessTools.Method(typeof(Hediff), "GetTipString");
+            if (getTipString != null)
+            {
+                try
+                {
+                    harmony.Patch(getTipString, postfix: new HarmonyLib.HarmonyMethod(typeof(Hediff_TipString_BreastPool_Patch).GetMethod(nameof(GetTipString_Postfix), BindingFlags.Public | BindingFlags.Static)));
+                    _applied = true;
+                }
+                catch (System.Exception ex)
+                {
+                    Verse.Log.Warning($"[MilkCum] Hediff GetTipString postfix not applied: {ex.Message}");
+                }
+            }
         }
     }
 
     public static void TipString_Postfix(Hediff __instance, ref string __result)
     {
-        if (__instance?.pawn == null || __result == null) return;
+        AppendPoolTooltip(__instance, ref __result);
+    }
+
+    public static void GetTipString_Postfix(Hediff __instance, ref string __result)
+    {
+        AppendPoolTooltip(__instance, ref __result);
+    }
+
+    private static void AppendPoolTooltip(Hediff __instance, ref string __result)
+    {
+        if (__instance?.pawn == null) return;
         Pawn pawn = __instance.pawn;
         if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
         try
@@ -424,25 +450,10 @@ public static class Hediff_TipString_BreastPool_Patch
         foreach (var (_, fullness, capacity, isLeft) in entries)
         {
             string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
-            float cap = Mathf.Max(0.01f, capacity);
+            float cap = Mathf.Max(0f, capacity);
             parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
         }
         if (parts.Count > 0)
-            __result = __result + "\n" + string.Join(", ", parts);
-    }
-}
-
-/// <summary>健康页与列表中乳房 hediff 显示为「父级 + 当前」：如「乳房 左乳」「乳房 右乳」，便于区分自然乳与液压乳等。仅对 Breast_Left/Breast_Right 追加父级标签。</summary>
-[HarmonyPatch(typeof(Hediff), nameof(Hediff.LabelCap), MethodType.Getter)]
-public static class Hediff_LabelCap_BreastParent_Patch
-{
-    public static void Postfix(Hediff __instance, ref string __result)
-    {
-        if (__instance?.def == null || string.IsNullOrEmpty(__result)) return;
-        string dn = __instance.def.defName;
-        if (dn != "Breast_Left" && dn != "Breast_Right") return;
-        string parent = "EM.BreastParentLabel".Translate();
-        if (string.IsNullOrEmpty(parent)) parent = "Breasts";
-        __result = parent + " " + __result;
+            __result = (__result ?? "") + "\n" + string.Join(", ", parts);
     }
 }

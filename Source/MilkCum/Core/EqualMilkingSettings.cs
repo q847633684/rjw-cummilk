@@ -71,6 +71,8 @@ internal class EqualMilkingSettings : ModSettings
 	public static float baselineMilkDurationDays = 5f;
 	// 基准泌乳持续天数（出生诱发）：参与 L 衰减计算，单次剂量 L≈0.5 时剩余天数 ≈ 本值；默认 10，改为 15 可得约 15 日。
 	public static float birthInducedMilkDurationDays = 10f;
+	/// <summary>催乳素单剂在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 同剂叠加一致，默认 0.044）；改 XML 时需同步。</summary>
+	public static float ProlactinToleranceGainPerDose = 0.044f;
 
 	/// <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
 	public static float GetEffectiveBaseValueTForDecay()

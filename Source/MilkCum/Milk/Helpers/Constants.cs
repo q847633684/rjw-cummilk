@@ -32,4 +32,6 @@ public static class PoolModelConstants
     public const float ShrinkPerStep = 0.009f;
     /// <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
     public const float DoseToLFactor = 1f;
+    /// <summary>1 池单位对应的营养：ExtraNutritionPerDay = flow × 本值；改池容量或 L 单位时只改此处即可保持平衡。</summary>
+    public const float NutritionPerPoolUnit = 1f;
 }

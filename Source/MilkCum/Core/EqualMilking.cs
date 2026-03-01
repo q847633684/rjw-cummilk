@@ -41,10 +41,23 @@ public static class EqualMilking
             if (type == null) continue;
             if (type.FullName == skipTypeFullName) continue;
             if (type == typeof(Hediff_TipString_BreastPool_Patch)) continue;
-            if (type.GetCustomAttribute<HarmonyPatch>(false) == null) continue;
+            bool hasHarmonyPatch;
+            try
+            {
+                hasHarmonyPatch = type.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0;
+            }
+            catch (AmbiguousMatchException)
+            {
+                hasHarmonyPatch = true;
+            }
+            if (!hasHarmonyPatch) continue;
             try
             {
                 new PatchClassProcessor(harmony, type).Patch();
+            }
+            catch (AmbiguousMatchException)
+            {
+                Log.Warning($"[MilkCum] Type {type.FullName} has multiple [HarmonyPatch] attributes; PatchClassProcessor does not support that. Skipping auto patch for this type.");
             }
             catch (Exception ex)
             {
