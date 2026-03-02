@@ -138,6 +138,7 @@
     <EM.PoolRightBreast>Right</EM.PoolRightBreast>
     <EM.BreastParentLabel>Breasts</EM.BreastParentLabel>
     <EM.PoolTotalMilkCapacity>Milk: {0} / Capacity: {1}</EM.PoolTotalMilkCapacity>
+    <EM.MilkQuality>Milk quality: {0}</EM.MilkQuality>
     <EM.AbsorptionDelayRemaining>Time remaining: {0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} minutes</EM.AbsorptionDelayMinutes>
     <EM.AbsorptionDelayHours>{0} hours</EM.AbsorptionDelayHours>

@@ -136,6 +136,7 @@
     <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
     <EM.BreastParentLabel>乳房</EM.BreastParentLabel>
     <EM.PoolTotalMilkCapacity>奶量：{0} / 容量：{1}</EM.PoolTotalMilkCapacity>
+    <EM.MilkQuality>乳汁质量：{0}</EM.MilkQuality>
     <EM.AbsorptionDelayRemaining>剩余时间：{0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} 分钟</EM.AbsorptionDelayMinutes>
     <EM.AbsorptionDelayHours>{0} 小时</EM.AbsorptionDelayHours>

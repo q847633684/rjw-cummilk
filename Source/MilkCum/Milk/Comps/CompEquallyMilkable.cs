@@ -60,6 +60,8 @@ public class CompEquallyMilkable : CompMilkable
     private int ticksFullPool;
     /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏。</summary>
     private int lastFullPoolLetterTick = -1;
+    /// <summary>四层模型（阶段3.2）：组织适应导致的容量增量 ≥0，maxFullness = 基础容量 + 本值。</summary>
+    private float capacityAdaptation;
     /// <summary>2.3：药物泌乳状态缓存，每 30 tick 仅状态变化时增删 EM_DrugLactationBurden/EM_LactatingGain，减少重复查找。</summary>
     private bool cachedWasLactatingWithDrugInduced = false;
     private bool cachedGainConditionsMet = false;
@@ -106,6 +108,7 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref lastGatheredTick, "PoolLastGatheredTick", -1);
         Scribe_Values.Look(ref ticksFullPool, "PoolTicksFull", 0);
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
+        Scribe_Values.Look(ref capacityAdaptation, "EM.CapacityAdaptation", 0f);
         List<string> breastKeys = (Scribe.mode == LoadSaveMode.Saving && breastFullness != null)
             ? breastFullness.Keys.ToList()
             : new List<string>();
@@ -238,7 +241,19 @@ public class CompEquallyMilkable : CompMilkable
         // 每 tick 同步总容量（单乳 0.5 / 双乳 (左+右Severity)/2），供满池判定与显示
         if (parent is Pawn p)
         {
-            maxFullness = Mathf.Max(0f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+            float baseMax = Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+            if (EqualMilkingSettings.enableTissueAdaptation)
+            {
+                float effectiveMax = baseMax + capacityAdaptation;
+                float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
+                float step = 30f / 60000f; // 每 30 tick = 0.0005 游戏日
+                float theta = Mathf.Max(0f, EqualMilkingSettings.adaptationTheta);
+                float omega = Mathf.Max(0f, EqualMilkingSettings.adaptationOmega);
+                capacityAdaptation += step * (theta * Mathf.Max(P - 0.85f, 0f) - omega * (1f - P));
+                float capMax = baseMax * Mathf.Clamp(EqualMilkingSettings.adaptationCapMaxRatio, 0f, 1f);
+                capacityAdaptation = Mathf.Clamp(capacityAdaptation, 0f, capMax);
+            }
+            maxFullness = baseMax + capacityAdaptation;
             if (leftFullness + rightFullness > maxFullness)
                 SetFullness(maxFullness);
         }
@@ -318,7 +333,8 @@ public class CompEquallyMilkable : CompMilkable
         float currentLactation = lactatingComp.CurrentLactationAmount;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
-        float basePerDay = currentLactation * hungerFactor
+        float drive = EqualMilkingSettings.GetEffectiveDrive(currentLactation);
+        float basePerDay = drive * hungerFactor
             * Pawn.GetMilkFlowMultiplierFromConditions()
             * Pawn.GetMilkFlowMultiplierFromGenes()
             * EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
@@ -326,11 +342,33 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 30f;
-        // 方案 B：满池后不再进水，与不扣饱食度一致，避免无能量来源的产奶/溢出。
-        // 回缩阶段不会重新进水：回缩公式只把每侧向 e.Capacity 靠拢，不会低于 e.Capacity，故 Fullness 始终 ≥ maxFullness，本条件一直成立，不会出现「进水→满→回缩→又进水」循环；只有挤奶/吸奶扣减后才会 Fullness < maxFullness 再进水。
         SyncLeftRightFromBreastFullness();
-        if (Fullness >= maxFullness)
+        // 四层模型：压力软抑制 或 原方案 B 硬停
+        if (EqualMilkingSettings.enablePressureFactor)
+        {
+            float maxF = Mathf.Max(0.001f, maxFullness);
+            flowPerTickScale *= EqualMilkingSettings.GetPressureFactor(Fullness / maxF);
+        }
+        else if (Fullness >= maxFullness)
+        {
             flowPerTickScale = 0f;
+        }
+        // 四层模型：喷乳反射 R，每 30 tick 衰减
+        if (EqualMilkingSettings.enableLetdownReflex)
+        {
+            float r = lactatingComp.GetLetdownReflex();
+            flowPerTickScale *= r;
+            lactatingComp.DecayLetdownReflex(30f / 60f); // Δt = 30 tick = 0.5 分钟
+        }
+        // 四层模型：炎症 I 离散更新（每 30 tick，Δt = 30/3600 小时）
+        if (EqualMilkingSettings.enableInflammationModel)
+        {
+            float maxF = Mathf.Max(0.001f, maxFullness);
+            lactatingComp.UpdateInflammation(Fullness / maxF, 30f / 3600f);
+            lactatingComp.TryTriggerMastitisFromInflammation();
+        }
+        if (EqualMilkingSettings.enableToleranceDynamic)
+            lactatingComp.UpdateToleranceDynamic(currentLactation, 30f / 60000f);
         var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
         foreach (var group in byPair)
         {
@@ -685,7 +723,7 @@ public class CompEquallyMilkable : CompMilkable
             Pawn.health.AddHediff(EMDefOf.EM_Mastitis, Pawn.GetBreastOrChestPart());
     }
 
-    private static bool HasTorsoOrBreastInjury(Pawn pawn)
+    public static bool HasTorsoOrBreastInjury(Pawn pawn)
     {
         if (pawn?.health?.hediffSet?.hediffs == null) return false;
         foreach (var h in pawn.health.hediffSet.hediffs)

@@ -67,6 +67,12 @@ internal class EqualMilkingSettings : ModSettings
 	public static float hygieneRiskMultiplier { get => Risk.hygieneRiskMultiplier; set => Risk.hygieneRiskMultiplier = value; }
 	public static bool allowToleranceAffectMilk { get => Risk.allowToleranceAffectMilk; set => Risk.allowToleranceAffectMilk = value; }
 	public static float toleranceFlowImpactExponent { get => Risk.toleranceFlowImpactExponent; set => Risk.toleranceFlowImpactExponent = value; }
+	// 耐受动态 dE/dt = μ·L − ν·E：启用时用 mod 维护的 E 计算 E_tol（流速/衰减），替代仅用游戏内耐受严重度 t。
+	public static bool enableToleranceDynamic = true;
+	/// <summary>耐受累积率 μ（每游戏日）；L 高则 E 上升。</summary>
+	public static float toleranceDynamicMu = 0.03f;
+	/// <summary>耐受衰减率 ν（每游戏日）；E 自然回落。</summary>
+	public static float toleranceDynamicNu = 0.08f;
 	public static float mastitisMtbDaysMultiplierHumanlike { get => Risk.mastitisMtbDaysMultiplierHumanlike; set => Risk.mastitisMtbDaysMultiplierHumanlike = value; }
 	public static float mastitisMtbDaysMultiplierAnimal { get => Risk.mastitisMtbDaysMultiplierAnimal; set => Risk.mastitisMtbDaysMultiplierAnimal = value; }
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
@@ -87,6 +93,29 @@ internal class EqualMilkingSettings : ModSettings
 		if (denom <= 0.01f) return 100f;
 		return 1f / denom;
 	}
+	/// <summary>四层模型：压力因子 PressureFactor(P)=1/(1+exp(b×(P−Pc)))。P 接近 Pc 时流速平滑下降，未启用时返回 1。</summary>
+	public static float GetPressureFactor(float P)
+	{
+		if (!enablePressureFactor || P <= 0f) return 1f;
+		float b = Mathf.Clamp(pressureFactorB, 1f, 80f);
+		float pc = Mathf.Clamp(pressureFactorPc, 0.5f, 1f);
+		return 1f / (1f + Mathf.Exp(b * (P - pc)));
+	}
+	/// <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
+	public static float GetEffectiveDrive(float L)
+	{
+		if (!enableHormoneSaturation || L <= 0f) return L;
+		float a = Mathf.Clamp(hormoneSaturationA, 0.1f, 3f);
+		float H = 1f - Mathf.Exp(-a * L);
+		float lRef = Mathf.Max(0f, hormoneSaturationLRef);
+		if (lRef >= 0.01f)
+		{
+			float denom = 1f - Mathf.Exp(-a * lRef);
+			if (denom >= 1E-6f)
+				H /= denom;
+		}
+		return L * H;
+	}
 	// 挤奶工作：是否优先选择满度更高的目标（殖民者会先挤更满的）
 	public static bool aiPreferHighFullnessTargets = true;
 	// 种族覆盖：白名单（defName 在此列表中视为可产奶）、黑名单（defName 在此列表中视为不可产奶）
@@ -94,6 +123,49 @@ internal class EqualMilkingSettings : ModSettings
 	public static List<string> raceCannotLactate = new();
 	// 人形种族默认流速倍率（2 = 单次剂量约 1 日灌满；与 RJW/种族 mod 平衡时也可调）
 	public static float defaultFlowMultiplierForHumanlike = 2f;
+	// 四层模型（阶段1）：压力软抑制。启用时流速乘 PressureFactor(P)，P=Fullness/maxFullness，满前平滑降速而非硬停。
+	public static bool enablePressureFactor = true;
+	public static float pressureFactorPc = 0.9f;
+	public static float pressureFactorB = 30f;
+	// 四层模型（阶段1）：喷乳反射 R。启用时流速乘 R；R 每 30 tick 指数衰减，挤奶/吸奶时升高。
+	public static bool enableLetdownReflex = true;
+	/// <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
+	public static float letdownReflexDecayLambda = 0.03f;
+	/// <summary>挤奶/吸奶时 R 的增量 ΔR，Clamp 后 R≤1。</summary>
+	public static float letdownReflexStimulusDeltaR = 0.45f;
+	// 四层模型（阶段2）：炎症 I(t)。启用时每 30 tick 更新 I；I>I_crit 触发乳腺炎；L 衰减加 η·I。
+	public static bool enableInflammationModel = true;
+	public static float inflammationAlpha = 0.1f;
+	public static float inflammationBeta = 0.15f;
+	public static float inflammationGamma = 0.2f;
+	public static float inflammationRho = 0.05f;
+	public static float inflammationCrit = 1f;
+	/// <summary>炎症对 L 衰减的抑制因子 η：D += η·I。</summary>
+	public static float lactationDecayInflammationEta = 0.1f;
+	// 四层模型（阶段2）：挤奶/吸奶时 L 微幅刺激（带上限，防无限循环）。
+	public static float milkingLStimulusPerEvent = 0.03f;
+	public static float milkingLStimulusCapPerEvent = 0.05f;
+	public static float milkingLStimulusCapPerDay = 0.2f;
+	// 四层模型（阶段3）：激素饱和 H(L)=1−exp(−a·L)，D_eff=L·H(L)。启用时流速由 D_eff 驱动，低 L 低产、高 L 饱和。
+	public static bool enableHormoneSaturation = true;
+	/// <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
+	public static float hormoneSaturationA = 1f;
+	/// <summary>参考 L 归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，使尾期更平滑；≤0 时不归一。</summary>
+	public static float hormoneSaturationLRef = 1f;
+	// 四层模型（阶段3.2）：组织适应。长期高 P 扩容、长期低 P 回缩；dF_max/dt = θ·max(P−0.85,0) − ω·(1−P)，每 30 tick 更新，叠加到基础容量上。
+	public static bool enableTissueAdaptation = true;
+	/// <summary>扩容率 θ（每游戏日）；P>0.85 时容量增加。</summary>
+	public static float adaptationTheta = 0.002f;
+	/// <summary>回缩率 ω（每游戏日）；P<1 时容量减少。</summary>
+	public static float adaptationOmega = 0.001f;
+	/// <summary>适应容量上限：不超过基础容量的此比例（如 0.2=20%）。</summary>
+	public static float adaptationCapMaxRatio = 0.2f;
+	// 四层模型（阶段3.3）：乳汁质量 MilkQuality = f(Hunger, I)。启用时：质量高→乳腺炎阈值提高；可选在 UI 显示。
+	public static bool enableMilkQuality = true;
+	/// <summary>炎症对质量的抑制系数；质量 ∝ (1 − 本值×I)，I 大则质量降。</summary>
+	public static float milkQualityInflammationWeight = 0.5f;
+	/// <summary>质量对乳腺炎阈值的保护系数；有效 I_crit = I_crit×(1 + 本值×MilkQuality)。</summary>
+	public static float milkQualityProtectionFactor = 0.5f;
 	// 3.3 满池事件：满池过久（约 1 天）时是否发信提醒
 	public static bool enableFullPoolLetter = true;
 	// 3.3 动物差异化：种族 defName 对应药物进水倍率（未列出的种族为 1）。与参数联动表一致。
@@ -186,6 +258,9 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref _risk.hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
 		Scribe_Values.Look(ref _risk.allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
 		Scribe_Values.Look(ref _risk.toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
+		Scribe_Values.Look(ref enableToleranceDynamic, "EM.EnableToleranceDynamic", true);
+		Scribe_Values.Look(ref toleranceDynamicMu, "EM.ToleranceDynamicMu", 0.03f);
+		Scribe_Values.Look(ref toleranceDynamicNu, "EM.ToleranceDynamicNu", 0.08f);
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
@@ -195,6 +270,32 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
 		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 2f);
+		Scribe_Values.Look(ref enablePressureFactor, "EM.EnablePressureFactor", true);
+		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.9f);
+		Scribe_Values.Look(ref pressureFactorB, "EM.PressureFactorB", 30f);
+		Scribe_Values.Look(ref enableLetdownReflex, "EM.EnableLetdownReflex", true);
+		Scribe_Values.Look(ref letdownReflexDecayLambda, "EM.LetdownReflexDecayLambda", 0.03f);
+		Scribe_Values.Look(ref letdownReflexStimulusDeltaR, "EM.LetdownReflexStimulusDeltaR", 0.45f);
+		Scribe_Values.Look(ref enableInflammationModel, "EM.EnableInflammationModel", true);
+		Scribe_Values.Look(ref inflammationAlpha, "EM.InflammationAlpha", 0.1f);
+		Scribe_Values.Look(ref inflammationBeta, "EM.InflammationBeta", 0.15f);
+		Scribe_Values.Look(ref inflammationGamma, "EM.InflammationGamma", 0.2f);
+		Scribe_Values.Look(ref inflammationRho, "EM.InflammationRho", 0.05f);
+		Scribe_Values.Look(ref inflammationCrit, "EM.InflammationCrit", 1f);
+		Scribe_Values.Look(ref lactationDecayInflammationEta, "EM.LactationDecayInflammationEta", 0.1f);
+		Scribe_Values.Look(ref milkingLStimulusPerEvent, "EM.MilkingLStimulusPerEvent", 0.03f);
+		Scribe_Values.Look(ref milkingLStimulusCapPerEvent, "EM.MilkingLStimulusCapPerEvent", 0.05f);
+		Scribe_Values.Look(ref milkingLStimulusCapPerDay, "EM.MilkingLStimulusCapPerDay", 0.2f);
+		Scribe_Values.Look(ref enableHormoneSaturation, "EM.EnableHormoneSaturation", true);
+		Scribe_Values.Look(ref hormoneSaturationA, "EM.HormoneSaturationA", 1f);
+		Scribe_Values.Look(ref hormoneSaturationLRef, "EM.HormoneSaturationLRef", 1f);
+		Scribe_Values.Look(ref enableTissueAdaptation, "EM.EnableTissueAdaptation", true);
+		Scribe_Values.Look(ref adaptationTheta, "EM.AdaptationTheta", 0.002f);
+		Scribe_Values.Look(ref adaptationOmega, "EM.AdaptationOmega", 0.001f);
+		Scribe_Values.Look(ref adaptationCapMaxRatio, "EM.AdaptationCapMaxRatio", 0.2f);
+		Scribe_Values.Look(ref enableMilkQuality, "EM.EnableMilkQuality", true);
+		Scribe_Values.Look(ref milkQualityInflammationWeight, "EM.MilkQualityInflammationWeight", 0.5f);
+		Scribe_Values.Look(ref milkQualityProtectionFactor, "EM.MilkQualityProtectionFactor", 0.5f);
 		Scribe_Values.Look(ref enableFullPoolLetter, "EM.EnableFullPoolLetter", true);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
@@ -726,11 +827,27 @@ internal class EqualMilkingSettings : ModSettings
 	internal static float GetProlactinTolerance(Pawn pawn)
 		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
 
-	/// <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。</summary>
+	/// <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。启用耐受动态时由 comp 的 E 计算。</summary>
 	internal static float GetProlactinToleranceFactor(Pawn pawn)
 	{
+		if (!allowToleranceAffectMilk) return 1f;
+		if (enableToleranceDynamic && pawn != null)
+		{
+			var lactating = pawn.LactatingHediffWithComps();
+			var comp = lactating?.TryGetComp<HediffComp_EqualMilkingLactating>();
+			if (comp != null)
+				return GetProlactinToleranceFactorFromE(comp.GetEffectiveToleranceE());
+		}
 		float t = GetProlactinTolerance(pawn);
 		return GetProlactinToleranceFactor(t);
+	}
+
+	/// <summary>耐受动态：由 mod 维护的 E 得到 E_tol = [max(1−E, 0.05)]^exponent。</summary>
+	internal static float GetProlactinToleranceFactorFromE(float E)
+	{
+		if (!allowToleranceAffectMilk) return 1f;
+		float e = Mathf.Max(1f - Mathf.Clamp01(E), PoolModelConstants.EffectiveDrugFactorMin);
+		return Mathf.Pow(e, Mathf.Clamp(toleranceFlowImpactExponent, 0.1f, 3f));
 	}
 
 	/// <summary>统一耐受系数（按严重度 t）：E_tol(t) = [max(1 − t, 0.05)]^exponent；allowToleranceAffectMilk 关闭时恒为 1。</summary>
