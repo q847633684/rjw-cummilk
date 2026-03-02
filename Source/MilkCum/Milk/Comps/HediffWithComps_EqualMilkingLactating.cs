@@ -73,20 +73,21 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         int count = maxSteps * 2;
         if (hediffStages == null || hediffStages.Length != count)
             hediffStages = new HediffStage[count];
+        bool isPermanent = this.TryGetComp<HediffComp_EqualMilkingLactating>()?.IsPermanentLactation ?? false;
         for (int i = 0; i < maxSteps; i++)
         {
             float severity = (float)i / SeverityStepsPerUnit;
-            GenStage(ref hediffStages[i * 2], severity, false);
-            GenStage(ref hediffStages[i * 2 + 1], severity, true);
+            GenStage(ref hediffStages[i * 2], severity, false, isPermanent);
+            GenStage(ref hediffStages[i * 2 + 1], severity, true, isPermanent);
         }
         this.vanillaStage = new HediffStage { fertilityFactor = 0.05f };
     }
-    /// <summary>Stage formulas use float severity; 增益已改为独立 hediff EM_LactatingGain。</summary>
-    private void GenStage(ref HediffStage stage, float severity, bool isFull)
+    /// <summary>Stage 名（括号内）：仅当真正不衰减时显示「永久」，否则留空；具体「天数：X」在 CompLabelInBracketsExtra 动态显示。</summary>
+    private void GenStage(ref HediffStage stage, float severity, bool isFull, bool isPermanentLactation)
     {
         if (stage == null) { stage = new HediffStage(); }
         int severityInt = Mathf.FloorToInt(severity);
-        if (severityInt >= 1) { stage.label = Lang.Permanent + " x" + severityInt.ToString(); }
+        if (severityInt >= 1) { stage.label = isPermanentLactation ? Lang.Permanent : ""; }
         else { stage.label = ""; }
         float mult = EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack;
         // 额外饥饿/能量改为由 ExtraNutritionPerDay/GetFlowPerDay 与 Need_Food/Need 补丁 1:1 施加，此处不再用 offset 增加饥饿
@@ -118,6 +119,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
 {
     /// <summary>水池模型（L 驱动）：当前泌乳量 L。唯一状态量；每日衰减 = 1/(B_T×E)+k×L；泌乳结束 L≤0。</summary>
     private float currentLactationAmount;
+    /// <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名。</summary>
+    private bool cachedWasPermanentLactation;
 
     public CompEquallyMilkable CompEquallyMilkable => this.Pawn.CompEquallyMilkable();
     public HediffWithComps_EqualMilkingLactating Parent => (HediffWithComps_EqualMilkingLactating)this.parent;
@@ -147,6 +150,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     }
     /// <summary>当前泌乳量 L（规格：基础值 = 总容量，归一化 1）。</summary>
     public float CurrentLactationAmount => currentLactationAmount;
+
+    /// <summary>是否为永久泌乳（基因或动物设置）：L 不衰减；括号阶段名与悬停「剩余时间」均据此显示「永久」。</summary>
+    public bool IsPermanentLactation =>
+        Pawn.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true
+        || (EqualMilkingSettings.femaleAnimalAdultAlwaysLactating && Pawn.IsAdultFemaleAnimalOfColony());
 
     public override void CompExposeData()
     {
@@ -215,10 +223,16 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             {
                 if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
                     currentLactationAmount = PoolModelConstants.BaseValueTBirth;
+                if (!cachedWasPermanentLactation)
+                {
+                    cachedWasPermanentLactation = true;
+                    Parent.SetDirty();
+                }
                 // 不衰减 L，池满时流速=0 但 L 保持，池空后流速自然恢复
             }
             else
             {
+                cachedWasPermanentLactation = false;
                 float step = 200f / 60000f;
                 float dailyDecay = GetDailyLactationDecay(currentLactationAmount) * step;
                 currentLactationAmount = Mathf.Max(0f, currentLactationAmount - dailyDecay);
@@ -255,12 +269,12 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float flow = GetFlowPerDay();
         return flow * EqualMilkingSettings.nutritionToEnergyFactor;
     }
-    /// <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。左/右池流速按侧计算；总池满(Charge≥maxF)时返回 0。按侧满池限制在 CompEquallyMilkable 与 LactationPoolState.TickGrowth 内处理，满侧不再进水、富余流量进另一侧。</summary>
+    /// <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。左/右池流速按侧计算；总池满(Fullness≥maxF)时返回 0（仅用于饱食度扣除与界面显示，池子进水仍由 CompEquallyMilkable.UpdateMilkPools 每 30 tick 执行，不依赖本方法）。使用当前 Fullness 而非 Charge，避免 NeedInterval 先于 CompPostTick 执行时仍扣饱食度。</summary>
     internal float GetFlowPerDay()
     {
         if (CompEquallyMilkable == null) return 0f;
         float maxF = CompEquallyMilkable.maxFullness;
-        if (Charge >= maxF) return 0f;
+        if (CompEquallyMilkable.Fullness >= maxF) return 0f;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactationAmount <= 0f || hungerFactor <= 0f) return 0f;
         float basePerDay = currentLactationAmount * hungerFactor
@@ -308,9 +322,12 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lines.Add("EM.PoolTotalMilkCapacity".Translate(
                     totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                     maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-                lines.Add("EM.PoolRemainingDays".Translate() + ": " + RemainingDays.ToString("F1"));
+                lines.Add("EM.PoolRemainingDays".Translate() + ": " + (IsPermanentLactation ? Lang.Permanent : RemainingDays.ToString("F1")));
                 float flowPerDay = GetFlowPerDay();
                 lines.Add("EM.MilkFlowPerDay".Translate(flowPerDay.ToStringPercent()));
+                float reabsorbed = CompEquallyMilkable.GetReabsorbedNutritionPerDay();
+                if (reabsorbed > 0f)
+                    lines.Add("EM.ReabsorbedNutritionPerDay".Translate(reabsorbed.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 // 可产物品数 = MilkAmount()×Fullness：池满度（0~maxFullness）× 每池单位产奶量（由 EM_Milk_Amount_Factor 等决定），例 0.92 池 × 约 5.54/池 ≈ 5.1 份人奶
                 if (Pawn.MilkDef() != null)
                     lines.Add(Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * CompEquallyMilkable.Fullness).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
@@ -328,8 +345,9 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         get
         {
             float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
-            var s = base.CompLabelInBracketsExtra + Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent();
-            return s;
+            float fullness = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : Charge;
+            string head = IsPermanentLactation ? "，" : ("EM.PoolDaysPrefix".Translate() + RemainingDays.ToString("F1") + "，");
+            return base.CompLabelInBracketsExtra + head + Lang.MilkFullness + ": " + (fullness / maxF).ToStringPercent();
         }
     }
     public override string CompDebugString()

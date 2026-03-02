@@ -74,6 +74,29 @@ public class CompEquallyMilkable : CompMilkable
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
+    /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 30 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
+    public float GetReabsorbedNutritionPerDay()
+    {
+        if (!EqualMilkingSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
+        var entries = Pawn.GetBreastPoolEntries();
+        if (entries == null || entries.Count == 0) return 0f;
+        float healthPercent = 1f;
+        if (Pawn.health?.summaryHealth != null)
+            healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
+        float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
+        float reabsorbedPoolPer30Tick = 0f;
+        foreach (var e in entries)
+        {
+            if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
+            if (cur > e.Capacity)
+                reabsorbedPoolPer30Tick += (cur - e.Capacity) * (1f - shrinkFactor);
+        }
+        if (reabsorbedPoolPer30Tick <= 0f) return 0f;
+        float reabsorbedPoolPerDay = reabsorbedPoolPer30Tick * (60000f / 30f);
+        return reabsorbedPoolPerDay * PoolModelConstants.NutritionPerPoolUnit
+            * Mathf.Clamp01(EqualMilkingSettings.reabsorbNutritionEfficiency);
+    }
+
     public override void PostExposeData()
     {
         base.PostExposeData();
@@ -288,7 +311,7 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。双池流速=左+右；溢出、回缩（含健康度系数），更新满池计数。</summary>
+    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。满池后不再进水（flow=0），与 GetFlowPerDay 返回 0 一致，能量有据；回缩仍执行，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffWithComps()?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
@@ -304,6 +327,11 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 30f;
+        // 方案 B：满池后不再进水，与不扣饱食度一致，避免无能量来源的产奶/溢出。
+        // 回缩阶段不会重新进水：回缩公式只把每侧向 e.Capacity 靠拢，不会低于 e.Capacity，故 Fullness 始终 ≥ maxFullness，本条件一直成立，不会出现「进水→满→回缩→又进水」循环；只有挤奶/吸奶扣减后才会 Fullness < maxFullness 再进水。
+        SyncLeftRightFromBreastFullness();
+        if (Fullness >= maxFullness)
+            flowPerTickScale = 0f;
         var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
         foreach (var group in byPair)
         {

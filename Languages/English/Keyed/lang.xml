@@ -123,8 +123,12 @@
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
+    <EM.PoolDaysPrefix>Days: </EM.PoolDaysPrefix>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
+    <EM.ReabsorbedNutritionPerDay>Reabsorbed (pool shrinking): +{0} nutrition/day</EM.ReabsorbedNutritionPerDay>
+    <EM.ReabsorbNutritionEnabled>Reabsorb nutrition when pool shrinks (add to food need)</EM.ReabsorbNutritionEnabled>
+    <EM.ReabsorbNutritionEfficiencyLabel>Reabsorb efficiency: {0}</EM.ReabsorbNutritionEfficiencyLabel>
     <EM.PoolLeftBreast>Left</EM.PoolLeftBreast>
     <EM.PoolRightBreast>Right</EM.PoolRightBreast>
     <EM.BreastParentLabel>Breasts</EM.BreastParentLabel>

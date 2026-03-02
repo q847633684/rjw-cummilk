@@ -43,6 +43,11 @@
   <!-- 催乳素耐受 tooltip 后备 -->
   <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
 
+  <!-- 基因描述（已改为 Def 内嵌英文，此处保留中文键供后续扩展；游戏内基因说明现显示 Def 内 description） -->
+  <EM_Gene_EM_Lactation_Enhanced_description>该基因的携带者的产奶能力得到增强</EM_Gene_EM_Lactation_Enhanced_description>
+  <EM_Gene_EM_Lactation_Poor_description>该基因的携带者的产奶能力较弱</EM_Gene_EM_Lactation_Poor_description>
+  <EM_Gene_EM_Permanent_Lactation_description>该基因的携带者能持续不断产奶</EM_Gene_EM_Permanent_Lactation_description>
+
   <!-- 泌乳状态提示 -->
   <LactatingStoppedBecauseFull>已满，暂停产奶。</LactatingStoppedBecauseFull>
   <LactatingStoppedBecauseHungry>饥饿，暂停产奶。</LactatingStoppedBecauseHungry>

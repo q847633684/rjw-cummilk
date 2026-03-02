@@ -122,8 +122,12 @@
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
+    <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
     <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>产奶效率：{0}/天</EM.MilkFlowPerDay>
+    <EM.ReabsorbedNutritionPerDay>回缩吸收：+{0} 营养/天</EM.ReabsorbedNutritionPerDay>
+    <EM.ReabsorbNutritionEnabled>回缩时吸收营养（补充饱食度）</EM.ReabsorbNutritionEnabled>
+    <EM.ReabsorbNutritionEfficiencyLabel>回缩吸收效率：{0}</EM.ReabsorbNutritionEfficiencyLabel>
     <EM.PoolLeftBreast>左乳</EM.PoolLeftBreast>
     <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
     <EM.BreastParentLabel>乳房</EM.BreastParentLabel>

@@ -124,7 +124,7 @@ public static class Need_Food_Patch
     }
 }
 
-/// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。</summary>
+/// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。</summary>
 [HarmonyPatch(typeof(Need_Food))]
 [HarmonyPatch(nameof(Need_Food.NeedInterval))]
 public static class Need_NeedInterval_Patch
@@ -138,12 +138,27 @@ public static class Need_NeedInterval_Patch
         if (pawn?.health?.hediffSet == null) return;
         if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>() is not HediffComp_EqualMilkingLactating comp)
             return;
-        float flowPerDay = comp.ExtraNutritionPerDay();
-        if (flowPerDay <= 0f) return;
+        var milkable = pawn.CompEquallyMilkable();
+        if (milkable == null) return;
         int basis = Mathf.Clamp(EqualMilkingSettings.lactationExtraNutritionBasis, 0, 300);
         float factor = basis / 150f;
-        float extraFall = flowPerDay * factor * (NeedTicksInterval / 60000f);
-        __instance.CurLevel = Mathf.Max(0f, __instance.CurLevel - extraFall);
+        // 产奶额外扣饱食度（池未满时）
+        if (milkable.Fullness < milkable.maxFullness)
+        {
+            float flowPerDay = comp.ExtraNutritionPerDay();
+            if (flowPerDay > 0f)
+            {
+                float extraFall = flowPerDay * factor * (NeedTicksInterval / 60000f);
+                __instance.CurLevel = Mathf.Max(0f, __instance.CurLevel - extraFall);
+            }
+        }
+        // 回缩吸收：满池回缩时未溢出部分折算为营养，加回饱食度
+        float reabsorbedPerDay = milkable.GetReabsorbedNutritionPerDay();
+        if (reabsorbedPerDay > 0f)
+        {
+            float reabsorbedPerInterval = reabsorbedPerDay * factor * (NeedTicksInterval / 60000f);
+            __instance.CurLevel = Mathf.Min(__instance.MaxLevel, __instance.CurLevel + reabsorbedPerInterval);
+        }
     }
 }
 
@@ -384,7 +399,7 @@ internal static class PoolModelBirthHelper
     }
 }
 
-/// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。</summary>
+/// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。健康页实际使用 HealthCardUtility.GetTooltip 与 TipStringExtra，故同时 Patch GetTooltip 确保悬停能显示。</summary>
 public static class Hediff_TipString_BreastPool_Patch
 {
     private static bool _applied;
@@ -455,5 +470,34 @@ public static class Hediff_TipString_BreastPool_Patch
         }
         if (parts.Count > 0)
             __result = (__result ?? "") + "\n" + string.Join(", ", parts);
+    }
+}
+
+/// <summary>健康页悬停由 HealthCardUtility.GetTooltip 构建（使用 TipStringExtra），不是 Hediff.TipString。本 Patch 在该方法返回的 tooltip 后追加「左乳：x/x，右乳：x/x」。</summary>
+[HarmonyPatch(typeof(HealthCardUtility), "GetTooltip")]
+public static class HealthCardUtility_GetTooltip_BreastPool_Patch
+{
+    public static void Postfix(ref string __result, IEnumerable<Hediff> diffs, Pawn pawn, BodyPartRecord part)
+    {
+        if (pawn == null || diffs == null || string.IsNullOrEmpty(__result)) return;
+        if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
+        var appendedKeys = new HashSet<string>();
+        foreach (var h in diffs)
+        {
+            if (h == null) continue;
+            string key = pawn.GetPoolKeyForBreastHediff(h);
+            if (string.IsNullOrEmpty(key) || !appendedKeys.Add(key)) continue;
+            var entries = pawn.GetPoolEntriesForBreastHediff(h);
+            if (entries == null || entries.Count == 0) continue;
+            var parts = new List<string>();
+            foreach (var (_, fullness, capacity, isLeft) in entries)
+            {
+                string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
+                float cap = Mathf.Max(0f, capacity);
+                parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+            }
+            if (parts.Count > 0)
+                __result = __result + "\n    " + string.Join(", ", parts);
+        }
     }
 }

@@ -30,6 +30,12 @@ public class Widget_BreastfeedSettings
 		float basisF = EqualMilkingSettings.lactationExtraNutritionBasis;
 		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref basisF, new FloatRange(0f, 300f), "EM.LactationExtraNutritionFactor".Translate(EqualMilkingSettings.lactationExtraNutritionBasis.ToString()), 5f);
 		EqualMilkingSettings.lactationExtraNutritionBasis = Mathf.RoundToInt(basisF);
+		inRect.y += UNIT_SIZE;
+		Widgets.CheckboxLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), "EM.ReabsorbNutritionEnabled".Translate(), ref EqualMilkingSettings.reabsorbNutritionEnabled);
+		inRect.y += UNIT_SIZE;
+		float effF = EqualMilkingSettings.reabsorbNutritionEfficiency;
+		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref effF, new FloatRange(0f, 1f), "EM.ReabsorbNutritionEfficiencyLabel".Translate((EqualMilkingSettings.reabsorbNutritionEfficiency * 100f).ToString("F0") + "%"), 0.05f);
+		EqualMilkingSettings.reabsorbNutritionEfficiency = Mathf.Clamp01(effF);
 		inRect.y += UNIT_SIZE * 2;
 		inRect.height -= UNIT_SIZE * 4;
 		List<TabRecord> tabs = new()
@@ -63,6 +69,12 @@ public class Widget_BreastfeedSettings
 		float basisOverview = EqualMilkingSettings.lactationExtraNutritionBasis;
 		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref basisOverview, new FloatRange(0f, 300f), "EM.LactationExtraNutritionFactor".Translate(EqualMilkingSettings.lactationExtraNutritionBasis.ToString()), 5f);
 		EqualMilkingSettings.lactationExtraNutritionBasis = Mathf.RoundToInt(basisOverview);
+		inRect.y += UNIT_SIZE;
+		Widgets.CheckboxLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), "EM.ReabsorbNutritionEnabled".Translate(), ref EqualMilkingSettings.reabsorbNutritionEnabled);
+		inRect.y += UNIT_SIZE;
+		float effOverview = EqualMilkingSettings.reabsorbNutritionEfficiency;
+		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref effOverview, new FloatRange(0f, 1f), "EM.ReabsorbNutritionEfficiencyLabel".Translate((EqualMilkingSettings.reabsorbNutritionEfficiency * 100f).ToString("F0") + "%"), 0.05f);
+		EqualMilkingSettings.reabsorbNutritionEfficiency = Mathf.Clamp01(effOverview);
 		inRect.y += UNIT_SIZE * 2;
 		string bufferTime = EqualMilkingSettings.breastfeedTime.ToString();
 		Widgets.TextFieldNumericLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), Lang.Join(Lang.Breastfeed, Lang.Time), ref EqualMilkingSettings.breastfeedTime, ref bufferTime, 1f);

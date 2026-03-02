@@ -101,12 +101,24 @@ public static class ITab_Pawn_Feeding_DrawRow_Patch
 {
     public static MethodBase TargetMethod()
     {
-        foreach (var m in typeof(ITab_Pawn_Feeding).GetMethods(AccessTools.all))
+        try
         {
-            if (m.Name != nameof(ITab_Pawn_Feeding.DrawRow)) continue;
-            var ps = m.GetParameters();
-            if (ps.Length == 3 && ps[0].ParameterType == typeof(Pawn) && ps[2].ParameterType == typeof(Pawn))
-                return m;
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public
+                | System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.Static
+                | System.Reflection.BindingFlags.DeclaredOnly;
+            foreach (var m in typeof(ITab_Pawn_Feeding).GetMethods(flags))
+            {
+                if (m.Name != nameof(ITab_Pawn_Feeding.DrawRow)) continue;
+                var ps = m.GetParameters();
+                if (ps.Length == 3 && ps[0].ParameterType == typeof(Pawn) && ps[2].ParameterType == typeof(Pawn))
+                    return m;
+            }
+        }
+        catch
+        {
+            // 任意异常（如 AccessTools.all 不可用、类型未加载等）时跳过 DrawRow patch，保证 mod 能加载
         }
         return null;
     }

@@ -9,6 +9,7 @@
         <defName>EM_Lactation_Enhanced</defName>
         <label>enhanced lactation</label>
         <labelShortAdj>enhanced lactation</labelShortAdj>
+        <description>Carrier of this gene has enhanced lactation ability</description>
         <iconPath>UI/Icons/Genes/Gene_Lactation_Enhanced</iconPath>
         <displayOrderInCategory>10</displayOrderInCategory>
         <statOffsets>
@@ -21,6 +22,7 @@
         <defName>EM_Lactation_Poor</defName>
         <label>poor lactation</label>
         <labelShortAdj>poor lactation</labelShortAdj>
+        <description>Carrier of this gene has poor lactation ability</description>
         <iconPath>UI/Icons/Genes/Gene_Lactation_Poor</iconPath>
         <displayOrderInCategory>10</displayOrderInCategory>
         <statOffsets>
@@ -34,6 +36,7 @@
         <defName>EM_Permanent_Lactation</defName>
         <label>permanent lactation</label>
         <labelShortAdj>permanent lactation</labelShortAdj>
+        <description>Carrier of this gene has permanent lactation</description>
         <iconPath>UI/Icons/Genes/Gene_Lactation_Permanent</iconPath>
         <displayOrderInCategory>10</displayOrderInCategory>
         <biostatMet>0</biostatMet>
