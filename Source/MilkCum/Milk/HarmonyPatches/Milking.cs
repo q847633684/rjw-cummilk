@@ -260,7 +260,6 @@ public static class RaceProperties_Patch
         {
             if (!pawn.IsMilkable() || pawn.MilkDef() == null) { yield break; }
             yield return new StatDrawEntry(StatCategoryDefOf.AnimalProductivity, "Stat_Animal_MilkType".Translate(), pawn.MilkDef().LabelCap, "Stat_Animal_MilkTypeDesc".Translate(), 9880, null, Gen.YieldSingle<Dialog_InfoCard.Hyperlink>(new Dialog_InfoCard.Hyperlink(pawn.MilkDef(), -1)), false, false);
-            yield return new StatDrawEntry(StatCategoryDefOf.AnimalProductivity, "Stat_Animal_MilkAmount".Translate(), pawn.MilkAmount().ToStringByStyle(ToStringStyle.FloatOne), "Stat_Animal_MilkAmountDesc".Translate(), 9870, null, null, false, false);
             yield return new StatDrawEntry(StatCategoryDefOf.AnimalProductivity, "Stat_Animal_MilkValue".Translate(), pawn.MilkMarketValue().ToStringMoney(), "Stat_Animal_MilkValueDesc".Translate(), 9840, null, null, false, false);
         }
         finally {}

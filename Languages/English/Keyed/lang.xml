@@ -130,6 +130,7 @@
     <EM.MilkFlowStoppedFull>No inflow (pool full)</EM.MilkFlowStoppedFull>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
+    <LactatingAddedNutritionPerDay>Extra nutrition per day: {0}</LactatingAddedNutritionPerDay>
     <EM.ReabsorbedNutritionPerDay>Reabsorbed (pool shrinking): +{0} nutrition/day</EM.ReabsorbedNutritionPerDay>
     <EM.ReabsorbNutritionEnabled>Reabsorb nutrition when pool shrinks (add to food need)</EM.ReabsorbNutritionEnabled>
     <EM.ReabsorbNutritionEfficiencyLabel>Reabsorb efficiency: {0}</EM.ReabsorbNutritionEfficiencyLabel>

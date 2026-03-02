@@ -711,11 +711,7 @@ internal class EqualMilkingSettings : ModSettings
 	}
 	internal static float GetMilkAmount(Pawn pawn)
 	{
-		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount * GetMilkAmountFactorWithTolerance(pawn);
-	}
-	internal static float GetMilkGrowthMultiplier(Pawn pawn)
-	{
-		return GetLactatingEfficiencyFactorWithTolerance(pawn) * PawnUtility.BodyResourceGrowthSpeed(pawn);
+		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount;
 	}
 	/// <summary>当前催乳素耐受严重度 t ∈ [0,1]；完全由游戏内 Hediff/Comp 决定。</summary>
 	/// <summary>3.3 动物差异化：种族对催乳药物进水倍率，未配置则 1。</summary>
@@ -745,21 +741,6 @@ internal class EqualMilkingSettings : ModSettings
 		return Mathf.Pow(e, Mathf.Clamp(toleranceFlowImpactExponent, 0.1f, 3f));
 	}
 
-	internal static float GetMilkAmountFactorWithTolerance(Pawn pawn)
-	{
-		float v = pawn.GetStatValue(EMDefOf.EM_Milk_Amount_Factor);
-		if (v <= 1f) return v;
-		float e = GetProlactinToleranceFactor(pawn);
-		return 1f + (v - 1f) * e;
-	}
-	internal static float GetLactatingEfficiencyFactorWithTolerance(Pawn pawn)
-	{
-		float v = pawn.GetStatValue(EMDefOf.EM_Lactating_Efficiency_Factor);
-		if (v <= 0f) return v;
-		if (v <= 1f) return v;
-		float e = GetProlactinToleranceFactor(pawn);
-		return 1f + (v - 1f) * e;
-	}
 	#endregion
 }
 

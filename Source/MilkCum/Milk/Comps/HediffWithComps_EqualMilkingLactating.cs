@@ -29,8 +29,6 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         {
             isDirty = false;
             this.GenStages();
-            EMDefOf.EM_Milk_Amount_Factor.Worker.ClearCacheForThing(this.pawn);
-            EMDefOf.EM_Lactating_Efficiency_Factor.Worker.ClearCacheForThing(this.pawn);
         }
         base.PostTick();
     }
@@ -89,11 +87,8 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         int severityInt = Mathf.FloorToInt(severity);
         if (severityInt >= 1) { stage.label = isPermanentLactation ? Lang.Permanent : ""; }
         else { stage.label = ""; }
-        float mult = EqualMilkingSettings.lactatingEfficiencyMultiplierPerStack;
         // 额外饥饿/能量改为由 ExtraNutritionPerDay/GetFlowPerDay 与 Need_Food/Need 补丁 1:1 施加，此处不再用 offset 增加饥饿
         stage.hungerRateFactorOffset = 0f;
-        StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Milk_Amount_Factor, Mathf.Pow(mult, severity));
-        StatUtility.SetStatValueInList(ref stage.statFactors, EMDefOf.EM_Lactating_Efficiency_Factor, isFull ? 0f : Mathf.Pow(mult, severity));
         if (stage.capMods != null) stage.capMods.Clear();
     }
     private int GetStageIndex(float severity, bool isFull)
@@ -336,7 +331,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                     float flowPerDay = GetFlowPerDay();
                     lines.Add("EM.MilkFlowPerDay".Translate(flowPerDay.ToStringPercent()));
                     if (Pawn.needs?.food != null)
-                        lines.Add("LactatingAddedNutritionPerDay".Translate(ExtraNutritionPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute), Pawn.MilkGrowthMultiplier()));
+                        lines.Add("LactatingAddedNutritionPerDay".Translate(ExtraNutritionPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                     else if (Pawn.needs?.energy != null)
                         lines.Add("CurrentMechEnergyFallPerDay".Translate() + ": " + ExtraEnergyPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
                 }

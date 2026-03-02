@@ -5,8 +5,6 @@ namespace MilkCum.Core;
 public static class EMDefOf
 {
     public static EffecterDef EM_Milk;
-    public static StatDef EM_Milk_Amount_Factor;
-    public static StatDef EM_Lactating_Efficiency_Factor;
     public static ThingDef EM_Prolactin;
     public static ThingDef EM_Lucilactin;
     public static ThingDef EM_HumanMilk;

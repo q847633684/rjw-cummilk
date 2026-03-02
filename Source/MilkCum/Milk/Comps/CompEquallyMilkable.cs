@@ -17,7 +17,6 @@ public class CompEquallyMilkable : CompMilkable
     protected override int ResourceAmount => (int)Pawn.MilkAmount();
     protected override ThingDef ResourceDef => Pawn.MilkDef();
     protected virtual float fResourceAmount => Pawn.MilkAmount();
-    protected virtual float GrowthMultiplier => Pawn.MilkGrowthMultiplier();
     public float breastfedAmount = 0f;
     public float maxFullness = 1f;
 
@@ -470,7 +469,7 @@ public class CompEquallyMilkable : CompMilkable
     }
 
     /// <summary>
-    /// 吸奶时从池中扣量：从第一对开始，选该对最满一侧，依次扣到目标量或池空（见 Docs/泌乳系统逻辑图）。不按比例缩放，直接扣对应 key 的水位。
+    /// 吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图。
     /// </summary>
     /// <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
     /// <returns>实际扣掉的量</returns>
@@ -478,9 +477,18 @@ public class CompEquallyMilkable : CompMilkable
     {
         if (amount <= 0f || Pawn == null) return 0f;
         breastFullness ??= new Dictionary<string, float>();
-        float remaining = amount;
         var entries = Pawn.GetBreastPoolEntries();
-        var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
+        if (entries.Count == 0)
+        {
+            SyncLeftRightFromBreastFullness();
+            SyncBaseFullness();
+            return 0f;
+        }
+        float remaining = amount;
+        // 按「该对总满度」从高到低排序，最满的对先扣，多对时轮转自然、后面的对也能被吸到
+        var byPair = entries.GroupBy(e => e.PairIndex)
+            .OrderByDescending(g => g.Sum(e => GetFullnessForKey(e.Key)))
+            .ToList();
         foreach (var group in byPair)
         {
             if (remaining <= 0f) break;
@@ -492,8 +500,45 @@ public class CompEquallyMilkable : CompMilkable
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftF = GetFullnessForKey(leftE.Key);
                 float rightF = GetFullnessForKey(rightE.Key);
-                bool preferLeft = false;
+                // 同对内只按满度；左右相等时先左（与性别/变性/无性别种族无关）
+                bool preferLeft = true;
                 bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && preferLeft);
+                string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
+                string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
+                float firstF = drainLeftFirst ? leftF : rightF;
+                float secondF = drainLeftFirst ? rightF : leftF;
+                float take1 = Mathf.Min(remaining, firstF);
+                if (take1 > 0f)
+                {
+                    breastFullness[firstKey] = Mathf.Max(0f, firstF - take1);
+                    remaining -= take1;
+                }
+                if (remaining > 0f && secondF > 0f)
+                {
+                    float take2 = Mathf.Min(remaining, secondF);
+                    breastFullness[secondKey] = Mathf.Max(0f, secondF - take2);
+                    remaining -= take2;
+                }
+            }
+            else
+            {
+                foreach (var e in list)
+                {
+                    if (remaining <= 0f || string.IsNullOrEmpty(e.Key)) continue;
+                    float f = GetFullnessForKey(e.Key);
+                    float take = Mathf.Min(remaining, f);
+                    if (take > 0f)
+                    {
+                        breastFullness[e.Key] = Mathf.Max(0f, f - take);
+                        remaining -= take;
+                    }
+                }
+            }
+        }
+        SyncLeftRightFromBreastFullness();
+        SyncBaseFullness();
+        return amount - remaining;
+    }
                 string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
                 string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
                 float firstF = drainLeftFirst ? leftF : rightF;
@@ -540,7 +585,6 @@ public class CompEquallyMilkable : CompMilkable
             Log.Error(string.Concat(doer, " gathered body resources while not Active: ", parent));
         }
         Pawn pawn = parent as Pawn;
-        breastFullness ??= new Dictionary<string, float>();
         float amountToTake = Mathf.Min(fResourceAmount, Fullness);
         if (amountToTake <= 0f)
         {

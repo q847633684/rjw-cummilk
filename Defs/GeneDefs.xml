@@ -12,10 +12,6 @@
         <description>Carrier of this gene has enhanced lactation ability</description>
         <iconPath>UI/Icons/Genes/Gene_Lactation_Enhanced</iconPath>
         <displayOrderInCategory>10</displayOrderInCategory>
-        <statOffsets>
-            <EM_Lactating_Efficiency_Factor>0.5</EM_Lactating_Efficiency_Factor>
-            <EM_Milk_Amount_Factor>0.5</EM_Milk_Amount_Factor>
-        </statOffsets>
         <biostatMet>-1</biostatMet>
     </GeneDef>
     <GeneDef ParentName="EM_MilkBase">
@@ -25,10 +21,6 @@
         <description>Carrier of this gene has poor lactation ability</description>
         <iconPath>UI/Icons/Genes/Gene_Lactation_Poor</iconPath>
         <displayOrderInCategory>10</displayOrderInCategory>
-        <statOffsets>
-            <EM_Lactating_Efficiency_Factor>-0.25</EM_Lactating_Efficiency_Factor>
-            <EM_Milk_Amount_Factor>-0.25</EM_Milk_Amount_Factor>
-        </statOffsets>
         <biostatMet>1</biostatMet>
     </GeneDef>
     <GeneDef>

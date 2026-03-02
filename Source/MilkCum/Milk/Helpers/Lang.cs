@@ -39,10 +39,6 @@ public static class Lang
         if (EMDefOf.EM_ForcedBreastfeed != null)
             EMDefOf.EM_ForcedBreastfeed.reportString = JobDefOf.Breastfeed.reportString;
 
-        if (EMDefOf.EM_Milk_Amount_Factor != null)
-            EMDefOf.EM_Milk_Amount_Factor.SetDefaultLabel(Lang.Join(Lang.MilkAmount, Lang.StatFactor));
-        if (EMDefOf.EM_Lactating_Efficiency_Factor != null)
-            EMDefOf.EM_Lactating_Efficiency_Factor.SetDefaultLabel(Lang.Join(Lang.Lactating, Lang.Efficiency, Lang.StatFactor));
         if (HediffDefOf.Lactating != null)
             HediffDefOf.Lactating.SetDefaultDesc(HediffDefOf.Lactating.description.RemoveTailingLines(2)); //Delete pregnant rate description
         if (EMDefOf.Milk_Fullness != null)

@@ -51,7 +51,7 @@
   <!-- 泌乳状态提示 -->
   <LactatingStoppedBecauseFull>已满，暂停产奶。</LactatingStoppedBecauseFull>
   <LactatingStoppedBecauseHungry>饥饿，暂停产奶。</LactatingStoppedBecauseHungry>
-  <LactatingAddedNutritionPerDay>每日额外营养消耗：{0}（倍率 {1}）</LactatingAddedNutritionPerDay>
+  <LactatingAddedNutritionPerDay>每日额外营养消耗：{0}</LactatingAddedNutritionPerDay>
   <CurrentMechEnergyFallPerDay>每日能量消耗</CurrentMechEnergyFallPerDay>
   <MilkFullness>奶量</MilkFullness>
 

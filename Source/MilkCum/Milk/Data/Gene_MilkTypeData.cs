@@ -53,23 +53,7 @@ public class Gene_MilkTypeData : IExposable
         geneDef.modContentPack = EqualMilkingMod.equalMilkingMod;
         geneDef.exclusionTags = new List<string> { "MilkType" };
         geneDef.statFactors = new List<StatModifier>();
-        if (milkAmountFactor != 1f)
-        {
-            geneDef.statFactors.Add(new StatModifier { stat = EMDefOf.EM_Milk_Amount_Factor, value = milkAmountFactor });
-        }
-        if (milkEfficiencyFactor != 1f)
-        {
-            geneDef.statFactors.Add(new StatModifier { stat = EMDefOf.EM_Lactating_Efficiency_Factor, value = milkEfficiencyFactor });
-        }
         geneDef.statOffsets = new List<StatModifier>();
-        if (milkAmountOffset != 0f)
-        {
-            geneDef.statOffsets.Add(new StatModifier { stat = EMDefOf.EM_Milk_Amount_Factor, value = milkAmountOffset });
-        }
-        if (milkEfficiencyOffset != 0f)
-        {
-            geneDef.statOffsets.Add(new StatModifier { stat = EMDefOf.EM_Lactating_Efficiency_Factor, value = milkEfficiencyOffset });
-        }
         if (geneDef.Icon == BaseContent.BadTex)
         {
             cachedIcon.SetValue(geneDef, TextureHelper.GenMilkGeneIcon(ThingDef));
