@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LanguageData>
+  <!-- 原版 Lactating：本 mod 接管为池模型，此处说明与当前逻辑一致（L、双池、药物/分娩、衰减、挤奶、喷乳反射等）。 -->
+  <Lactating.description>由催乳剂或分娩触发。持续时间由内部泌乳量 L 与每日衰减决定，非原版严重度。奶量存入左/右乳池，可挤奶或吸奶；满池后产奶减缓，超出部分回缩并补充饱食度。挤奶或吸奶会暂时提高产奶效率（喷乳反射）；饥饿时停止产奶。永久泌乳基因或设置下可持续泌乳。</Lactating.description>
+
   <!-- 催乳素耐受 EM_Prolactin_Tolerance -->
   <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
   <EM_Prolactin_Tolerance.label>催乳素耐受</EM_Prolactin_Tolerance.label>

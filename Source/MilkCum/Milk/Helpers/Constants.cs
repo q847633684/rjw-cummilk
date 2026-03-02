@@ -21,7 +21,7 @@ public static class PoolModelConstants
     /// <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
     public const float LactationEndEpsilon = 1E-5f;
 
-    /// <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks / Clamp(代谢率, 0.25, 2)。</summary>
+    /// <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。</summary>
     public const int BaseAbsorptionDelayTicks = 15000;
 
     /// <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>

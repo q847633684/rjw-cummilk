@@ -93,13 +93,15 @@ internal class EqualMilkingSettings : ModSettings
 		if (denom <= 0.01f) return 100f;
 		return 1f / denom;
 	}
-	/// <summary>四层模型：压力因子 PressureFactor(P)=1/(1+exp(b×(P−Pc)))。P 接近 Pc 时流速平滑下降，未启用时返回 1。</summary>
+	/// <summary>四层模型：压力因子 PressureFactor(P)=1/(1+exp(b×(P−Pc)))，且不低于 pressureFactorMin，以便满池时仍有进水流速、溢出能发生。</summary>
 	public static float GetPressureFactor(float P)
 	{
 		if (!enablePressureFactor || P <= 0f) return 1f;
 		float b = Mathf.Clamp(pressureFactorB, 1f, 80f);
 		float pc = Mathf.Clamp(pressureFactorPc, 0.5f, 1f);
-		return 1f / (1f + Mathf.Exp(b * (P - pc)));
+		float raw = 1f / (1f + Mathf.Exp(b * (P - pc)));
+		float minVal = Mathf.Clamp01(pressureFactorMin);
+		return Mathf.Max(minVal, raw);
 	}
 	/// <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
 	public static float GetEffectiveDrive(float L)
@@ -127,12 +129,18 @@ internal class EqualMilkingSettings : ModSettings
 	public static bool enablePressureFactor = true;
 	public static float pressureFactorPc = 0.9f;
 	public static float pressureFactorB = 30f;
+	/// <summary>压力因子下限：满池时 PressureFactor 不低于此值，保证仍有进水流速以便撑大/溢出能发生；0=允许压到接近 0（旧行为）。建议 0.05～0.15。</summary>
+	public static float pressureFactorMin = 0.15f;
 	// 四层模型（阶段1）：喷乳反射 R。启用时流速乘 R；R 每 30 tick 指数衰减，挤奶/吸奶时升高。
 	public static bool enableLetdownReflex = true;
 	/// <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
 	public static float letdownReflexDecayLambda = 0.03f;
 	/// <summary>挤奶/吸奶时 R 的增量 ΔR，Clamp 后 R≤1。</summary>
 	public static float letdownReflexStimulusDeltaR = 0.45f;
+	/// <summary>喷乳反射 R 的下限：R 衰减不低于此值，避免「不挤奶则产奶效率归零」；0=允许归零。当启用加成倍率时 R 可衰减到 0。</summary>
+	public static float letdownReflexMin = 0.25f;
+	/// <summary>喷乳反射加成倍率：吸奶/挤奶后进水量 = 基础 × (1 + R×(本值-1))，R=1 时为本值倍（1.5~2.5），R=0 时为 1 倍；维持时间由 R 衰减速度决定。≤1 时按旧逻辑（流速×R，且受 R 下限约束）。</summary>
+	public static float letdownReflexBoostMultiplier = 2f;
 	// 四层模型（阶段2）：炎症 I(t)。启用时每 30 tick 更新 I；I>I_crit 触发乳腺炎；L 衰减加 η·I。
 	public static bool enableInflammationModel = true;
 	public static float inflammationAlpha = 0.1f;
@@ -154,9 +162,9 @@ internal class EqualMilkingSettings : ModSettings
 	public static float hormoneSaturationLRef = 1f;
 	// 四层模型（阶段3.2）：组织适应。长期高 P 扩容、长期低 P 回缩；dF_max/dt = θ·max(P−0.85,0) − ω·(1−P)，每 30 tick 更新，叠加到基础容量上。
 	public static bool enableTissueAdaptation = true;
-	/// <summary>扩容率 θ（每游戏日）；P>0.85 时容量增加。</summary>
+	/// <summary>扩容率 θ（每游戏日）；P 大于 0.85 时容量增加。</summary>
 	public static float adaptationTheta = 0.002f;
-	/// <summary>回缩率 ω（每游戏日）；P<1 时容量减少。</summary>
+	/// <summary>回缩率 ω（每游戏日）；P 小于 1 时容量减少。</summary>
 	public static float adaptationOmega = 0.001f;
 	/// <summary>适应容量上限：不超过基础容量的此比例（如 0.2=20%）。</summary>
 	public static float adaptationCapMaxRatio = 0.2f;
@@ -273,9 +281,12 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Values.Look(ref enablePressureFactor, "EM.EnablePressureFactor", true);
 		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.9f);
 		Scribe_Values.Look(ref pressureFactorB, "EM.PressureFactorB", 30f);
+		Scribe_Values.Look(ref pressureFactorMin, "EM.PressureFactorMin", 0.15f);
 		Scribe_Values.Look(ref enableLetdownReflex, "EM.EnableLetdownReflex", true);
 		Scribe_Values.Look(ref letdownReflexDecayLambda, "EM.LetdownReflexDecayLambda", 0.03f);
 		Scribe_Values.Look(ref letdownReflexStimulusDeltaR, "EM.LetdownReflexStimulusDeltaR", 0.45f);
+		Scribe_Values.Look(ref letdownReflexMin, "EM.LetdownReflexMin", 0.25f);
+		Scribe_Values.Look(ref letdownReflexBoostMultiplier, "EM.LetdownReflexBoostMultiplier", 2f);
 		Scribe_Values.Look(ref enableInflammationModel, "EM.EnableInflammationModel", true);
 		Scribe_Values.Look(ref inflammationAlpha, "EM.InflammationAlpha", 0.1f);
 		Scribe_Values.Look(ref inflammationBeta, "EM.InflammationBeta", 0.15f);
@@ -624,6 +635,7 @@ internal class EqualMilkingSettings : ModSettings
 	}
 	private void UpdateEqualMilkableComp(ThingDef pawnDef)
 	{
+		// 设计原则 3：不重复定义「种族是否产奶」底层规则；仅用 namesToProducts 与设置做开关，默认值来自 GetDefaultMilkProduct(Def)。
 		CompProperties_Milkable compProperties = pawnDef.GetCompProperties<CompProperties_Milkable>();
 		if (compProperties == null)
 		{
@@ -637,6 +649,7 @@ internal class EqualMilkingSettings : ModSettings
 		compProperties.Set(namesToProducts[pawnDef.defName]);
 	}
 
+	/// <summary>设计原则 3/4：默认产奶开关与奶量来自 Def（Humanlike/体型），不手写底层规则；实际开关由 namesToProducts + 设置决定。</summary>
 	internal static RaceMilkType GetDefaultMilkProduct(ThingDef def)
 	{
 		RaceMilkType milkProduct = new();

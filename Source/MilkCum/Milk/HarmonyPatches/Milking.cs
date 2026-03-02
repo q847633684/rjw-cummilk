@@ -57,7 +57,7 @@ public static class ThingWithComps_Patch
 public static class Hediff_Pregnant_Patch
 {
     /// <summary>
-    /// 7.8: 分娩结束时为母亲添加 Lactating。动物原有逻辑；人类（Biotech 原版分娩）也自动进入泌乳期。
+    /// 设计原则 2/7：仅 Prefix 挂接，不替换原版 DoBirthSpawn。分娩结束时为母亲添加 Lactating 并调用 ApplyBirthPoolValues；动物与人类（Biotech）统一处理。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Hediff_Pregnant.DoBirthSpawn))]
@@ -77,6 +77,7 @@ public static class Hediff_Pregnant_Patch
         // 人类分娩：若已有 Lactating（如药物）也叠加剩余天数+10、当前泌乳量+基础值
         if (mother.RaceProps?.Humanlike == true)
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
+        ExtensionHelper.TryGiveFirstLactationBirthMemory(mother);
     }
 }
 [HarmonyPatch(typeof(Need_Food))]
@@ -124,7 +125,7 @@ public static class Need_Food_Patch
     }
 }
 
-/// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。</summary>
+/// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
 [HarmonyPatch(typeof(Need_Food))]
 [HarmonyPatch(nameof(Need_Food.NeedInterval))]
 public static class Need_NeedInterval_Patch
@@ -312,7 +313,7 @@ public static class FloatMenuMakerMap_Patch
 }
 #endif
 
-/// <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/泌乳系统逻辑图。兼容 1.6：优先从基类 IngestionOutcomeDoer 查找方法。</summary>
+/// <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
 public static class ProlactinAddictionPatch
 {
     public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
@@ -472,18 +473,21 @@ public static class Hediff_TipString_BreastPool_Patch
     }
 }
 
-/// <summary>健康页悬停由 HealthCardUtility.GetTooltip 构建（使用 TipStringExtra），不是 Hediff.TipString。本 Patch 在该方法返回的 tooltip 后追加「左乳：x/x，右乳：x/x」。</summary>
-[HarmonyPatch(typeof(HealthCardUtility), "GetTooltip")]
+/// <summary>健康页悬停由 HealthCardUtility.GetTooltip(Pawn, BodyPartRecord) 构建。本 Patch 在该方法返回的 tooltip 后追加一行「左乳：x/x，右乳：x/x」。目标方法用字符串 "GetTooltip" 避免编译时 CS0117。</summary>
+[HarmonyPatch(typeof(HealthCardUtility), "GetTooltip", new[] { typeof(Pawn), typeof(BodyPartRecord) })]
 public static class HealthCardUtility_GetTooltip_BreastPool_Patch
 {
-    public static void Postfix(ref string __result, IEnumerable<Hediff> diffs, Pawn pawn, BodyPartRecord part)
+    [HarmonyPostfix]
+    public static void Postfix(ref string __result, Pawn pawn, BodyPartRecord part)
     {
-        if (pawn == null || diffs == null || string.IsNullOrEmpty(__result)) return;
+        if (pawn == null || part == null) return;
         if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
+        var hediffSet = pawn.health?.hediffSet;
+        if (hediffSet?.hediffs == null) return;
+        var diffs = hediffSet.hediffs.Where(h => h != null && h.Part == part);
         var appendedKeys = new HashSet<string>();
         foreach (var h in diffs)
         {
-            if (h == null) continue;
             string key = pawn.GetPoolKeyForBreastHediff(h);
             if (string.IsNullOrEmpty(key) || !appendedKeys.Add(key)) continue;
             var entries = pawn.GetPoolEntriesForBreastHediff(h);
@@ -496,7 +500,10 @@ public static class HealthCardUtility_GetTooltip_BreastPool_Patch
                 parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
             }
             if (parts.Count > 0)
-                __result = __result + "\n    " + string.Join(", ", parts);
+            {
+                __result = (__result ?? "") + "\n    " + string.Join(", ", parts);
+                break;
+            }
         }
     }
 }

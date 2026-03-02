@@ -2,6 +2,7 @@ using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
+using System.Linq;
 
 namespace MilkCum.Milk.Comps;
 public class CompProperties_ShowProducer : CompProperties
@@ -48,5 +49,19 @@ public class CompShowProducer : ThingComp
         {
             return otherComp.producer == producer && otherComp.producerKind == producerKind;
         }
+    }
+
+    /// <summary>物品悬浮/检查面板：显示产主与允许使用名单（只读现有 Comp 数据），减少重复点进设置。</summary>
+    public override string CompInspectStringExtra()
+    {
+        if (producer == null) return null;
+        string producerLine = "EM.ItemProducer".Translate(producer.LabelShort);
+        var producerComp = producer.CompEquallyMilkable();
+        string allowedLine;
+        if (producerComp?.allowedConsumers == null || producerComp.allowedConsumers.Count == 0)
+            allowedLine = "EM.ItemAllowedConsumersOwnerOnly".Translate();
+        else
+            allowedLine = "EM.ItemAllowedConsumers".Translate(string.Join(", ", producerComp.allowedConsumers.Where(p => p != null && !p.Destroyed).Select(p => p.LabelShort)));
+        return producerLine + "\n" + allowedLine;
     }
 }

@@ -124,6 +124,11 @@
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
     <EM.PoolDaysPrefix>Days: </EM.PoolDaysPrefix>
+    <EM.EquivalentDose>Equivalent dose: {0}</EM.EquivalentDose>
+    <EM.EquivalentDoseColumn>Equiv. dose</EM.EquivalentDoseColumn>
+    <EM.ItemProducer>Producer: {0}</EM.ItemProducer>
+    <EM.ItemAllowedConsumersOwnerOnly>Allowed: owner only</EM.ItemAllowedConsumersOwnerOnly>
+    <EM.ItemAllowedConsumers>Allowed: {0}</EM.ItemAllowedConsumers>
     <EM.LactatingStateProducing>Producing (pool {0} full)</EM.LactatingStateProducing>
     <EM.LactatingStateFullShrinking>Pool full, shrinking (reabsorbed milk adds to food)</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>Pool full (consider milking)</EM.LactatingStateFull>

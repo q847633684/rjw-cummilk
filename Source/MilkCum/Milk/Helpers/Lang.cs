@@ -40,7 +40,7 @@ public static class Lang
             EMDefOf.EM_ForcedBreastfeed.reportString = JobDefOf.Breastfeed.reportString;
 
         if (HediffDefOf.Lactating != null)
-            HediffDefOf.Lactating.SetDefaultDesc(HediffDefOf.Lactating.description.RemoveTailingLines(2)); //Delete pregnant rate description
+            HediffDefOf.Lactating.SetDefaultDesc(HediffDefOf.Lactating.description.RemoveTailingLines(2)); // 删除原版怀孕率相关末两行；若当前语言有 DefInjected（Lactating.description）则不会覆盖，见 Languages/.../DefInjected/HediffDef
         if (EMDefOf.Milk_Fullness != null)
             EMDefOf.Milk_Fullness.SetDefaultLabel(Lang.MilkFullness);
         if (EMDefOf.Milk_RemainingDays != null)

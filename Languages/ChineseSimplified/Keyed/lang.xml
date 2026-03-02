@@ -123,6 +123,11 @@
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
     <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
+    <EM.EquivalentDose>等效剂量：{0}</EM.EquivalentDose>
+    <EM.EquivalentDoseColumn>等效剂量</EM.EquivalentDoseColumn>
+    <EM.ItemProducer>产主：{0}</EM.ItemProducer>
+    <EM.ItemAllowedConsumersOwnerOnly>允许使用：仅产主本人</EM.ItemAllowedConsumersOwnerOnly>
+    <EM.ItemAllowedConsumers>允许使用：{0}</EM.ItemAllowedConsumers>
     <EM.LactatingStateProducing>产奶中（池满度 {0}）</EM.LactatingStateProducing>
     <EM.LactatingStateFullShrinking>池满，回缩中（未溢出部分会补充饱食度）</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>池满（建议挤奶）</EM.LactatingStateFull>

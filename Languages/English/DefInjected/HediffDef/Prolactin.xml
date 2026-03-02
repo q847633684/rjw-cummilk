@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+    <!-- Equal Milking: Lactating is driven by pool model (L, dual pools, decay). This description matches current logic. -->
+    <Lactating.description>Triggered by lactating drugs or birth. Duration is determined by internal lactation amount L and daily decay, not vanilla severity. Milk fills left/right breast pools and can be milked or suckled; when full, flow is reduced and excess recedes while adding to nutrition. Milking or suckling temporarily increases flow (letdown reflex); starvation stops production. Permanent lactation gene or settings can make it ongoing.</Lactating.description>
+
     <EM_Prolactin_Tolerance.description>Developing tolerance to Prolactin. Reduces drug effect and increases daily lactation severity decay.</EM_Prolactin_Tolerance.description>
     <EM_Prolactin_Tolerance.stages.0.label>small tolerance</EM_Prolactin_Tolerance.stages.0.label>
     <EM_Prolactin_Tolerance.stages.1.label>moderate tolerance</EM_Prolactin_Tolerance.stages.1.label>

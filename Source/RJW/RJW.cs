@@ -8,6 +8,8 @@ using rjw;
 using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 using MilkCum.Milk.Comps;
+using MilkCum.Milk.HarmonyPatches;
+
 namespace MilkCum.RJW;
 
 // 重要：此处禁止使用 Harmony.PatchAll()。PatchAll 会扫描整个程序集并处理 Hediff_TipString_BreastPool_Patch，
@@ -78,6 +80,7 @@ public static class CompAssignableToPawn_Box_Patch
 [HarmonyPatch(typeof(Hediff_BasePregnancy))]
 public static class Hediff_BasePregnancy_Patch
 {
+    /// <summary>RJW 分娩：与原版 DoBirthSpawn 一致，为母亲加 Lactating 并统一调用 ApplyBirthPoolValues（设计原则 2：分娩入口统一）。</summary>
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Hediff_BasePregnancy.PostBirth))]
     public static void PostBirth_Prefix(Pawn mother, Pawn baby)
@@ -89,6 +92,8 @@ public static class Hediff_BasePregnancy_Patch
             {
                 lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
             }
+            PoolModelBirthHelper.ApplyBirthPoolValues(mother);
+            ExtensionHelper.TryGiveFirstLactationBirthMemory(mother);
         }
         if (mother.IsInLactatingState() && mother.CompEquallyMilkable() is CompEquallyMilkable comp && mother.CanBreastfeedEver(baby))
         {

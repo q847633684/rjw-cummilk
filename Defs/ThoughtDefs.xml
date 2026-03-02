@@ -187,4 +187,42 @@
             </li>
         </stages>
     </ThoughtDef>
+    <!-- 首次泌乳（药物诱发）：成就类记忆，挂接原版事件系统 -->
+    <ThoughtDef>
+        <defName>EM_FirstLactationDrug</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>999</durationDays>
+        <stages>
+            <li>
+                <label>首次药物泌乳</label>
+                <description>第一次通过药物进入泌乳期。</description>
+                <baseMoodEffect>0</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+    <!-- 首次泌乳（分娩）：成就类记忆 -->
+    <ThoughtDef>
+        <defName>EM_FirstLactationBirth</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>999</durationDays>
+        <stages>
+            <li>
+                <label>首次分娩泌乳</label>
+                <description>分娩后第一次进入泌乳期。</description>
+                <baseMoodEffect>0</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+    <!-- 长期药物泌乳：情境心情，药物诱发泌乳且持续超过约 15 天 -->
+    <ThoughtDef>
+        <defName>EM_LongTermDrugLactation</defName>
+        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_LongTermDrugLactation</workerClass>
+        <stages>
+            <li>
+                <label>长期药物泌乳</label>
+                <description>已经依赖药物维持泌乳一段时间了。</description>
+                <baseMoodEffect>-1</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
 </Defs>

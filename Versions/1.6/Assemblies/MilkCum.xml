@@ -4,6 +4,15 @@
         <name>MilkCum</name>
     </assembly>
     <members>
+        <member name="F:MilkCum.Core.EMDefOf.EM_FirstLactationDrug">
+            <summary>首次药物诱发泌乳成就类记忆。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EMDefOf.EM_FirstLactationBirth">
+            <summary>首次分娩泌乳成就类记忆。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EMDefOf.EM_LongTermDrugLactation">
+            <summary>长期药物泌乳情境心情（药物诱发且持续约 15 天以上）。</summary>
+        </member>
         <member name="F:MilkCum.Core.EMDefOf.EM_NursedBy">
             <summary>3.1：被哺乳者获得「被某人哺乳」记忆，用于社交/关系。</summary>
         </member>
@@ -31,11 +40,23 @@
         <member name="F:MilkCum.Core.EqualMilkingSettings.lactationExtraNutritionBasis">
             <summary>泌乳灌满期间额外饥饿：滑块 0–300，150=1:1。饱食度每 150 tick 额外下降 = flowPerDay×(150/60000)×(本值/150)。</summary>
         </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.reabsorbNutritionEnabled">
+            <summary>回缩吸收：满池回缩时，未溢出部分视为被身体吸收，按比例补充饱食度；0=关闭，1=与产奶消耗 1:1 折算。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.reabsorbNutritionEfficiency">
+            <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
+        </member>
         <member name="F:MilkCum.Core.EqualMilkingSettings.rjwBreastCapacityCoefficient">
             <summary>乳房容量系数：左右乳容量 = RJW Severity × 本系数，2=默认，与泌乳效率等可调项对应。</summary>
         </member>
         <member name="F:MilkCum.Core.EqualMilkingSettings.rjwSexAddsLactationBoost">
             <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.toleranceDynamicMu">
+            <summary>耐受累积率 μ（每游戏日）；L 高则 E 上升。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.toleranceDynamicNu">
+            <summary>耐受衰减率 ν（每游戏日）；E 自然回落。</summary>
         </member>
         <member name="F:MilkCum.Core.EqualMilkingSettings.ProlactinToleranceGainPerDose">
             <summary>催乳素单剂在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 同剂叠加一致，默认 0.044）；改 XML 时需同步。</summary>
@@ -43,8 +64,56 @@
         <member name="M:MilkCum.Core.EqualMilkingSettings.GetEffectiveBaseValueTForDecay">
             <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
         </member>
+        <member name="M:MilkCum.Core.EqualMilkingSettings.GetPressureFactor(System.Single)">
+            <summary>四层模型：压力因子 PressureFactor(P)=1/(1+exp(b×(P−Pc)))，且不低于 pressureFactorMin，以便满池时仍有进水流速、溢出能发生。</summary>
+        </member>
+        <member name="M:MilkCum.Core.EqualMilkingSettings.GetEffectiveDrive(System.Single)">
+            <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.pressureFactorMin">
+            <summary>压力因子下限：满池时 PressureFactor 不低于此值，保证仍有进水流速以便撑大/溢出能发生；0=允许压到接近 0（旧行为）。建议 0.05～0.15。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexDecayLambda">
+            <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexStimulusDeltaR">
+            <summary>挤奶/吸奶时 R 的增量 ΔR，Clamp 后 R≤1。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexMin">
+            <summary>喷乳反射 R 的下限：R 衰减不低于此值，避免「不挤奶则产奶效率归零」；0=允许归零。当启用加成倍率时 R 可衰减到 0。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexBoostMultiplier">
+            <summary>喷乳反射加成倍率：吸奶/挤奶后进水量 = 基础 × (1 + R×(本值-1))，R=1 时为本值倍（1.5~2.5），R=0 时为 1 倍；维持时间由 R 衰减速度决定。≤1 时按旧逻辑（流速×R，且受 R 下限约束）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.lactationDecayInflammationEta">
+            <summary>炎症对 L 衰减的抑制因子 η：D += η·I。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.hormoneSaturationA">
+            <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.hormoneSaturationLRef">
+            <summary>参考 L 归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，使尾期更平滑；≤0 时不归一。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.adaptationTheta">
+            <summary>扩容率 θ（每游戏日）；P 大于 0.85 时容量增加。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.adaptationOmega">
+            <summary>回缩率 ω（每游戏日）；P 小于 1 时容量减少。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.adaptationCapMaxRatio">
+            <summary>适应容量上限：不超过基础容量的此比例（如 0.2=20%）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.milkQualityInflammationWeight">
+            <summary>炎症对质量的抑制系数；质量 ∝ (1 − 本值×I)，I 大则质量降。</summary>
+        </member>
+        <member name="F:MilkCum.Core.EqualMilkingSettings.milkQualityProtectionFactor">
+            <summary>质量对乳腺炎阈值的保护系数；有效 I_crit = I_crit×(1 + 本值×MilkQuality)。</summary>
+        </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.EnsureScribeDeepTypes">
             <summary>确保 Scribe_Deep 反序列化的对象类型正确，避免旧存档或类型变更导致 InvalidCastException。</summary>
+        </member>
+        <member name="M:MilkCum.Core.EqualMilkingSettings.GetDefaultMilkProduct(Verse.ThingDef)">
+            <summary>设计原则 3/4：默认产奶开关与奶量来自 Def（Humanlike/体型），不手写底层规则；实际开关由 namesToProducts + 设置决定。</summary>
         </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.ApplyDefaultsFromDef">
             <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置；若 XML 未加载则使用内置默认值（其他 mod 可 patch GetBuiltinDefaults）。</summary>
@@ -54,7 +123,10 @@
             <summary>3.3 动物差异化：种族对催乳药物进水倍率，未配置则 1。</summary>
         </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.GetProlactinToleranceFactor(Verse.Pawn)">
-            <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。</summary>
+            <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。启用耐受动态时由 comp 的 E 计算。</summary>
+        </member>
+        <member name="M:MilkCum.Core.EqualMilkingSettings.GetProlactinToleranceFactorFromE(System.Single)">
+            <summary>耐受动态：由 mod 维护的 E 得到 E_tol = [max(1−E, 0.05)]^exponent。</summary>
         </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.GetProlactinToleranceFactor(System.Single)">
             <summary>统一耐受系数（按严重度 t）：E_tol(t) = [max(1 − t, 0.05)]^exponent；allowToleranceAffectMilk 关闭时恒为 1。</summary>
@@ -133,6 +205,9 @@
         <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.lastFullPoolLetterTick">
             <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏。</summary>
         </member>
+        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.capacityAdaptation">
+            <summary>四层模型（阶段3.2）：组织适应导致的容量增量 ≥0，maxFullness = 基础容量 + 本值。</summary>
+        </member>
         <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.cachedWasLactatingWithDrugInduced">
             <summary>2.3：药物泌乳状态缓存，每 30 tick 仅状态变化时增删 EM_DrugLactationBurden/EM_LactatingGain，减少重复查找。</summary>
         </member>
@@ -141,6 +216,9 @@
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
+            <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 30 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
         </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.LastGatheredTick">
             <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用。</summary>
@@ -170,7 +248,7 @@
             <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/泌乳系统逻辑图。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.UpdateMilkPools">
-            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。双池流速=左+右；溢出、回缩（含健康度系数），更新满池计数。</summary>
+            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。满池后不再进水（flow=0），与 GetFlowPerDay 返回 0 一致，能量有据；回缩仍执行，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.TrySendFullPoolLetter">
             <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图。</summary>
@@ -188,7 +266,7 @@
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.DrainForConsume(System.Single)">
             <summary>
-            吸奶时从池中扣量：从第一对开始，选该对最满一侧，依次扣到目标量或池空（见 Docs/泌乳系统逻辑图）。不按比例缩放，直接扣对应 key 的水位。
+            吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图。
             </summary>
             <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
             <returns>实际扣掉的量</returns>
@@ -203,6 +281,9 @@
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
             <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Comps.CompShowProducer.CompInspectStringExtra">
+            <summary>物品悬浮/检查面板：显示产主与允许使用名单（只读现有 Comp 数据），减少重复点进设置。</summary>
         </member>
         <member name="T:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip">
             <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 Docs/泌乳系统逻辑图。</summary>
@@ -293,8 +374,8 @@
             Should change labels for pawns that cannot do childcare but can breastfeed
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.ITab_Pawn_Feeding_DrawRow_Patch">
-            <summary>仅当 DrawRow 为旧版 3 参数签名 (baby, row, feeder) 时才做 Transpiler；1.6 为 6 参数 (baby, RectDivider&amp;, feeder, mother, father, surrogate) 时跳过，避免 Patching exception。</summary>
+        <member name="T:MilkCum.Milk.HarmonyPatches.Pawn_MindState_Patch">
+            <summary>DrawRow 在 1.6 为 6 参数，不再 patch；若保留 TargetMethod 返回 null 会导致 Harmony 报 unexpected result，故整类移除。</summary>
         </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.Pawn_MindState_Patch.AutofeedSetting_Prefix(Verse.AI.Pawn_MindState,Verse.AutofeedMode@,Verse.Pawn)">
             <summary>
@@ -387,7 +468,7 @@
         </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.Hediff_Pregnant_Patch.DoBirthSpawn_Prefix(Verse.Pawn)">
             <summary>
-            7.8: 分娩结束时为母亲添加 Lactating。动物原有逻辑；人类（Biotech 原版分娩）也自动进入泌乳期。
+            设计原则 2/7：仅 Prefix 挂接，不替换原版 DoBirthSpawn。分娩结束时为母亲添加 Lactating 并调用 ApplyBirthPoolValues；动物与人类（Biotech）统一处理。
             </summary>
         </member>
         <member name="M:MilkCum.Milk.HarmonyPatches.Need_Food_Patch.GetTipString_PostFix(RimWorld.Need_Food,System.String@)">
@@ -396,7 +477,7 @@
             </summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.Need_NeedInterval_Patch">
-            <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。</summary>
+            <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.HediffSet_Remove_Patch">
             <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
@@ -422,13 +503,16 @@
             </summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.ProlactinAddictionPatch">
-            <summary>成瘾机制增强补丁：仅在目标方法存在时手动应用，避免 DoIngestionOutcome 不存在时崩溃。见 Docs/泌乳系统逻辑图。兼容 1.6：优先从基类 IngestionOutcomeDoer 查找方法。</summary>
+            <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.PoolModelBirthHelper">
             <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.Hediff_TipString_BreastPool_Patch">
-            <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。</summary>
+            <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。健康页实际使用 HealthCardUtility.GetTooltip 与 TipStringExtra，故同时 Patch GetTooltip 确保悬停能显示。</summary>
+        </member>
+        <member name="T:MilkCum.Milk.HarmonyPatches.HealthCardUtility_GetTooltip_BreastPool_Patch">
+            <summary>健康页悬停由 HealthCardUtility.GetTooltip(Pawn, BodyPartRecord) 构建。本 Patch 在该方法返回的 tooltip 后追加一行「左乳：x/x，右乳：x/x」。目标方法用字符串 "GetTooltip" 避免编译时 CS0117。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
             <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
@@ -461,7 +545,7 @@
             <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.BaseAbsorptionDelayTicks">
-            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks / Clamp(代谢率, 0.25, 2)。</summary>
+            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.StretchCapFactor">
             <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
@@ -510,6 +594,9 @@
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBedOwner(RimWorld.Building_Bed)">
             <summary>床的分配对象（床主）。兼容无 AssigningPawn 的 RimWorld 版本，通过 CompAssignableToPawn 获取。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.TryGiveFirstLactationBirthMemory(Verse.Pawn)">
+            <summary>分娩后首次泌乳成就类记忆；仅当尚未拥有该记忆时发放，供原版/RJW 分娩入口统一调用。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.IsLeftPart(System.String)">
             <summary>Part.def.defName 是否为左乳（StartsWith("LeftBreast") 或 "Left"），避免 Contains("Left") 误伤 LeftoverBreast。</summary>
@@ -576,6 +663,9 @@
         <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_HighToleranceLowMilk">
             <summary>建议 9：高耐受且当前泌乳量(L)偏低时，产生轻微挫败感心情。</summary>
         </member>
+        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_LongTermDrugLactation">
+            <summary>长期药物泌乳：药物诱发泌乳且持续超过约 15 天时显示情境心情。</summary>
+        </member>
         <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_LongTimeNotMilked">
             <summary>10.8-6：人类泌乳且奶量较多但超过 2 游戏日未被挤奶时显示不适心情。</summary>
         </member>
@@ -601,7 +691,7 @@
             <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴奋 hediff），供延迟生效与无 World 立即生效共用。</summary>
         </member>
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
-            <summary>根据代谢率计算吸收延迟 tick。代谢率高则延迟短。</summary>
+            <summary>根据代谢率计算吸收延迟 tick。用 Lerp 映射 rate→倍率(0.5~1.5)，不做除法，避免 rate 极小或负值时爆炸。原版 MetabolicRate 可为 0.01、负数等。</summary>
         </member>
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(Verse.Pawn)">
             <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0。</summary>
@@ -609,8 +699,14 @@
         <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawnCore(Verse.Pawn)">
             <summary>实例方法：该小人在本组件待生效队列中最早一批的剩余 tick。</summary>
         </member>
+        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetMetabolicRate(Verse.Pawn)">
+            <summary>取 pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返回 1f。见 Docs/泌乳系统逻辑图。</summary>
+        </member>
         <member name="T:MilkCum.UI.PawnColumnWorker_MilkAllowDeflate">
             <summary>奶表格列：是否允许泄精（去做泄到桶/清洁/随地的 Job）。</summary>
+        </member>
+        <member name="T:MilkCum.UI.PawnColumnWorker_MilkEquivalentDose">
+            <summary>殖民者列：当前等效剂量（只读，由 L 与公式推导）。</summary>
         </member>
         <member name="T:MilkCum.UI.PawnColumnWorker_MilkRemainingDays">
             <summary>建议 7：奶表格中显示泌乳剩余天数。</summary>
@@ -651,6 +747,9 @@
         </member>
         <member name="T:MilkCum.UI.Window_ProducerRestrictions">
             <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+        </member>
+        <member name="M:MilkCum.RJW.Hediff_BasePregnancy_Patch.PostBirth_Prefix(Verse.Pawn,Verse.Pawn)">
+            <summary>RJW 分娩：与原版 DoBirthSpawn 一致，为母亲加 Lactating 并统一调用 ApplyBirthPoolValues（设计原则 2：分娩入口统一）。</summary>
         </member>
         <member name="T:MilkCum.RJW.RJWLactatingBreastSizeGameComponent">
             <summary>泌乳期时临时增大 RJW 胸部 Severity，离开泌乳期后恢复。仅修改本 mod 维护的“基础值”缓存并写回 Hediff.Severity。</summary>
@@ -1195,17 +1294,68 @@
         <member name="F:HediffWithComps_EqualMilkingLactating.SeverityStepsPerUnit">
             <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage. maxSteps=81, count=162; if future allows severity>20 (e.g. large dose), display stays at last stage—not a bug, just a note.</summary>
         </member>
-        <member name="M:HediffWithComps_EqualMilkingLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean)">
-            <summary>Stage formulas use float severity; 增益已改为独立 hediff EM_LactatingGain。</summary>
+        <member name="M:HediffWithComps_EqualMilkingLactating.GenStages">
+            <summary>设计原则 5：stages 由 XML 移除，此处 C# 动态生成；capMods 在 GenStage 内设置（当前 Clear 由 EM_LactatingGain 等独立 Hediff 提供能力），避免与 Def 静态阶段冲突。</summary>
+        </member>
+        <member name="M:HediffWithComps_EqualMilkingLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean,System.Boolean)">
+            <summary>Stage 名（括号内）：仅当真正不衰减时显示「永久」，否则留空；具体「天数：X」在 CompLabelInBracketsExtra 动态显示。</summary>
         </member>
         <member name="F:HediffComp_EqualMilkingLactating.currentLactationAmount">
             <summary>水池模型（L 驱动）：当前泌乳量 L。唯一状态量；每日衰减 = 1/(B_T×E)+k×L；泌乳结束 L≤0。</summary>
+        </member>
+        <member name="F:HediffComp_EqualMilkingLactating.currentLetdownReflex">
+            <summary>四层模型：喷乳反射 R∈[0,1]。每 30 tick 指数衰减；挤奶/吸奶时升高。</summary>
+        </member>
+        <member name="F:HediffComp_EqualMilkingLactating.currentInflammation">
+            <summary>四层模型：炎症负荷 I≥0。每 30 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
+        </member>
+        <member name="F:HediffComp_EqualMilkingLactating.milkingLStimulusAccumulatedThisDay">
+            <summary>挤奶 L 刺激：当日已累计量，每游戏日重置。</summary>
+        </member>
+        <member name="F:HediffComp_EqualMilkingLactating.effectiveToleranceE">
+            <summary>耐受动态：有效耐受 E∈[0,1]，dE/dt = μ·L − ν·E；用于 E_tol 计算。</summary>
+        </member>
+        <member name="F:HediffComp_EqualMilkingLactating.cachedWasPermanentLactation">
+            <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名。</summary>
         </member>
         <member name="P:HediffComp_EqualMilkingLactating.RemainingDays">
             <summary>剩余天数（游戏日）。动力学 dL/dt = -(a+k×L)，精确解 T = (1/k)×ln(1 + k×L/a)；a=1/(B_T×E)。k→0 或 a≤0 时退化为 L/D(L)。</summary>
         </member>
         <member name="P:HediffComp_EqualMilkingLactating.CurrentLactationAmount">
             <summary>当前泌乳量 L（规格：基础值 = 总容量，归一化 1）。</summary>
+        </member>
+        <member name="P:HediffComp_EqualMilkingLactating.IsPermanentLactation">
+            <summary>是否为永久泌乳（基因或动物设置）：L 不衰减；括号阶段名与悬停「剩余时间」均据此显示「永久」。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.UpdateToleranceDynamic(System.Single,System.Single)">
+            <summary>耐受动态：dE/dt = μ·L − ν·E。Δt 单位：游戏日。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetEffectiveToleranceE">
+            <summary>耐受动态：当前 E，供 GetProlactinToleranceFactor 使用。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.UpdateInflammation(System.Single,System.Single)">
+            <summary>四层模型：炎症 I 离散更新。dI/dt = α·P² + β·Injury + γ·BadHygiene − ρ·I；Δt 单位：小时。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.TryTriggerMastitisFromInflammation">
+            <summary>四层模型：若 I>I_crit 且允许乳腺炎，则挂 EM_Mastitis（与现有 MTB 判定并存）。启用质量时有效 I_crit 随 MilkQuality 提高。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetMilkQuality">
+            <summary>四层模型（阶段3.3）：MilkQuality = f(Hunger, I) ∈ [0,1]。饱食度高、炎症低则质量高；未启用质量时返回 1。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.AddMilkingLStimulus">
+            <summary>四层模型：挤奶/吸奶时 L 微幅刺激，单次与每日带上限。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflex">
+            <summary>四层模型：当前喷乳反射 R∈[0,1]。未启用时返回 1；启用时不低于 letdownReflexMin，避免无挤奶时产奶效率归零。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier">
+            <summary>进水流速的 R 倍率：加成模式（boost&gt;1）时 = 1+R×(boost-1)，R=0 为 1 倍、R=1 为 boost 倍，倍率最低 1 不会为 0；否则 = GetLetdownReflex()（旧乘数）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.DecayLetdownReflex(System.Single)">
+            <summary>四层模型：R 指数衰减，R_new = R×exp(-λ×Δt)。Δt 单位为分钟。加成模式（boost&gt;1）时 R 可衰减到 0；否则不低于 letdownReflexMin。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.AddLetdownReflexStimulus">
+            <summary>四层模型：挤奶/吸奶刺激，R += ΔR，Clamp 至 1。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetBaseValueNormalized(Verse.Pawn)">
             <summary>归一化基础值 = 总容量（规格：基础值 = 总容量），当前实现为 1。</summary>
@@ -1214,7 +1364,7 @@
             <summary>有效药效系数：统一使用 EqualMilkingSettings.GetProlactinToleranceFactor。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
-            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L（游戏日⁻¹）。B_T 由设置 baselineMilkDurationDays 反推，使单次剂量时剩余约 N 日。</summary>
+            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由设置反推。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
             <summary>当前 L 下的每日衰减（用于显示/兼容）。</summary>
@@ -1235,7 +1385,10 @@
             <summary>机械体灌满期间额外能量/天：与产奶流速 1:1 平衡，flowPerDay（池单位/天）× nutritionToEnergyFactor；满池后不额外消耗。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetFlowPerDay">
-            <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。左/右池流速按侧计算；总池满(Charge≥maxF)时返回 0。按侧满池限制在 CompEquallyMilkable 与 LactationPoolState.TickGrowth 内处理，满侧不再进水、富余流量进另一侧。</summary>
+            <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。启用四层时：驱动可用 D_eff=L·H(L)，再乘 PressureFactor(P)×R（见 Docs 第十二节）。</summary>
+        </member>
+        <member name="P:HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
+            <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开为 1～4 块详情。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.SyncChargeFromPool">
             <summary>吸奶/消费后：仅将 Charge 同步为当前池总满度，并触发 OnGathered（不按比例缩放池，因已由 DrainForConsume 按对按侧扣过）。</summary>

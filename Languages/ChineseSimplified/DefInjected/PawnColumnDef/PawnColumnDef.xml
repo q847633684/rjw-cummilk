@@ -9,5 +9,6 @@
   <Milk_AllowDeflate.label>允许泄精</Milk_AllowDeflate.label>
   <Milk_ProducerRestrictions.label>指定</Milk_ProducerRestrictions.label>
   <Milk_RemainingDays.label>剩余天数</Milk_RemainingDays.label>
+  <Milk_EquivalentDose.label>等效剂量</Milk_EquivalentDose.label>
   <Milk_Dev.label>泌乳(开发)</Milk_Dev.label>
 </LanguageData>

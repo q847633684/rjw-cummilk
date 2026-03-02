@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MilkCum.Core;
 using MilkCum.Milk.Helpers;
 using RimWorld;
@@ -115,6 +116,10 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
         }
         // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋（高量心情由 EM_Prolactin_HighThought 显示）
         ApplyProlactinMoodEffects(pawn, rawSeverity);
+        // 首次药物泌乳成就类记忆（仅一次）
+        if (EMDefOf.EM_FirstLactationDrug != null && pawn.needs?.mood?.thoughts?.memories != null
+            && !pawn.needs.mood.thoughts.memories.Memories.Any(m => m.def == EMDefOf.EM_FirstLactationDrug))
+            pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_FirstLactationDrug);
     }
 
     /// <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴奋 hediff），供延迟生效与无 World 立即生效共用。</summary>
@@ -130,12 +135,12 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
         }
     }
 
-    /// <summary>根据代谢率计算吸收延迟 tick。代谢率高则延迟短。</summary>
+    /// <summary>根据代谢率计算吸收延迟 tick。用 Lerp 映射 rate→倍率(0.5~1.5)，不做除法，避免 rate 极小或负值时爆炸。原版 MetabolicRate 可为 0.01、负数等。</summary>
     public static int GetAbsorptionDelayTicks(Pawn pawn)
     {
-        float rate = GetMetabolicRate(pawn);
-        rate = Mathf.Clamp(rate, 0.25f, 2f);
-        return Mathf.Max(1, (int)(PoolModelConstants.BaseAbsorptionDelayTicks / rate));
+        float rate = Mathf.Clamp(GetMetabolicRate(pawn), 0.25f, 2f);
+        float factor = Mathf.Lerp(1.5f, 0.5f, Mathf.InverseLerp(0.25f, 2f, rate));
+        return Mathf.Max(1, Mathf.RoundToInt(PoolModelConstants.BaseAbsorptionDelayTicks * factor));
     }
 
     /// <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0。</summary>
@@ -161,12 +166,14 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
         return minRemaining <= 0 ? 0 : minRemaining;
     }
 
+    /// <summary>取 pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返回 1f。见 Docs/泌乳系统逻辑图。</summary>
     private static float GetMetabolicRate(Pawn pawn)
     {
         if (pawn == null) return 1f;
-        var stat = DefDatabase<StatDef>.GetNamedSilentFail("MetabolicRate");
-        if (stat != null)
-            return pawn.GetStatValue(stat);
-        return 1f;
+        StatDef stat = DefDatabase<StatDef>.GetNamedSilentFail("MetabolicRate");
+        if (stat == null) return 1f;
+        float v = pawn.GetStatValue(stat);
+        if (float.IsNaN(v) || float.IsInfinity(v) || v <= 0f) return 1f;
+        return v;
     }
 }

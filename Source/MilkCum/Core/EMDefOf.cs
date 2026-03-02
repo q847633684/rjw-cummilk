@@ -45,6 +45,12 @@ public static class EMDefOf
     public static HediffDef EM_BreastsEngorged;
     public static ThoughtDef EM_MilkOverflow;
     public static ThoughtDef EM_HighToleranceLowMilk;
+    /// <summary>首次药物诱发泌乳成就类记忆。</summary>
+    public static ThoughtDef EM_FirstLactationDrug;
+    /// <summary>首次分娩泌乳成就类记忆。</summary>
+    public static ThoughtDef EM_FirstLactationBirth;
+    /// <summary>长期药物泌乳情境心情（药物诱发且持续约 15 天以上）。</summary>
+    public static ThoughtDef EM_LongTermDrugLactation;
     /// <summary>3.1：被哺乳者获得「被某人哺乳」记忆，用于社交/关系。</summary>
     public static ThoughtDef EM_NursedBy;
     /// <summary>3.1：哺乳者获得「哺乳了某人」记忆，用于社交/关系。</summary>

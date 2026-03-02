@@ -95,54 +95,7 @@ public static class ITab_Pawn_Feeding_Patch
         }
     }
 }
-/// <summary>仅当 DrawRow 为旧版 3 参数签名 (baby, row, feeder) 时才做 Transpiler；1.6 为 6 参数 (baby, RectDivider&amp;, feeder, mother, father, surrogate) 时跳过，避免 Patching exception。</summary>
-[HarmonyPatch(typeof(ITab_Pawn_Feeding))]
-public static class ITab_Pawn_Feeding_DrawRow_Patch
-{
-    public static MethodBase TargetMethod()
-    {
-        try
-        {
-            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public
-                | System.Reflection.BindingFlags.NonPublic
-                | System.Reflection.BindingFlags.Instance
-                | System.Reflection.BindingFlags.Static
-                | System.Reflection.BindingFlags.DeclaredOnly;
-            foreach (var m in typeof(ITab_Pawn_Feeding).GetMethods(flags))
-            {
-                if (m.Name != nameof(ITab_Pawn_Feeding.DrawRow)) continue;
-                var ps = m.GetParameters();
-                if (ps.Length == 3 && ps[0].ParameterType == typeof(Pawn) && ps[2].ParameterType == typeof(Pawn))
-                    return m;
-            }
-        }
-        catch
-        {
-            // 任意异常（如 AccessTools.all 不可用、类型未加载等）时跳过 DrawRow patch，保证 mod 能加载
-        }
-        return null;
-    }
-
-    [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> DrawRow_Transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        List<CodeInstruction> codes = new(instructions);
-        MethodInfo original = AccessTools.Method(typeof(AutoBreastfeedModeExtension), nameof(AutoBreastfeedModeExtension.Translate));
-        MethodInfo getLabel = AccessTools.Method(typeof(DrawRow_Delegate), nameof(DrawRow_Delegate.GetLabel),
-            new[] { typeof(AutofeedMode), typeof(Pawn), typeof(Pawn) });
-        for (int i = 0; i < codes.Count; i++)
-        {
-            if (codes[i].Calls(original))
-            {
-                codes.Insert(i, new CodeInstruction(OpCodes.Ldarg_1));
-                codes.Insert(i, new CodeInstruction(OpCodes.Ldarg_0));
-                codes[i + 2] = new CodeInstruction(OpCodes.Call, getLabel);
-                break;
-            }
-        }
-        return codes.AsEnumerable();
-    }
-}
+/// <summary>DrawRow 在 1.6 为 6 参数，不再 patch；若保留 TargetMethod 返回 null 会导致 Harmony 报 unexpected result，故整类移除。</summary>
 public static class Pawn_MindState_Patch
 {
     /// <summary>

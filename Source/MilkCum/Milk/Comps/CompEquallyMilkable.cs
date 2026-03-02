@@ -260,7 +260,10 @@ public class CompEquallyMilkable : CompMilkable
         EnsureLactatingHediffFromConditions();
         ApplyDrugInducedLactationEffects();
         if (!Active) { return; }
-        UpdateMilkPools();
+        // LOD：非当前地图的 pawn 每 300 tick 更新一次池，降低规模大时的负担；需结合 Profiler 验证。
+        bool onCurrentMap = Pawn?.MapHeld == null || Pawn.MapHeld == Find.CurrentMap;
+        if (onCurrentMap || parent.IsHashIntervalTick(300))
+            UpdateMilkPools();
         if (parent.IsHashIntervalTick(2000)) TryTriggerMastitis();
         UpdateHealthHediffs();
     }
@@ -353,11 +356,10 @@ public class CompEquallyMilkable : CompMilkable
         {
             flowPerTickScale = 0f;
         }
-        // 四层模型：喷乳反射 R，每 30 tick 衰减
+        // 喷乳反射 R：进水量 × GetLetdownReflexFlowMultiplier()（吸奶/挤奶后 1.5~2.5 倍维持一段时间），再衰减 R
         if (EqualMilkingSettings.enableLetdownReflex)
         {
-            float r = lactatingComp.GetLetdownReflex();
-            flowPerTickScale *= r;
+            flowPerTickScale *= lactatingComp.GetLetdownReflexFlowMultiplier();
             lactatingComp.DecayLetdownReflex(30f / 60f); // Δt = 30 tick = 0.5 分钟
         }
         // 四层模型：炎症 I 离散更新（每 30 tick，Δt = 30/3600 小时）
@@ -541,42 +543,6 @@ public class CompEquallyMilkable : CompMilkable
                 // 同对内只按满度；左右相等时先左（与性别/变性/无性别种族无关）
                 bool preferLeft = true;
                 bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && preferLeft);
-                string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
-                string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
-                float firstF = drainLeftFirst ? leftF : rightF;
-                float secondF = drainLeftFirst ? rightF : leftF;
-                float take1 = Mathf.Min(remaining, firstF);
-                if (take1 > 0f)
-                {
-                    breastFullness[firstKey] = Mathf.Max(0f, firstF - take1);
-                    remaining -= take1;
-                }
-                if (remaining > 0f && secondF > 0f)
-                {
-                    float take2 = Mathf.Min(remaining, secondF);
-                    breastFullness[secondKey] = Mathf.Max(0f, secondF - take2);
-                    remaining -= take2;
-                }
-            }
-            else
-            {
-                foreach (var e in list)
-                {
-                    if (remaining <= 0f || string.IsNullOrEmpty(e.Key)) continue;
-                    float f = GetFullnessForKey(e.Key);
-                    float take = Mathf.Min(remaining, f);
-                    if (take > 0f)
-                    {
-                        breastFullness[e.Key] = Mathf.Max(0f, f - take);
-                        remaining -= take;
-                    }
-                }
-            }
-        }
-        SyncLeftRightFromBreastFullness();
-        SyncBaseFullness();
-        return amount - remaining;
-    }
                 string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
                 string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
                 float firstF = drainLeftFirst ? leftF : rightF;

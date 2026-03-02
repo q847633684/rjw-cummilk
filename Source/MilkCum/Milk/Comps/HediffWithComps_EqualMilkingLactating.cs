@@ -72,6 +72,7 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         comp?.AddLetdownReflexStimulus();
         comp?.AddMilkingLStimulus();
     }
+    /// <summary>设计原则 5：stages 由 XML 移除，此处 C# 动态生成；capMods 在 GenStage 内设置（当前 Clear 由 EM_LactatingGain 等独立 Hediff 提供能力），避免与 Def 静态阶段冲突。</summary>
     private void GenStages()
     {
         int maxSteps = MaxSeverityForStages * SeverityStepsPerUnit + 1;
@@ -272,18 +273,40 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         milkingLStimulusAccumulatedThisDay += toAdd;
     }
 
-    /// <summary>四层模型：当前喷乳反射 R∈[0,1]。未启用时返回 1。</summary>
+    /// <summary>四层模型：当前喷乳反射 R∈[0,1]。未启用时返回 1；启用时不低于 letdownReflexMin，避免无挤奶时产奶效率归零。</summary>
     public float GetLetdownReflex()
     {
-        return EqualMilkingSettings.enableLetdownReflex ? Mathf.Clamp01(currentLetdownReflex) : 1f;
+        if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
+        float r = Mathf.Clamp01(currentLetdownReflex);
+        float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+        return Mathf.Max(minR, r);
     }
 
-    /// <summary>四层模型：R 指数衰减，R_new = R×exp(-λ×Δt)。Δt 单位为分钟。</summary>
+    /// <summary>进水流速的 R 倍率：加成模式（boost&gt;1）时 = 1+R×(boost-1)，R=0 为 1 倍、R=1 为 boost 倍，倍率最低 1 不会为 0；否则 = GetLetdownReflex()（旧乘数）。</summary>
+    public float GetLetdownReflexFlowMultiplier()
+    {
+        if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
+        float boost = Mathf.Clamp(EqualMilkingSettings.letdownReflexBoostMultiplier, 1f, 3f);
+        if (boost > 1f)
+        {
+            float r = Mathf.Clamp01(currentLetdownReflex);
+            return Mathf.Max(1f, 1f + r * (boost - 1f)); // 倍率最低 1，保证 R=0 时正常进水
+        }
+        return GetLetdownReflex();
+    }
+
+    /// <summary>四层模型：R 指数衰减，R_new = R×exp(-λ×Δt)。Δt 单位为分钟。加成模式（boost&gt;1）时 R 可衰减到 0；否则不低于 letdownReflexMin。</summary>
     public void DecayLetdownReflex(float deltaTMinutes)
     {
         if (!EqualMilkingSettings.enableLetdownReflex || deltaTMinutes <= 0f) return;
         float lambda = Mathf.Max(0.001f, EqualMilkingSettings.letdownReflexDecayLambda);
         currentLetdownReflex *= Mathf.Exp(-lambda * deltaTMinutes);
+        bool boostMode = EqualMilkingSettings.letdownReflexBoostMultiplier > 1f;
+        if (!boostMode)
+        {
+            float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+            if (minR >= 1E-5f && currentLetdownReflex < minR) currentLetdownReflex = minR;
+        }
         if (currentLetdownReflex < 1E-5f) currentLetdownReflex = 0f;
     }
 
@@ -414,7 +437,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         else if (fullness >= maxF)
             return 0f;
         if (EqualMilkingSettings.enableLetdownReflex)
-            flow *= GetLetdownReflex();
+            flow *= GetLetdownReflexFlowMultiplier();
         return flow;
     }
     public override string CompTipStringExtra
@@ -442,12 +465,26 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             // 2. 池子与可产
             if (CompEquallyMilkable != null)
             {
+                // 左乳/右乳 满度与容量（与原版 tooltip 一致，仅靠 CompTipStringExtra 即可在健康页显示，无需 patch HealthCardUtility）
+                var entries = parent.pawn.GetPoolEntriesForBreastHediff(parent);
+                if (entries != null && entries.Count > 0)
+                {
+                    var parts = new List<string>();
+                    foreach (var (_, fullness, capacity, isLeft) in entries)
+                    {
+                        string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
+                        float cap = Mathf.Max(0f, capacity);
+                        parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+                    }
+                    if (parts.Count > 0)
+                        lines.Add(string.Join(", ", parts));
+                }
                 lines.Add("EM.PoolTotalMilkCapacity".Translate(
                     totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                     maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 if (EqualMilkingSettings.enableMilkQuality)
                 {
-                    float q = TryGetComp<HediffComp_EqualMilkingLactating>()?.GetMilkQuality() ?? 1f;
+                    float q = GetMilkQuality();
                     lines.Add("EM.MilkQuality".Translate(q.ToStringPercent()));
                 }
                 if (Pawn.MilkDef() != null)
@@ -481,6 +518,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
 
             // 4. 时间
             lines.Add("EM.PoolRemainingDays".Translate() + ": " + (IsPermanentLactation ? Lang.Permanent : RemainingDays.ToString("F1")));
+
+            // 5. 等效剂量（只读：由 L 与公式推导，1 标准剂量 ≈ 0.5 L）
+            float oneDoseL = 0.5f * PoolModelConstants.DoseToLFactor;
+            if (oneDoseL > 0f && currentLactationAmount > 0f)
+                lines.Add("EM.EquivalentDose".Translate((currentLactationAmount / oneDoseL).ToString("F1")));
 
             return lines.Count > 0 ? string.Join("\n", lines) : base.CompTipStringExtra;
         }

@@ -61,6 +61,15 @@
 	</PawnColumnDef>
 
 	<PawnColumnDef>
+		<defName>Milk_EquivalentDose</defName>
+		<label>EM.EquivalentDoseColumn</label>
+		<workerClass>MilkCum.UI.PawnColumnWorker_MilkEquivalentDose</workerClass>
+		<sortable>true</sortable>
+		<paintable>true</paintable>
+		<width>56</width>
+	</PawnColumnDef>
+
+	<PawnColumnDef>
 		<defName>Milk_ProducerRestrictions</defName>
 		<label>EM.ProducerRestrictionsColumn</label>
 		<workerClass>MilkCum.UI.PawnColumnWorker_ProducerRestrictions</workerClass>
