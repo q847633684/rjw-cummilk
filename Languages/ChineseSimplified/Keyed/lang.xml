@@ -123,6 +123,10 @@
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
     <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
+    <EM.LactatingStateProducing>产奶中（池满度 {0}）</EM.LactatingStateProducing>
+    <EM.LactatingStateFullShrinking>池满，回缩中（未溢出部分会补充饱食度）</EM.LactatingStateFullShrinking>
+    <EM.LactatingStateFull>池满（建议挤奶）</EM.LactatingStateFull>
+    <EM.MilkFlowStoppedFull>当前不进水（池已满）</EM.MilkFlowStoppedFull>
     <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>产奶效率：{0}/天</EM.MilkFlowPerDay>
     <EM.ReabsorbedNutritionPerDay>回缩吸收：+{0} 营养/天</EM.ReabsorbedNutritionPerDay>
