@@ -346,22 +346,12 @@ public class CompEquallyMilkable : CompMilkable
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 30f;
         SyncLeftRightFromBreastFullness();
-        // 四层模型：压力软抑制 或 原方案 B 硬停
-        if (EqualMilkingSettings.enablePressureFactor)
-        {
-            float maxF = Mathf.Max(0.001f, maxFullness);
-            flowPerTickScale *= EqualMilkingSettings.GetPressureFactor(Fullness / maxF);
-        }
-        else if (Fullness >= maxFullness)
-        {
+        // 四层模型：压力按「哪对乳房的哪一侧」分别计算（该侧满度/该侧撑大容量），满则压低该侧进水流速；未启用时总满则硬停
+        if (!EqualMilkingSettings.enablePressureFactor && Fullness >= maxFullness)
             flowPerTickScale = 0f;
-        }
-        // 喷乳反射 R：进水量 × GetLetdownReflexFlowMultiplier()（吸奶/挤奶后 1.5~2.5 倍维持一段时间），再衰减 R
+        // 喷乳反射 R：按侧生效，每侧进水量 × GetLetdownReflexFlowMultiplier(sideKey)；每 tick 统一衰减各侧 R
         if (EqualMilkingSettings.enableLetdownReflex)
-        {
-            flowPerTickScale *= lactatingComp.GetLetdownReflexFlowMultiplier();
             lactatingComp.DecayLetdownReflex(30f / 60f); // Δt = 30 tick = 0.5 分钟
-        }
         // 四层模型：炎症 I 离散更新（每 30 tick，Δt = 30/3600 小时）
         if (EqualMilkingSettings.enableInflammationModel)
         {
@@ -381,14 +371,22 @@ public class CompEquallyMilkable : CompMilkable
                 var leftE = list.FirstOrDefault(e => e.IsLeft);
                 var rightE = list.FirstOrDefault(e => !e.IsLeft);
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
-                float flowLeft = leftE.FlowMultiplier * flowPerTickScale;
-                float flowRight = rightE.FlowMultiplier * flowPerTickScale;
                 float leftCap = leftE.Capacity;
                 float rightCap = rightE.Capacity;
                 float stretchLeft = leftCap * PoolModelConstants.StretchCapFactor;
                 float stretchRight = rightCap * PoolModelConstants.StretchCapFactor;
                 float curLeft = breastFullness.TryGetValue(leftE.Key, out float vl) ? vl : 0f;
                 float curRight = breastFullness.TryGetValue(rightE.Key, out float vr) ? vr : 0f;
+                float pressureLeft = EqualMilkingSettings.enablePressureFactor
+                    ? EqualMilkingSettings.GetPressureFactor(curLeft / Mathf.Max(0.001f, stretchLeft))
+                    : (curLeft >= stretchLeft ? 0f : 1f);
+                float pressureRight = EqualMilkingSettings.enablePressureFactor
+                    ? EqualMilkingSettings.GetPressureFactor(curRight / Mathf.Max(0.001f, stretchRight))
+                    : (curRight >= stretchRight ? 0f : 1f);
+                float conditionsLeft = Pawn.GetConditionsForSide(leftE.Key);
+                float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
+                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * (EqualMilkingSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f);
+                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * (EqualMilkingSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f);
                 var pairPool = new LactationPoolState();
                 pairPool.SetFrom(curLeft, curRight, 0);
                 float overflow = pairPool.TickGrowth(flowLeft, flowRight, leftCap, rightCap, stretchLeft, stretchRight);
@@ -400,9 +398,13 @@ public class CompEquallyMilkable : CompMilkable
             {
                 foreach (var e in list)
                 {
-                    float flowPerTick = e.FlowMultiplier * flowPerTickScale;
                     float stretchCap = e.Capacity * PoolModelConstants.StretchCapFactor;
                     float current = breastFullness.TryGetValue(e.Key, out float v) ? v : 0f;
+                    float pressure = EqualMilkingSettings.enablePressureFactor
+                        ? EqualMilkingSettings.GetPressureFactor(current / Mathf.Max(0.001f, stretchCap))
+                        : (current >= stretchCap ? 0f : 1f);
+                    float conditionsE = Pawn.GetConditionsForSide(e.Key);
+                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * (EqualMilkingSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f);
                     var (newFullness, overflow) = LactationPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
                     breastFullness[e.Key] = newFullness;
                     overflowTotal += overflow;
@@ -513,8 +515,9 @@ public class CompEquallyMilkable : CompMilkable
     /// 吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图；记忆库/design/双池与PairIndex、记忆库/decisions/ADR-003-选侧先左。
     /// </summary>
     /// <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
+    /// <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激）</param>
     /// <returns>实际扣掉的量</returns>
-    public float DrainForConsume(float amount)
+    public float DrainForConsume(float amount, List<string> drainedKeys = null)
     {
         if (amount <= 0f || Pawn == null) return 0f;
         breastFullness ??= new Dictionary<string, float>();
@@ -552,12 +555,14 @@ public class CompEquallyMilkable : CompMilkable
                 if (take1 > 0f)
                 {
                     breastFullness[firstKey] = Mathf.Max(0f, firstF - take1);
+                    drainedKeys?.Add(firstKey);
                     remaining -= take1;
                 }
                 if (remaining > 0f && secondF > 0f)
                 {
                     float take2 = Mathf.Min(remaining, secondF);
                     breastFullness[secondKey] = Mathf.Max(0f, secondF - take2);
+                    drainedKeys?.Add(secondKey);
                     remaining -= take2;
                 }
             }
@@ -571,6 +576,7 @@ public class CompEquallyMilkable : CompMilkable
                     if (take > 0f)
                     {
                         breastFullness[e.Key] = Mathf.Max(0f, f - take);
+                        drainedKeys?.Add(e.Key);
                         remaining -= take;
                     }
                 }
@@ -596,7 +602,9 @@ public class CompEquallyMilkable : CompMilkable
             SyncBaseFullness();
             return;
         }
-        float drained = DrainForConsume(amountToTake);
+        var drainedKeys = new List<string>();
+        float drained = DrainForConsume(amountToTake, drainedKeys);
+        pawn.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys);
         float yieldFactor = doer.GetStatValue(StatDefOf.AnimalGatherYield);
         Building_Milking milkingSpot = (doer.jobs?.curDriver as JobDriver_EquallyMilk)?.MilkBuilding;
         if (milkingSpot != null)

@@ -529,31 +529,68 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float flowLeftMult = Pawn.GetMilkFlowMultiplierFromRJW_Left();
         float flowRightMult = Pawn.GetMilkFlowMultiplierFromRJW_Right();
         r.RjwSum = flowLeftMult + flowRightMult;
-        float basePerDay = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;
-        float flow = basePerDay * r.RjwSum;
-        if (EqualMilkingSettings.enablePressureFactor)
+        float flow = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting * r.RjwSum;
+        var entries = Pawn.GetBreastPoolEntries();
+        var milkComp = CompEquallyMilkable;
+        // 压力、喷乳反射、状态（如乳腺炎）均按「哪对乳房的哪一侧」分别计算
+        if (entries != null && entries.Count > 0 && milkComp != null)
         {
-            r.Pressure = EqualMilkingSettings.GetPressureFactor(fullness / maxF);
-            flow *= r.Pressure;
+            float baseWithoutConditions = r.Drive * r.Hunger * r.Genes * r.Setting;
+            float flowWithAllFactors = 0f;
+            float sumWeightedLetdown = 0f;
+            float sumWeightedPressure = 0f;
+            float sumWeightedConditions = 0f;
+            foreach (var e in entries)
+            {
+                float conditionsE = Pawn.GetConditionsForSide(e.Key);
+                float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
+                float fullE = milkComp.GetFullnessForKey(e.Key);
+                float pressureE = EqualMilkingSettings.enablePressureFactor
+                    ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
+                    : (fullE >= stretch ? 0f : 1f);
+                float letdownE = EqualMilkingSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier(e.Key) : 1f;
+                float contrib = conditionsE * e.FlowMultiplier * pressureE * letdownE;
+                flowWithAllFactors += contrib;
+                sumWeightedLetdown += e.FlowMultiplier * letdownE;
+                sumWeightedPressure += e.FlowMultiplier * pressureE * letdownE;
+                sumWeightedConditions += e.FlowMultiplier * conditionsE * pressureE * letdownE;
+            }
+            r.Pressure = sumWeightedLetdown >= 1E-5f ? sumWeightedPressure / sumWeightedLetdown : (EqualMilkingSettings.enablePressureFactor ? EqualMilkingSettings.GetPressureFactor(fullness / maxF) : (fullness >= maxF ? 0f : 1f));
+            r.Letdown = r.RjwSum >= 1E-5f ? sumWeightedLetdown / r.RjwSum : (EqualMilkingSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier() : 1f);
+            r.Conditions = flowWithAllFactors >= 1E-5f ? sumWeightedConditions / flowWithAllFactors : r.Conditions;
+            if (flowWithAllFactors >= 1E-5f)
+                flow = baseWithoutConditions * flowWithAllFactors;
+            else
+            {
+                float basePerDayFallback = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;
+                flow = basePerDayFallback * r.RjwSum;
+                if (!EqualMilkingSettings.enablePressureFactor && fullness >= maxF) flow = 0f;
+                else if (EqualMilkingSettings.enablePressureFactor) flow *= r.Pressure;
+                if (EqualMilkingSettings.enableLetdownReflex) flow *= r.Letdown;
+            }
         }
         else
         {
-            r.Pressure = fullness >= maxF ? 0f : 1f;
-            if (fullness >= maxF) return r;
+            float basePerDay = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;
+            if (EqualMilkingSettings.enablePressureFactor)
+            {
+                r.Pressure = EqualMilkingSettings.GetPressureFactor(fullness / maxF);
+                flow = basePerDay * r.RjwSum * r.Pressure;
+            }
+            else
+            {
+                r.Pressure = fullness >= maxF ? 0f : 1f;
+                flow = fullness >= maxF ? 0f : basePerDay * r.RjwSum;
+            }
+            r.Letdown = EqualMilkingSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier() : 1f;
+            if (EqualMilkingSettings.enableLetdownReflex) flow *= r.Letdown;
         }
-        if (EqualMilkingSettings.enableLetdownReflex)
-        {
-            r.Letdown = GetLetdownReflexFlowMultiplier();
-            flow *= r.Letdown;
-        }
-        else
-            r.Letdown = 1f;
         r.TotalFlow = flow;
         return r;
     }
 
     /// <summary>产奶流速拆解：总流速与各乘数因子（与 GetFlowPerDay 一致），用于 UI 显示。</summary>
-    internal struct FlowBreakdown
+    public struct FlowBreakdown
     {
         public float TotalFlow;
         public float Drive;
@@ -566,28 +603,21 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         public float Letdown;
     }
 
-    /// <summary>因子数值显示：整数不显示小数，否则保留 1～2 位。</summary>
-    private static string FormatFlowFactor(float v)
+    /// <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）。</summary>
+    public static string BuildBreastEfficiencyFactorLine(FlowBreakdown b, float sideMult, bool leftSide, float? letdownForSide = null, float? pressureForSide = null, float? conditionsForSide = null)
     {
-        if (float.IsNaN(v) || float.IsInfinity(v)) return "0";
-        if (v >= 100f || v <= -100f) return v.ToString("F0");
-        if (Mathf.Approximately(v, Mathf.Floor(v))) return ((int)v).ToString();
-        if (Mathf.Approximately(v * 10f, Mathf.Floor(v * 10f))) return v.ToString("F1");
-        return v.ToString("F2");
-    }
-
-    /// <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行「（驱动×1 饥饿×1 … 左乳×0.5 压力×0.95 喷乳反射×1.5）」。</summary>
-    public static string BuildBreastEfficiencyFactorLine(FlowBreakdown b, float sideMult, bool leftSide)
-    {
+        float letdown = letdownForSide ?? b.Letdown;
+        float pressure = pressureForSide ?? b.Pressure;
+        float conditions = conditionsForSide ?? b.Conditions;
         var parts = new List<string>();
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowDrive".Translate(), FormatFlowFactor(b.Drive)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowHunger".Translate(), FormatFlowFactor(b.Hunger)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(b.Conditions)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(conditions)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowGenes".Translate(), FormatFlowFactor(b.Genes)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowSetting".Translate(), FormatFlowFactor(b.Setting)));
         parts.Add("EM.MilkFlowFactorItem".Translate(leftSide ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate(), FormatFlowFactor(sideMult)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowPressure".Translate(), FormatFlowFactor(b.Pressure)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowLetdown".Translate(), FormatFlowFactor(b.Letdown)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowPressure".Translate(), FormatFlowFactor(pressure)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowLetdown".Translate(), FormatFlowFactor(letdown)));
         return string.Join(" ", parts);
     }
 

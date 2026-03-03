@@ -485,6 +485,12 @@ public static class Hediff_TipString_BreastPool_Patch
             {
                 var b = comp.GetFlowPerDayBreakdown();
                 var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(poolKey);
+                float letdownL = comp.GetLetdownReflexFlowMultiplier(poolKey + "_L");
+                float letdownR = comp.GetLetdownReflexFlowMultiplier(poolKey + "_R");
+                float pressureL = pawn.GetPressureFactorForSide(poolKey + "_L");
+                float pressureR = pawn.GetPressureFactorForSide(poolKey + "_R");
+                float conditionsL = pawn.GetConditionsForSide(poolKey + "_L");
+                float conditionsR = pawn.GetConditionsForSide(poolKey + "_R");
                 float flowPair = flowL + flowR;
                 __result = (__result ?? "") + "\n" + "EM.PoolPairEfficiencyHeader".Translate(
                     flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
@@ -492,11 +498,11 @@ public static class Hediff_TipString_BreastPool_Patch
                 __result += "\n" + "EM.PoolLeftEfficiencyHeader".Translate(
                     flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                     (flowL * 100f).ToString("F0"));
-                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true));
+                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true, letdownL, pressureL, conditionsL));
                 __result += "\n" + "EM.PoolRightEfficiencyHeader".Translate(
                     flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                     (flowR * 100f).ToString("F0"));
-                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false));
+                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false, letdownR, pressureR, conditionsR));
             }
         }
     }
@@ -545,6 +551,12 @@ public static class HealthCardUtility_GetTooltip_BreastPool_Patch
                     {
                         var b = comp.GetFlowPerDayBreakdown();
                         var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(key);
+                        float letdownL = comp.GetLetdownReflexFlowMultiplier(key + "_L");
+                        float letdownR = comp.GetLetdownReflexFlowMultiplier(key + "_R");
+                        float pressureL = pawn.GetPressureFactorForSide(key + "_L");
+                        float pressureR = pawn.GetPressureFactorForSide(key + "_R");
+                        float conditionsL = pawn.GetConditionsForSide(key + "_L");
+                        float conditionsR = pawn.GetConditionsForSide(key + "_R");
                         float flowPair = flowL + flowR;
                         __result += "\n    " + "EM.PoolPairEfficiencyHeader".Translate(
                             flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
@@ -552,11 +564,11 @@ public static class HealthCardUtility_GetTooltip_BreastPool_Patch
                         __result += "\n    " + "EM.PoolLeftEfficiencyHeader".Translate(
                             flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                             (flowL * 100f).ToString("F0"));
-                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true));
+                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true, letdownL, pressureL, conditionsL));
                         __result += "\n    " + "EM.PoolRightEfficiencyHeader".Translate(
                             flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                             (flowR * 100f).ToString("F0"));
-                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false));
+                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false, letdownR, pressureR, conditionsR));
                     }
                 }
                 break;

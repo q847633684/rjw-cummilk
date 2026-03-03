@@ -376,14 +376,55 @@ public static class ExtensionHelper
     public static Hediff LactatingHediff(this Pawn pawn) => pawn.health.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating);
     public static HediffWithComps_EqualMilkingLactating LactatingHediffWithComps(this Pawn pawn) => pawn.LactatingHediff() as HediffWithComps_EqualMilkingLactating;
 
-    /// <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。</summary>
-    public static float GetMilkFlowMultiplierFromConditions(this Pawn pawn)
+    /// <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。part 为 null 时按全身（任一乳腺炎即生效）；part 非空时仅当该部位的乳腺炎生效，对应「哪对乳房的哪一侧」。</summary>
+    public static float GetMilkFlowMultiplierFromConditions(this Pawn pawn, BodyPartRecord part = null)
     {
         if (pawn?.health?.hediffSet == null) return 1f;
-        var mastitis = global::MilkCum.Core.EMDefOf.EM_Mastitis != null ? pawn.health.hediffSet.GetFirstHediffOfDef(global::MilkCum.Core.EMDefOf.EM_Mastitis) : null;
-        if (mastitis == null) return 1f;
-        float penalty = mastitis.Severity * 0.5f;
-        return Mathf.Clamp(1f - penalty, 0.5f, 1f);
+        if (global::MilkCum.Core.EMDefOf.EM_Mastitis == null) return 1f;
+        var mastitisHediffs = pawn.health.hediffSet.hediffs.Where(x => x.def == global::MilkCum.Core.EMDefOf.EM_Mastitis).ToList();
+        if (mastitisHediffs.Count == 0) return 1f;
+        if (part == null)
+        {
+            var first = mastitisHediffs[0];
+            float penalty = first.Severity * 0.5f;
+            return Mathf.Clamp(1f - penalty, 0.5f, 1f);
+        }
+        var onPart = mastitisHediffs.FirstOrDefault(m => m.Part == part);
+        if (onPart == null) return 1f;
+        float p = onPart.Severity * 0.5f;
+        return Mathf.Clamp(1f - p, 0.5f, 1f);
+    }
+
+    /// <summary>从侧 key（如 HumanBreast_L）得到池 key（HumanBreast）。</summary>
+    public static string GetPoolKeyFromSideKey(string sideKey)
+    {
+        if (string.IsNullOrEmpty(sideKey)) return sideKey;
+        if (sideKey.EndsWith("_L") || sideKey.EndsWith("_R"))
+            return sideKey.Substring(0, sideKey.Length - 2);
+        return sideKey;
+    }
+
+    /// <summary>该对乳房（poolKey）对应的身体部位，用于按部位的状态（如乳腺炎）判定。无对应 hediff 时返回 null。</summary>
+    public static BodyPartRecord GetPartForPoolKey(this Pawn pawn, string poolKey)
+    {
+        if (pawn == null || string.IsNullOrEmpty(poolKey)) return null;
+        var list = pawn.GetBreastList();
+        if (list == null) return null;
+        foreach (var h in list)
+        {
+            if (GetPoolKeyForBreastHediff(pawn, h) == poolKey)
+                return h.Part;
+        }
+        return null;
+    }
+
+    /// <summary>指定侧（sideKey，如 poolKey_L）的状态系数，用于流速与 UI 按「该乳房该侧」显示。</summary>
+    public static float GetConditionsForSide(this Pawn pawn, string sideKey)
+    {
+        if (pawn == null || string.IsNullOrEmpty(sideKey)) return 1f;
+        string poolKey = GetPoolKeyFromSideKey(sideKey);
+        BodyPartRecord part = pawn.GetPartForPoolKey(poolKey);
+        return pawn.GetMilkFlowMultiplierFromConditions(part);
     }
 
     /// <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返回 1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速。</summary>
@@ -457,23 +498,65 @@ public static class ExtensionHelper
         return !string.IsNullOrEmpty(partDefName) ? partDefName : breastHediff.def.defName + "_" + i;
     }
 
-    /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率，用于健康页乳房行悬停显示「左/右乳产奶效率」及因子拆解。poolKey 为 GetPoolKeyForBreastHediff 返回值。</summary>
+    /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。</summary>
     public static (float flowLeft, float flowRight, float multLeft, float multRight) GetFlowPerDayForBreastPair(this Pawn pawn, string poolKey)
     {
         if (pawn == null || string.IsNullOrEmpty(poolKey)) return (0f, 0f, 0f, 0f);
         var comp = pawn.LactatingHediffComp();
         if (comp == null) return (0f, 0f, 0f, 0f);
+        var milkComp = pawn.CompEquallyMilkable();
         var b = comp.GetFlowPerDayBreakdown();
         if (b.RjwSum < 0.001f) return (0f, 0f, 0f, 0f);
-        float basePerUnit = b.TotalFlow / b.RjwSum;
+        float sumWeighted = 0f;
+        foreach (var e in pawn.GetBreastPoolEntries())
+        {
+            float conditionsE = pawn.GetConditionsForSide(e.Key);
+            float pressureE = 1f;
+            if (milkComp != null)
+            {
+                float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
+                float fullE = milkComp.GetFullnessForKey(e.Key);
+                pressureE = EqualMilkingSettings.enablePressureFactor
+                    ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
+                    : (fullE >= stretch ? 0f : 1f);
+            }
+            sumWeighted += conditionsE * e.FlowMultiplier * pressureE * comp.GetLetdownReflexFlowMultiplier(e.Key);
+        }
+        if (sumWeighted < 1E-5f) return (0f, 0f, 0f, 0f);
         float flowL = 0f, flowR = 0f, multL = 0f, multR = 0f;
         foreach (var e in pawn.GetBreastPoolEntries())
         {
             if (e.Key != poolKey + "_L" && e.Key != poolKey + "_R") continue;
-            float flow = e.FlowMultiplier * basePerUnit;
+            float conditionsE = pawn.GetConditionsForSide(e.Key);
+            float pressureE = 1f;
+            if (milkComp != null)
+            {
+                float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
+                float fullE = milkComp.GetFullnessForKey(e.Key);
+                pressureE = EqualMilkingSettings.enablePressureFactor
+                    ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
+                    : (fullE >= stretch ? 0f : 1f);
+            }
+            float weight = conditionsE * e.FlowMultiplier * pressureE * comp.GetLetdownReflexFlowMultiplier(e.Key);
+            float flow = b.TotalFlow * weight / sumWeighted;
             if (e.IsLeft) { flowL = flow; multL = e.FlowMultiplier; } else { flowR = flow; multR = e.FlowMultiplier; }
         }
         return (flowL, flowR, multL, multR);
+    }
+
+    /// <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量。</summary>
+    public static float GetPressureFactorForSide(this Pawn pawn, string sideKey)
+    {
+        var milkComp = pawn?.CompEquallyMilkable();
+        if (milkComp == null || string.IsNullOrEmpty(sideKey)) return 1f;
+        var entries = pawn.GetBreastPoolEntries();
+        var e = entries?.FirstOrDefault(x => x.Key == sideKey);
+        if (string.IsNullOrEmpty(e.Key)) return 1f;
+        float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
+        float fullE = milkComp.GetFullnessForKey(sideKey);
+        return EqualMilkingSettings.enablePressureFactor
+            ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
+            : (fullE >= stretch ? 0f : 1f);
     }
 
     /// <summary>健康页悬停（多乳）：返回该 hediff 对应的所有池条目（1 条为单侧乳，2 条为拆成 _L/_R 的一对），用于显示「左乳：奶量/容量, 右乳：奶量/容量」。</summary>
