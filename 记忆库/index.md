@@ -4,6 +4,21 @@
 
 ---
 
+## docs（规格文档，由原 Docs/ 迁移）
+
+| 标题 | 路径 | 说明 |
+|------|------|------|
+| 规格文档索引 | [docs/README](docs/README.md) | 泌乳逻辑图、参数表、清单、模拟与脚本的入口 |
+| 泌乳系统逻辑图 | [docs/泌乳系统逻辑图](docs/泌乳系统逻辑图.md) | 端到端流程、公式与常数、双池/进水/挤奶（权威规格） |
+| 参数联动表 | [docs/参数联动表](docs/参数联动表.md) | 设置参数—影响逻辑—建议联动 |
+| 游戏已接管变量与机制清单 | [docs/游戏已接管变量与机制清单](docs/游戏已接管变量与机制清单.md) | 原版/RJW 已接管项，本 mod 只读不重写 |
+| 药品Def变量参考 | [docs/药品Def变量参考](docs/药品Def变量参考.md) | 药品 ThingDef/ingestible 与本 mod 三种药品 |
+| 耐受系统重构设计 | [docs/耐受系统重构设计](docs/耐受系统重构设计.md) | E_tol、进水/衰减公式、落地修改清单 |
+| 与游戏本体及RJW的冲突与优化总结 | [docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) | 冲突与优化 |
+| 其它 | 见 [docs/README](docs/README.md) | 待办、建议评估、模拟、设置UI、脚本等 |
+
+---
+
 ## design（设计决策）
 
 | 标题 | 路径 | 摘要/标签 |
@@ -45,10 +60,10 @@
 
 ## 按标签快速跳转
 
-- `#双池`：见 [design/双池与PairIndex](design/双池与PairIndex.md)、[domain/00-概览](domain/00-概览.md)、Docs/泌乳系统逻辑图
+- `#双池`：见 [design/双池与PairIndex](design/双池与PairIndex.md)、[domain/00-概览](domain/00-概览.md)、[docs/泌乳系统逻辑图](docs/泌乳系统逻辑图.md)
 - `#PairIndex`：见 [design/双池与PairIndex](design/双池与PairIndex.md)
 - `#选侧`：见 [design/双池与PairIndex](design/双池与PairIndex.md)、[decisions/ADR-003-选侧先左](decisions/ADR-003-选侧先左.md)
-- `#耐受`：见 [domain/代码常量与公式对应](domain/代码常量与公式对应.md)、Docs/泌乳系统逻辑图 第一、二、十二节
+- `#耐受`：见 [domain/代码常量与公式对应](domain/代码常量与公式对应.md)、[docs/泌乳系统逻辑图](docs/泌乳系统逻辑图.md) 第一、二、十二节
 - `#EMDefOf`：见 [conventions/EMDefOf与代码位置](conventions/EMDefOf与代码位置.md)、[conventions/00-概览](conventions/00-概览.md)、.cursor/skills/rjw-cummilk-source
 - `#tick`：见 [decisions/ADR-001-进水与衰减周期](decisions/ADR-001-进水与衰减周期.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
 - `#吸收延迟`：见 [decisions/ADR-002-吸收延迟基准](decisions/ADR-002-吸收延迟基准.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
@@ -69,8 +84,8 @@
 | #EMDefOf | 本 mod Def 引用方式 | conventions/EMDefOf与代码位置 |
 | #tick | 30/200/2000 tick 周期 | ADR-001、domain/代码常量与公式对应 |
 | #吸收延迟 | 服药后延迟生效、BaseAbsorptionDelayTicks | ADR-002、domain/代码常量与公式对应 |
-| #参数 | 设置参数与行为联动 | domain/快速参考、Docs/参数联动表 |
-| #兼容 | 原版/RJW/其它 mod、只读只挂接 | domain/快速参考、Docs/冲突与优化总结 |
+| #参数 | 设置参数与行为联动 | domain/快速参考、[docs/参数联动表](docs/参数联动表.md) |
+| #兼容 | 原版/RJW/其它 mod、只读只挂接 | domain/快速参考、[docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) |
 | #坑点 | 已知注意、存档、Def 顺序等 | domain/快速参考 |
 
 （随条目增加可在此补充更多标签与链接）

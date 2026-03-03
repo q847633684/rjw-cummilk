@@ -12,7 +12,7 @@
 | **type** | 枚举 | 是 | `design` / `convention` / `domain` / `decision` |
 | **date** | 日期或版本 | 建议 | 写入或最后更新日期；可为版本号或 commit 范围 |
 | **tags** | 字符串数组 | 否 | 如 `#双池` `#耐受` `#EMDefOf`，用于聚合 |
-| **related_docs** | 链接列表 | 否 | 关联的 Docs 路径与章节，如 `Docs/泌乳系统逻辑图.md#二、端到端逻辑链` |
+| **related_docs** | 链接列表 | 否 | 关联的规格文档路径与章节，如 `记忆库/docs/泌乳系统逻辑图.md#二、端到端逻辑链` |
 | **related_files** | 路径列表 | 否 | 相关源码或 Def 路径，便于跳转 |
 | **最后与代码核对** | 日期或 commit | 建议 | 重要条目建议填写，便于保鲜；格式如 2025-03 或 commit 短哈希 |
 
@@ -45,7 +45,7 @@
 |------|------|------|
 | **term** | 是 | 术语或符号（如 L、E_tol、双池） |
 | **definition** | 是 | 简短定义或公式 |
-| **authoritative_ref** | 建议 | 权威出处：`Docs/xxx` 第 N 节 |
+| **authoritative_ref** | 建议 | 权威出处：`记忆库/docs/xxx` 第 N 节 |
 | **related_terms** | 否 | 相关术语列表 |
 
 ### 2.4 decision（关键决策，ADR 风格）
@@ -68,7 +68,7 @@
 - **type**: design | convention | domain | decision
 - **date**: YYYY-MM-DD 或版本
 - **tags**: #标签1 #标签2
-- **related_docs**: [Docs/xxx](Docs/xxx#锚点)
+- **related_docs**: [记忆库/docs/xxx](docs/xxx#锚点)
 
 （正文：context / conclusion / definition / decision 等）
 

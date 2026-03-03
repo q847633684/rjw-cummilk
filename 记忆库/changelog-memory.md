@@ -4,6 +4,10 @@
 
 ---
 
+## 2025-03（续） / 2026-03
+
+- **迁移**：将项目根目录 `Docs/` 全部迁入 `记忆库/docs/`，规格文档与记忆库统一存放；更新 README、架构说明、schema、index、domain/design/decisions 及规则中对 Docs 的引用为 `记忆库/docs/`；**删除**原 `Docs/` 下所有已迁移文件，仅保留 `Docs/README.md` 作重定向。约定写入规则与 conventions：迁移后须删除旧文件，不保留双份。
+
 ## 2025-03
 
 - **新增**：记忆库初始结构（README、架构说明、schema、index、design/conventions/domain/decisions 及 00-概览）。

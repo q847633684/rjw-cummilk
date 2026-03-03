@@ -3,7 +3,7 @@
 - **type**: design
 - **date**: 2025-03（根据当前代码）
 - **tags**: #双池 #PairIndex #选侧 #GetBreastPoolEntries #DrainForConsume
-- **related_docs**: [Docs/泌乳系统逻辑图.md](../../Docs/泌乳系统逻辑图.md) 第一、三、五节
+- **related_docs**: [泌乳系统逻辑图](../docs/泌乳系统逻辑图.md) 第一、三、五节
 - **最后与代码核对**: 2025-03
 
 ## Context
