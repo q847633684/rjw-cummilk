@@ -134,6 +134,18 @@
     <EM.MilkFlowStoppedFull>当前不进水（池已满）</EM.MilkFlowStoppedFull>
     <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>产奶效率：{0}/天</EM.MilkFlowPerDay>
+    <EM.MilkFlowValuePercent>产奶效率：{0}({1})/天</EM.MilkFlowValuePercent>
+    <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
+    <EM.MilkFlowDrive>驱动</EM.MilkFlowDrive>
+    <EM.MilkFlowHunger>饥饿</EM.MilkFlowHunger>
+    <EM.MilkFlowConditions>状态</EM.MilkFlowConditions>
+    <EM.MilkFlowGenes>基因</EM.MilkFlowGenes>
+    <EM.MilkFlowSetting>设置</EM.MilkFlowSetting>
+    <EM.MilkFlowRjw>左右乳</EM.MilkFlowRjw>
+    <EM.MilkFlowPressure>压力</EM.MilkFlowPressure>
+    <EM.MilkFlowLetdown>喷乳反射</EM.MilkFlowLetdown>
+    <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
+    <EM.PoolPairFlowLine>{0}: {1}(左乳：{2}；右乳：{3})</EM.PoolPairFlowLine>
     <EM.ReabsorbedNutritionPerDay>回缩吸收：+{0} 营养/天</EM.ReabsorbedNutritionPerDay>
     <EM.ReabsorbNutritionEnabled>回缩时吸收营养（补充饱食度）</EM.ReabsorbNutritionEnabled>
     <EM.ReabsorbNutritionEfficiencyLabel>回缩吸收效率：{0}</EM.ReabsorbNutritionEfficiencyLabel>
@@ -141,6 +153,13 @@
     <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
     <EM.BreastParentLabel>乳房</EM.BreastParentLabel>
     <EM.PoolTotalMilkCapacity>奶量：{0} / 容量：{1}</EM.PoolTotalMilkCapacity>
+    <EM.PoolTotalMilkCapacityFull>总奶量：{0} ({1}) / 总容量 {2}({3})</EM.PoolTotalMilkCapacityFull>
+    <EM.PoolBreastMilkCap>奶量：{0} ({1}) / 容量 {2}({3})</EM.PoolBreastMilkCap>
+    <EM.PoolBreastFlowEfficiency>左乳效率：{0}({1})/天 右乳效率：{2}({3})/天</EM.PoolBreastFlowEfficiency>
+    <EM.PoolPairEfficiencyHeader>该乳产奶效率：{0}({1}%)/天</EM.PoolPairEfficiencyHeader>
+    <EM.PoolLeftEfficiencyHeader>左乳产奶效率：{0}({1}%)/天</EM.PoolLeftEfficiencyHeader>
+    <EM.PoolRightEfficiencyHeader>右乳产奶效率：{0}({1}%)/天</EM.PoolRightEfficiencyHeader>
+    <EM.PoolEfficiencyFactorsBracket>（{0}）</EM.PoolEfficiencyFactorsBracket>
     <EM.MilkQuality>乳汁质量：{0}</EM.MilkQuality>
     <EM.AbsorptionDelayRemaining>剩余时间：{0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} 分钟</EM.AbsorptionDelayMinutes>

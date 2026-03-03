@@ -457,6 +457,25 @@ public static class ExtensionHelper
         return !string.IsNullOrEmpty(partDefName) ? partDefName : breastHediff.def.defName + "_" + i;
     }
 
+    /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率，用于健康页乳房行悬停显示「左/右乳产奶效率」及因子拆解。poolKey 为 GetPoolKeyForBreastHediff 返回值。</summary>
+    public static (float flowLeft, float flowRight, float multLeft, float multRight) GetFlowPerDayForBreastPair(this Pawn pawn, string poolKey)
+    {
+        if (pawn == null || string.IsNullOrEmpty(poolKey)) return (0f, 0f, 0f, 0f);
+        var comp = pawn.LactatingHediffComp();
+        if (comp == null) return (0f, 0f, 0f, 0f);
+        var b = comp.GetFlowPerDayBreakdown();
+        if (b.RjwSum < 0.001f) return (0f, 0f, 0f, 0f);
+        float basePerUnit = b.TotalFlow / b.RjwSum;
+        float flowL = 0f, flowR = 0f, multL = 0f, multR = 0f;
+        foreach (var e in pawn.GetBreastPoolEntries())
+        {
+            if (e.Key != poolKey + "_L" && e.Key != poolKey + "_R") continue;
+            float flow = e.FlowMultiplier * basePerUnit;
+            if (e.IsLeft) { flowL = flow; multL = e.FlowMultiplier; } else { flowR = flow; multR = e.FlowMultiplier; }
+        }
+        return (flowL, flowR, multL, multR);
+    }
+
     /// <summary>健康页悬停（多乳）：返回该 hediff 对应的所有池条目（1 条为单侧乳，2 条为拆成 _L/_R 的一对），用于显示「左乳：奶量/容量, 右乳：奶量/容量」。</summary>
     public static List<(string key, float fullness, float capacity, bool isLeft)> GetPoolEntriesForBreastHediff(this Pawn pawn, Hediff breastHediff)
     {

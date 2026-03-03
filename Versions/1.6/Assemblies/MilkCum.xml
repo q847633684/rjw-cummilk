@@ -266,7 +266,7 @@
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.DrainForConsume(System.Single)">
             <summary>
-            吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图。
+            吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图；记忆库/design/双池与PairIndex、记忆库/decisions/ADR-003-选侧先左。
             </summary>
             <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
             <returns>实际扣掉的量</returns>
@@ -527,7 +527,7 @@
             <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
         </member>
         <member name="T:MilkCum.Milk.Helpers.PoolModelConstants">
-            <summary>水池模型常量：规格第七节、第一节、十四节已定。</summary>
+            <summary>水池模型常量：规格第七节、第一节、十四节已定。详见 记忆库/domain/代码常量与公式对应。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.BaseValueT">
             <summary>基础值_T（B_T）：每日基础衰减 = 1/(B_T×有效药效系数)。</summary>
@@ -545,7 +545,7 @@
             <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.BaseAbsorptionDelayTicks">
-            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。</summary>
+            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。见 记忆库/decisions/ADR-002-吸收延迟基准。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.StretchCapFactor">
             <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
@@ -617,7 +617,7 @@
             <summary>左池/右池容量。仅计算层虚拟左右池：未启用 RJW 乳房尺寸时人形 0.5+0.5；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和（总容量=2×和）。不调用 AddHediff/RemoveHediff。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastPoolEntries(Verse.Pawn)">
-            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。</summary>
+            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。见 记忆库/design/双池与PairIndex。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromConditions(Verse.Pawn)">
             <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。</summary>

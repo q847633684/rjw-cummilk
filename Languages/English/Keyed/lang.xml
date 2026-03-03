@@ -135,6 +135,18 @@
     <EM.MilkFlowStoppedFull>No inflow (pool full)</EM.MilkFlowStoppedFull>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
+    <EM.MilkFlowValuePercent>Milk flow: {0}({1})/day</EM.MilkFlowValuePercent>
+    <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
+    <EM.MilkFlowDrive>Drive</EM.MilkFlowDrive>
+    <EM.MilkFlowHunger>Hunger</EM.MilkFlowHunger>
+    <EM.MilkFlowConditions>Conditions</EM.MilkFlowConditions>
+    <EM.MilkFlowGenes>Genes</EM.MilkFlowGenes>
+    <EM.MilkFlowSetting>Setting</EM.MilkFlowSetting>
+    <EM.MilkFlowRjw>L+R</EM.MilkFlowRjw>
+    <EM.MilkFlowPressure>Pressure</EM.MilkFlowPressure>
+    <EM.MilkFlowLetdown>Letdown</EM.MilkFlowLetdown>
+    <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
+    <EM.PoolPairFlowLine>{0}: {1}(Left: {2}; Right: {3})</EM.PoolPairFlowLine>
     <LactatingAddedNutritionPerDay>Extra nutrition per day: {0}</LactatingAddedNutritionPerDay>
     <EM.ReabsorbedNutritionPerDay>Reabsorbed (pool shrinking): +{0} nutrition/day</EM.ReabsorbedNutritionPerDay>
     <EM.ReabsorbNutritionEnabled>Reabsorb nutrition when pool shrinks (add to food need)</EM.ReabsorbNutritionEnabled>
@@ -143,6 +155,14 @@
     <EM.PoolRightBreast>Right</EM.PoolRightBreast>
     <EM.BreastParentLabel>Breasts</EM.BreastParentLabel>
     <EM.PoolTotalMilkCapacity>Milk: {0} / Capacity: {1}</EM.PoolTotalMilkCapacity>
+    <EM.PoolTotalMilkCapacityFull>Total milk: {0} ({1}) / Capacity {2}({3})</EM.PoolTotalMilkCapacityFull>
+    <EM.PoolBreastMilkBaseStretch>Milk {0} / base {1}, stretched {2}</EM.PoolBreastMilkBaseStretch>
+    <EM.PoolBreastMilkCap>Milk: {0} ({1}) / Cap {2}({3})</EM.PoolBreastMilkCap>
+    <EM.PoolBreastFlowEfficiency>Left: {0}({1})/day Right: {2}({3})/day</EM.PoolBreastFlowEfficiency>
+    <EM.PoolPairEfficiencyHeader>Pair milk flow: {0}({1}%)/day</EM.PoolPairEfficiencyHeader>
+    <EM.PoolLeftEfficiencyHeader>Left milk flow: {0}({1}%)/day</EM.PoolLeftEfficiencyHeader>
+    <EM.PoolRightEfficiencyHeader>Right milk flow: {0}({1}%)/day</EM.PoolRightEfficiencyHeader>
+    <EM.PoolEfficiencyFactorsBracket>({0})</EM.PoolEfficiencyFactorsBracket>
     <EM.MilkQuality>Milk quality: {0}</EM.MilkQuality>
     <EM.AbsorptionDelayRemaining>Time remaining: {0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} minutes</EM.AbsorptionDelayMinutes>

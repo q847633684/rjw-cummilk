@@ -465,11 +465,40 @@ public static class Hediff_TipString_BreastPool_Patch
         foreach (var (_, fullness, capacity, isLeft) in entries)
         {
             string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
-            float cap = Mathf.Max(0f, capacity);
-            parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+            float baseCap = Mathf.Max(0.001f, capacity);
+            float stretchCap = baseCap * PoolModelConstants.StretchCapFactor;
+            string percentStr = baseCap >= 0.001f ? (fullness / baseCap).ToStringPercent() : "0%";
+            string text = "EM.PoolBreastMilkCap".Translate(
+                fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                percentStr,
+                baseCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                stretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+            parts.Add(label + ": " + text);
         }
         if (parts.Count > 0)
             __result = (__result ?? "") + "\n" + string.Join(", ", parts);
+        string poolKey = pawn.GetPoolKeyForBreastHediff(__instance);
+        if (!string.IsNullOrEmpty(poolKey))
+        {
+            var comp = pawn.LactatingHediffComp();
+            if (comp != null)
+            {
+                var b = comp.GetFlowPerDayBreakdown();
+                var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(poolKey);
+                float flowPair = flowL + flowR;
+                __result = (__result ?? "") + "\n" + "EM.PoolPairEfficiencyHeader".Translate(
+                    flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    (flowPair * 100f).ToString("F0"));
+                __result += "\n" + "EM.PoolLeftEfficiencyHeader".Translate(
+                    flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    (flowL * 100f).ToString("F0"));
+                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true));
+                __result += "\n" + "EM.PoolRightEfficiencyHeader".Translate(
+                    flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    (flowR * 100f).ToString("F0"));
+                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false));
+            }
+        }
     }
 }
 
@@ -496,12 +525,40 @@ public static class HealthCardUtility_GetTooltip_BreastPool_Patch
             foreach (var (_, fullness, capacity, isLeft) in entries)
             {
                 string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
-                float cap = Mathf.Max(0f, capacity);
-                parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+                float baseCap = Mathf.Max(0.001f, capacity);
+                float stretchCap = baseCap * PoolModelConstants.StretchCapFactor;
+                string percentStr = baseCap >= 0.001f ? (fullness / baseCap).ToStringPercent() : "0%";
+                string text = "EM.PoolBreastMilkCap".Translate(
+                    fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    percentStr,
+                    baseCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    stretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+                parts.Add(label + ": " + text);
             }
             if (parts.Count > 0)
             {
                 __result = (__result ?? "") + "\n    " + string.Join(", ", parts);
+                if (!string.IsNullOrEmpty(key))
+                {
+                    var comp = pawn.LactatingHediffComp();
+                    if (comp != null)
+                    {
+                        var b = comp.GetFlowPerDayBreakdown();
+                        var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(key);
+                        float flowPair = flowL + flowR;
+                        __result += "\n    " + "EM.PoolPairEfficiencyHeader".Translate(
+                            flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                            (flowPair * 100f).ToString("F0"));
+                        __result += "\n    " + "EM.PoolLeftEfficiencyHeader".Translate(
+                            flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                            (flowL * 100f).ToString("F0"));
+                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true));
+                        __result += "\n    " + "EM.PoolRightEfficiencyHeader".Translate(
+                            flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                            (flowR * 100f).ToString("F0"));
+                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false));
+                    }
+                }
                 break;
             }
         }

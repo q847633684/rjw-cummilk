@@ -7,6 +7,7 @@ using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using rjw;
 public class HediffWithComps_EqualMilkingLactating : HediffWithComps
 {
     /// <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage. maxSteps=81, count=162; if future allows severity>20 (e.g. large dose), display stays at last stage—not a bug, just a note.</summary>
@@ -59,7 +60,6 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         if (this.Severity < 1f)
             this.Severity = Mathf.Min(1f, this.Severity + 0.5f); // 挤奶时最多推到 1，不直接变永久；永久=成瘾且满足需求不衰减
         var comp = comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
-        comp?.AddLetdownReflexStimulus();
         comp?.AddMilkingLStimulus();
     }
     public void OnGathered(float fullness)
@@ -69,8 +69,15 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
         else
             this.Severity += fullness;
         var comp = comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
-        comp?.AddLetdownReflexStimulus();
         comp?.AddMilkingLStimulus();
+    }
+    /// <summary>挤奶/吸奶后按被扣量的池侧添加喷乳反射刺激（仅被操作的该侧 R 升高）。</summary>
+    public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys)
+    {
+        if (drainedKeys == null) return;
+        var comp = comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
+        foreach (string key in drainedKeys)
+            comp?.AddLetdownReflexStimulus(key);
     }
     /// <summary>设计原则 5：stages 由 XML 移除，此处 C# 动态生成；capMods 在 GenStage 内设置（当前 Clear 由 EM_LactatingGain 等独立 Hediff 提供能力），避免与 Def 静态阶段冲突。</summary>
     private void GenStages()
@@ -122,8 +129,10 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
 {
     /// <summary>水池模型（L 驱动）：当前泌乳量 L。唯一状态量；每日衰减 = 1/(B_T×E)+k×L；泌乳结束 L≤0。</summary>
     private float currentLactationAmount;
-    /// <summary>四层模型：喷乳反射 R∈[0,1]。每 30 tick 指数衰减；挤奶/吸奶时升高。</summary>
-    private float currentLetdownReflex = 1f;
+    /// <summary>四层模型：喷乳反射 R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key 与 breastFullness 一致，如 HumanBreast_L）。挤奶/吸奶某侧仅提升该侧 R。</summary>
+    private Dictionary<string, float> letdownReflexByKey;
+    /// <summary>旧存档兼容：加载到的单一 R 值；若存在且 letdownReflexByKey 为空则不再使用，新逻辑全用按侧 R。</summary>
+    private float legacyLetdownReflex = 1f;
     /// <summary>四层模型：炎症负荷 I≥0。每 30 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
     private float currentInflammation;
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置。</summary>
@@ -174,7 +183,24 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float legacyRemainingDays = 0f;
         Scribe_Values.Look(ref legacyRemainingDays, "PoolRemainingDays", 0f);
         Scribe_Values.Look(ref currentLactationAmount, "PoolCurrentLactationAmount", 0f);
-        Scribe_Values.Look(ref currentLetdownReflex, "EM.LetdownReflex", 1f);
+        Scribe_Values.Look(ref legacyLetdownReflex, "EM.LetdownReflex", 1f);
+        List<string> letdownKeys = null;
+        List<float> letdownVals = null;
+        if (Scribe.mode == LoadSaveMode.Saving && letdownReflexByKey != null && letdownReflexByKey.Count > 0)
+        {
+            letdownKeys = letdownReflexByKey.Keys.ToList();
+            letdownVals = letdownReflexByKey.Values.ToList();
+        }
+        Scribe_Collections.Look(ref letdownKeys, "EM.LetdownReflexKeys", LookMode.Value);
+        Scribe_Collections.Look(ref letdownVals, "EM.LetdownReflexVals", LookMode.Value);
+        if (Scribe.mode == LoadSaveMode.PostLoadInit && letdownKeys != null && letdownVals != null && letdownKeys.Count == letdownVals.Count)
+        {
+            letdownReflexByKey ??= new Dictionary<string, float>();
+            letdownReflexByKey.Clear();
+            for (int i = 0; i < letdownKeys.Count; i++)
+                if (!string.IsNullOrEmpty(letdownKeys[i]))
+                    letdownReflexByKey[letdownKeys[i]] = Mathf.Clamp01(letdownVals[i]);
+        }
         Scribe_Values.Look(ref currentInflammation, "EM.Inflammation", 0f);
         Scribe_Values.Look(ref milkingLStimulusAccumulatedThisDay, "EM.MilkingLStimulusAccumulatedThisDay", 0f);
         Scribe_Values.Look(ref lastMilkingLStimulusDayTick, "EM.LastMilkingLStimulusDayTick", -1);
@@ -188,7 +214,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 float eff = GetEffectiveDrugFactor();
                 currentLactationAmount = Parent.Severity * GetBaseValueNormalized(Pawn) * eff;
             }
-            currentLetdownReflex = Mathf.Clamp01(currentLetdownReflex);
+            legacyLetdownReflex = Mathf.Clamp01(legacyLetdownReflex);
             currentInflammation = Mathf.Max(0f, currentInflammation);
             effectiveToleranceE = Mathf.Clamp01(effectiveToleranceE);
             if (effectiveToleranceE <= 0f && Pawn != null && EqualMilkingSettings.GetProlactinTolerance(Pawn) > 0f)
@@ -273,49 +299,104 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         milkingLStimulusAccumulatedThisDay += toAdd;
     }
 
-    /// <summary>四层模型：当前喷乳反射 R∈[0,1]。未启用时返回 1；启用时不低于 letdownReflexMin，避免无挤奶时产奶效率归零。</summary>
+    /// <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的加权平均，无数据时不低于 letdownReflexMin。</summary>
     public float GetLetdownReflex()
     {
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
-        float r = Mathf.Clamp01(currentLetdownReflex);
-        float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
-        return Mathf.Max(minR, r);
+        var entries = Pawn?.GetBreastPoolEntries();
+        if (entries == null || entries.Count == 0) return Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+        float sumR = 0f;
+        int n = 0;
+        foreach (var e in entries)
+        {
+            float r = GetLetdownReflexForSide(e.Key);
+            float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+            sumR += Mathf.Max(minR, r);
+            n++;
+        }
+        return n > 0 ? Mathf.Clamp01(sumR / n) : Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
     }
 
-    /// <summary>进水流速的 R 倍率：加成模式（boost&gt;1）时 = 1+R×(boost-1)，R=0 为 1 倍、R=1 为 boost 倍，倍率最低 1 不会为 0；否则 = GetLetdownReflex()（旧乘数）。</summary>
+    /// <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会与 min 合并）。</summary>
+    private float GetLetdownReflexRaw(string sideKey)
+    {
+        if (string.IsNullOrEmpty(sideKey) || letdownReflexByKey == null || !letdownReflexByKey.TryGetValue(sideKey, out float r))
+            return 0f;
+        return Mathf.Clamp01(r);
+    }
+
+    /// <summary>指定侧的 R，无记录时用 legacy 或 0（用于显示/平均）。</summary>
+    public float GetLetdownReflexForSide(string sideKey)
+    {
+        if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
+        float r = GetLetdownReflexRaw(sideKey);
+        if (r <= 0f && legacyLetdownReflex > 0f && (letdownReflexByKey == null || letdownReflexByKey.Count == 0))
+            r = legacyLetdownReflex; // 旧存档：尚无按侧数据时用旧单值
+        return r;
+    }
+
+    /// <summary>进水流速的 R 倍率（按侧）：加成模式时 = 1+R×(boost-1)；否则 = R（无记录时用 min）。用于该侧进水与 UI 因子。</summary>
+    public float GetLetdownReflexFlowMultiplier(string sideKey)
+    {
+        if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
+        float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+        float r = GetLetdownReflexRaw(sideKey);
+        if (r <= 0f && (letdownReflexByKey == null || letdownReflexByKey.Count == 0))
+            r = legacyLetdownReflex;
+        r = Mathf.Max(minR, Mathf.Clamp01(r));
+        float boost = Mathf.Clamp(EqualMilkingSettings.letdownReflexBoostMultiplier, 1f, 3f);
+        if (boost > 1f)
+            return Mathf.Max(1f, 1f + r * (boost - 1f));
+        return r;
+    }
+
+    /// <summary>进水流速的 R 倍率（全侧平均，用于总产奶效率一行显示）。</summary>
     public float GetLetdownReflexFlowMultiplier()
     {
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
-        float boost = Mathf.Clamp(EqualMilkingSettings.letdownReflexBoostMultiplier, 1f, 3f);
-        if (boost > 1f)
-        {
-            float r = Mathf.Clamp01(currentLetdownReflex);
-            return Mathf.Max(1f, 1f + r * (boost - 1f)); // 倍率最低 1，保证 R=0 时正常进水
-        }
-        return GetLetdownReflex();
+        var entries = Pawn?.GetBreastPoolEntries();
+        if (entries == null || entries.Count == 0) return 1f;
+        float sum = 0f;
+        foreach (var e in entries)
+            sum += GetLetdownReflexFlowMultiplier(e.Key);
+        return entries.Count > 0 ? sum / entries.Count : 1f;
     }
 
-    /// <summary>四层模型：R 指数衰减，R_new = R×exp(-λ×Δt)。Δt 单位为分钟。加成模式（boost&gt;1）时 R 可衰减到 0；否则不低于 letdownReflexMin。</summary>
+    /// <summary>四层模型：各侧 R 指数衰减；仅保留当前池中存在的 key，避免字典无限增长。</summary>
     public void DecayLetdownReflex(float deltaTMinutes)
     {
         if (!EqualMilkingSettings.enableLetdownReflex || deltaTMinutes <= 0f) return;
+        if (letdownReflexByKey == null || letdownReflexByKey.Count == 0) return;
         float lambda = Mathf.Max(0.001f, EqualMilkingSettings.letdownReflexDecayLambda);
-        currentLetdownReflex *= Mathf.Exp(-lambda * deltaTMinutes);
         bool boostMode = EqualMilkingSettings.letdownReflexBoostMultiplier > 1f;
-        if (!boostMode)
+        float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+        var validKeys = Pawn?.GetBreastPoolEntries()?.Select(e => e.Key).ToHashSet();
+        var keys = letdownReflexByKey.Keys.ToList();
+        var toRemove = new List<string>();
+        foreach (string key in keys)
         {
-            float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
-            if (minR >= 1E-5f && currentLetdownReflex < minR) currentLetdownReflex = minR;
+            if (validKeys != null && !validKeys.Contains(key))
+            {
+                toRemove.Add(key);
+                continue;
+            }
+            float r = letdownReflexByKey[key] * Mathf.Exp(-lambda * deltaTMinutes);
+            if (!boostMode && minR >= 1E-5f && r < minR) r = minR;
+            if (r < 1E-5f) r = 0f;
+            letdownReflexByKey[key] = r;
         }
-        if (currentLetdownReflex < 1E-5f) currentLetdownReflex = 0f;
+        foreach (string key in toRemove)
+            letdownReflexByKey.Remove(key);
     }
 
-    /// <summary>四层模型：挤奶/吸奶刺激，R += ΔR，Clamp 至 1。</summary>
-    public void AddLetdownReflexStimulus()
+    /// <summary>四层模型：挤奶/吸奶刺激该侧，R += ΔR，Clamp 至 1。仅被刺激的那一侧（如第一对的左乳）提升喷乳反射。</summary>
+    public void AddLetdownReflexStimulus(string sideKey)
     {
-        if (!EqualMilkingSettings.enableLetdownReflex) return;
+        if (!EqualMilkingSettings.enableLetdownReflex || string.IsNullOrEmpty(sideKey)) return;
+        letdownReflexByKey ??= new Dictionary<string, float>();
         float deltaR = Mathf.Clamp(EqualMilkingSettings.letdownReflexStimulusDeltaR, 0f, 1f);
-        currentLetdownReflex = Mathf.Min(1f, currentLetdownReflex + deltaR);
+        float r = GetLetdownReflexRaw(sideKey);
+        letdownReflexByKey[sideKey] = Mathf.Min(1f, r + deltaR);
     }
 
     /// <summary>归一化基础值 = 总容量（规格：基础值 = 总容量），当前实现为 1。</summary>
@@ -325,6 +406,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public float GetEffectiveDrugFactor()
     {
         return EqualMilkingSettings.GetProlactinToleranceFactor(Pawn);
+    }
+
+    /// <summary>流速因子显示用：整数显示为 "1"，否则保留 1～2 位小数。</summary>
+    private static string FormatFlowFactor(float v)
+    {
+        if (float.IsNaN(v) || float.IsInfinity(v)) return "0";
+        if (Mathf.Approximately(v, Mathf.Floor(v))) return ((int)v).ToString();
+        return v <= 10f ? v.ToString("F2").TrimEnd('0').TrimEnd('.') : v.ToString("F1");
     }
 
     /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由设置反推。</summary>
@@ -419,27 +508,89 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。启用四层时：驱动可用 D_eff=L·H(L)，再乘 PressureFactor(P)×R（见 Docs 第十二节）。</summary>
     internal float GetFlowPerDay()
     {
-        if (CompEquallyMilkable == null) return 0f;
+        var b = GetFlowPerDayBreakdown();
+        return b.TotalFlow;
+    }
+
+    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示「产奶效率：1(300%)/天」及「驱动×1 饥饿×1 状态×1 …」。</summary>
+    internal FlowBreakdown GetFlowPerDayBreakdown()
+    {
+        var r = new FlowBreakdown();
+        if (CompEquallyMilkable == null) return r;
         float maxF = Mathf.Max(0.001f, CompEquallyMilkable.maxFullness);
         float fullness = CompEquallyMilkable.Fullness;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
-        if (currentLactationAmount <= 0f || hungerFactor <= 0f) return 0f;
-        float drive = EqualMilkingSettings.GetEffectiveDrive(currentLactationAmount);
-        float basePerDay = drive * hungerFactor
-            * Pawn.GetMilkFlowMultiplierFromConditions()
-            * Pawn.GetMilkFlowMultiplierFromGenes()
-            * EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
-        float flowLeft = Pawn.GetMilkFlowMultiplierFromRJW_Left() * basePerDay;
-        float flowRight = Pawn.GetMilkFlowMultiplierFromRJW_Right() * basePerDay;
-        float flow = flowLeft + flowRight;
+        if (currentLactationAmount <= 0f || hungerFactor <= 0f) return r;
+        r.Drive = EqualMilkingSettings.GetEffectiveDrive(currentLactationAmount);
+        r.Hunger = hungerFactor;
+        r.Conditions = Pawn.GetMilkFlowMultiplierFromConditions();
+        r.Genes = Pawn.GetMilkFlowMultiplierFromGenes();
+        r.Setting = EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
+        float flowLeftMult = Pawn.GetMilkFlowMultiplierFromRJW_Left();
+        float flowRightMult = Pawn.GetMilkFlowMultiplierFromRJW_Right();
+        r.RjwSum = flowLeftMult + flowRightMult;
+        float basePerDay = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;
+        float flow = basePerDay * r.RjwSum;
         if (EqualMilkingSettings.enablePressureFactor)
-            flow *= EqualMilkingSettings.GetPressureFactor(fullness / maxF);
-        else if (fullness >= maxF)
-            return 0f;
+        {
+            r.Pressure = EqualMilkingSettings.GetPressureFactor(fullness / maxF);
+            flow *= r.Pressure;
+        }
+        else
+        {
+            r.Pressure = fullness >= maxF ? 0f : 1f;
+            if (fullness >= maxF) return r;
+        }
         if (EqualMilkingSettings.enableLetdownReflex)
-            flow *= GetLetdownReflexFlowMultiplier();
-        return flow;
+        {
+            r.Letdown = GetLetdownReflexFlowMultiplier();
+            flow *= r.Letdown;
+        }
+        else
+            r.Letdown = 1f;
+        r.TotalFlow = flow;
+        return r;
     }
+
+    /// <summary>产奶流速拆解：总流速与各乘数因子（与 GetFlowPerDay 一致），用于 UI 显示。</summary>
+    internal struct FlowBreakdown
+    {
+        public float TotalFlow;
+        public float Drive;
+        public float Hunger;
+        public float Conditions;
+        public float Genes;
+        public float Setting;
+        public float RjwSum;
+        public float Pressure;
+        public float Letdown;
+    }
+
+    /// <summary>因子数值显示：整数不显示小数，否则保留 1～2 位。</summary>
+    private static string FormatFlowFactor(float v)
+    {
+        if (float.IsNaN(v) || float.IsInfinity(v)) return "0";
+        if (v >= 100f || v <= -100f) return v.ToString("F0");
+        if (Mathf.Approximately(v, Mathf.Floor(v))) return ((int)v).ToString();
+        if (Mathf.Approximately(v * 10f, Mathf.Floor(v * 10f))) return v.ToString("F1");
+        return v.ToString("F2");
+    }
+
+    /// <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行「（驱动×1 饥饿×1 … 左乳×0.5 压力×0.95 喷乳反射×1.5）」。</summary>
+    public static string BuildBreastEfficiencyFactorLine(FlowBreakdown b, float sideMult, bool leftSide)
+    {
+        var parts = new List<string>();
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowDrive".Translate(), FormatFlowFactor(b.Drive)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowHunger".Translate(), FormatFlowFactor(b.Hunger)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(b.Conditions)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowGenes".Translate(), FormatFlowFactor(b.Genes)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowSetting".Translate(), FormatFlowFactor(b.Setting)));
+        parts.Add("EM.MilkFlowFactorItem".Translate(leftSide ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate(), FormatFlowFactor(sideMult)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowPressure".Translate(), FormatFlowFactor(b.Pressure)));
+        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowLetdown".Translate(), FormatFlowFactor(b.Letdown)));
+        return string.Join(" ", parts);
+    }
+
     public override string CompTipStringExtra
     {
         get
@@ -462,25 +613,15 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             else
                 lines.Add("EM.LactatingStateProducing".Translate((totalMilk / maxF).ToStringPercent()));
 
-            // 2. 池子与可产
+            // 2. 池子与可产（哺乳期行不显示左/右乳明细，乳房行悬停已有每对容量与奶量；总行格式与单侧一致：总奶量(满基%)/总容量 基础(撑大)）
             if (CompEquallyMilkable != null)
             {
-                // 左乳/右乳 满度与容量（与原版 tooltip 一致，仅靠 CompTipStringExtra 即可在健康页显示，无需 patch HealthCardUtility）
-                var entries = parent.pawn.GetPoolEntriesForBreastHediff(parent);
-                if (entries != null && entries.Count > 0)
-                {
-                    var parts = new List<string>();
-                    foreach (var (_, fullness, capacity, isLeft) in entries)
-                    {
-                        string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
-                        float cap = Mathf.Max(0f, capacity);
-                        parts.Add(label + ": " + fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute) + " / " + cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
-                    }
-                    if (parts.Count > 0)
-                        lines.Add(string.Join(", ", parts));
-                }
-                lines.Add("EM.PoolTotalMilkCapacity".Translate(
+                float baseTotal = Mathf.Max(0.01f, Pawn.GetLeftBreastCapacityFactor() + Pawn.GetRightBreastCapacityFactor());
+                string totalPercentStr = baseTotal >= 0.001f ? (totalMilk / baseTotal).ToStringPercent() : "0%";
+                lines.Add("EM.PoolTotalMilkCapacityFull".Translate(
                     totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    totalPercentStr,
+                    baseTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                     maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 if (EqualMilkingSettings.enableMilkQuality)
                 {
@@ -507,8 +648,35 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 }
                 else
                 {
-                    float flowPerDay = GetFlowPerDay();
-                    lines.Add("EM.MilkFlowPerDay".Translate(flowPerDay.ToStringPercent()));
+                    var b = GetFlowPerDayBreakdown();
+                    float flowPerDay = b.TotalFlow;
+                    string flowPercent = (flowPerDay * 100f).ToString("F0") + "%";
+                    lines.Add("EM.MilkFlowValuePercent".Translate(
+                        flowPerDay.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                        flowPercent));
+                    try
+                    {
+                        var breastList = Pawn.GetBreastList();
+                        if (breastList != null && breastList.Count > 0)
+                        {
+                            foreach (var h in breastList)
+                            {
+                                if (h?.def == null) continue;
+                                string key = Pawn.GetPoolKeyForBreastHediff(h);
+                                if (string.IsNullOrEmpty(key)) continue;
+                                var (flowL, flowR, _, _) = Pawn.GetFlowPerDayForBreastPair(key);
+                                float pairTotal = flowL + flowR;
+                                string label = h.LabelCap;
+                                if (string.IsNullOrEmpty(label)) label = h.def.label;
+                                lines.Add("EM.PoolPairFlowLine".Translate(
+                                    label,
+                                    pairTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                                    flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                                    flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                            }
+                        }
+                    }
+                    catch { }
                     if (Pawn.needs?.food != null)
                         lines.Add("LactatingAddedNutritionPerDay".Translate(ExtraNutritionPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                     else if (Pawn.needs?.energy != null)
