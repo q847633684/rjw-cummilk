@@ -310,7 +310,7 @@ public static class ExtensionHelper
         }
     }
 
-    /// <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。</summary>
+    /// <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。见 记忆库/design/双池与PairIndex。</summary>
     public static List<BreastPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
         var result = new List<BreastPoolEntry>();

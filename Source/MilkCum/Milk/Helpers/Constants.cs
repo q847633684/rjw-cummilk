@@ -7,7 +7,7 @@ public static class Constants
     public const float MILK_CHARGE_FACTOR = 8f / 3f; // Max 0.125 => 1, 3 Milk full charge
 }
 
-/// <summary>水池模型常量：规格第七节、第一节、十四节已定。</summary>
+/// <summary>水池模型常量：规格第七节、第一节、十四节已定。详见 记忆库/domain/代码常量与公式对应。</summary>
 public static class PoolModelConstants
 {
     /// <summary>基础值_T（B_T）：每日基础衰减 = 1/(B_T×有效药效系数)。</summary>
@@ -21,7 +21,7 @@ public static class PoolModelConstants
     /// <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
     public const float LactationEndEpsilon = 1E-5f;
 
-    /// <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。</summary>
+    /// <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。见 记忆库/decisions/ADR-002-吸收延迟基准。</summary>
     public const int BaseAbsorptionDelayTicks = 15000;
 
     /// <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>

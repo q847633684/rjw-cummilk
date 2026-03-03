@@ -371,6 +371,7 @@ public class CompEquallyMilkable : CompMilkable
         }
         if (EqualMilkingSettings.enableToleranceDynamic)
             lactatingComp.UpdateToleranceDynamic(currentLactation, 30f / 60000f);
+        // 按对分组、每对 TickGrowth：见 记忆库/design/双池与PairIndex；进水周期 30 tick：见 记忆库/decisions/ADR-001-进水与衰减周期
         var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
         foreach (var group in byPair)
         {
@@ -509,7 +510,7 @@ public class CompEquallyMilkable : CompMilkable
     }
 
     /// <summary>
-    /// 吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图。
+    /// 吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图；记忆库/design/双池与PairIndex、记忆库/decisions/ADR-003-选侧先左。
     /// </summary>
     /// <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
     /// <returns>实际扣掉的量</returns>

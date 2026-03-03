@@ -361,7 +361,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             base.CompPostTick(ref severityAdjustment);
             return;
         }
-        // 水池模型（L 驱动）：每 200 tick 更新。永久泌乳/动物：不衰减 L，仅 L≤0 时设为基础值，避免池满时流速=0 仍衰减导致 L→0→重置 的波动。
+        // 水池模型（L 驱动）：每 200 tick 更新。永久泌乳/动物：不衰减 L，仅 L≤0 时设为基础值，避免池满时流速=0 仍衰减导致 L→0→重置 的波动。见 记忆库/decisions/ADR-001-进水与衰减周期。
         if (Pawn.IsHashIntervalTick(200))
         {
             bool permanentOrAnimal = Pawn.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true
