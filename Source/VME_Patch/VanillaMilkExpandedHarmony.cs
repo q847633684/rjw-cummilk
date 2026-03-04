@@ -24,7 +24,6 @@ public static class CompAssignableToPawn_Box_Patch
     [HarmonyPatch("get_AssigningCandidates")]
     public static bool AssigningCandidates_Prefix(CompAssignableToPawn_Box __instance, ref IEnumerable<Pawn> __result)
     {
-        Log.Message("CompAssignableToPawn_Box_Patch");
         IEnumerable<Pawn> enumerable;
         if (!__instance.parent.Spawned)
         {

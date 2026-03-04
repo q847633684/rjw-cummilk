@@ -163,6 +163,11 @@
     <EM.PoolLeftEfficiencyHeader>Left milk flow: {0}({1}%)/day</EM.PoolLeftEfficiencyHeader>
     <EM.PoolRightEfficiencyHeader>Right milk flow: {0}({1}%)/day</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>({0})</EM.PoolEfficiencyFactorsBracket>
+    <EM.PoolBreastSectionHeader>[{0}]</EM.PoolBreastSectionHeader>
+    <EM.PoolBreastPairSummary>Total: milk {0} / cap {1}({2}) / flow {3}/day</EM.PoolBreastPairSummary>
+    <EM.PoolBreastSideMilk>Milk: {0} ({1})</EM.PoolBreastSideMilk>
+    <EM.PoolBreastSideCap>Cap: {0}({1})</EM.PoolBreastSideCap>
+    <EM.PoolBreastSideFlow>Flow: {0}/day</EM.PoolBreastSideFlow>
     <EM.MilkQuality>Milk quality: {0}</EM.MilkQuality>
     <EM.AbsorptionDelayRemaining>Time remaining: {0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} minutes</EM.AbsorptionDelayMinutes>

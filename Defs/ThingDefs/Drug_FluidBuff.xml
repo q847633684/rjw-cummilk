@@ -81,7 +81,6 @@
     <ingestible>
 		<drugCategory>Medical</drugCategory>
 		<joy>0</joy>
-		<joyKind>Chemical</joyKind>
 		<foodType>Processed</foodType>
 		<baseIngestTicks>300</baseIngestTicks>
 		<nurseable>true</nurseable>

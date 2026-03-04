@@ -160,6 +160,11 @@
     <EM.PoolLeftEfficiencyHeader>左乳产奶效率：{0}({1}%)/天</EM.PoolLeftEfficiencyHeader>
     <EM.PoolRightEfficiencyHeader>右乳产奶效率：{0}({1}%)/天</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>（{0}）</EM.PoolEfficiencyFactorsBracket>
+    <EM.PoolBreastSectionHeader>【{0}】</EM.PoolBreastSectionHeader>
+    <EM.PoolBreastPairSummary>总:奶量：{0}/容量：{1}({2})/效率:{3}/天</EM.PoolBreastPairSummary>
+    <EM.PoolBreastSideMilk>奶量：{0} ({1})</EM.PoolBreastSideMilk>
+    <EM.PoolBreastSideCap>容量：{0}({1})</EM.PoolBreastSideCap>
+    <EM.PoolBreastSideFlow>效率：{0}/天</EM.PoolBreastSideFlow>
     <EM.MilkQuality>乳汁质量：{0}</EM.MilkQuality>
     <EM.AbsorptionDelayRemaining>剩余时间：{0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} 分钟</EM.AbsorptionDelayMinutes>
