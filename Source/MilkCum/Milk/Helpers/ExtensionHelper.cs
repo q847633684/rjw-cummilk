@@ -381,18 +381,11 @@ public static class ExtensionHelper
     {
         if (pawn?.health?.hediffSet == null) return 1f;
         if (global::MilkCum.Core.EMDefOf.EM_Mastitis == null) return 1f;
-        var mastitisHediffs = pawn.health.hediffSet.hediffs.Where(x => x.def == global::MilkCum.Core.EMDefOf.EM_Mastitis).ToList();
-        if (mastitisHediffs.Count == 0) return 1f;
-        if (part == null)
-        {
-            var first = mastitisHediffs[0];
-            float penalty = first.Severity * 0.5f;
-            return Mathf.Clamp(1f - penalty, 0.5f, 1f);
-        }
-        var onPart = mastitisHediffs.FirstOrDefault(m => m.Part == part);
-        if (onPart == null) return 1f;
-        float p = onPart.Severity * 0.5f;
-        return Mathf.Clamp(1f - p, 0.5f, 1f);
+        var mastitis = pawn.health.hediffSet.hediffs.Where(x => x.def == global::MilkCum.Core.EMDefOf.EM_Mastitis);
+        Hediff h = part == null ? mastitis.FirstOrDefault() : mastitis.FirstOrDefault(m => m.Part == part);
+        if (h == null) return 1f;
+        float penalty = h.Severity * 0.5f;
+        return Mathf.Clamp(1f - penalty, 0.5f, 1f);
     }
 
     /// <summary>从侧 key（如 HumanBreast_L）得到池 key（HumanBreast）。</summary>
@@ -465,16 +458,13 @@ public static class ExtensionHelper
             var list = pawn.GetBreastList();
             if (list == null || list.Count == 0) return;
             float totalMult = 0f;
-            int count = 0;
-            for (int i = 0; i < list.Count; i++)
+            foreach (var h in list)
             {
-                var h = list[i];
                 if (h?.def == null) continue;
                 float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
                 totalMult += mult;
-                count++;
             }
-            if (count > 0)
+            if (totalMult > 0f)
             {
                 leftMultiplier = totalMult;
                 rightMultiplier = totalMult;
@@ -498,7 +488,7 @@ public static class ExtensionHelper
         return !string.IsNullOrEmpty(partDefName) ? partDefName : breastHediff.def.defName + "_" + i;
     }
 
-    /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。</summary>
+    /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目。</summary>
     public static (float flowLeft, float flowRight, float multLeft, float multRight) GetFlowPerDayForBreastPair(this Pawn pawn, string poolKey)
     {
         if (pawn == null || string.IsNullOrEmpty(poolKey)) return (0f, 0f, 0f, 0f);
@@ -507,26 +497,11 @@ public static class ExtensionHelper
         var milkComp = pawn.CompEquallyMilkable();
         var b = comp.GetFlowPerDayBreakdown();
         if (b.RjwSum < 0.001f) return (0f, 0f, 0f, 0f);
+        var entries = pawn.GetBreastPoolEntries();
         float sumWeighted = 0f;
-        foreach (var e in pawn.GetBreastPoolEntries())
+        float weightL = 0f, weightR = 0f, multL = 0f, multR = 0f;
+        foreach (var e in entries)
         {
-            float conditionsE = pawn.GetConditionsForSide(e.Key);
-            float pressureE = 1f;
-            if (milkComp != null)
-            {
-                float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
-                float fullE = milkComp.GetFullnessForKey(e.Key);
-                pressureE = EqualMilkingSettings.enablePressureFactor
-                    ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
-                    : (fullE >= stretch ? 0f : 1f);
-            }
-            sumWeighted += conditionsE * e.FlowMultiplier * pressureE * comp.GetLetdownReflexFlowMultiplier(e.Key);
-        }
-        if (sumWeighted < 1E-5f) return (0f, 0f, 0f, 0f);
-        float flowL = 0f, flowR = 0f, multL = 0f, multR = 0f;
-        foreach (var e in pawn.GetBreastPoolEntries())
-        {
-            if (e.Key != poolKey + "_L" && e.Key != poolKey + "_R") continue;
             float conditionsE = pawn.GetConditionsForSide(e.Key);
             float pressureE = 1f;
             if (milkComp != null)
@@ -538,9 +513,13 @@ public static class ExtensionHelper
                     : (fullE >= stretch ? 0f : 1f);
             }
             float weight = conditionsE * e.FlowMultiplier * pressureE * comp.GetLetdownReflexFlowMultiplier(e.Key);
-            float flow = b.TotalFlow * weight / sumWeighted;
-            if (e.IsLeft) { flowL = flow; multL = e.FlowMultiplier; } else { flowR = flow; multR = e.FlowMultiplier; }
+            sumWeighted += weight;
+            if (e.Key == poolKey + "_L") { weightL = weight; multL = e.FlowMultiplier; }
+            else if (e.Key == poolKey + "_R") { weightR = weight; multR = e.FlowMultiplier; }
         }
+        if (sumWeighted < 1E-5f) return (0f, 0f, 0f, 0f);
+        float flowL = b.TotalFlow * weightL / sumWeighted;
+        float flowR = b.TotalFlow * weightR / sumWeighted;
         return (flowL, flowR, multL, multR);
     }
 

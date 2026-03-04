@@ -303,7 +303,7 @@ public class CompEquallyMilkable : CompMilkable
     /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。满池后不再进水（flow=0），与 GetFlowPerDay 返回 0 一致，能量有据；回缩仍执行，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
     private void UpdateMilkPools()
     {
-        var lactatingComp = Pawn?.LactatingHediffWithComps()?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
+        var lactatingComp = Pawn?.LactatingHediffComp();
         if (lactatingComp == null || lactatingComp.RemainingDays <= 0f) { return; }
         float currentLactation = lactatingComp.CurrentLactationAmount;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
@@ -423,11 +423,10 @@ public class CompEquallyMilkable : CompMilkable
     {
         if (overflowThisTick <= 0f || Pawn == null || !Pawn.Spawned || Pawn.Map == null) { return; }
         overflowAccumulator += overflowThisTick;
-        var filthDef = string.IsNullOrEmpty(EqualMilkingSettings.overflowFilthDefName)
-            ? DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit")
-            : DefDatabase<ThingDef>.GetNamedSilentFail(EqualMilkingSettings.overflowFilthDefName);
-        if (filthDef == null)
-            filthDef = DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit");
+        var filthDef = !string.IsNullOrEmpty(EqualMilkingSettings.overflowFilthDefName)
+            ? DefDatabase<ThingDef>.GetNamedSilentFail(EqualMilkingSettings.overflowFilthDefName)
+            : null;
+        filthDef ??= DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit");
         if (filthDef != null)
         {
             int filthSpawned = 0;

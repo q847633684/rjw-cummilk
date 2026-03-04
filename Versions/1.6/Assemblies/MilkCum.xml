@@ -182,7 +182,7 @@
             <summary>按单乳 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则从 left/right 反推。</summary>
         </member>
         <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.HalfPool">
-            <summary>旧实现与旧存档兼容：固定单侧容量 0.5；当前容量由 GetLeft/RightBreastCapacityFactor 决定（总容量=左+右）。</summary>
+            <summary>未启用 RJW 乳房尺寸时单侧固定容量 0.5；总容量 = 左 + 右。</summary>
         </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.Fullness">
             <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
@@ -229,14 +229,11 @@
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.SyncLeftRightFromBreastFullness">
             <summary>从 per-breast 字典汇总到 leftFullness / rightFullness（按 GetBreastPoolEntries 的 IsLeft）。</summary>
         </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.DistributeLeftRightToBreastFullness">
-            <summary>旧存档兼容：无 per-breast 数据时，按当前 GetBreastPoolEntries 的容量比例把 leftFullness/rightFullness 摊到各 key。</summary>
-        </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.ClearPools">
             <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
-            <summary>7.11: 旧存档兼容 — 确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
+            <summary>确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
         </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.Active">
             <summary>仅做纯判断，不修改健康系统。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行。</summary>
@@ -648,7 +645,7 @@
             <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中），返回其对应的池 key（与 GetBreastPoolEntries 一致）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetFlowPerDayForBreastPair(Verse.Pawn,System.String)">
-            <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。</summary>
+            <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPressureFactorForSide(Verse.Pawn,System.String)">
             <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量。</summary>
@@ -1325,9 +1322,6 @@
         <member name="F:HediffComp_EqualMilkingLactating.letdownReflexByKey">
             <summary>四层模型：喷乳反射 R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key 与 breastFullness 一致，如 HumanBreast_L）。挤奶/吸奶某侧仅提升该侧 R。</summary>
         </member>
-        <member name="F:HediffComp_EqualMilkingLactating.legacyLetdownReflex">
-            <summary>旧存档兼容：加载到的单一 R 值；若存在且 letdownReflexByKey 为空则不再使用，新逻辑全用按侧 R。</summary>
-        </member>
         <member name="F:HediffComp_EqualMilkingLactating.currentInflammation">
             <summary>四层模型：炎症负荷 I≥0。每 30 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
         </member>
@@ -1374,7 +1368,7 @@
             <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会与 min 合并）。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexForSide(System.String)">
-            <summary>指定侧的 R，无记录时用 legacy 或 0（用于显示/平均）。</summary>
+            <summary>指定侧的 R，无记录时为 0（用于显示/平均）。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier(System.String)">
             <summary>进水流速的 R 倍率（按侧）：加成模式时 = 1+R×(boost-1)；否则 = R（无记录时用 min）。用于该侧进水与 UI 因子。</summary>
@@ -1401,7 +1395,7 @@
             <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由设置反推。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
-            <summary>当前 L 下的每日衰减（用于显示/兼容）。</summary>
+            <summary>当前 L 下的每日衰减（用于显示）。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.AddFromDrug(System.Single)">
             <summary>吃药时进水：ΔL = Δs × C_dose。Δs 为本次实际生效的 Lactating 严重度增量（已包含一次耐受削弱）。</summary>

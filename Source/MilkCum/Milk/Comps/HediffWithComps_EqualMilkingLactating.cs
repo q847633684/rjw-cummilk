@@ -55,12 +55,13 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     {
         isDirty = true;
     }
+    private HediffComp_EqualMilkingLactating LactatingComp => this.TryGetComp<HediffComp_EqualMilkingLactating>();
+
     public void OnGathered()
     {
         if (this.Severity < 1f)
             this.Severity = Mathf.Min(1f, this.Severity + 0.5f); // 挤奶时最多推到 1，不直接变永久；永久=成瘾且满足需求不衰减
-        var comp = comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
-        comp?.AddMilkingLStimulus();
+        LactatingComp?.AddMilkingLStimulus();
     }
     public void OnGathered(float fullness)
     {
@@ -68,14 +69,13 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
             this.Severity = 1f;
         else
             this.Severity += fullness;
-        var comp = comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
-        comp?.AddMilkingLStimulus();
+        LactatingComp?.AddMilkingLStimulus();
     }
     /// <summary>挤奶/吸奶后按被扣量的池侧添加喷乳反射刺激（仅被操作的该侧 R 升高）。</summary>
     public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys)
     {
         if (drainedKeys == null) return;
-        var comp = comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
+        var comp = LactatingComp;
         foreach (string key in drainedKeys)
             comp?.AddLetdownReflexStimulus(key);
     }
