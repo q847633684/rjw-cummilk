@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -90,38 +91,45 @@ public static class Need_Food_Patch
     [HarmonyPatch(nameof(Need_Food.GetTipString))]
     public static void GetTipString_PostFix(Need_Food __instance, ref string __result)
     {
-        if (__instance.pawn is not Pawn pawn || !pawn.IsMilkable()) return;
-        string hungerLabel = Lang.HungerRate;
-        if (!string.IsNullOrEmpty(__result) && !string.IsNullOrEmpty(hungerLabel) && __result.Contains(hungerLabel))
-            return;
-        __result += "\n" + hungerLabel + ": ";
-        HungerCategory curCategory = pawn.needs.food.CurCategory;
-        if (curCategory != HungerCategory.Fed)
+        try
         {
-            __result += "\n   -" + curCategory.Label() + ": x" + HungerLevelUtility.HungerMultiplier(curCategory).ToStringPercent();
+            if (__instance?.pawn is not Pawn pawn || !pawn.IsMilkable()) return;
+            if (pawn.health?.hediffSet == null || pawn.needs?.food == null) return;
+            string hungerLabel = Lang.HungerRate;
+            if (!string.IsNullOrEmpty(__result) && !string.IsNullOrEmpty(hungerLabel) && __result.Contains(hungerLabel))
+                return;
+            __result += "\n" + hungerLabel + ": ";
+            HungerCategory curCategory = pawn.needs.food.CurCategory;
+            if (curCategory != HungerCategory.Fed)
+            {
+                __result += "\n   -" + curCategory.Label() + ": x" + HungerLevelUtility.HungerMultiplier(curCategory).ToStringPercent();
+            }
+            foreach (Hediff hediff in pawn.health.hediffSet.hediffs)
+            {
+                HediffStage curStage = hediff?.CurStage;
+                if (curStage == null) { continue; }
+                if (curStage.hungerRateFactor != 1f)
+                {
+                    __result += "\n   -" + hediff.LabelCap + ": x" + hediff.CurStage.hungerRateFactor.ToStringPercent();
+                }
+                if (curStage.hungerRateFactorOffset != 0f)
+                {
+                    if (curStage.hungerRateFactorOffset > 0f)
+                    {
+                        __result += "\n   -" + hediff.LabelCap + ": +" + hediff.CurStage.hungerRateFactorOffset.ToStringByStyle(ToStringStyle.PercentZero);
+                    }
+                    else
+                    {
+                        __result += "\n   -" + hediff.LabelCap + ": " + hediff.CurStage.hungerRateFactorOffset.ToStringByStyle(ToStringStyle.PercentZero);
+                    }
+                }
+            }
+            __result += "\n" + "StatsReport_FinalValue".Translate() + " " + (pawn.health.hediffSet.GetHungerRateFactor() * HungerLevelUtility.HungerMultiplier(curCategory)).ToStringPercent();
         }
-        foreach (Hediff hediff in pawn.health.hediffSet.hediffs)
+        catch (Exception ex)
         {
-            HediffStage curStage = hediff?.CurStage;
-            if (curStage == null) { continue; }
-            if (curStage.hungerRateFactor != 1f)
-            {
-                __result += "\n   -" + hediff.LabelCap + ": x" + hediff.CurStage.hungerRateFactor.ToStringPercent();
-            }
-            if (curStage.hungerRateFactorOffset != 0f)
-            {
-                if (curStage.hungerRateFactorOffset > 0f)
-                {
-                    __result += "\n   -" + hediff.LabelCap + ": +" + hediff.CurStage.hungerRateFactorOffset.ToStringByStyle(ToStringStyle.PercentZero);
-                }
-                else
-                {
-                    __result += "\n   -" + hediff.LabelCap + ": " + hediff.CurStage.hungerRateFactorOffset.ToStringByStyle(ToStringStyle.PercentZero);
-                }
-            }
+            Log.Warning($"[MilkCum] Need_Food.GetTipString postfix: {ex.Message}");
         }
-        __result += "\n" + "StatsReport_FinalValue".Translate() + " " + (pawn.health.hediffSet.GetHungerRateFactor() * HungerLevelUtility.HungerMultiplier(curCategory)).ToStringPercent();
-
     }
 }
 
@@ -180,92 +188,9 @@ public static class HediffSet_Remove_Patch
     }
 }
 
-/// <summary>
-/// 绕过香草可挤奶比较统计条目：将 GetCompProperties&lt;CompProperties_Milkable&gt; 替换为返回 null，原版产奶行不显示；本 mod 用 RaceProperties.SpecialDisplayStats 显示产奶。
-/// </summary>
-[HarmonyPatch]
-public static class AnimalProductionUtility_Patch
-{
-    private static MethodBase _cachedTargetMethod;
-
-    public static MethodInfo getPropertiesMethod = AccessTools.Method(typeof(ThingDef), nameof(ThingDef.GetCompProperties)).MakeGenericMethod(typeof(CompProperties_Milkable));
-    public static MethodInfo getMilkablePropertiesMethod = AccessTools.Method(typeof(AnimalProductionUtility_Patch), nameof(GetMilkableProperties));
-
-    public static MethodBase TargetMethod()
-    {
-        if (_cachedTargetMethod != null) return _cachedTargetMethod;
-        var parent = typeof(AnimalProductionUtility);
-        // 迭代器可能是 <AnimalProductionStats>d__0 / d__1 等，按嵌套类型名查找
-        foreach (var nested in parent.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
-        {
-            if (nested.Name.Contains("AnimalProductionStats") && nested.Name.Contains("d__"))
-            {
-                var moveNext = AccessTools.Method(nested, "MoveNext");
-                if (moveNext != null)
-                {
-                    _cachedTargetMethod = moveNext;
-                    return _cachedTargetMethod;
-                }
-            }
-        }
-        // 回退：固定名称 d__0（旧版）
-        var fallbackType = AccessTools.TypeByName(parent.FullName + "+<AnimalProductionStats>d__0");
-        _cachedTargetMethod = fallbackType != null ? AccessTools.Method(fallbackType, "MoveNext") : null;
-        return _cachedTargetMethod;
-    }
-
-    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        List<CodeInstruction> codes = instructions.ToList();
-        bool replacedAny = false;
-        for (int i = 0; i < codes.Count; i++)
-        {
-            if (codes[i].Calls(getPropertiesMethod))
-            {
-                codes[i].opcode = OpCodes.Call;
-                codes[i].operand = getMilkablePropertiesMethod;
-                replacedAny = true;
-            }
-        }
-        if (!replacedAny)
-            Log.Warning("[Equal Milking] Could not find GetCompProperties<CompProperties_Milkable> in AnimalProductionUtility.AnimalProductionStats; vanilla milk stat display may apply. This is non-fatal.");
-        return codes.AsEnumerable();
-    }
-
-    public static CompProperties_Milkable GetMilkableProperties(ThingDef def) => null;
-}
-/// <summary>
-/// Add accurate stat defs to all milkable pawns
-/// </summary>
-[HarmonyPatch(typeof(RaceProperties))]
-public static class RaceProperties_Patch
-{
-    /// <summary>
-    /// replace vanilla stat entries EM ones
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(RaceProperties.SpecialDisplayStats))]
-    public static void SpecialDisplayStats_PostFix(ref IEnumerable<StatDrawEntry> __result, StatRequest req)
-    {
-        __result = GetSpecialDisplayStats(__result, req);
-    }
-    /// <summary>
-    /// Generate the stat entries for milkable pawns
-    /// </summary>
-    private static IEnumerable<StatDrawEntry> GetSpecialDisplayStats(IEnumerable<StatDrawEntry> result, StatRequest req)
-    {
-        foreach (StatDrawEntry item in result) { yield return item; }
-        Pawn pawn = req.Pawn ?? (req.Thing as Pawn);
-        if (pawn == null) { yield break; }
-        try
-        {
-            if (!pawn.IsMilkable() || pawn.MilkDef() == null) { yield break; }
-            yield return new StatDrawEntry(StatCategoryDefOf.AnimalProductivity, "Stat_Animal_MilkType".Translate(), pawn.MilkDef().LabelCap, "Stat_Animal_MilkTypeDesc".Translate(), 9880, null, Gen.YieldSingle<Dialog_InfoCard.Hyperlink>(new Dialog_InfoCard.Hyperlink(pawn.MilkDef(), -1)), false, false);
-            yield return new StatDrawEntry(StatCategoryDefOf.AnimalProductivity, "Stat_Animal_MilkValue".Translate(), pawn.MilkMarketValue().ToStringMoney(), "Stat_Animal_MilkValueDesc".Translate(), 9840, null, null, false, false);
-        }
-        finally {}
-    }
-}
+// AnimalProductionUtility_Patch 已移除：原用于隐藏原版产奶统计行（Transpiler 替换 GetCompProperties 为返回 null），
+// 但该替换在信息卡构建 AnimalProductionStats 时易导致 NRE/越界，故改为不 patch。产奶类型/价值见主表格列。见 ADR-004。
+// RaceProperties.SpecialDisplayStats 补丁已移除：与信息卡统计构建流程冲突，导致物品/小人信息卡均无法打开。产奶类型与价值改由主表格列等展示。
 #if v1_5
 [HarmonyPatch(typeof(FloatMenuMakerMap))]
 public static class FloatMenuMakerMap_Patch
@@ -399,6 +324,70 @@ internal static class PoolModelBirthHelper
     }
 }
 
+/// <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
+internal static class BreastPoolTooltipHelper
+{
+    private const string Tab = "\t";
+
+    /// <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
+    public static string BuildBreastPairBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, string poolKey, Pawn pawn)
+    {
+        if ((entries?.Count ?? 0) == 0 || string.IsNullOrEmpty(poolKey) || pawn == null) return "";
+        var comp = pawn.LactatingHediffComp();
+        if (comp == null) return "";
+        var left = entries.FirstOrDefault(e => e.isLeft);
+        var right = entries.FirstOrDefault(e => !e.isLeft);
+        float leftFull = left.capacity >= 0.001f ? left.fullness : 0f;
+        float leftCap = Mathf.Max(0.001f, left.capacity);
+        float rightFull = right.capacity >= 0.001f ? right.fullness : 0f;
+        float rightCap = Mathf.Max(0.001f, right.capacity);
+        float totalMilk = leftFull + rightFull;
+        float totalBaseCap = leftCap + rightCap;
+        float totalStretchCap = leftCap * PoolModelConstants.StretchCapFactor + rightCap * PoolModelConstants.StretchCapFactor;
+        var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(poolKey);
+        float flowPair = flowL + flowR;
+        float letdownL = comp.GetLetdownReflexFlowMultiplier(poolKey + "_L");
+        float letdownR = comp.GetLetdownReflexFlowMultiplier(poolKey + "_R");
+        float pressureL = pawn.GetPressureFactorForSide(poolKey + "_L");
+        float pressureR = pawn.GetPressureFactorForSide(poolKey + "_R");
+        float conditionsL = pawn.GetConditionsForSide(poolKey + "_L");
+        float conditionsR = pawn.GetConditionsForSide(poolKey + "_R");
+        var b = comp.GetFlowPerDayBreakdown();
+        string factorL = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true, letdownL, pressureL, conditionsL);
+        string factorR = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false, letdownR, pressureR, conditionsR);
+        string leftPercent = leftCap >= 0.001f ? (leftFull / leftCap).ToStringPercent() : "0%";
+        string rightPercent = rightCap >= 0.001f ? (rightFull / rightCap).ToStringPercent() : "0%";
+        float leftStretch = leftCap * PoolModelConstants.StretchCapFactor;
+        float rightStretch = rightCap * PoolModelConstants.StretchCapFactor;
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("EM.PoolBreastSectionHeader".Translate(sectionLabel));
+        sb.AppendLine("EM.PoolBreastPairSummary".Translate(
+            totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            totalBaseCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            totalStretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append("EM.PoolLeftBreast".Translate()).AppendLine("：");
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilk".Translate(
+            leftFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            leftPercent));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideCap".Translate(
+            leftCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            leftStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlow".Translate(flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.AppendLine("EM.PoolEfficiencyFactorsBracket".Translate(factorL));
+        sb.Append("EM.PoolRightBreast".Translate()).AppendLine("：");
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilk".Translate(
+            rightFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            rightPercent));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideCap".Translate(
+            rightCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            rightStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlow".Translate(flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append("EM.PoolEfficiencyFactorsBracket".Translate(factorR));
+        return sb.ToString();
+    }
+}
+
 /// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。健康页实际使用 HealthCardUtility.GetTooltip 与 TipStringExtra，故同时 Patch GetTooltip 确保悬停能显示。</summary>
 public static class Hediff_TipString_BreastPool_Patch
 {
@@ -451,128 +440,24 @@ public static class Hediff_TipString_BreastPool_Patch
     private static void AppendPoolTooltip(Hediff __instance, ref string __result)
     {
         if (__instance?.pawn == null) return;
-        Pawn pawn = __instance.pawn;
-        if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
         try
         {
+            Pawn pawn = __instance.pawn;
+            if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
             var list = pawn.GetBreastList();
             if (list == null || !list.Contains(__instance)) return;
+            var entries = pawn.GetPoolEntriesForBreastHediff(__instance);
+            if (entries.Count == 0) return;
+            string poolKey = pawn.GetPoolKeyForBreastHediff(__instance);
+            if (string.IsNullOrEmpty(poolKey)) return;
+            string sectionLabel = __instance.LabelCap;
+            string block = BreastPoolTooltipHelper.BuildBreastPairBlock(sectionLabel, entries, poolKey, pawn);
+            if (!string.IsNullOrEmpty(block))
+                __result = (__result ?? "") + "\n" + block;
         }
-        catch { return; }
-        var entries = pawn.GetPoolEntriesForBreastHediff(__instance);
-        if (entries == null || entries.Count == 0) return;
-        var parts = new List<string>();
-        foreach (var (_, fullness, capacity, isLeft) in entries)
+        catch (Exception ex)
         {
-            string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
-            float baseCap = Mathf.Max(0.001f, capacity);
-            float stretchCap = baseCap * PoolModelConstants.StretchCapFactor;
-            string percentStr = baseCap >= 0.001f ? (fullness / baseCap).ToStringPercent() : "0%";
-            string text = "EM.PoolBreastMilkCap".Translate(
-                fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                percentStr,
-                baseCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                stretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
-            parts.Add(label + ": " + text);
-        }
-        if (parts.Count > 0)
-            __result = (__result ?? "") + "\n" + string.Join(", ", parts);
-        string poolKey = pawn.GetPoolKeyForBreastHediff(__instance);
-        if (!string.IsNullOrEmpty(poolKey))
-        {
-            var comp = pawn.LactatingHediffComp();
-            if (comp != null)
-            {
-                var b = comp.GetFlowPerDayBreakdown();
-                var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(poolKey);
-                float letdownL = comp.GetLetdownReflexFlowMultiplier(poolKey + "_L");
-                float letdownR = comp.GetLetdownReflexFlowMultiplier(poolKey + "_R");
-                float pressureL = pawn.GetPressureFactorForSide(poolKey + "_L");
-                float pressureR = pawn.GetPressureFactorForSide(poolKey + "_R");
-                float conditionsL = pawn.GetConditionsForSide(poolKey + "_L");
-                float conditionsR = pawn.GetConditionsForSide(poolKey + "_R");
-                float flowPair = flowL + flowR;
-                __result = (__result ?? "") + "\n" + "EM.PoolPairEfficiencyHeader".Translate(
-                    flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    (flowPair * 100f).ToString("F0"));
-                __result += "\n" + "EM.PoolLeftEfficiencyHeader".Translate(
-                    flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    (flowL * 100f).ToString("F0"));
-                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true, letdownL, pressureL, conditionsL));
-                __result += "\n" + "EM.PoolRightEfficiencyHeader".Translate(
-                    flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    (flowR * 100f).ToString("F0"));
-                __result += "\n" + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false, letdownR, pressureR, conditionsR));
-            }
-        }
-    }
-}
-
-/// <summary>健康页悬停由 HealthCardUtility.GetTooltip(Pawn, BodyPartRecord) 构建。本 Patch 在该方法返回的 tooltip 后追加一行「左乳：x/x，右乳：x/x」。目标方法用字符串 "GetTooltip" 避免编译时 CS0117。</summary>
-[HarmonyPatch(typeof(HealthCardUtility), "GetTooltip", new[] { typeof(Pawn), typeof(BodyPartRecord) })]
-public static class HealthCardUtility_GetTooltip_BreastPool_Patch
-{
-    [HarmonyPostfix]
-    public static void Postfix(ref string __result, Pawn pawn, BodyPartRecord part)
-    {
-        if (pawn == null || part == null) return;
-        if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
-        var hediffSet = pawn.health?.hediffSet;
-        if (hediffSet?.hediffs == null) return;
-        var diffs = hediffSet.hediffs.Where(h => h != null && h.Part == part);
-        var appendedKeys = new HashSet<string>();
-        foreach (var h in diffs)
-        {
-            string key = pawn.GetPoolKeyForBreastHediff(h);
-            if (string.IsNullOrEmpty(key) || !appendedKeys.Add(key)) continue;
-            var entries = pawn.GetPoolEntriesForBreastHediff(h);
-            if (entries == null || entries.Count == 0) continue;
-            var parts = new List<string>();
-            foreach (var (_, fullness, capacity, isLeft) in entries)
-            {
-                string label = isLeft ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate();
-                float baseCap = Mathf.Max(0.001f, capacity);
-                float stretchCap = baseCap * PoolModelConstants.StretchCapFactor;
-                string percentStr = baseCap >= 0.001f ? (fullness / baseCap).ToStringPercent() : "0%";
-                string text = "EM.PoolBreastMilkCap".Translate(
-                    fullness.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    percentStr,
-                    baseCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    stretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
-                parts.Add(label + ": " + text);
-            }
-            if (parts.Count > 0)
-            {
-                __result = (__result ?? "") + "\n    " + string.Join(", ", parts);
-                if (!string.IsNullOrEmpty(key))
-                {
-                    var comp = pawn.LactatingHediffComp();
-                    if (comp != null)
-                    {
-                        var b = comp.GetFlowPerDayBreakdown();
-                        var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(key);
-                        float letdownL = comp.GetLetdownReflexFlowMultiplier(key + "_L");
-                        float letdownR = comp.GetLetdownReflexFlowMultiplier(key + "_R");
-                        float pressureL = pawn.GetPressureFactorForSide(key + "_L");
-                        float pressureR = pawn.GetPressureFactorForSide(key + "_R");
-                        float conditionsL = pawn.GetConditionsForSide(key + "_L");
-                        float conditionsR = pawn.GetConditionsForSide(key + "_R");
-                        float flowPair = flowL + flowR;
-                        __result += "\n    " + "EM.PoolPairEfficiencyHeader".Translate(
-                            flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                            (flowPair * 100f).ToString("F0"));
-                        __result += "\n    " + "EM.PoolLeftEfficiencyHeader".Translate(
-                            flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                            (flowL * 100f).ToString("F0"));
-                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true, letdownL, pressureL, conditionsL));
-                        __result += "\n    " + "EM.PoolRightEfficiencyHeader".Translate(
-                            flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                            (flowR * 100f).ToString("F0"));
-                        __result += "\n    " + "EM.PoolEfficiencyFactorsBracket".Translate(HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false, letdownR, pressureR, conditionsR));
-                    }
-                }
-                break;
-            }
+            Log.Warning($"[MilkCum] Hediff TipString/GetTipString breast pool append: {ex.Message}");
         }
     }
 }

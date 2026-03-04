@@ -4,6 +4,7 @@ using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
 using UnityEngine;
+using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +22,19 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     {
         get
         {
-            var comp = pawn.CompEquallyMilkable();
-            return GetStageIndex(this.Severity, (comp?.Fullness ?? 0f) >= Mathf.Max(0.01f, comp?.maxFullness ?? 1f));
+            try
+            {
+                var comp = pawn.CompEquallyMilkable();
+                int raw = GetStageIndex(this.Severity, (comp?.Fullness ?? 0f) >= Mathf.Max(0.01f, comp?.maxFullness ?? 1f));
+                // 信息卡/原版会用 CurStageIndex 访问 def.stages[index]，必须落在 [0, def.stages.Count-1]，否则闪退
+                if (def.stages == null || def.stages.Count == 0)
+                    return 0;
+                return Mathf.Min(raw, def.stages.Count - 1);
+            }
+            catch
+            {
+                return 0;
+            }
         }
     }
     public override void PostTick()
@@ -114,14 +126,26 @@ public class HediffWithComps_EqualMilkingLactating : HediffWithComps
     }
     private HediffStage GetCurStage()
     {
-        if (this.hediffStages == null || this.hediffStages.Length == 0 || this.hediffStages[0] == null)
-            GenStages();
-        if (!pawn.IsMilkable() && pawn.RaceProps.Humanlike)
+        try
         {
-            if (this.Severity > 1f) { this.Severity = 0.9999f; }
-            return vanillaStage;
+            if (this.hediffStages == null || this.hediffStages.Length == 0 || this.hediffStages[0] == null)
+                GenStages();
+            if (hediffStages == null || hediffStages.Length == 0)
+                return vanillaStage ?? (vanillaStage = new HediffStage { fertilityFactor = 0.05f });
+            if (!pawn.IsMilkable() && pawn.RaceProps.Humanlike)
+            {
+                if (this.Severity > 1f) { this.Severity = 0.9999f; }
+                return vanillaStage ?? (vanillaStage = new HediffStage { fertilityFactor = 0.05f });
+            }
+            var comp = pawn.CompEquallyMilkable();
+            int raw = GetStageIndex(this.Severity, (comp?.Fullness ?? 0f) >= Mathf.Max(0.01f, comp?.maxFullness ?? 1f));
+            int idx = Mathf.Clamp(raw, 0, hediffStages.Length - 1);
+            return hediffStages[idx];
         }
-        return hediffStages[CurStageIndex];
+        catch
+        {
+            return vanillaStage ?? (vanillaStage = new HediffStage { fertilityFactor = 0.05f });
+        }
     }
     public override bool Visible => pawn.IsMilkable() || pawn.RaceProps.Humanlike; //Milkable or breastfeedable in vanilla.
 }
@@ -296,7 +320,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
         var entries = Pawn?.GetBreastPoolEntries();
-        if (entries == null || entries.Count == 0) return Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
+        if ((entries?.Count ?? 0) == 0) return Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
         float sumR = 0f;
         int n = 0;
         foreach (var e in entries)
@@ -324,13 +348,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return GetLetdownReflexRaw(sideKey);
     }
 
-    /// <summary>进水流速的 R 倍率（按侧）：加成模式时 = 1+R×(boost-1)；否则 = R（无记录时用 min）。用于该侧进水与 UI 因子。</summary>
+    /// <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时加成模式=1+R×(boost-1)，否则=R（衰减后不低于 minR）。</summary>
     public float GetLetdownReflexFlowMultiplier(string sideKey)
     {
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
+        if (string.IsNullOrEmpty(sideKey) || letdownReflexByKey == null || !letdownReflexByKey.TryGetValue(sideKey, out float rVal))
+            return 1f;
         float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
-        float r = GetLetdownReflexRaw(sideKey);
-        r = Mathf.Max(minR, Mathf.Clamp01(r));
+        float r = Mathf.Max(minR, Mathf.Clamp01(rVal));
         float boost = Mathf.Clamp(EqualMilkingSettings.letdownReflexBoostMultiplier, 1f, 3f);
         if (boost > 1f)
             return Mathf.Max(1f, 1f + r * (boost - 1f));
@@ -342,7 +367,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
         var entries = Pawn?.GetBreastPoolEntries();
-        if (entries == null || entries.Count == 0) return 1f;
+        if ((entries?.Count ?? 0) == 0) return 1f;
         float sum = 0f;
         foreach (var e in entries)
             sum += GetLetdownReflexFlowMultiplier(e.Key);
@@ -520,7 +545,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         var entries = Pawn.GetBreastPoolEntries();
         var milkComp = CompEquallyMilkable;
         // 压力、喷乳反射、状态（如乳腺炎）均按「哪对乳房的哪一侧」分别计算
-        if (entries != null && entries.Count > 0 && milkComp != null)
+        if (entries.Count > 0 && milkComp != null)
         {
             float baseWithoutConditions = r.Drive * r.Hunger * r.Genes * r.Setting;
             float flowWithAllFactors = 0f;
@@ -612,6 +637,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         get
         {
+            try
+            {
             if (!Pawn.IsMilkable())
                 return base.CompTipStringExtra;
             var lines = new List<string>();
@@ -710,6 +737,12 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lines.Add("EM.EquivalentDose".Translate((currentLactationAmount / oneDoseL).ToString("F1")));
 
             return lines.Count > 0 ? string.Join("\n", lines) : base.CompTipStringExtra;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[MilkCum] HediffWithComps_EqualMilkingLactating.CompTipStringExtra: {ex.Message}");
+                return base.CompTipStringExtra;
+            }
         }
     }
     /// <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开为 1～4 块详情。</summary>

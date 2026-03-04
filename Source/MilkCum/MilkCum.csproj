@@ -50,4 +50,14 @@
     <Publicize Include="PipeSystem:PipeSystem.CompResourceStorage.ticksWithoutPower" Condition="Exists('$(PipeSystemPath)')" />
     <Publicize Include="PipeSystem:PipeSystem.Alert_NoStorage.ThingsList" Condition="Exists('$(PipeSystemPath)')" />
   </ItemGroup>
+
+  <!-- 编译后同步到 mod 根目录 Assemblies，便于游戏加载或单一路径使用 -->
+  <Target Name="CopyToRootAssemblies" AfterTargets="Build">
+    <PropertyGroup>
+      <_ModRootAssemblies>$(OutDir)..\..\..\Assemblies</_ModRootAssemblies>
+    </PropertyGroup>
+    <MakeDir Directories="$(_ModRootAssemblies)" Condition="!Exists('$(_ModRootAssemblies)')" />
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(_ModRootAssemblies)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).xml" DestinationFolder="$(_ModRootAssemblies)" SkipUnchangedFiles="true" Condition="Exists('$(OutDir)$(AssemblyName).xml')" />
+  </Target>
 </Project>

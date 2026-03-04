@@ -8,11 +8,11 @@
 
 ## Context
 
-需要支持「多对乳房」且每对独立左右池：容量、流速、撑大、挤奶/吸奶取奶顺序都按「对」组织；未启用 RJW 乳房尺寸时退化为单对（左右各 0.5）。
+需要支持「多对乳房」且每对独立左右池：容量、流速、撑大、挤奶/吸奶取奶顺序都按「对」组织。**设计前提**：泌乳逻辑仅在「胸部部位有乳房」时进行（见 [泌乳前提-仅在有乳房时](泌乳前提-仅在有乳房时.md)）；无乳房 hediff 时不创建乳池。
 
 ## Conclusion
 
-- **结构**：`ExtensionHelper.GetBreastPoolEntries(pawn)` 按「每个 RJW 乳房 hediff = 一对」生成 `BreastPoolEntry` 列表；每对产生 key_L、key_R 两条，同一对共享 **PairIndex**（从 0 递增）。未启用 RJW 或空列表时返回单对 `Left_Default` / `Right_Default`，容量与流速各 0.5。
+- **结构**：`ExtensionHelper.GetBreastPoolEntries(pawn)` 按「每个 RJW 乳房 hediff = 一对」生成 `BreastPoolEntry` 列表；每对产生 key_L、key_R 两条，同一对共享 **PairIndex**（从 0 递增）。无 RJW 乳房 hediff 或空列表时返回空，不创建默认乳池，容量与流速为 0。
 - **进水**：`CompEquallyMilkable` 内 `entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key)` 按对分组，每对用 `LactationPoolState.TickGrowth(flowLeft, flowRight, ...)` 进水；撑大仅当该对两侧都达基础容量后才允许向 1.2× 撑大。
 - **取奶**：`DrainForConsume(amount)` 按 `byPair` 总满度从高到低排序，每对内比较左右水位，**先取较满一侧**；**两侧相同时先左**（`preferLeft = true`），与性别/种族无关。
 

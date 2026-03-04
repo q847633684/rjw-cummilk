@@ -89,9 +89,16 @@ public static class ITab_Pawn_Feeding_Patch
     [HarmonyPatch(nameof(ITab_Pawn_Feeding.GenerateFloatMenuOption))]
     public static void GenerateFloatMenuOption_Postfix(ref FloatMenuOption __result, AutofeedMode setting, ITab_Pawn_Feeding.BabyFeederPair pair)
     {
+        try
+        {
         if (setting == AutofeedMode.Childcare)
         {
             __result.Label = pair.feeder.ChildcareText(pair.baby);
+        }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[MilkCum] ITab_Pawn_Feeding.GenerateFloatMenuOption postfix: {ex.Message}");
         }
     }
 }
@@ -152,6 +159,8 @@ public static class ChildcareUtility_Patch
     [HarmonyPatch(nameof(ChildcareUtility.CanFeed))]
     public static void CanFeed_PostFix(Pawn mom, ref bool __result, ref ChildcareUtility.BreastfeedFailReason? reason)
     {
+        try
+        {
         if (!mom.IsLactating())
         {
             reason = ChildcareUtility.BreastfeedFailReason.MomNotLactating;
@@ -163,7 +172,11 @@ public static class ChildcareUtility_Patch
             reason = null;
             __result = true;
         }
-
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[MilkCum] ChildcareUtility.CanFeed postfix: {ex.Message}");
+        }
     }
     /// <summary>
     /// This function is also used to determine who is a baby by vanilla. Don't bypass age check
@@ -175,6 +188,8 @@ public static class ChildcareUtility_Patch
     [HarmonyPatch(nameof(ChildcareUtility.CanSuckle))]
     public static void CanSuckle_PostFix(ref bool __result, Pawn baby, ref ChildcareUtility.BreastfeedFailReason? reason)
     {
+        try
+        {
         if (__result || reason == ChildcareUtility.BreastfeedFailReason.BabyNull || reason == ChildcareUtility.BreastfeedFailReason.BabyDead) { return; }
         if (reason == ChildcareUtility.BreastfeedFailReason.BabyNotHumanlike)
         {
@@ -199,7 +214,11 @@ public static class ChildcareUtility_Patch
             reason = ChildcareUtility.BreastfeedFailReason.BabyShambler;
             __result = false;
         }
-
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[MilkCum] ChildcareUtility.CanSuckle postfix: {ex.Message}");
+        }
     }
     // Allow finding non-humanlike babies
     [HarmonyTranspiler]

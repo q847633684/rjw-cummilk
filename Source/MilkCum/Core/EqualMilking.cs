@@ -82,7 +82,8 @@ public static class EqualMilking
             EMDefOf.EM_Prolactin_Tolerance.hediffClass = typeof(Hediff_ProlactinTolerance);
         if (EMDefOf.EM_LactatingGain != null)
             EMDefOf.EM_LactatingGain.hediffClass = typeof(Hediff_LactatingGain);
-        StatCategoryDefOf.AnimalProductivity.displayAllByDefault = true;
+        // 不再设置 displayAllByDefault：否则打开物品/Def 信息卡（泌乳素、人奶、精液等）时会因该分类下部分 StatWorker 仅支持 Pawn 导致 ShouldShowFor(req) NRE
+        // StatCategoryDefOf.AnimalProductivity.displayAllByDefault = true;
 
         // label auto translations
         if (DefDatabase<ThingDef>.GetNamedSilentFail("VCE_Cheese") is ThingDef cheese)

@@ -1,6 +1,7 @@
 using MilkCum.Milk.World;
 using Verse;
 using UnityEngine;
+using System;
 
 namespace MilkCum.Milk.Comps;
 
@@ -11,11 +12,19 @@ public class HediffComp_AbsorptionDelayTip : HediffComp
     {
         get
         {
-            if (parent?.pawn == null) return null;
-            int remaining = WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(parent.pawn);
-            if (remaining <= 0) return null;
-            string timeStr = TicksToTimeString(remaining);
-            return "EM.AbsorptionDelayRemaining".Translate(timeStr).Resolve();
+            try
+            {
+                if (parent?.pawn == null) return null;
+                int remaining = WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(parent.pawn);
+                if (remaining <= 0) return null;
+                string timeStr = TicksToTimeString(remaining);
+                return "EM.AbsorptionDelayRemaining".Translate(timeStr).Resolve();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[MilkCum] HediffComp_AbsorptionDelayTip.CompTipStringExtra: {ex.Message}");
+                return null;
+            }
         }
     }
 

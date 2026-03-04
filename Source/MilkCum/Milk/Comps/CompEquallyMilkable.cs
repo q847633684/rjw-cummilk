@@ -80,7 +80,7 @@ public class CompEquallyMilkable : CompMilkable
     {
         if (!EqualMilkingSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
         var entries = Pawn.GetBreastPoolEntries();
-        if (entries == null || entries.Count == 0) return 0f;
+        if (entries.Count == 0) return 0f;
         float healthPercent = 1f;
         if (Pawn.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
@@ -189,7 +189,7 @@ public class CompEquallyMilkable : CompMilkable
                     allowedSucklers.Add(pawn);
         }
     }
-    /// <summary>仅做纯判断，不修改健康系统。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行。</summary>
+    /// <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库/design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行。</summary>
     protected override bool Active
     {
         get
@@ -201,7 +201,7 @@ public class CompEquallyMilkable : CompMilkable
                 cachedActive = false;
                 return false;
             }
-            cachedActive = pawn.IsLactating() && pawn.IsMilkable();
+            cachedActive = pawn.IsLactating() && pawn.IsMilkable() && pawn.GetBreastPoolEntries().Count > 0;
             updateTick = Find.TickManager.TicksGame + 500;
             return cachedActive;
         }
@@ -314,6 +314,7 @@ public class CompEquallyMilkable : CompMilkable
             * Pawn.GetMilkFlowMultiplierFromGenes()
             * EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
         var entries = Pawn.GetBreastPoolEntries();
+        // Active 已保证有乳池才进入，此处不再判空
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 30f;

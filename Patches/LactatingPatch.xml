@@ -21,7 +21,14 @@
   <Operation Class="PatchOperationRemove">
     <xpath>Defs/HediffDef[defName="Lactating"]/comps/li[@Class="HediffCompProperties_SeverityPerDay"]</xpath>
   </Operation>
-  <Operation Class="PatchOperationRemove">
+  <!-- 保留至少一个 stage，避免信息卡等 UI 用 def.stages[CurStageIndex] 时越界闪退；具体阶段显示由 C# 动态生成 -->
+  <Operation Class="PatchOperationReplace">
     <xpath>Defs/HediffDef[defName="Lactating"]/stages</xpath>
+    <value>
+      <stages>
+        <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
+      </stages>
+    </value>
   </Operation>
+  <!-- 若原版 Def 无 stages 节点（Replace 未匹配），则添加一个。注意：PatchOperationAdd 不支持 applyIfFailure，已移除；若 Replace 已生效则无需 Add，若未生效则下面 Add 会添加 stages，可能产生重复节点，故仅保留 Replace，原版 Lactating 通常已有 stages。-->
 </Patch>

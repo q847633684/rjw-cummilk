@@ -269,23 +269,15 @@ public static class ExtensionHelper
         GetBreastCapacityFactors(pawn, out _, out float right);
         return right;
     }
-    /// <summary>左池/右池容量。仅计算层虚拟左右池：未启用 RJW 乳房尺寸时人形 0.5+0.5；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和（总容量=2×和）。不调用 AddHediff/RemoveHediff。</summary>
+    /// <summary>左池/右池容量。仅计算层虚拟左右池：无 RJW 乳房 hediff 时不创建乳池，返回 0；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和。不调用 AddHediff/RemoveHediff。</summary>
     private static void GetBreastCapacityFactors(Pawn pawn, out float leftFactor, out float rightFactor)
     {
         leftFactor = 0f;
         rightFactor = 0f;
         if (pawn == null) return;
-        if (!EqualMilkingSettings.rjwBreastSizeEnabled)
-        {
-            if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
-            return;
-        }
+        if (!EqualMilkingSettings.rjwBreastSizeEnabled) return;
         var list = pawn.GetBreastList();
-        if (list == null || list.Count == 0)
-        {
-            if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
-            return;
-        }
+        if (list == null || list.Count == 0) return;
         float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
         try
         {
@@ -300,42 +292,21 @@ public static class ExtensionHelper
             {
                 leftFactor = totalCap;
                 rightFactor = totalCap;
-                return;
             }
-            if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
         }
-        catch
-        {
-            if (pawn.RaceProps?.Humanlike == true) { leftFactor = 0.5f; rightFactor = 0.5f; }
-        }
+        catch { }
     }
 
-    /// <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。见 记忆库/design/双池与PairIndex。</summary>
+    /// <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。设计前提：泌乳逻辑仅在「胸部部位有乳房」时进行，即只有存在乳房 hediff（GetBreastList 非空）时才建乳池、进水、挤奶等；无乳房则返回空、不创建默认池。每个 hediff 表示一对，产生 _L/_R 两键，同一对共享 PairIndex。约定：永不返回 null，无乳房时返回空列表。见 记忆库/design/泌乳前提-仅在有乳房时、双池与PairIndex。</summary>
     public static List<BreastPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
         var result = new List<BreastPoolEntry>();
         if (pawn == null) return result;
-        if (!EqualMilkingSettings.rjwBreastSizeEnabled)
-        {
-            if (pawn.RaceProps?.Humanlike == true)
-            {
-                result.Add(new BreastPoolEntry("Left_Default", 0.5f, 0.5f, true, 0));
-                result.Add(new BreastPoolEntry("Right_Default", 0.5f, 0.5f, false, 0));
-            }
-            return result;
-        }
+        if (!EqualMilkingSettings.rjwBreastSizeEnabled) return result;
         try
         {
             var list = pawn.GetBreastList();
-            if (list == null || list.Count == 0)
-            {
-                if (pawn.RaceProps?.Humanlike == true)
-                {
-                    result.Add(new BreastPoolEntry("Left_Default", 0.5f, 0.5f, true, 0));
-                    result.Add(new BreastPoolEntry("Right_Default", 0.5f, 0.5f, false, 0));
-                }
-                return result;
-            }
+            if (list == null || list.Count == 0) return result;
             float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
             int currentPair = 0;
             for (int i = 0; i < list.Count; i++)
@@ -343,27 +314,18 @@ public static class ExtensionHelper
                 var h = list[i];
                 if (h?.def == null) continue;
                 string partName = h.Part?.def?.defName;
-                string key = !string.IsNullOrEmpty(partName) ? partName : h.def.defName + "_" + i;
+                string baseKey = !string.IsNullOrEmpty(partName) ? partName : h.def.defName;
+                string key = baseKey + "_" + i;
                 float cap = Mathf.Clamp(h.Severity * coeff, 0f, 10f);
                 float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
                 result.Add(new BreastPoolEntry(key + "_L", cap, mult, true, currentPair));
                 result.Add(new BreastPoolEntry(key + "_R", cap, mult, false, currentPair));
                 currentPair++;
             }
-            if (result.Count == 0 && pawn.RaceProps?.Humanlike == true)
-            {
-                result.Add(new BreastPoolEntry("Left_Default", 0.5f, 0.5f, true, 0));
-                result.Add(new BreastPoolEntry("Right_Default", 0.5f, 0.5f, false, 0));
-            }
         }
         catch
         {
-            if (pawn.RaceProps?.Humanlike == true)
-            {
-                result.Clear();
-                result.Add(new BreastPoolEntry("Left_Default", 0.5f, 0.5f, true, 0));
-                result.Add(new BreastPoolEntry("Right_Default", 0.5f, 0.5f, false, 0));
-            }
+            result.Clear();
         }
         return result;
     }
@@ -434,24 +396,24 @@ public static class ExtensionHelper
         return Mathf.Clamp(mult, 0.5f, 1.5f);
     }
 
-    /// <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。未启用 RJW 乳房尺寸时 0.5。</summary>
+    /// <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。无乳房 hediff 时 0。</summary>
     public static float GetMilkFlowMultiplierFromRJW_Left(this Pawn pawn)
     {
         pawn.GetMilkFlowMultipliersFromRJW(out float left, out _);
         return left;
     }
-    /// <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。未启用时 0.5。</summary>
+    /// <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。无乳房 hediff 时 0。</summary>
     public static float GetMilkFlowMultiplierFromRJW_Right(this Pawn pawn)
     {
         pawn.GetMilkFlowMultipliersFromRJW(out _, out float right);
         return right;
     }
 
-    /// <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。未启用或空列表时 0.5/0.5。</summary>
+    /// <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。无 RJW 乳房 hediff 时 0/0。</summary>
     public static void GetMilkFlowMultipliersFromRJW(this Pawn pawn, out float leftMultiplier, out float rightMultiplier)
     {
-        leftMultiplier = 0.5f;
-        rightMultiplier = 0.5f;
+        leftMultiplier = 0f;
+        rightMultiplier = 0f;
         if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return;
         try
         {
@@ -470,22 +432,18 @@ public static class ExtensionHelper
                 rightMultiplier = totalMult;
             }
         }
-        catch
-        {
-            leftMultiplier = 0.5f;
-            rightMultiplier = 0.5f;
-        }
+        catch { }
     }
 
-    /// <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中），返回其对应的池 key（与 GetBreastPoolEntries 一致）。</summary>
+    /// <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一为 baseKey_i，每对唯一。</summary>
     public static string GetPoolKeyForBreastHediff(this Pawn pawn, Hediff breastHediff)
     {
         if (pawn == null || breastHediff == null) return null;
         var list = pawn.GetBreastList();
         if (list == null || !list.Contains(breastHediff)) return null;
         int i = list.IndexOf(breastHediff);
-        string partDefName = breastHediff.Part?.def?.defName;
-        return !string.IsNullOrEmpty(partDefName) ? partDefName : breastHediff.def.defName + "_" + i;
+        string baseKey = !string.IsNullOrEmpty(breastHediff.Part?.def?.defName) ? breastHediff.Part.def.defName : breastHediff.def.defName;
+        return baseKey + "_" + i;
     }
 
     /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目。</summary>
@@ -529,7 +487,7 @@ public static class ExtensionHelper
         var milkComp = pawn?.CompEquallyMilkable();
         if (milkComp == null || string.IsNullOrEmpty(sideKey)) return 1f;
         var entries = pawn.GetBreastPoolEntries();
-        if (entries == null) return 1f;
+        if (entries.Count == 0) return 1f;
         var e = entries.FirstOrDefault(x => x.Key == sideKey);
         if (string.IsNullOrEmpty(e.Key)) return 1f;
         float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
@@ -546,14 +504,30 @@ public static class ExtensionHelper
         if (pawn?.CompEquallyMilkable() == null || breastHediff == null) return list;
         string key = pawn.GetPoolKeyForBreastHediff(breastHediff);
         if (string.IsNullOrEmpty(key)) return list;
+        return pawn.GetPoolEntriesForPoolKey(key);
+    }
+
+    /// <summary>健康页悬停（身体部位）：从 poolKey（如 part.def.defName）直接取该对乳房的池条目，不依赖 GetBreastList 中的 hediff。用于悬停「人类乳房」部位时显示左/右乳奶量。</summary>
+    public static List<(string key, float fullness, float capacity, bool isLeft)> GetPoolEntriesForPoolKey(this Pawn pawn, string poolKey)
+    {
+        var list = new List<(string key, float fullness, float capacity, bool isLeft)>();
+        if (pawn?.CompEquallyMilkable() == null || string.IsNullOrEmpty(poolKey)) return list;
         var comp = pawn.CompEquallyMilkable();
         foreach (var e in pawn.GetBreastPoolEntries())
         {
-            if (e.Key != key && e.Key != key + "_L" && e.Key != key + "_R") continue;
+            if (e.Key != poolKey && e.Key != poolKey + "_L" && e.Key != poolKey + "_R") continue;
             float f = comp.GetFullnessForKey(e.Key);
             list.Add((e.Key, f, e.Capacity, e.IsLeft));
         }
         return list;
+    }
+
+    /// <summary>健康页悬停（身体部位）：从 BodyPartRecord 取该部位对应的池条目，用 part.def.defName 作 poolKey。无 RJW 乳房 hediff 时人类无对应池，返回空。</summary>
+    public static List<(string key, float fullness, float capacity, bool isLeft)> GetPoolEntriesForBreastPart(this Pawn pawn, BodyPartRecord part)
+    {
+        if (pawn?.CompEquallyMilkable() == null || part == null) return new List<(string key, float fullness, float capacity, bool isLeft)>();
+        string partDefName = part.def?.defName;
+        return string.IsNullOrEmpty(partDefName) ? new List<(string key, float fullness, float capacity, bool isLeft)>() : pawn.GetPoolEntriesForPoolKey(partDefName);
     }
 
     /// <summary>获取“乳房/胸部”身体部位，用于将 hediff 挂在健康页的乳房行。优先 Breast，否则 Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）。</summary>

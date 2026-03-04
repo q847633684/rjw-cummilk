@@ -137,6 +137,13 @@
         <member name="F:MilkCum.Core.MilkRiskSettings.mastitisMtbDaysMultiplierHumanlike">
             <summary>建议 8：人形/动物乳腺炎 MTB 乘数，便于区分平衡。</summary>
         </member>
+        <member name="T:MilkCum.Core.StatWorker_PawnOnlySafe">
+            <summary>
+            仅在有 Pawn 的 StatRequest 下显示，避免信息卡在 StatsReportUtility.StatsToDraw 中枚举 StatDef 时
+            对物品/Def 请求调用默认 StatWorker.ShouldShowFor(req) 导致 NRE / 列表错位（见 ADR-004、报错修复记录）。
+            用于 DrugDurationMultiplier 等仅需在小人信息卡显示的统计。
+            </summary>
+        </member>
         <member name="T:MilkCum.Milk.Comps.CompCumBucketLink">
             <summary>
             精液桶/椅/泵关联床：可链接到一张床。
@@ -482,29 +489,23 @@
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.AnimalProductionUtility_Patch">
             <summary>
-            绕过香草可挤奶比较统计条目：将 GetCompProperties&lt;CompProperties_Milkable&gt; 替换为返回 null，原版产奶行不显示；本 mod 用 RaceProperties.SpecialDisplayStats 显示产奶。
+            原用于隐藏原版产奶统计行（将 GetCompProperties&lt;CompProperties_Milkable&gt; 替换为返回 null）。已禁用：该 Transpiler 在信息卡构建 AnimalProductionStats 时参与统计列表生成，易导致 NRE/越界，故不再替换调用。产奶类型/价值见主表格列。
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.RaceProperties_Patch">
-            <summary>
-            Add accurate stat defs to all milkable pawns
-            </summary>
-        </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.RaceProperties_Patch.SpecialDisplayStats_PostFix(System.Collections.Generic.IEnumerable{RimWorld.StatDrawEntry}@,RimWorld.StatRequest)">
-            <summary>
-            replace vanilla stat entries EM ones
-            </summary>
-        </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.RaceProperties_Patch.GetSpecialDisplayStats(System.Collections.Generic.IEnumerable{RimWorld.StatDrawEntry},RimWorld.StatRequest)">
-            <summary>
-            Generate the stat entries for milkable pawns
-            </summary>
+        <member name="M:MilkCum.Milk.HarmonyPatches.AnimalProductionUtility_Patch.Transpiler(System.Collections.Generic.IEnumerable{HarmonyLib.CodeInstruction})">
+            <summary>已禁用：不再替换调用，直接返回原 IL，避免参与信息卡统计构建时导致 NRE/越界。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.ProlactinAddictionPatch">
             <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.PoolModelBirthHelper">
             <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
+        </member>
+        <member name="T:MilkCum.Milk.HarmonyPatches.BreastPoolTooltipHelper">
+            <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.HarmonyPatches.BreastPoolTooltipHelper.BuildBreastPairBlock(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.Single,System.Single,System.Boolean}},System.String,Verse.Pawn)">
+            <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.Hediff_TipString_BreastPool_Patch">
             <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。健康页实际使用 HealthCardUtility.GetTooltip 与 TipStringExtra，故同时 Patch GetTooltip 确保悬停能显示。</summary>
@@ -523,6 +524,18 @@
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.Bill_Production_Notify_IterationCompleted_Patch">
             <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
+        </member>
+        <member name="T:MilkCum.Milk.HarmonyPatches.StatWorker_ShouldShowFor_Patch">
+            <summary>
+            信息卡统计 NRE 全局防护。StatsReportUtility.StatsToDraw 会枚举分类下所有 StatDef 并调用 Worker.ShouldShowFor(req)。
+            任一 StatWorker（原版或 mod）在 req 无 Pawn、或 Pawn 下某属性为 null 时都可能 NRE，导致列表错位与 ArgumentOutOfRangeException。
+            Prefix：req.Pawn == null 时直接返回 false 并跳过原方法。
+            Finalizer：原方法或其它 patch 抛出的任何异常都吞掉并设 __result = false，避免崩溃；该 stat 仅不显示。
+            见 ADR-004、报错修复记录。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Milk.HarmonyPatches.StatWorker_ShouldShowFor_Patch.Finalizer(System.Exception,System.Boolean@)">
+            <summary>兜底：ShouldShowFor 内任意 NRE/异常都视为「不显示」并吞掉，避免信息卡崩溃。</summary>
         </member>
         <member name="T:MilkCum.Milk.Helpers.PoolModelConstants">
             <summary>水池模型常量：规格第七节、第一节、十四节已定。详见 记忆库/domain/代码常量与公式对应。</summary>
@@ -664,11 +677,6 @@
         </member>
         <member name="M:MilkCum.Milk.Jobs.JobDriver_EquallyMilk.GetWorkTotal">
             <summary>按容量量化：工作量 = 基准 × (1 + 容量系数×(MilkAmount-1)) × (0.5+0.5×池满度)，有上下限。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.StatWorker_EqualMilkingPawnOnly">
-            <summary>
-            仅对 Pawn 请求显示；避免在查看 ThingDef（如药物 EM_Prolactin）信息卡时触发原版 StatWorker 的未处理分支并报 "Unhandled case"。
-            </summary>
         </member>
         <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_AddictionSatisfied">
             <summary>10.8-5：当成瘾处于满足阶段时显示小幅正面心情。</summary>
@@ -1371,7 +1379,7 @@
             <summary>指定侧的 R，无记录时为 0（用于显示/平均）。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier(System.String)">
-            <summary>进水流速的 R 倍率（按侧）：加成模式时 = 1+R×(boost-1)；否则 = R（无记录时用 min）。用于该侧进水与 UI 因子。</summary>
+            <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时加成模式=1+R×(boost-1)，否则=R（衰减后不低于 minR）。</summary>
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier">
             <summary>进水流速的 R 倍率（全侧平均，用于总产奶效率一行显示）。</summary>
