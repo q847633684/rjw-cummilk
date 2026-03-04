@@ -550,7 +550,8 @@ public static class ExtensionHelper
         var milkComp = pawn?.CompEquallyMilkable();
         if (milkComp == null || string.IsNullOrEmpty(sideKey)) return 1f;
         var entries = pawn.GetBreastPoolEntries();
-        var e = entries?.FirstOrDefault(x => x.Key == sideKey);
+        if (entries == null) return 1f;
+        var e = entries.FirstOrDefault(x => x.Key == sideKey);
         if (string.IsNullOrEmpty(e.Key)) return 1f;
         float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
         float fullE = milkComp.GetFullnessForKey(sideKey);

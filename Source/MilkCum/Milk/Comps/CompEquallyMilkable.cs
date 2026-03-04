@@ -26,7 +26,7 @@ public class CompEquallyMilkable : CompMilkable
     private float rightFullness;
     /// <summary>按单乳 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则从 left/right 反推。</summary>
     private Dictionary<string, float> breastFullness = new Dictionary<string, float>();
-    /// <summary>旧实现与旧存档兼容：固定单侧容量 0.5；当前容量由 GetLeft/RightBreastCapacityFactor 决定（总容量=左+右）。</summary>
+    /// <summary>未启用 RJW 乳房尺寸时单侧固定容量 0.5；总容量 = 左 + 右。</summary>
     private const float HalfPool = 0.5f;
 
     /// <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
@@ -127,19 +127,12 @@ public class CompEquallyMilkable : CompMilkable
                     if (!string.IsNullOrEmpty(breastKeys[i]))
                         breastFullness[breastKeys[i]] = breastVals[i];
             }
-            if (breastFullness.Count == 0 && (leftFullness > 0f || rightFullness > 0f))
-                DistributeLeftRightToBreastFullness();
             SyncLeftRightFromBreastFullness();
         }
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref assignedFeeders, "CanBeFedBy", LookMode.Reference);
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
         Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
-        // 旧存档兼容：无双池时用 base.fullness 均分
-        if (Scribe.mode == LoadSaveMode.PostLoadInit && leftFullness <= 0f && rightFullness <= 0f && fullness > 0f)
-        {
-            leftFullness = rightFullness = Mathf.Clamp(fullness * 0.5f, 0f, HalfPool);
-        }
         if (Scribe.mode == LoadSaveMode.PostLoadInit && lastGatheredTick < 0)
             lastGatheredTick = Find.TickManager.TicksGame;
         SyncBaseFullness();
@@ -171,27 +164,6 @@ public class CompEquallyMilkable : CompMilkable
         rightFullness = right;
     }
 
-    /// <summary>旧存档兼容：无 per-breast 数据时，按当前 GetBreastPoolEntries 的容量比例把 leftFullness/rightFullness 摊到各 key。</summary>
-    private void DistributeLeftRightToBreastFullness()
-    {
-        if (Pawn == null) return;
-        var entries = Pawn.GetBreastPoolEntries();
-        if (entries.Count == 0) return;
-        float leftCap = 0f, rightCap = 0f;
-        foreach (var e in entries)
-        {
-            if (e.IsLeft) leftCap += e.Capacity; else rightCap += e.Capacity;
-        }
-        breastFullness ??= new Dictionary<string, float>();
-        breastFullness.Clear();
-        foreach (var e in entries)
-        {
-            float totalCap = e.IsLeft ? leftCap : rightCap;
-            float sideFullness = e.IsLeft ? leftFullness : rightFullness;
-            float v = (totalCap > 0.001f) ? sideFullness * (e.Capacity / totalCap) : 0f;
-            breastFullness[e.Key] = Mathf.Clamp(v, 0f, e.Capacity * PoolModelConstants.StretchCapFactor);
-        }
-    }
     /// <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）。</summary>
     public void ClearPools()
     {
@@ -200,7 +172,7 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness?.Clear();
         SyncBaseFullness();
     }
-    /// <summary>7.11: 旧存档兼容 — 确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
+    /// <summary>确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
     public void EnsureSaveCompatAllowedLists()
     {
         allowedSucklers ??= new List<Pawn>();

@@ -350,7 +350,7 @@ public static class HediffComp_Chargeable_Patch
                 num = Mathf.Min(desiredCharge, __instance.Charge);
                 var drainedKeys = new List<string>();
                 comp.DrainForConsume(num, drainedKeys);
-                lactating.OnGatheredLetdownByKeys(drainedKeys);
+                (__instance.parent as HediffWithComps_EqualMilkingLactating)?.OnGatheredLetdownByKeys(drainedKeys);
                 lactating.SyncChargeFromPool();
             }
             else

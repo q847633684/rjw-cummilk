@@ -131,8 +131,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float currentLactationAmount;
     /// <summary>四层模型：喷乳反射 R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key 与 breastFullness 一致，如 HumanBreast_L）。挤奶/吸奶某侧仅提升该侧 R。</summary>
     private Dictionary<string, float> letdownReflexByKey;
-    /// <summary>旧存档兼容：加载到的单一 R 值；若存在且 letdownReflexByKey 为空则不再使用，新逻辑全用按侧 R。</summary>
-    private float legacyLetdownReflex = 1f;
     /// <summary>四层模型：炎症负荷 I≥0。每 30 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
     private float currentInflammation;
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置。</summary>
@@ -180,10 +178,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public override void CompExposeData()
     {
         base.CompExposeData();
-        float legacyRemainingDays = 0f;
-        Scribe_Values.Look(ref legacyRemainingDays, "PoolRemainingDays", 0f);
         Scribe_Values.Look(ref currentLactationAmount, "PoolCurrentLactationAmount", 0f);
-        Scribe_Values.Look(ref legacyLetdownReflex, "EM.LetdownReflex", 1f);
         List<string> letdownKeys = null;
         List<float> letdownVals = null;
         if (Scribe.mode == LoadSaveMode.Saving && letdownReflexByKey != null && letdownReflexByKey.Count > 0)
@@ -207,14 +202,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         Scribe_Values.Look(ref effectiveToleranceE, "EM.EffectiveToleranceE", 0f);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
-            if (currentLactationAmount <= 0f && legacyRemainingDays > 0f)
-                currentLactationAmount = legacyRemainingDays / (PoolModelConstants.BaseValueT * Mathf.Max(GetEffectiveDrugFactor(), PoolModelConstants.EffectiveDrugFactorMin));
-            else if (currentLactationAmount <= 0f && Parent.Severity > 0f)
+            if (currentLactationAmount <= 0f && Parent.Severity > 0f)
             {
                 float eff = GetEffectiveDrugFactor();
                 currentLactationAmount = Parent.Severity * GetBaseValueNormalized(Pawn) * eff;
             }
-            legacyLetdownReflex = Mathf.Clamp01(legacyLetdownReflex);
             currentInflammation = Mathf.Max(0f, currentInflammation);
             effectiveToleranceE = Mathf.Clamp01(effectiveToleranceE);
             if (effectiveToleranceE <= 0f && Pawn != null && EqualMilkingSettings.GetProlactinTolerance(Pawn) > 0f)
@@ -325,14 +317,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return Mathf.Clamp01(r);
     }
 
-    /// <summary>指定侧的 R，无记录时用 legacy 或 0（用于显示/平均）。</summary>
+    /// <summary>指定侧的 R，无记录时为 0（用于显示/平均）。</summary>
     public float GetLetdownReflexForSide(string sideKey)
     {
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
-        float r = GetLetdownReflexRaw(sideKey);
-        if (r <= 0f && legacyLetdownReflex > 0f && (letdownReflexByKey == null || letdownReflexByKey.Count == 0))
-            r = legacyLetdownReflex; // 旧存档：尚无按侧数据时用旧单值
-        return r;
+        return GetLetdownReflexRaw(sideKey);
     }
 
     /// <summary>进水流速的 R 倍率（按侧）：加成模式时 = 1+R×(boost-1)；否则 = R（无记录时用 min）。用于该侧进水与 UI 因子。</summary>
@@ -341,8 +330,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         if (!EqualMilkingSettings.enableLetdownReflex) return 1f;
         float minR = Mathf.Clamp01(EqualMilkingSettings.letdownReflexMin);
         float r = GetLetdownReflexRaw(sideKey);
-        if (r <= 0f && (letdownReflexByKey == null || letdownReflexByKey.Count == 0))
-            r = legacyLetdownReflex;
         r = Mathf.Max(minR, Mathf.Clamp01(r));
         float boost = Mathf.Clamp(EqualMilkingSettings.letdownReflexBoostMultiplier, 1f, 3f);
         if (boost > 1f)
@@ -428,7 +415,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return D;
     }
 
-    /// <summary>当前 L 下的每日衰减（用于显示/兼容）。</summary>
+    /// <summary>当前 L 下的每日衰减（用于显示）。</summary>
     public float GetDailyLactationDecay() => GetDailyLactationDecay(currentLactationAmount);
 
     /// <summary>吃药时进水：ΔL = Δs × C_dose。Δs 为本次实际生效的 Lactating 严重度增量（已包含一次耐受削弱）。</summary>
