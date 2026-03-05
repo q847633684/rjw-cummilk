@@ -129,13 +129,15 @@
     <EM.ItemProducer>Producer: {0}</EM.ItemProducer>
     <EM.ItemAllowedConsumersOwnerOnly>Allowed: owner only</EM.ItemAllowedConsumersOwnerOnly>
     <EM.ItemAllowedConsumers>Allowed: {0}</EM.ItemAllowedConsumers>
-    <EM.LactatingStateProducing>Producing (pool {0} full)</EM.LactatingStateProducing>
+    <EM.LactatingStateProducing>Producing</EM.LactatingStateProducing>
+    <EM.LactatingStateFullness>Pool fullness: {0}</EM.LactatingStateFullness>
     <EM.LactatingStateFullShrinking>Pool full, shrinking (reabsorbed milk adds to food)</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>Pool full (consider milking)</EM.LactatingStateFull>
     <EM.MilkFlowStoppedFull>No inflow (pool full)</EM.MilkFlowStoppedFull>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
     <EM.MilkFlowValuePercent>Milk flow: {0}({1})/day</EM.MilkFlowValuePercent>
+    <EM.MilkFlowValuePercentLine>Total flow: {0} / day ({1})</EM.MilkFlowValuePercentLine>
     <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
     <EM.MilkFlowDrive>Drive</EM.MilkFlowDrive>
     <EM.MilkFlowHunger>Hunger</EM.MilkFlowHunger>
@@ -147,6 +149,8 @@
     <EM.MilkFlowLetdown>Letdown</EM.MilkFlowLetdown>
     <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
     <EM.PoolPairFlowLine>{0}: {1}(Left: {2}; Right: {3})</EM.PoolPairFlowLine>
+    <EM.PoolLeftFlowLine>Left flow: {0} / day</EM.PoolLeftFlowLine>
+    <EM.PoolRightFlowLine>Right flow: {0} / day</EM.PoolRightFlowLine>
     <LactatingAddedNutritionPerDay>Extra nutrition per day: {0}</LactatingAddedNutritionPerDay>
     <EM.ReabsorbedNutritionPerDay>Reabsorbed (pool shrinking): +{0} nutrition/day</EM.ReabsorbedNutritionPerDay>
     <EM.ReabsorbNutritionEnabled>Reabsorb nutrition when pool shrinks (add to food need)</EM.ReabsorbNutritionEnabled>
@@ -156,6 +160,7 @@
     <EM.BreastParentLabel>Breasts</EM.BreastParentLabel>
     <EM.PoolTotalMilkCapacity>Milk: {0} / Capacity: {1}</EM.PoolTotalMilkCapacity>
     <EM.PoolTotalMilkCapacityFull>Total milk: {0} ({1}) / Capacity {2}({3})</EM.PoolTotalMilkCapacityFull>
+    <EM.PoolTotalMilkCapacityFullLine>Total milk: {0} / {1} (stretched cap: {2})</EM.PoolTotalMilkCapacityFullLine>
     <EM.PoolBreastMilkBaseStretch>Milk {0} / base {1}, stretched {2}</EM.PoolBreastMilkBaseStretch>
     <EM.PoolBreastMilkCap>Milk: {0} ({1}) / Cap {2}({3})</EM.PoolBreastMilkCap>
     <EM.PoolBreastFlowEfficiency>Left: {0}({1})/day Right: {2}({3})/day</EM.PoolBreastFlowEfficiency>
@@ -164,11 +169,36 @@
     <EM.PoolRightEfficiencyHeader>Right milk flow: {0}({1}%)/day</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>({0})</EM.PoolEfficiencyFactorsBracket>
     <EM.PoolBreastSectionHeader>[{0}]</EM.PoolBreastSectionHeader>
+    <EM.PoolSectionStorage>Storage</EM.PoolSectionStorage>
+    <EM.PoolSectionFlow>Flow</EM.PoolSectionFlow>
+    <EM.PoolSectionProduct>Product</EM.PoolSectionProduct>
+    <EM.PoolSectionConsumption>Consumption</EM.PoolSectionConsumption>
+    <EM.PoolSectionCycle>Cycle</EM.PoolSectionCycle>
+    <EM.PoolBreastSummaryLabel>Total</EM.PoolBreastSummaryLabel>
+    <EM.PoolBreastTotalMilkLine>Total milk: {0} / {1} ({2})</EM.PoolBreastTotalMilkLine>
+    <EM.PoolBreastStretchCapLine>Stretched cap: {0}</EM.PoolBreastStretchCapLine>
+    <EM.PoolBreastTotalFlowLine>Total flow: {0} / day</EM.PoolBreastTotalFlowLine>
+    <EM.PoolBreastPairSummaryLine1>Milk: {0} / {1} (stretched: {2})</EM.PoolBreastPairSummaryLine1>
+    <EM.PoolBreastPairSummaryLine2>Flow: {0} / day</EM.PoolBreastPairSummaryLine2>
+    <EM.PoolBreastDevModeOnly>DevMode only</EM.PoolBreastDevModeOnly>
+    <EM.PoolBreastMechanismLabel>Mechanism:</EM.PoolBreastMechanismLabel>
+    <EM.MilkFlowBreastVolume>Breast volume</EM.MilkFlowBreastVolume>
     <EM.PoolBreastPairSummary>Total: milk {0} / cap {1}({2}) / flow {3}/day</EM.PoolBreastPairSummary>
     <EM.PoolBreastSideMilk>Milk: {0} ({1})</EM.PoolBreastSideMilk>
+    <EM.PoolBreastSideMilkLine>Milk: {0} / {1} ({2})</EM.PoolBreastSideMilkLine>
     <EM.PoolBreastSideCap>Cap: {0}({1})</EM.PoolBreastSideCap>
+    <EM.PoolBreastSideCapMax>Cap max: {0}</EM.PoolBreastSideCapMax>
     <EM.PoolBreastSideFlow>Flow: {0}/day</EM.PoolBreastSideFlow>
+    <EM.PoolBreastSideFlowLine>Flow: {0} / day</EM.PoolBreastSideFlowLine>
+    <EM.PoolBreastFactorsLabel>Factors:</EM.PoolBreastFactorsLabel>
+    <EM.MilkFlowFactorLine>{0} ×{1}</EM.MilkFlowFactorLine>
+    <EM.PoolBreastLabelSuffix>: </EM.PoolBreastLabelSuffix>
     <EM.MilkQuality>Milk quality: {0}</EM.MilkQuality>
+    <EM.LactatingProductRate>Product rate: {0} x{1}</EM.LactatingProductRate>
+    <EM.LactatingProductLine>{0}: x{1}</EM.LactatingProductLine>
+    <EM.LactatingExtraNutrition>Extra nutrition: {0} / day</EM.LactatingExtraNutrition>
+    <EM.LactatingExtraNutritionShort>Extra nutrition: {0} / day</EM.LactatingExtraNutritionShort>
+    <EM.PoolRemainingDaysLine>Remaining days: {0}</EM.PoolRemainingDaysLine>
     <EM.AbsorptionDelayRemaining>Time remaining: {0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} minutes</EM.AbsorptionDelayMinutes>
     <EM.AbsorptionDelayHours>{0} hours</EM.AbsorptionDelayHours>

@@ -26,9 +26,9 @@ public static class PoolModelConstants
 
     /// <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
     public const float StretchCapFactor = 1.2f;
-    /// <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。</summary>
+    /// <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。改小则更容易出污物。</summary>
     public const float OverflowFilthThreshold = 0.02f;
-    /// <summary>排水后回缩：每 30 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 0.5 游戏日回缩到基础容量。</summary>
+    /// <summary>排水后回缩：每 60 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 1 游戏日回缩到基础容量。</summary>
     public const float ShrinkPerStep = 0.009f;
     /// <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
     public const float DoseToLFactor = 1f;

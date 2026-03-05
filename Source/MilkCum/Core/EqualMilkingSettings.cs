@@ -93,15 +93,20 @@ internal class EqualMilkingSettings : ModSettings
 		if (denom <= 0.01f) return 100f;
 		return 1f / denom;
 	}
-	/// <summary>四层模型：压力因子 PressureFactor(P)=1/(1+exp(b×(P−Pc)))，且不低于 pressureFactorMin，以便满池时仍有进水流速、溢出能发生。</summary>
+	/// <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.85、f_min=0.02，抑制约在膨胀阶段（P≈基础满/撑大≈0.83～1）开始。</summary>
+	/// <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
 	public static float GetPressureFactor(float P)
 	{
-		if (!enablePressureFactor || P <= 0f) return 1f;
-		float b = Mathf.Clamp(pressureFactorB, 1f, 80f);
-		float pc = Mathf.Clamp(pressureFactorPc, 0.5f, 1f);
-		float raw = 1f / (1f + Mathf.Exp(b * (P - pc)));
-		float minVal = Mathf.Clamp01(pressureFactorMin);
-		return Mathf.Max(minVal, raw);
+		if (!enablePressureFactor || P <= 0f)
+			return 1f;
+
+		float k = Mathf.Clamp(pressureFactorB, 0.5f, 80f);
+		float pc = Mathf.Clamp(pressureFactorPc, 0.3f, 1f);
+		float fMin = Mathf.Clamp01(pressureFactorMin);
+
+		// 带下限 Logistic：最低 f_min，P 越大越接近 f_min
+		float logistic = 1f / (1f + Mathf.Exp(k * (P - pc)));
+		return fMin + (1f - fMin) * logistic;
 	}
 	/// <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
 	public static float GetEffectiveDrive(float L)
@@ -125,13 +130,13 @@ internal class EqualMilkingSettings : ModSettings
 	public static List<string> raceCannotLactate = new();
 	// 人形种族默认流速倍率（2 = 单次剂量约 1 日灌满；与 RJW/种族 mod 平衡时也可调）
 	public static float defaultFlowMultiplierForHumanlike = 2f;
-	// 四层模型（阶段1）：压力软抑制。启用时流速乘 PressureFactor(P)，P=Fullness/maxFullness，满前平滑降速而非硬停。
+	// 四层模型（阶段1）：压力软抑制。启用时流速乘 PressureFactor(P)；带下限 Logistic，默认 Pc=0.85、k=6、f_min=0.02，抑制约在膨胀阶段（P≈0.83～1）开始。
 	public static bool enablePressureFactor = true;
-	public static float pressureFactorPc = 0.9f;
-	public static float pressureFactorB = 30f;
-	/// <summary>压力因子下限：满池时 PressureFactor 不低于此值，保证仍有进水流速以便撑大/溢出能发生；0=允许压到接近 0（旧行为）。建议 0.05～0.15。</summary>
-	public static float pressureFactorMin = 0.15f;
-	// 四层模型（阶段1）：喷乳反射 R。启用时流速乘 R；R 每 30 tick 指数衰减，挤奶/吸奶时升高。
+	public static float pressureFactorPc = 0.85f;
+	public static float pressureFactorB = 6f;
+	/// <summary>压力曲线下限 f_min：满池时生产倍率不低于此值，永不归零。推荐 0.02～0.15。</summary>
+	public static float pressureFactorMin = 0.02f;
+	// 四层模型（阶段1）：喷乳反射 R。启用时流速乘 R；R 每 60 tick 指数衰减，挤奶/吸奶时升高。
 	public static bool enableLetdownReflex = true;
 	/// <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
 	public static float letdownReflexDecayLambda = 0.03f;
@@ -141,7 +146,7 @@ internal class EqualMilkingSettings : ModSettings
 	public static float letdownReflexMin = 0.25f;
 	/// <summary>喷乳反射加成倍率：吸奶/挤奶后进水量 = 基础 × (1 + R×(本值-1))，R=1 时为本值倍（1.5~2.5），R=0 时为 1 倍；维持时间由 R 衰减速度决定。≤1 时按旧逻辑（流速×R，且受 R 下限约束）。</summary>
 	public static float letdownReflexBoostMultiplier = 2f;
-	// 四层模型（阶段2）：炎症 I(t)。启用时每 30 tick 更新 I；I>I_crit 触发乳腺炎；L 衰减加 η·I。
+	// 四层模型（阶段2）：炎症 I(t)。启用时每 60 tick 更新 I；I>I_crit 触发乳腺炎；L 衰减加 η·I。
 	public static bool enableInflammationModel = true;
 	public static float inflammationAlpha = 0.1f;
 	public static float inflammationBeta = 0.15f;
@@ -160,7 +165,7 @@ internal class EqualMilkingSettings : ModSettings
 	public static float hormoneSaturationA = 1f;
 	/// <summary>参考 L 归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，使尾期更平滑；≤0 时不归一。</summary>
 	public static float hormoneSaturationLRef = 1f;
-	// 四层模型（阶段3.2）：组织适应。长期高 P 扩容、长期低 P 回缩；dF_max/dt = θ·max(P−0.85,0) − ω·(1−P)，每 30 tick 更新，叠加到基础容量上。
+	// 四层模型（阶段3.2）：组织适应。长期高 P 扩容、长期低 P 回缩；dF_max/dt = θ·max(P−0.85,0) − ω·(1−P)，每 60 tick 更新，叠加到基础容量上。
 	public static bool enableTissueAdaptation = true;
 	/// <summary>扩容率 θ（每游戏日）；P 大于 0.85 时容量增加。</summary>
 	public static float adaptationTheta = 0.002f;
@@ -279,9 +284,9 @@ internal class EqualMilkingSettings : ModSettings
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
 		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 2f);
 		Scribe_Values.Look(ref enablePressureFactor, "EM.EnablePressureFactor", true);
-		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.9f);
-		Scribe_Values.Look(ref pressureFactorB, "EM.PressureFactorB", 30f);
-		Scribe_Values.Look(ref pressureFactorMin, "EM.PressureFactorMin", 0.15f);
+		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.85f);
+		Scribe_Values.Look(ref pressureFactorB, "EM.PressureFactorB", 6f);
+		Scribe_Values.Look(ref pressureFactorMin, "EM.PressureFactorMin", 0.02f);
 		Scribe_Values.Look(ref enableLetdownReflex, "EM.EnableLetdownReflex", true);
 		Scribe_Values.Look(ref letdownReflexDecayLambda, "EM.LetdownReflexDecayLambda", 0.03f);
 		Scribe_Values.Look(ref letdownReflexStimulusDeltaR, "EM.LetdownReflexStimulusDeltaR", 0.45f);

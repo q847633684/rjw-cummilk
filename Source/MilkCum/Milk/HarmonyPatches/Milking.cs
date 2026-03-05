@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using HarmonyLib;
 using MilkCum.Core;
 using MilkCum.Milk.Comps;
@@ -66,7 +65,7 @@ public static class Hediff_Pregnant_Patch
     {
         if (mother.IsNormalAnimal())
         {
-            mother.health.AddHediff(HediffDefOf.Lactating, mother.GetBreastOrChestPart());
+            mother.health.GetOrAddHediff(HediffDefOf.Lactating, mother.GetBreastOrChestPart());
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
             return;
         }
@@ -136,8 +135,9 @@ public static class Need_Food_Patch
 /// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
 [HarmonyPatch(typeof(Need_Food))]
 [HarmonyPatch(nameof(Need_Food.NeedInterval))]
-public static class Need_NeedInterval_Patch
+public static class Need_Food_LactatingNutrition_Patch
 {
+    /// <summary>Need_Food.NeedInterval 的调用间隔（tick），用于将每日流速折算为每间隔的饱食度变化。</summary>
     private const int NeedTicksInterval = 150;
 
     [HarmonyPostfix]
@@ -185,6 +185,7 @@ public static class HediffSet_Remove_Patch
         var comp = pawn.CompEquallyMilkable();
         if (comp != null)
             comp.ClearPools();
+        ExtensionHelper.ClearLactatingStateCache(pawn);
     }
 }
 
@@ -327,7 +328,7 @@ internal static class PoolModelBirthHelper
 /// <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
 internal static class BreastPoolTooltipHelper
 {
-    private const string Tab = "\t";
+    private const string Tab = "  ";
 
     /// <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
     public static string BuildBreastPairBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, string poolKey, Pawn pawn)
@@ -353,111 +354,86 @@ internal static class BreastPoolTooltipHelper
         float conditionsL = pawn.GetConditionsForSide(poolKey + "_L");
         float conditionsR = pawn.GetConditionsForSide(poolKey + "_R");
         var b = comp.GetFlowPerDayBreakdown();
-        string factorL = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multL, true, letdownL, pressureL, conditionsL);
-        string factorR = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(b, multR, false, letdownR, pressureR, conditionsR);
         string leftPercent = leftCap >= 0.001f ? (leftFull / leftCap).ToStringPercent() : "0%";
         string rightPercent = rightCap >= 0.001f ? (rightFull / rightCap).ToStringPercent() : "0%";
         float leftStretch = leftCap * PoolModelConstants.StretchCapFactor;
         float rightStretch = rightCap * PoolModelConstants.StretchCapFactor;
+        string totalPercent = totalBaseCap >= 0.001f ? (totalMilk / totalBaseCap).ToStringPercent() : "0%";
+        var factorLinesL = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multL, true, letdownL, pressureL, conditionsL);
+        var factorLinesR = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multR, false, letdownR, pressureR, conditionsR);
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("EM.PoolBreastSectionHeader".Translate(sectionLabel));
-        sb.AppendLine("EM.PoolBreastPairSummary".Translate(
+        sb.AppendLine();
+        sb.AppendLine("EM.PoolSectionStorage".Translate());
+        sb.Append(Tab).AppendLine("EM.PoolBreastTotalMilkLine".Translate(
             totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
             totalBaseCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            totalStretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        sb.Append("EM.PoolLeftBreast".Translate()).AppendLine("：");
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilk".Translate(
+            totalPercent));
+        sb.Append(Tab).AppendLine("EM.PoolBreastStretchCapLine".Translate(totalStretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.AppendLine();
+        sb.AppendLine("EM.PoolSectionFlow".Translate());
+        sb.Append(Tab).AppendLine("EM.PoolBreastTotalFlowLine".Translate(flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.AppendLine();
+        sb.AppendLine("EM.PoolLeftBreast".Translate());
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
             leftFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            leftPercent));
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideCap".Translate(
             leftCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            leftStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlow".Translate(flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        sb.AppendLine("EM.PoolEfficiencyFactorsBracket".Translate(factorL));
-        sb.Append("EM.PoolRightBreast".Translate()).AppendLine("：");
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilk".Translate(
+            leftPercent));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(leftStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        if (Verse.Prefs.DevMode)
+        {
+            sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
+            sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
+            foreach (string line in factorLinesL)
+                sb.Append(Tab).Append(Tab).AppendLine(line);
+        }
+        sb.AppendLine();
+        sb.AppendLine("EM.PoolRightBreast".Translate());
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
             rightFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            rightPercent));
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideCap".Translate(
             rightCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            rightStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlow".Translate(flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        sb.Append("EM.PoolEfficiencyFactorsBracket".Translate(factorR));
+            rightPercent));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(rightStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        if (Verse.Prefs.DevMode)
+        {
+            sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
+            sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
+            foreach (string line in factorLinesR)
+                sb.Append(Tab).Append(Tab).AppendLine(line);
+        }
         return sb.ToString();
     }
 }
 
-/// <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。健康页实际使用 HealthCardUtility.GetTooltip 与 TipStringExtra，故同时 Patch GetTooltip 确保悬停能显示。</summary>
-public static class Hediff_TipString_BreastPool_Patch
+/// <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块，保证「人类乳房」等 RJW 乳房 hediff 悬停时一定显示储量/流速。</summary>
+[HarmonyPatch(typeof(HediffComp_SexPart), "get_CompTipStringExtra")]
+public static class HediffComp_SexPart_CompTipStringExtra_Patch
 {
-    private static bool _applied;
-
-    public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
+    [HarmonyPostfix]
+    public static void Postfix(HediffComp_SexPart __instance, ref string __result)
     {
-        if (harmony == null || _applied) return;
-        MethodBase tipStringGetter = HarmonyLib.AccessTools.PropertyGetter(typeof(Hediff), "TipString");
-        if (tipStringGetter != null)
-        {
-            try
-            {
-                harmony.Patch(tipStringGetter, postfix: new HarmonyLib.HarmonyMethod(typeof(Hediff_TipString_BreastPool_Patch).GetMethod(nameof(TipString_Postfix), BindingFlags.Public | BindingFlags.Static)));
-                _applied = true;
-            }
-            catch (System.Exception ex)
-            {
-                Verse.Log.Warning($"[MilkCum] Hediff TipString postfix not applied: {ex.Message}");
-            }
-        }
-        if (!_applied)
-        {
-            MethodBase getTipString = HarmonyLib.AccessTools.Method(typeof(Hediff), "GetTipString");
-            if (getTipString != null)
-            {
-                try
-                {
-                    harmony.Patch(getTipString, postfix: new HarmonyLib.HarmonyMethod(typeof(Hediff_TipString_BreastPool_Patch).GetMethod(nameof(GetTipString_Postfix), BindingFlags.Public | BindingFlags.Static)));
-                    _applied = true;
-                }
-                catch (System.Exception ex)
-                {
-                    Verse.Log.Warning($"[MilkCum] Hediff GetTipString postfix not applied: {ex.Message}");
-                }
-            }
-        }
-    }
-
-    public static void TipString_Postfix(Hediff __instance, ref string __result)
-    {
-        AppendPoolTooltip(__instance, ref __result);
-    }
-
-    public static void GetTipString_Postfix(Hediff __instance, ref string __result)
-    {
-        AppendPoolTooltip(__instance, ref __result);
-    }
-
-    private static void AppendPoolTooltip(Hediff __instance, ref string __result)
-    {
-        if (__instance?.pawn == null) return;
+        if (__instance?.parent == null) return;
+        if (__instance.Def.genitalFamily != GenitalFamily.Breasts) return;
+        Hediff parent = __instance.parent;
+        if (parent?.pawn == null) return;
         try
         {
-            Pawn pawn = __instance.pawn;
+            Pawn pawn = parent.pawn;
             if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
-            var list = pawn.GetBreastList();
-            if (list == null || !list.Contains(__instance)) return;
-            var entries = pawn.GetPoolEntriesForBreastHediff(__instance);
-            if (entries.Count == 0) return;
-            string poolKey = pawn.GetPoolKeyForBreastHediff(__instance);
+            string poolKey = pawn.GetPoolKeyForBreastHediff(parent);
             if (string.IsNullOrEmpty(poolKey)) return;
-            string sectionLabel = __instance.LabelCap;
+            var entries = pawn.GetPoolEntriesForBreastHediff(parent);
+            if (entries.Count == 0) return;
+            string sectionLabel = parent.LabelCap;
             string block = BreastPoolTooltipHelper.BuildBreastPairBlock(sectionLabel, entries, poolKey, pawn);
             if (!string.IsNullOrEmpty(block))
                 __result = (__result ?? "") + "\n" + block;
         }
         catch (Exception ex)
         {
-            Log.Warning($"[MilkCum] Hediff TipString/GetTipString breast pool append: {ex.Message}");
+            Log.Warning($"[MilkCum] HediffComp_SexPart CompTipStringExtra breast pool append: {ex.Message}");
         }
     }
 }

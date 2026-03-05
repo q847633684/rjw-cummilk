@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using MilkCum.Core;
+using MilkCum.Milk.Helpers;
 using RimWorld;
 using Verse;
 
 namespace MilkCum.Milk.Comps;
 
-/// <summary>药物诱发泌乳时的能力增益，健康页显示。capMods 由设置与 Lactating severity 动态计算。</summary>
+/// <summary>药物诱发泌乳时的能力增益。capMods 由设置与驱动(Drive)动态计算，对意识/操纵/移动均加 offset，与流速、剩余时间同源。</summary>
 public class Hediff_LactatingGain : HediffWithComps
 {
     private HediffStage _stage;
@@ -16,28 +17,28 @@ public class Hediff_LactatingGain : HediffWithComps
         get
         {
             if (_stage == null) _stage = new HediffStage();
-            if (!EqualMilkingSettings.lactatingGainEnabled || EqualMilkingSettings.lactatingGainCapModPercent <= 0f)
+            float gainOffset = 0f;
+            if (EqualMilkingSettings.lactatingGainEnabled && EqualMilkingSettings.lactatingGainCapModPercent > 0f)
             {
-                _stage.capMods = null;
-                return _stage;
+                float L = pawn?.LactatingHediffComp()?.CurrentLactationAmount ?? 0f;
+                float drive = EqualMilkingSettings.GetEffectiveDrive(L);
+                float pct = UnityEngine.Mathf.Clamp(EqualMilkingSettings.lactatingGainCapModPercent, 0f, 0.20f);
+                gainOffset = pct * drive;
             }
-            float severity = pawn?.health?.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating)?.Severity ?? 0f;
-            float pct = UnityEngine.Mathf.Clamp(EqualMilkingSettings.lactatingGainCapModPercent, 0f, 0.20f);
-            float offset = pct * severity;
             if (_capMods == null)
             {
                 _capMods = new List<PawnCapacityModifier>
                 {
-                    new() { capacity = PawnCapacityDefOf.Consciousness, offset = offset },
-                    new() { capacity = PawnCapacityDefOf.Manipulation, offset = offset },
-                    new() { capacity = PawnCapacityDefOf.Moving, offset = offset }
+                    new() { capacity = PawnCapacityDefOf.Consciousness, offset = gainOffset },
+                    new() { capacity = PawnCapacityDefOf.Manipulation, offset = gainOffset },
+                    new() { capacity = PawnCapacityDefOf.Moving, offset = gainOffset }
                 };
             }
             else
             {
-                _capMods[0].offset = offset;
-                _capMods[1].offset = offset;
-                _capMods[2].offset = offset;
+                _capMods[0].offset = gainOffset;
+                _capMods[1].offset = gainOffset;
+                _capMods[2].offset = gainOffset;
             }
             _stage.capMods = _capMods;
             return _stage;

@@ -15,6 +15,7 @@
 | 药品Def变量参考 | [docs/药品Def变量参考](docs/药品Def变量参考.md) | 药品 ThingDef/ingestible 与本 mod 三种药品 |
 | 耐受系统重构设计 | [docs/耐受系统重构设计](docs/耐受系统重构设计.md) | E_tol、进水/衰减公式、落地修改清单 |
 | 与游戏本体及RJW的冲突与优化总结 | [docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) | 冲突与优化 |
+| UI 文案前后对照 | [docs/UI文案前后对照](docs/UI文案前后对照.md) | 术语统一、健康页悬停、硬编码冒号、改文建议与实施顺序 |
 | 其它 | 见 [docs/README](docs/README.md) | 待办、建议评估、模拟、设置UI、脚本等 |
 
 ---
@@ -26,6 +27,10 @@
 | 设计决策概览 | [design/00-概览](design/00-概览.md) | 设计决策概览与撰写指引 |
 | 泌乳逻辑前提：仅在有乳房时进行 | [design/泌乳前提-仅在有乳房时](design/泌乳前提-仅在有乳房时.md) | #双池 #泌乳前提 #乳房 #GetBreastPoolEntries |
 | 双池结构与 PairIndex、选侧规则 | [design/双池与PairIndex](design/双池与PairIndex.md) | #双池 #PairIndex #选侧 #GetBreastPoolEntries #DrainForConsume |
+| 泌乳刷新策略与性能 | [design/泌乳刷新策略与性能](design/泌乳刷新策略与性能.md) | #tick #性能 #CompTick #LOD |
+| 泌乳与胀满因果顺序 | [design/泌乳与胀满因果顺序](design/泌乳与胀满因果顺序.md) | #双池 #胀满 #泌乳 #逻辑 |
+| 快满时：停产、回缩、溢出与补营养 | [design/快满-停产-回缩-溢出](design/快满-停产-回缩-溢出.md) | #双池 #回缩 #溢出 #压力 |
+| 压力因子满池乘数与溢出模拟 | [design/压力因子满池乘数与溢出](design/压力因子满池乘数与溢出.md) | #双池 #压力 #溢出 |
 
 ---
 
@@ -53,7 +58,7 @@
 | 标题 | 路径 | 摘要/标签 |
 |------|------|-----------|
 | 关键决策概览 | [decisions/00-概览](decisions/00-概览.md) | 关键决策概览与 ADR 模板 |
-| ADR-001：进水 30 tick、L 衰减 200 tick | [decisions/ADR-001-进水与衰减周期](decisions/ADR-001-进水与衰减周期.md) | #tick #进水 #衰减 |
+| ADR-001：进水 60 tick、L 衰减 200 tick | [decisions/ADR-001-进水与衰减周期](decisions/ADR-001-进水与衰减周期.md) | #tick #进水 #衰减 |
 | ADR-002：吸收延迟基准 15000 tick | [decisions/ADR-002-吸收延迟基准](decisions/ADR-002-吸收延迟基准.md) | #吸收延迟 |
 | ADR-003：选侧「相同时先左」 | [decisions/ADR-003-选侧先左](decisions/ADR-003-选侧先左.md) | #选侧 #DrainForConsume |
 | ADR-004：信息卡统计补丁移除 | [decisions/ADR-004-信息卡统计补丁移除](decisions/ADR-004-信息卡统计补丁移除.md) | #信息卡 #SpecialDisplayStats #RaceProperties |
@@ -67,7 +72,7 @@
 - `#选侧`：见 [design/双池与PairIndex](design/双池与PairIndex.md)、[decisions/ADR-003-选侧先左](decisions/ADR-003-选侧先左.md)
 - `#耐受`：见 [domain/代码常量与公式对应](domain/代码常量与公式对应.md)、[docs/泌乳系统逻辑图](docs/泌乳系统逻辑图.md) 第一、二、十二节
 - `#EMDefOf`：见 [conventions/EMDefOf与代码位置](conventions/EMDefOf与代码位置.md)、[conventions/00-概览](conventions/00-概览.md)、.cursor/skills/rjw-cummilk-source
-- `#tick`：见 [decisions/ADR-001-进水与衰减周期](decisions/ADR-001-进水与衰减周期.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
+- `#tick`：见 [decisions/ADR-001-进水与衰减周期](decisions/ADR-001-进水与衰减周期.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)、[design/泌乳刷新策略与性能](design/泌乳刷新策略与性能.md)
 - `#吸收延迟`：见 [decisions/ADR-002-吸收延迟基准](decisions/ADR-002-吸收延迟基准.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
 - `#信息卡`：见 [decisions/ADR-004-信息卡统计补丁移除](decisions/ADR-004-信息卡统计补丁移除.md)
 - `#参数`、`#兼容`、`#坑点`：见 [domain/快速参考](domain/快速参考.md)

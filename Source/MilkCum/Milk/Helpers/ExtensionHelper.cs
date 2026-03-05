@@ -235,11 +235,6 @@ public static class ExtensionHelper
     }
     #endregion
     #region Milk
-    /// <summary>Part.def.defName 是否为左乳（StartsWith("LeftBreast") 或 "Left"），避免 Contains("Left") 误伤 LeftoverBreast。</summary>
-    private static bool IsLeftPart(string partName) => !string.IsNullOrEmpty(partName) && (partName.StartsWith("LeftBreast") || partName == "Left");
-    /// <summary>Part.def.defName 是否为右乳（StartsWith("RightBreast") 或 "Right"）。</summary>
-    private static bool IsRightPart(string partName) => !string.IsNullOrEmpty(partName) && (partName.StartsWith("RightBreast") || partName == "Right");
-
     /// <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每个 hediff 表示一对乳房：左/右各为该 hediff 的 Severity×系数；多 hediff 时左右均为所有 hediff 容量之和（总容量=2×和）。容量允许 0（乳退化）。</summary>
     public static (float leftCapacity, float rightCapacity) GetVirtualBreastPools(this Pawn pawn)
     {
@@ -435,13 +430,26 @@ public static class ExtensionHelper
         catch { }
     }
 
-    /// <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一为 baseKey_i，每对唯一。</summary>
+    /// <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中或与列表中某项 def+Part 一致），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一为 baseKey_i，每对唯一。</summary>
     public static string GetPoolKeyForBreastHediff(this Pawn pawn, Hediff breastHediff)
     {
         if (pawn == null || breastHediff == null) return null;
         var list = pawn.GetBreastList();
-        if (list == null || !list.Contains(breastHediff)) return null;
+        if (list == null || list.Count == 0) return null;
         int i = list.IndexOf(breastHediff);
+        if (i < 0)
+        {
+            for (int j = 0; j < list.Count; j++)
+            {
+                var h = list[j];
+                if (h?.def == breastHediff.def && h.Part == breastHediff.Part)
+                {
+                    i = j;
+                    break;
+                }
+            }
+        }
+        if (i < 0) return null;
         string baseKey = !string.IsNullOrEmpty(breastHediff.Part?.def?.defName) ? breastHediff.Part.def.defName : breastHediff.def.defName;
         return baseKey + "_" + i;
     }

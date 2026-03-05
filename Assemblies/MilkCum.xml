@@ -65,13 +65,14 @@
             <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
         </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.GetPressureFactor(System.Single)">
-            <summary>四层模型：压力因子 PressureFactor(P)=1/(1+exp(b×(P−Pc)))，且不低于 pressureFactorMin，以便满池时仍有进水流速、溢出能发生。</summary>
+            <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.85、f_min=0.02，抑制约在膨胀阶段（P≈基础满/撑大≈0.83～1）开始。</summary>
+            <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
         </member>
         <member name="M:MilkCum.Core.EqualMilkingSettings.GetEffectiveDrive(System.Single)">
             <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
         </member>
         <member name="F:MilkCum.Core.EqualMilkingSettings.pressureFactorMin">
-            <summary>压力因子下限：满池时 PressureFactor 不低于此值，保证仍有进水流速以便撑大/溢出能发生；0=允许压到接近 0（旧行为）。建议 0.05～0.15。</summary>
+            <summary>压力曲线下限 f_min：满池时生产倍率不低于此值，永不归零。推荐 0.02～0.15。</summary>
         </member>
         <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexDecayLambda">
             <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
@@ -188,9 +189,6 @@
         <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.breastFullness">
             <summary>按单乳 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则从 left/right 反推。</summary>
         </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.HalfPool">
-            <summary>未启用 RJW 乳房尺寸时单侧固定容量 0.5；总容量 = 左 + 右。</summary>
-        </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.Fullness">
             <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
         </member>
@@ -216,7 +214,7 @@
             <summary>四层模型（阶段3.2）：组织适应导致的容量增量 ≥0，maxFullness = 基础容量 + 本值。</summary>
         </member>
         <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.cachedWasLactatingWithDrugInduced">
-            <summary>2.3：药物泌乳状态缓存，每 30 tick 仅状态变化时增删 EM_DrugLactationBurden/EM_LactatingGain，减少重复查找。</summary>
+            <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick。</summary>
         </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.OverflowAccumulator">
             <summary>满池溢出累计量（仅 Debug 显示用）。</summary>
@@ -225,7 +223,7 @@
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
-            <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 30 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
+            <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
         </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.LastGatheredTick">
             <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用。</summary>
@@ -243,16 +241,16 @@
             <summary>确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
         </member>
         <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.Active">
-            <summary>仅做纯判断，不修改健康系统。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行。</summary>
+            <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库/design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.EnsureLactatingHediffFromConditions">
             <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避免 Active getter 产生副作用。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.ApplyDrugInducedLactationEffects">
-            <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/泌乳系统逻辑图。</summary>
+            <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.UpdateMilkPools">
-            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。满池后不再进水（flow=0），与 GetFlowPerDay 返回 0 一致，能量有据；回缩仍执行，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
+            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分每 60 tick 乘 ShrinkPerStep 向基础容量收敛），回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突。</summary>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.TrySendFullPoolLetter">
             <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图。</summary>
@@ -263,10 +261,12 @@
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.UpdateHealthHediffs">
             <summary>满池时添加「乳房胀满」hediff；低于 90% maxFullness 时移除（滞后避免抖动）。</summary>
         </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.SetFullness(System.Single)">
+        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.SetFullness(System.Single,System.Nullable{System.Single})">
             <summary>
-            设置总奶量（0～1）。从各乳池按比例缩放到目标总水量。
+            设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
             </summary>
+            <param name="value">目标总水量。</param>
+            <param name="cap">可选；不传时用 maxFullness 为上限；传时用于 clamp（如关压力因子时用撑大总容量）。</param>
         </member>
         <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.DrainForConsume(System.Single,System.Collections.Generic.List{System.String})">
             <summary>
@@ -297,7 +297,7 @@
             <summary>游戏内 2500 tick = 1 小时。</summary>
         </member>
         <member name="T:MilkCum.Milk.Comps.Hediff_LactatingGain">
-            <summary>药物诱发泌乳时的能力增益，健康页显示。capMods 由设置与 Lactating severity 动态计算。</summary>
+            <summary>药物诱发泌乳时的能力增益。capMods 由设置与驱动(Drive)动态计算，对意识/操纵/移动均加 offset，与流速、剩余时间同源。</summary>
         </member>
         <member name="T:MilkCum.Milk.Comps.Hediff_ProlactinTolerance">
             <summary>Provides safe tooltip for 催乳素耐受; avoids "Error getting tip text" from vanilla DrugEffectFactor comp.</summary>
@@ -481,19 +481,14 @@
             Add hunger rate from lactating to food need tip string
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.Need_NeedInterval_Patch">
+        <member name="T:MilkCum.Milk.HarmonyPatches.Need_Food_LactatingNutrition_Patch">
             <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
+        </member>
+        <member name="F:MilkCum.Milk.HarmonyPatches.Need_Food_LactatingNutrition_Patch.NeedTicksInterval">
+            <summary>Need_Food.NeedInterval 的调用间隔（tick），用于将每日流速折算为每间隔的饱食度变化。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.HediffSet_Remove_Patch">
             <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.AnimalProductionUtility_Patch">
-            <summary>
-            原用于隐藏原版产奶统计行（将 GetCompProperties&lt;CompProperties_Milkable&gt; 替换为返回 null）。已禁用：该 Transpiler 在信息卡构建 AnimalProductionStats 时参与统计列表生成，易导致 NRE/越界，故不再替换调用。产奶类型/价值见主表格列。
-            </summary>
-        </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.AnimalProductionUtility_Patch.Transpiler(System.Collections.Generic.IEnumerable{HarmonyLib.CodeInstruction})">
-            <summary>已禁用：不再替换调用，直接返回原 IL，避免参与信息卡统计构建时导致 NRE/越界。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.ProlactinAddictionPatch">
             <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
@@ -507,11 +502,8 @@
         <member name="M:MilkCum.Milk.HarmonyPatches.BreastPoolTooltipHelper.BuildBreastPairBlock(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.Single,System.Single,System.Boolean}},System.String,Verse.Pawn)">
             <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.Hediff_TipString_BreastPool_Patch">
-            <summary>健康页：乳房 hediff 悬停时追加该乳/该对奶量与容量（左乳：x/x, 右乳：x/x）。见 Docs/泌乳系统逻辑图。目标方法 get_TipString 在部分 RimWorld 版本中可能不存在，故不参与 PatchAll，改为 Init 时按需手动 Patch；若为 GetTipString() 则一并 Patch 以兼容。健康页实际使用 HealthCardUtility.GetTooltip 与 TipStringExtra，故同时 Patch GetTooltip 确保悬停能显示。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.HealthCardUtility_GetTooltip_BreastPool_Patch">
-            <summary>健康页悬停由 HealthCardUtility.GetTooltip(Pawn, BodyPartRecord) 构建。本 Patch 在该方法返回的 tooltip 后追加一行「左乳：x/x，右乳：x/x」。目标方法用字符串 "GetTooltip" 避免编译时 CS0117。</summary>
+        <member name="T:MilkCum.Milk.HarmonyPatches.HediffComp_SexPart_CompTipStringExtra_Patch">
+            <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块，保证「人类乳房」等 RJW 乳房 hediff 悬停时一定显示储量/流速。</summary>
         </member>
         <member name="T:MilkCum.Milk.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
             <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
@@ -562,10 +554,10 @@
             <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.OverflowFilthThreshold">
-            <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。</summary>
+            <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。改小则更容易出污物。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.ShrinkPerStep">
-            <summary>排水后回缩：每 30 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 0.5 游戏日回缩到基础容量。</summary>
+            <summary>排水后回缩：每 60 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 1 游戏日回缩到基础容量。</summary>
         </member>
         <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.DoseToLFactor">
             <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
@@ -609,12 +601,6 @@
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.TryGiveFirstLactationBirthMemory(Verse.Pawn)">
             <summary>分娩后首次泌乳成就类记忆；仅当尚未拥有该记忆时发放，供原版/RJW 分娩入口统一调用。</summary>
         </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.IsLeftPart(System.String)">
-            <summary>Part.def.defName 是否为左乳（StartsWith("LeftBreast") 或 "Left"），避免 Contains("Left") 误伤 LeftoverBreast。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.IsRightPart(System.String)">
-            <summary>Part.def.defName 是否为右乳（StartsWith("RightBreast") 或 "Right"）。</summary>
-        </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetVirtualBreastPools(Verse.Pawn)">
             <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每个 hediff 表示一对乳房：左/右各为该 hediff 的 Severity×系数；多 hediff 时左右均为所有 hediff 容量之和（总容量=2×和）。容量允许 0（乳退化）。</summary>
         </member>
@@ -625,10 +611,10 @@
             <summary>右池容量：虚拟右池，不修改 Hediff。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastCapacityFactors(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左池/右池容量。仅计算层虚拟左右池：未启用 RJW 乳房尺寸时人形 0.5+0.5；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和（总容量=2×和）。不调用 AddHediff/RemoveHediff。</summary>
+            <summary>左池/右池容量。仅计算层虚拟左右池：无 RJW 乳房 hediff 时不创建乳池，返回 0；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和。不调用 AddHediff/RemoveHediff。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastPoolEntries(Verse.Pawn)">
-            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。每个 hediff 表示一对乳房：产生 _L/_R 两键，容量各为该 hediff 的 Severity×系数。同一对共享 PairIndex。见 记忆库/design/双池与PairIndex。</summary>
+            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。设计前提：泌乳逻辑仅在「胸部部位有乳房」时进行，即只有存在乳房 hediff（GetBreastList 非空）时才建乳池、进水、挤奶等；无乳房则返回空、不创建默认池。每个 hediff 表示一对，产生 _L/_R 两键，同一对共享 PairIndex。约定：永不返回 null，无乳房时返回空列表。见 记忆库/design/泌乳前提-仅在有乳房时、双池与PairIndex。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromConditions(Verse.Pawn,Verse.BodyPartRecord)">
             <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。part 为 null 时按全身（任一乳腺炎即生效）；part 非空时仅当该部位的乳腺炎生效，对应「哪对乳房的哪一侧」。</summary>
@@ -646,16 +632,16 @@
             <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返回 1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromRJW_Left(Verse.Pawn)">
-            <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。未启用 RJW 乳房尺寸时 0.5。</summary>
+            <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。无乳房 hediff 时 0。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromRJW_Right(Verse.Pawn)">
-            <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。未启用时 0.5。</summary>
+            <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。无乳房 hediff 时 0。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultipliersFromRJW(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。未启用或空列表时 0.5/0.5。</summary>
+            <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。无 RJW 乳房 hediff 时 0/0。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolKeyForBreastHediff(Verse.Pawn,Verse.Hediff)">
-            <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中），返回其对应的池 key（与 GetBreastPoolEntries 一致）。</summary>
+            <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中或与列表中某项 def+Part 一致），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一为 baseKey_i，每对唯一。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetFlowPerDayForBreastPair(Verse.Pawn,System.String)">
             <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目。</summary>
@@ -665,6 +651,12 @@
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolEntriesForBreastHediff(Verse.Pawn,Verse.Hediff)">
             <summary>健康页悬停（多乳）：返回该 hediff 对应的所有池条目（1 条为单侧乳，2 条为拆成 _L/_R 的一对），用于显示「左乳：奶量/容量, 右乳：奶量/容量」。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolEntriesForPoolKey(Verse.Pawn,System.String)">
+            <summary>健康页悬停（身体部位）：从 poolKey（如 part.def.defName）直接取该对乳房的池条目，不依赖 GetBreastList 中的 hediff。用于悬停「人类乳房」部位时显示左/右乳奶量。</summary>
+        </member>
+        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolEntriesForBreastPart(Verse.Pawn,Verse.BodyPartRecord)">
+            <summary>健康页悬停（身体部位）：从 BodyPartRecord 取该部位对应的池条目，用 part.def.defName 作 poolKey。无 RJW 乳房 hediff 时人类无对应池，返回空。</summary>
         </member>
         <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastOrChestPart(Verse.Pawn)">
             <summary>获取“乳房/胸部”身体部位，用于将 hediff 挂在健康页的乳房行。优先 Breast，否则 Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）。</summary>
@@ -1331,7 +1323,7 @@
             <summary>四层模型：喷乳反射 R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key 与 breastFullness 一致，如 HumanBreast_L）。挤奶/吸奶某侧仅提升该侧 R。</summary>
         </member>
         <member name="F:HediffComp_EqualMilkingLactating.currentInflammation">
-            <summary>四层模型：炎症负荷 I≥0。每 30 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
+            <summary>四层模型：炎症负荷 I≥0。每 60 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
         </member>
         <member name="F:HediffComp_EqualMilkingLactating.milkingLStimulusAccumulatedThisDay">
             <summary>挤奶 L 刺激：当日已累计量，每游戏日重置。</summary>
@@ -1431,6 +1423,9 @@
         </member>
         <member name="M:HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
             <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）。</summary>
+        </member>
+        <member name="M:HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
+            <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（乳房体积、基因、设置、状态、驱动、饥饿、压力、喷乳反射）。</summary>
         </member>
         <member name="P:HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
             <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开为 1～4 块详情。</summary>

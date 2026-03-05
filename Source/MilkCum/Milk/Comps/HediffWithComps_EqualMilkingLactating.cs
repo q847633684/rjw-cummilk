@@ -155,7 +155,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float currentLactationAmount;
     /// <summary>四层模型：喷乳反射 R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key 与 breastFullness 一致，如 HumanBreast_L）。挤奶/吸奶某侧仅提升该侧 R。</summary>
     private Dictionary<string, float> letdownReflexByKey;
-    /// <summary>四层模型：炎症负荷 I≥0。每 30 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
+    /// <summary>四层模型：炎症负荷 I≥0。每 60 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
     private float currentInflammation;
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置。</summary>
     private float milkingLStimulusAccumulatedThisDay;
@@ -633,6 +633,24 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return string.Join(" ", parts);
     }
 
+    /// <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（乳房体积、基因、设置、状态、驱动、饥饿、压力、喷乳反射）。</summary>
+    public static System.Collections.Generic.List<string> BuildBreastEfficiencyFactorLinesForDevMode(FlowBreakdown b, float sideMult, bool leftSide, float? letdownForSide = null, float? pressureForSide = null, float? conditionsForSide = null)
+    {
+        float letdown = letdownForSide ?? b.Letdown;
+        float pressure = pressureForSide ?? b.Pressure;
+        float conditions = conditionsForSide ?? b.Conditions;
+        var list = new System.Collections.Generic.List<string>();
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowBreastVolume".Translate(), FormatFlowFactor(sideMult)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowGenes".Translate(), FormatFlowFactor(b.Genes)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowSetting".Translate(), FormatFlowFactor(b.Setting)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(conditions)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowDrive".Translate(), FormatFlowFactor(b.Drive)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowHunger".Translate(), FormatFlowFactor(b.Hunger)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowPressure".Translate(), FormatFlowFactor(pressure)));
+        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowLetdown".Translate(), FormatFlowFactor(letdown)));
+        return list;
+    }
+
     public override string CompTipStringExtra
     {
         get
@@ -649,92 +667,76 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             bool isShrinking = reabsorbed > 0f;
             float growthSpeed = PawnUtility.BodyResourceGrowthSpeed(Pawn);
 
-            // 1. 状态总括
+            // 1. 状态总括（仅一行：产奶中 / 池满 / 池满回缩中 / 饥饿红字）
             if (growthSpeed == 0f)
                 lines.Add("LactatingStoppedBecauseHungry".Translate().Colorize(ColorLibrary.RedReadable));
             else if (isFull)
                 lines.Add(isShrinking ? "EM.LactatingStateFullShrinking".Translate() : "EM.LactatingStateFull".Translate());
             else
-                lines.Add("EM.LactatingStateProducing".Translate((totalMilk / maxF).ToStringPercent()));
+                lines.Add("EM.LactatingStateProducing".Translate());
 
-            // 2. 池子与可产（哺乳期行不显示左/右乳明细，乳房行悬停已有每对容量与奶量；总行格式与单侧一致：总奶量(满基%)/总容量 基础(撑大)）
+            lines.Add("");
+            // 2. 储量
+            lines.Add("EM.PoolSectionStorage".Translate());
             if (CompEquallyMilkable != null)
             {
                 float baseTotal = Mathf.Max(0.01f, Pawn.GetLeftBreastCapacityFactor() + Pawn.GetRightBreastCapacityFactor());
                 string totalPercentStr = baseTotal >= 0.001f ? (totalMilk / baseTotal).ToStringPercent() : "0%";
-                lines.Add("EM.PoolTotalMilkCapacityFull".Translate(
+                lines.Add("  " + "EM.PoolBreastTotalMilkLine".Translate(
                     totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    totalPercentStr,
                     baseTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-                if (EqualMilkingSettings.enableMilkQuality)
-                {
-                    float q = GetMilkQuality();
-                    lines.Add("EM.MilkQuality".Translate(q.ToStringPercent()));
-                }
-                if (Pawn.MilkDef() != null)
-                    lines.Add(Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * totalMilk).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
-            }
-            else if (Pawn.MilkDef() != null)
-            {
-                lines.Add(Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent());
-                lines.Add(Pawn.MilkDef().label + " x" + (Pawn.MilkAmount() * (CompEquallyMilkable?.Fullness ?? 0f)).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
-            }
+                    totalPercentStr));
+                lines.Add("  " + "EM.PoolBreastStretchCapLine".Translate(maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+            };
 
-            // 3. 流速与营养（按状态分支）
+            // 3. 流速
+            lines.Add("EM.PoolSectionFlow".Translate());
             if (growthSpeed > 0f)
             {
                 if (isFull)
                 {
-                    lines.Add("EM.MilkFlowStoppedFull".Translate());
+                    lines.Add("  " + "EM.MilkFlowStoppedFull".Translate());
                     if (isShrinking)
-                        lines.Add("EM.ReabsorbedNutritionPerDay".Translate(reabsorbed.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                        lines.Add("  " + "EM.ReabsorbedNutritionPerDay".Translate(reabsorbed.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 }
                 else
                 {
                     var b = GetFlowPerDayBreakdown();
-                    float flowPerDay = b.TotalFlow;
-                    string flowPercent = (flowPerDay * 100f).ToString("F0") + "%";
-                    lines.Add("EM.MilkFlowValuePercent".Translate(
-                        flowPerDay.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                        flowPercent));
-                    try
-                    {
-                        var breastList = Pawn.GetBreastList();
-                        if (breastList != null && breastList.Count > 0)
-                        {
-                            foreach (var h in breastList)
-                            {
-                                if (h?.def == null) continue;
-                                string key = Pawn.GetPoolKeyForBreastHediff(h);
-                                if (string.IsNullOrEmpty(key)) continue;
-                                var (flowL, flowR, _, _) = Pawn.GetFlowPerDayForBreastPair(key);
-                                float pairTotal = flowL + flowR;
-                                string label = h.LabelCap;
-                                if (string.IsNullOrEmpty(label)) label = h.def.label;
-                                lines.Add("EM.PoolPairFlowLine".Translate(
-                                    label,
-                                    pairTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                                    flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                                    flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-                            }
-                        }
-                    }
-                    catch { }
-                    if (Pawn.needs?.food != null)
-                        lines.Add("LactatingAddedNutritionPerDay".Translate(ExtraNutritionPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-                    else if (Pawn.needs?.energy != null)
-                        lines.Add("CurrentMechEnergyFallPerDay".Translate() + ": " + ExtraEnergyPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute));
+                    lines.Add("  " + "EM.PoolBreastTotalFlowLine".Translate(b.TotalFlow.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                }
+            };
+
+            // 4. 产物
+            lines.Add("EM.PoolSectionProduct".Translate());
+            if (CompEquallyMilkable != null)
+            {
+                if (Pawn.MilkDef() != null)
+                    lines.Add("  " + "EM.LactatingProductLine".Translate(Pawn.MilkDef().label, (Pawn.MilkAmount() * totalMilk).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                if (EqualMilkingSettings.enableMilkQuality)
+                {
+                    float q = GetMilkQuality();
+                    lines.Add("  " + "EM.MilkQuality".Translate(q.ToStringPercent()));
                 }
             }
+            else if (Pawn.MilkDef() != null)
+            {
+                lines.Add("  " + (Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent()));
+                lines.Add("  " + "EM.LactatingProductLine".Translate(Pawn.MilkDef().label, (Pawn.MilkAmount() * (CompEquallyMilkable?.Fullness ?? 0f)).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+            };
 
-            // 4. 时间
-            lines.Add("EM.PoolRemainingDays".Translate() + ": " + (IsPermanentLactation ? Lang.Permanent : RemainingDays.ToString("F1")));
+            // 5. 消耗
+            lines.Add("EM.PoolSectionConsumption".Translate());
+            if (growthSpeed > 0f && !isFull && Pawn.needs?.food != null)
+                lines.Add("  " + "EM.LactatingExtraNutritionShort".Translate(ExtraNutritionPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+            else if (growthSpeed > 0f && !isFull && Pawn.needs?.energy != null)
+                lines.Add("  " + ("CurrentMechEnergyFallPerDay".Translate() + ": " + ExtraEnergyPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
 
-            // 5. 等效剂量（只读：由 L 与公式推导，1 标准剂量 ≈ 0.5 L）
+            // 6. 周期
+            lines.Add("EM.PoolSectionCycle".Translate());
+            lines.Add("  " + ("EM.PoolRemainingDays".Translate() + ": " + (IsPermanentLactation ? Lang.Permanent : RemainingDays.ToString("F1"))));
             float oneDoseL = 0.5f * PoolModelConstants.DoseToLFactor;
             if (oneDoseL > 0f && currentLactationAmount > 0f)
-                lines.Add("EM.EquivalentDose".Translate((currentLactationAmount / oneDoseL).ToString("F1")));
+                lines.Add("  " + "EM.EquivalentDose".Translate((currentLactationAmount / oneDoseL).ToString("F1")));
 
             return lines.Count > 0 ? string.Join("\n", lines) : base.CompTipStringExtra;
             }

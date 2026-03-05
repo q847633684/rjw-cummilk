@@ -26,8 +26,6 @@ public class CompEquallyMilkable : CompMilkable
     private float rightFullness;
     /// <summary>按单乳 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则从 left/right 反推。</summary>
     private Dictionary<string, float> breastFullness = new Dictionary<string, float>();
-    /// <summary>未启用 RJW 乳房尺寸时单侧固定容量 0.5；总容量 = 左 + 右。</summary>
-    private const float HalfPool = 0.5f;
 
     /// <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
     public new float Fullness => leftFullness + rightFullness;
@@ -62,9 +60,8 @@ public class CompEquallyMilkable : CompMilkable
     private int lastFullPoolLetterTick = -1;
     /// <summary>四层模型（阶段3.2）：组织适应导致的容量增量 ≥0，maxFullness = 基础容量 + 本值。</summary>
     private float capacityAdaptation;
-    /// <summary>2.3：药物泌乳状态缓存，每 30 tick 仅状态变化时增删 EM_DrugLactationBurden/EM_LactatingGain，减少重复查找。</summary>
+    /// <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick。</summary>
     private bool cachedWasLactatingWithDrugInduced = false;
-    private bool cachedGainConditionsMet = false;
     /// <summary>满池溢出累计量（仅 Debug 显示用）。</summary>
     internal float OverflowAccumulator => overflowAccumulator;
 
@@ -75,7 +72,7 @@ public class CompEquallyMilkable : CompMilkable
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
-    /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 30 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
+    /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
     public float GetReabsorbedNutritionPerDay()
     {
         if (!EqualMilkingSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
@@ -85,15 +82,15 @@ public class CompEquallyMilkable : CompMilkable
         if (Pawn.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
         float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
-        float reabsorbedPoolPer30Tick = 0f;
+        float reabsorbedPoolPerStep = 0f;
         foreach (var e in entries)
         {
             if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
             if (cur > e.Capacity)
-                reabsorbedPoolPer30Tick += (cur - e.Capacity) * (1f - shrinkFactor);
+                reabsorbedPoolPerStep += (cur - e.Capacity) * (1f - shrinkFactor);
         }
-        if (reabsorbedPoolPer30Tick <= 0f) return 0f;
-        float reabsorbedPoolPerDay = reabsorbedPoolPer30Tick * (60000f / 30f);
+        if (reabsorbedPoolPerStep <= 0f) return 0f;
+        float reabsorbedPoolPerDay = reabsorbedPoolPerStep * (60000f / 60f); // 每 60 tick 一步
         return reabsorbedPoolPerDay * PoolModelConstants.NutritionPerPoolUnit
             * Mathf.Clamp01(EqualMilkingSettings.reabsorbNutritionEfficiency);
     }
@@ -209,7 +206,7 @@ public class CompEquallyMilkable : CompMilkable
 
     public override void CompTick()
     {
-        if (!parent.IsHashIntervalTick(30)) { return; }
+        if (!parent.IsHashIntervalTick(60)) { return; }
         // 每 tick 同步总容量（单乳 0.5 / 双乳 (左+右Severity)/2），供满池判定与显示
         if (parent is Pawn p)
         {
@@ -218,7 +215,7 @@ public class CompEquallyMilkable : CompMilkable
             {
                 float effectiveMax = baseMax + capacityAdaptation;
                 float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
-                float step = 30f / 60000f; // 每 30 tick = 0.0005 游戏日
+                float step = 60f / 60000f; // 每 60 tick = 0.001 游戏日
                 float theta = Mathf.Max(0f, EqualMilkingSettings.adaptationTheta);
                 float omega = Mathf.Max(0f, EqualMilkingSettings.adaptationOmega);
                 capacityAdaptation += step * (theta * Mathf.Max(P - 0.85f, 0f) - omega * (1f - P));
@@ -226,18 +223,27 @@ public class CompEquallyMilkable : CompMilkable
                 capacityAdaptation = Mathf.Clamp(capacityAdaptation, 0f, capMax);
             }
             maxFullness = baseMax + capacityAdaptation;
-            if (leftFullness + rightFullness > maxFullness)
-                SetFullness(maxFullness);
+            // 池子上限统一为撑大总容量（开/关压力因子都在此处停产、允许填到撑大、溢出）
+            var entriesForCap = p.GetBreastPoolEntries();
+            float stretchTotal = entriesForCap.Count > 0
+                ? entriesForCap.Sum(e => e.Capacity * PoolModelConstants.StretchCapFactor)
+                : maxFullness;
+            if (leftFullness + rightFullness > stretchTotal)
+                SetFullness(stretchTotal, stretchTotal);
         }
-        EnsureLactatingHediffFromConditions();
-        ApplyDrugInducedLactationEffects();
+        // 基因/物种/设置驱动的 Lactating 维护、药物泌乳增益、胀满 hediff 变化很慢，120 tick（2 秒）足够
+        if (parent.IsHashIntervalTick(120))
+        {
+            EnsureLactatingHediffFromConditions();
+            ApplyDrugInducedLactationEffects();
+            UpdateHealthHediffs();
+        }
         if (!Active) { return; }
         // LOD：非当前地图的 pawn 每 300 tick 更新一次池，降低规模大时的负担；需结合 Profiler 验证。
         bool onCurrentMap = Pawn?.MapHeld == null || Pawn.MapHeld == Find.CurrentMap;
         if (onCurrentMap || parent.IsHashIntervalTick(300))
             UpdateMilkPools();
         if (parent.IsHashIntervalTick(2000)) TryTriggerMastitis();
-        UpdateHealthHediffs();
     }
 
     /// <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避免 Active getter 产生副作用。</summary>
@@ -267,30 +273,18 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>药物诱发泌乳负担与增益 Hediff；不依赖 Active，以便停止泌乳或失去耐受/成瘾时能移除。状态变化时才增删 Hediff，减少每 30 tick 的重复查找。见 Docs/泌乳系统逻辑图。</summary>
+    /// <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）。</summary>
     private void ApplyDrugInducedLactationEffects()
     {
         if (Pawn == null || !Pawn.RaceProps.Humanlike) return;
         bool nowLactatingWithDrug = Pawn.IsLactating() && Pawn.HasDrugInducedLactation();
-        bool nowGainConditions = nowLactatingWithDrug && EqualMilkingSettings.lactatingGainEnabled && EqualMilkingSettings.lactatingGainCapModPercent > 0f;
-        if (cachedWasLactatingWithDrugInduced == nowLactatingWithDrug && cachedGainConditionsMet == nowGainConditions)
+        if (cachedWasLactatingWithDrugInduced == nowLactatingWithDrug)
             return;
         cachedWasLactatingWithDrugInduced = nowLactatingWithDrug;
-        cachedGainConditionsMet = nowGainConditions;
 
-        if (EMDefOf.EM_DrugLactationBurden != null)
-        {
-            if (nowLactatingWithDrug)
-            {
-                if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_DrugLactationBurden) == null)
-                    Pawn.health.AddHediff(EMDefOf.EM_DrugLactationBurden, Pawn.GetBreastOrChestPart());
-            }
-            else if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_DrugLactationBurden) is Hediff burden)
-                Pawn.health.RemoveHediff(burden);
-        }
         if (EMDefOf.EM_LactatingGain != null)
         {
-            if (nowGainConditions)
+            if (nowLactatingWithDrug)
             {
                 if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_LactatingGain) == null)
                     Pawn.health.AddHediff(EMDefOf.EM_LactatingGain, Pawn.GetBreastOrChestPart());
@@ -300,7 +294,7 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。满池后不再进水（flow=0），与 GetFlowPerDay 返回 0 一致，能量有据；回缩仍执行，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
+    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分每 60 tick 乘 ShrinkPerStep 向基础容量收敛），回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
@@ -317,24 +311,24 @@ public class CompEquallyMilkable : CompMilkable
         // Active 已保证有乳池才进入，此处不再判空
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
-        float flowPerTickScale = basePerDay / 60000f * 30f;
+        float flowPerTickScale = basePerDay / 60000f * 60f;
         SyncLeftRightFromBreastFullness();
-        // 四层模型：压力按「哪对乳房的哪一侧」分别计算（该侧满度/该侧撑大容量），满则压低该侧进水流速；未启用时总满则硬停
-        if (!EqualMilkingSettings.enablePressureFactor && Fullness >= maxFullness)
-            flowPerTickScale = 0f;
+        // 撑大后仍按压力曲线算生产，TickGrowth 将超出撑大部分算溢出，实现持续微量溢出
+        float stretchTotal = entries.Sum(e => e.Capacity * PoolModelConstants.StretchCapFactor);
+        // 接近撑大时不再传 minFactorWhenNearFull（带下限公式已内置 f_min，最低生产自然≥0.02）
         // 喷乳反射 R：按侧生效，每侧进水量 × GetLetdownReflexFlowMultiplier(sideKey)；每 tick 统一衰减各侧 R
         if (EqualMilkingSettings.enableLetdownReflex)
-            lactatingComp.DecayLetdownReflex(30f / 60f); // Δt = 30 tick = 0.5 分钟
-        // 四层模型：炎症 I 离散更新（每 30 tick，Δt = 30/3600 小时）
+            lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
+        // 四层模型：炎症 I 离散更新（每 60 tick，Δt = 60/3600 小时）
         if (EqualMilkingSettings.enableInflammationModel)
         {
             float maxF = Mathf.Max(0.001f, maxFullness);
-            lactatingComp.UpdateInflammation(Fullness / maxF, 30f / 3600f);
+            lactatingComp.UpdateInflammation(Fullness / maxF, 60f / 3600f);
             lactatingComp.TryTriggerMastitisFromInflammation();
         }
         if (EqualMilkingSettings.enableToleranceDynamic)
-            lactatingComp.UpdateToleranceDynamic(currentLactation, 30f / 60000f);
-        // 按对分组、每对 TickGrowth：见 记忆库/design/双池与PairIndex；进水周期 30 tick：见 记忆库/decisions/ADR-001-进水与衰减周期
+            lactatingComp.UpdateToleranceDynamic(currentLactation, 60f / 60000f);
+        // 按对分组、每对 TickGrowth：见 记忆库/design/双池与PairIndex；进水周期 60 tick：见 记忆库/decisions/ADR-001-进水与衰减周期
         var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
         foreach (var group in byPair)
         {
@@ -397,7 +391,7 @@ public class CompEquallyMilkable : CompMilkable
         SyncLeftRightFromBreastFullness();
         var pool = new LactationPoolState();
         pool.SetFrom(leftFullness, rightFullness, ticksFullPool);
-        pool.UpdateFullPoolCounter(0.95f * maxFullness, 30);
+        pool.UpdateFullPoolCounter(0.95f * maxFullness, 60);
         ticksFullPool = pool.TicksFullPool;
         SyncBaseFullness();
         HandleOverflow(overflowTotal);
@@ -463,11 +457,13 @@ public class CompEquallyMilkable : CompMilkable
             Pawn.health.RemoveHediff(engorged);
     }
     /// <summary>
-    /// 设置总奶量（0～1）。从各乳池按比例缩放到目标总水量。
+    /// 设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
     /// </summary>
-    public void SetFullness(float value)
+    /// <param name="value">目标总水量。</param>
+    /// <param name="cap">可选；不传时用 maxFullness 为上限；传时用于 clamp（如关压力因子时用撑大总容量）。</param>
+    public void SetFullness(float value, float? cap = null)
     {
-        float target = Mathf.Clamp(value, 0f, maxFullness);
+        float target = Mathf.Clamp(value, 0f, cap ?? maxFullness);
         float total = leftFullness + rightFullness;
         if (total <= 0f) { SyncBaseFullness(); return; }
         // target >= total 时也按比例缩放，保证 leftFullness + rightFullness == target，避免与 base.fullness 不同步
