@@ -22,9 +22,10 @@
   <ItemGroup>
     <!-- 排除 Cumpilation 自带的 AssemblyInfo，避免与 SDK 自动生成的重复 -->
     <Compile Remove="Cumpilation\Properties\AssemblyInfo.cs" />
-    <!-- 合并 RJW、PipeSystem 联动源码到本程序集，不再产出独立 DLL -->
-    <Compile Include="..\RJW\**\*.cs" />
-    <Compile Include="..\PipeSystem\**\*.cs" Condition="Exists('$(PipeSystemPath)')" />
+    <Compile Remove="Fluids\Cum\Properties\AssemblyInfo.cs" />
+    <!-- 无 PipeSystem 引用时不编译奶管道联动，避免 CS0246 -->
+    <Compile Remove="Integration\PipeSystem\PipeSystem.cs" Condition="!Exists('$(PipeSystemPath)')" />
+    <!-- RJW、PipeSystem 联动源码已移入 MilkCum/Integration/，由 SDK 默认包含 -->
   </ItemGroup>
   
   <ItemGroup>

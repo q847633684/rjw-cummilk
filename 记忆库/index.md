@@ -16,6 +16,8 @@
 | 耐受系统重构设计 | [docs/耐受系统重构设计](docs/耐受系统重构设计.md) | E_tol、进水/衰减公式、落地修改清单 |
 | 与游戏本体及RJW的冲突与优化总结 | [docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) | 冲突与优化 |
 | UI 文案前后对照 | [docs/UI文案前后对照](docs/UI文案前后对照.md) | 术语统一、健康页悬停、硬编码冒号、改文建议与实施顺序 |
+| Integrations 索引 | [docs/Integrations索引](docs/Integrations索引.md) | RJW、PipeSystem、VME、Dubs 路径/命名空间/Harmony ID 收口 |
+| Harmony Patch 主题清单 | [docs/HarmonyPatch主题清单](docs/HarmonyPatch主题清单.md) | 主 mod / RJW / VME / Pipe 的 Patch 按主题分类与注册顺序 |
 | 其它 | 见 [docs/README](docs/README.md) | 待办、建议评估、模拟、设置UI、脚本等 |
 
 ---
@@ -31,6 +33,8 @@
 | 泌乳与胀满因果顺序 | [design/泌乳与胀满因果顺序](design/泌乳与胀满因果顺序.md) | #双池 #胀满 #泌乳 #逻辑 |
 | 快满时：停产、回缩、溢出与补营养 | [design/快满-停产-回缩-溢出](design/快满-停产-回缩-溢出.md) | #双池 #回缩 #溢出 #压力 |
 | 压力因子满池乘数与溢出模拟 | [design/压力因子满池乘数与溢出](design/压力因子满池乘数与溢出.md) | #双池 #压力 #溢出 |
+| 架构原则与重组建议 | [design/架构原则与重组建议](design/架构原则与重组建议.md) | #架构 #SOLID #重组 #命名空间 #Integrations |
+| Source 目录结构梳理 | [design/Source目录结构梳理](design/Source目录结构梳理.md) | #目录 #索引 #层级 |
 
 ---
 
@@ -76,6 +80,7 @@
 - `#吸收延迟`：见 [decisions/ADR-002-吸收延迟基准](decisions/ADR-002-吸收延迟基准.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
 - `#信息卡`：见 [decisions/ADR-004-信息卡统计补丁移除](decisions/ADR-004-信息卡统计补丁移除.md)
 - `#参数`、`#兼容`、`#坑点`：见 [domain/快速参考](domain/快速参考.md)
+- `#架构`、`#重组`：见 [design/架构原则与重组建议](design/架构原则与重组建议.md)
 
 ---
 

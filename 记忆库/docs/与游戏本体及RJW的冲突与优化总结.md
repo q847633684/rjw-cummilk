@@ -68,7 +68,7 @@
 
 | 项目 | 说明 |
 |------|------|
-| **RJW 程序集** | `Source/RJW/RJW.cs` 中 `ApplyPatches` 依赖 `AccessTools.TypeByName("SexFluidDef")`，若 RJW 版本过旧则中止 patch，避免崩溃。 |
+| **RJW 程序集** | `Source/Integrations/RJW/RJW.cs` 中 `ApplyPatches` 依赖 `AccessTools.TypeByName("SexFluidDef")`，若 RJW 版本过旧则中止 patch，避免崩溃。 |
 | **RJW 分娩路径** | 原版 Biotech 走 `Hediff_Pregnant.DoBirthSpawn`；RJW 人形怀孕走 `Hediff_BasePregnancy` → `PostBirth(mother, father, baby)`。本 mod 已 patch **原版** `DoBirthSpawn`，并**单独** patch **RJW** `Hediff_BasePregnancy.PostBirth`（Prefix），在 PostBirth 内为母亲加 Lactating/刷新 Severity 并调用水池逻辑。两路径并存，无重复添加。 |
 | **RJW Genital_Helper** | `ExtensionHelper.GetGenitalsBPR` 使用 `rjw.Genital_Helper.get_genitalsBPR(pawn)`，RJW 未加载或 API 变化会异常，当前用 try 或条件调用可降低风险。 |
 

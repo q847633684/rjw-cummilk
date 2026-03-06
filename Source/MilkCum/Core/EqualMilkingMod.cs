@@ -3,17 +3,18 @@ using Verse;
 using RimWorld;
 using HarmonyLib;
 using System.Reflection;
+using MilkCum.Core.Settings;
 
 namespace MilkCum.Core;
 public class EqualMilkingMod : Mod
 {
 	internal static EqualMilkingSettings Settings;
-	public static Harmony Harmony;
+	public static HarmonyLib.Harmony Harmony;
 	public static ModContentPack equalMilkingMod;
 	public EqualMilkingMod(ModContentPack content)
 		: base(content)
 	{
-		Harmony = new Harmony("com.akaster.rimworld.mod.milkcum");
+		Harmony = new HarmonyLib.Harmony("com.akaster.rimworld.mod.milkcum");
 		try
 		{
 			Settings = base.GetSettings<EqualMilkingSettings>();
