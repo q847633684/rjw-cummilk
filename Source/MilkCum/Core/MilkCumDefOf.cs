@@ -2,7 +2,7 @@ using RimWorld;
 using Verse;
 namespace MilkCum.Core;
 [DefOf]
-public static class EMDefOf
+public static class MilkCumDefOf
 {
     public static EffecterDef EM_Milk;
     public static ThingDef EM_Prolactin;
@@ -23,7 +23,7 @@ public static class EMDefOf
     public static PawnColumnDef Milk_Fullness;
     public static PawnColumnDef Milk_RemainingDays;
     public static MainButtonDef Milk_MainButton;
-    
+
     // 成瘾系统新增定义
     public static ChemicalDef EM_Prolactin_Chemical;
     public static HediffDef EM_Prolactin_Tolerance;

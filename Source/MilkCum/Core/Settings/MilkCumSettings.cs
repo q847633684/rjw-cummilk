@@ -7,7 +7,7 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 [StaticConstructorOnStartup]
-internal class EqualMilkingSettings : ModSettings
+internal class MilkCumSettings : ModSettings
 {
 	private static Dictionary<string, RaceMilkType> namesToProducts = new();
 	private static Dictionary<string, MilkTag> productsToTags = new();
@@ -594,7 +594,7 @@ internal class EqualMilkingSettings : ModSettings
 		}
 		return milkProducts;
 	}
-	internal void UpdateEqualMilkingSettings()
+	internal void UpdateMilkCumSettings()
 	{
 		// 7.11: 旧存档兼容 — 补全缺失的 allowedSucklers/allowedConsumers 并清理无效引用
 		foreach (Pawn p in PawnsFinder.AllMaps)
@@ -667,7 +667,7 @@ internal class EqualMilkingSettings : ModSettings
 			{
 				milkProduct.milkAmount = Mathf.FloorToInt(3f * def.race.baseBodySize / ThingDefOf.Human.race.baseBodySize);
 				milkProduct.isMilkable = true;
-				milkProduct.milkTypeDefName = EMDefOf.EM_HumanMilk.defName;
+				milkProduct.milkTypeDefName = MilkCumDefOf.EM_HumanMilk.defName;
 			}
 			else
 			{
@@ -686,10 +686,10 @@ internal class EqualMilkingSettings : ModSettings
 			milkDef.comps.Add(compProperties);
 		}
 	}
-	/// <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置；若 XML 未加载则使用内置默认值（其他 mod 可 patch GetBuiltinDefaults）。</summary>
+	/// <summary>建议 22：从 MilkCumDefaultsDef 加载关键默认值到当前设置；若 XML 未加载则使用内置默认值（其他 mod 可 patch GetBuiltinDefaults）。</summary>
 	public static void ApplyDefaultsFromDef()
 	{
-		var def = DefDatabase<EqualMilkingDefaultsDef>.GetNamedSilentFail("EM_Defaults") ?? EqualMilkingDefaultsDef.GetBuiltinDefaults();
+		var def = DefDatabase<MilkCumDefaultsDef>.GetNamedSilentFail("EM_Defaults") ?? MilkCumDefaultsDef.GetBuiltinDefaults();
 		if (def == null) return;
 		baselineMilkDurationDays = def.baselineMilkDurationDays;
 		birthInducedMilkDurationDays = def.birthInducedMilkDurationDays;
@@ -815,9 +815,9 @@ internal class EqualMilkingSettings : ModSettings
 	}
 	internal static ThingDef GetMilkProductDef(Pawn pawn)
 	{
-		if (pawn.genes?.GenesListForReading.Where(x => x.Active && x.def.defName.StartsWith(Constants.MILK_TYPE_PREFIX)).FirstOrDefault()?.def is GeneDef geneDef)
+		if (pawn.genes?.GenesListForReading.Where(x => x.Active && x.def.defName.StartsWith(MilkCum.Core.Constants.Constants.MILK_TYPE_PREFIX)).FirstOrDefault()?.def is GeneDef geneDef)
 		{
-			ThingDef thingDef = DefDatabase<ThingDef>.GetNamed(geneDef.defName.Replace(Constants.MILK_TYPE_PREFIX, ""));
+			ThingDef thingDef = DefDatabase<ThingDef>.GetNamed(geneDef.defName.Replace(MilkCum.Core.Constants.Constants.MILK_TYPE_PREFIX, ""));
 			if (thingDef != null)
 			{
 				return thingDef;
@@ -840,7 +840,7 @@ internal class EqualMilkingSettings : ModSettings
 	}
 
 	internal static float GetProlactinTolerance(Pawn pawn)
-		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
+		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
 
 	/// <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。启用耐受动态时由 comp 的 E 计算。</summary>
 	internal static float GetProlactinToleranceFactor(Pawn pawn)

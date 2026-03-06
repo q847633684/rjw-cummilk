@@ -8,7 +8,7 @@ using Verse.AI;
 
 namespace MilkCum.Fluids.Lactation.Givers;
 [StaticConstructorOnStartup]
-public class WorkGiver_EquallyMilk : WorkGiver_Milk
+public class WorkGiver_MilkCumMilk : WorkGiver_Milk
 {
     protected override CompHasGatherableBodyResource GetComp(Pawn animal)
     {
@@ -61,7 +61,7 @@ public class WorkGiver_EquallyMilk : WorkGiver_Milk
 	public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
 	{
 		IEnumerable<Thing> colony = pawn.Map.AllColonyPawns();
-		if (!EqualMilkingSettings.aiPreferHighFullnessTargets)
+		if (!MilkCumSettings.aiPreferHighFullnessTargets)
 		{
 			return colony;
 		}

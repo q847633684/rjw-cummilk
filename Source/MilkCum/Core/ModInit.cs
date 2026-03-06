@@ -15,13 +15,13 @@ public static class ModInit
     {
         LongEventHandler.QueueLongEvent(() => { EventHelper.TriggerPostLoadLong(); }, "MilkCum_LongEvent", false, null);
 
-        EventHelper.OnPostLoadLong += EqualMilkingMod.Settings.UpdateEqualMilkingSettings;
-        EventHelper.OnPostNewGame += EqualMilkingMod.Settings.UpdateEqualMilkingSettings;
-        EventHelper.OnPostLoadGame += EqualMilkingMod.Settings.UpdateEqualMilkingSettings;
+        EventHelper.OnPostLoadLong += MilkCumMod.Settings.UpdateMilkCumSettings;
+        EventHelper.OnPostNewGame += MilkCumMod.Settings.UpdateMilkCumSettings;
+        EventHelper.OnPostLoadGame += MilkCumMod.Settings.UpdateMilkCumSettings;
         EventHelper.OnSettingsChanged += GeneHelper.ReloadImpliedGenes;
         EventHelper.OnPostLoadLong += Init;
 
-        Harmony Harmony = EqualMilkingMod.Harmony;
+        HarmonyLib.Harmony Harmony = MilkCumMod.Harmony;
         Assembly asm = typeof(ModInit).Assembly;
         Type[] types;
         try
@@ -58,23 +58,23 @@ public static class ModInit
                 Log.Error($"[MilkCum] Patch failed for {type.FullName}: {ex.Message}");
             }
         }
-        WorkGiver_Ingest_MilkProductFilter.ApplyOptionalPatches(EqualMilkingMod.Harmony);
-        JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(EqualMilkingMod.Harmony);
-        ProlactinAddictionPatch.ApplyIfPossible(EqualMilkingMod.Harmony);
-        CumpilationIntegration.ApplyPatches(EqualMilkingMod.Harmony);
+        WorkGiver_Ingest_MilkProductFilter.ApplyOptionalPatches(MilkCumMod.Harmony);
+        JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(MilkCumMod.Harmony);
+        ProlactinAddictionPatch.ApplyIfPossible(MilkCumMod.Harmony);
+        CumpilationIntegration.ApplyPatches(MilkCumMod.Harmony);
     }
 
     public static void Init()
     {
-        JobDefOf.Milk.driverClass = typeof(JobDriver_EquallyMilk);
-        DefDatabase<WorkGiverDef>.GetNamed("Milk").giverClass = typeof(WorkGiver_EquallyMilk);
-        if (EMDefOf.EM_MilkEntity != null)
-            EMDefOf.EM_MilkEntity.giverClass = typeof(WorkGiver_EquallyMilkEntity);
-        HediffDefOf.Lactating.hediffClass = typeof(HediffWithComps_EqualMilkingLactating);
-        if (EMDefOf.EM_Prolactin_Tolerance != null)
-            EMDefOf.EM_Prolactin_Tolerance.hediffClass = typeof(Hediff_ProlactinTolerance);
-        if (EMDefOf.EM_LactatingGain != null)
-            EMDefOf.EM_LactatingGain.hediffClass = typeof(Hediff_LactatingGain);
+        JobDefOf.Milk.driverClass = typeof(JobDriver_MilkCumMilk);
+        DefDatabase<WorkGiverDef>.GetNamed("Milk").giverClass = typeof(WorkGiver_MilkCumMilk);
+        if (MilkCumDefOf.EM_MilkEntity != null)
+            MilkCumDefOf.EM_MilkEntity.giverClass = typeof(WorkGiver_MilkCumMilkEntity);
+        HediffDefOf.Lactating.hediffClass = typeof(HediffWithComps_MilkCumLactating);
+        if (MilkCumDefOf.EM_Prolactin_Tolerance != null)
+            MilkCumDefOf.EM_Prolactin_Tolerance.hediffClass = typeof(Hediff_ProlactinTolerance);
+        if (MilkCumDefOf.EM_LactatingGain != null)
+            MilkCumDefOf.EM_LactatingGain.hediffClass = typeof(Hediff_LactatingGain);
 
         if (DefDatabase<ThingDef>.GetNamedSilentFail("VCE_Cheese") is ThingDef cheese)
         {

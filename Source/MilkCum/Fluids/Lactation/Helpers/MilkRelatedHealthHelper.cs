@@ -1,4 +1,4 @@
-﻿using MilkCum.Core;
+using MilkCum.Core;
 using RimWorld;
 using Verse;
 
@@ -13,12 +13,12 @@ public static class MilkRelatedHealthHelper
     /// <summary>满池时添加「乳房胀满」hediff；低�?90% maxFullness 时移除（滞后避免抖动）。由 CompTick �?tick 调用</summary>
     public static void UpdateBreastsEngorged(Pawn pawn, float fullness, float maxFullness)
     {
-        if (EMDefOf.EM_BreastsEngorged == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
-        var engorged = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_BreastsEngorged);
+        if (MilkCumDefOf.EM_BreastsEngorged == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
+        var engorged = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastsEngorged);
         float fullThreshold = 0.95f * maxFullness;
         float lowThreshold = 0.9f * maxFullness;
         if (fullness >= fullThreshold && engorged == null)
-            pawn.health.AddHediff(EMDefOf.EM_BreastsEngorged, pawn.GetBreastOrChestPart());
+            pawn.health.AddHediff(MilkCumDefOf.EM_BreastsEngorged, pawn.GetBreastOrChestPart());
         else if (fullness < lowThreshold && engorged != null)
             pawn.health.RemoveHediff(engorged);
     }
@@ -26,40 +26,40 @@ public static class MilkRelatedHealthHelper
     /// <summary>四层模型：更新炎�?I 并尝试按 I&gt;I_crit 触发乳腺炎。由 UpdateMilkPools �?60 tick 调用</summary>
     public static void UpdateInflammationAndTryTriggerMastitis(HediffComp_EqualMilkingLactating lactatingComp, float fullness, float maxFullness)
     {
-        if (!EqualMilkingSettings.enableInflammationModel || lactatingComp == null) return;
+        if (!MilkCumSettings.enableInflammationModel || lactatingComp == null) return;
         float maxF = UnityEngine.Mathf.Max(0.001f, maxFullness);
         lactatingComp.UpdateInflammation(fullness / maxF, 60f / 3600f);
         lactatingComp.TryTriggerMastitisFromInflammation();
     }
 
-    /// <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次；参数�?EqualMilkingSettings 可调</summary>
+    /// <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次；参数�?MilkCumSettings 可调</summary>
     public static void TryTriggerMastitisFromMtb(Pawn pawn, float fullness, int ticksFullPool)
     {
-        if (EMDefOf.EM_Mastitis == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
-        if (!EqualMilkingSettings.allowMastitis) return;
+        if (MilkCumDefOf.EM_Mastitis == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
+        if (!MilkCumSettings.allowMastitis) return;
         bool longFull = ticksFullPool >= 60000;
         float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(pawn);
         bool badHygiene = hygieneRisk >= 0.4f;
         bool torsoInjury = HasTorsoOrBreastInjury(pawn);
         if (!longFull && !badHygiene && !torsoInjury) return;
-        float mtbDays = EqualMilkingSettings.mastitisBaseMtbDays;
+        float mtbDays = MilkCumSettings.mastitisBaseMtbDays;
         if (mtbDays < 0.1f) mtbDays = 0.1f;
-        if (longFull) mtbDays /= UnityEngine.Mathf.Max(0.1f, EqualMilkingSettings.overFullnessRiskMultiplier);
-        if (badHygiene) mtbDays /= UnityEngine.Mathf.Max(0.1f, (0.5f + hygieneRisk) * EqualMilkingSettings.hygieneRiskMultiplier);
+        if (longFull) mtbDays /= UnityEngine.Mathf.Max(0.1f, MilkCumSettings.overFullnessRiskMultiplier);
+        if (badHygiene) mtbDays /= UnityEngine.Mathf.Max(0.1f, (0.5f + hygieneRisk) * MilkCumSettings.hygieneRiskMultiplier);
         if (torsoInjury) mtbDays /= 1.3f;
         float nutritionFactor = 0.5f + 0.5f * UnityEngine.Mathf.Clamp(PawnUtility.BodyResourceGrowthSpeed(pawn), 0f, 1f);
         mtbDays *= UnityEngine.Mathf.Max(0.3f, nutritionFactor);
-        float raceMultiplier = pawn.RaceProps.Humanlike ? EqualMilkingSettings.mastitisMtbDaysMultiplierHumanlike : EqualMilkingSettings.mastitisMtbDaysMultiplierAnimal;
+        float raceMultiplier = pawn.RaceProps.Humanlike ? MilkCumSettings.mastitisMtbDaysMultiplierHumanlike : MilkCumSettings.mastitisMtbDaysMultiplierAnimal;
         mtbDays *= UnityEngine.Mathf.Max(0.01f, raceMultiplier);
         if (!Rand.MTBEventOccurs(mtbDays, 60000f, 2000f)) return;
-        var existing = pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_Mastitis);
+        var existing = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
         if (existing != null)
         {
             if (existing.Severity < 0.99f)
                 existing.Severity = UnityEngine.Mathf.Min(1f, existing.Severity + 0.15f);
         }
         else
-            pawn.health.AddHediff(EMDefOf.EM_Mastitis, pawn.GetBreastOrChestPart());
+            pawn.health.AddHediff(MilkCumDefOf.EM_Mastitis, pawn.GetBreastOrChestPart());
     }
 
     /// <summary>是否有躯�?乳房损伤，用于乳腺炎 MTB 风险判定</summary>

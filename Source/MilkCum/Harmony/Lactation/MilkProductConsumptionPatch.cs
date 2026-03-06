@@ -79,6 +79,6 @@ public static class Patch_PostIngested_PartnerAteMyProduct
         var comp = __instance.parent.TryGetComp<CompShowProducer>();
         if (comp?.producer == null || comp.producer == ingester) return;
         if (!comp.producer.relations?.DirectRelationExists(PawnRelationDefOf.Lover, ingester) ?? true) return;
-        comp.producer.needs?.mood?.thoughts?.memories?.TryGainMemory(EMDefOf.EM_PartnerAteMyProduct);
+        comp.producer.needs?.mood?.thoughts?.memories?.TryGainMemory(MilkCumDefOf.EM_PartnerAteMyProduct);
     }
 }

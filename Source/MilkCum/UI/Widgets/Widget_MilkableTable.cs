@@ -27,7 +27,7 @@ public class Widget_MilkableTable
     }
 	private void SetupTable(Rect rect, ref Vector2 scrollPosition)
 	{
-		IEnumerable<ThingDef> pawnDefs = EqualMilkingSettings.pawnDefs;
+		IEnumerable<ThingDef> pawnDefs = MilkCumSettings.pawnDefs;
 		if (pawnDefs == null)
 			return;
 		IEnumerable<ThingDef> itemDefs = (from def in DefDatabase<ThingDef>.AllDefs where def.category == ThingCategory.Item && !def.IsApparel && !def.IsBuildingArtificial && !def.IsCorpse && !def.isUnfinishedThing && !def.IsWeapon select def).Distinct().OrderBy(def => def.defName);
@@ -79,12 +79,12 @@ public class Widget_MilkableTable
         }
         else
         {
-            RaceMilkType newProduct = EqualMilkingSettings.GetDefaultMilkProduct(currentOptionDef);
+            RaceMilkType newProduct = MilkCumSettings.GetDefaultMilkProduct(currentOptionDef);
             namesToProducts.Add(currentOptionDef.defName, newProduct);
             milkProductDef = string.IsNullOrEmpty(newProduct.milkTypeDefName) ? null : DefDatabase<ThingDef>.GetNamedSilentFail(newProduct.milkTypeDefName);
         }
         if (milkProductDef == null)
-            milkProductDef = DefDatabase<ThingDef>.GetNamedSilentFail("Milk") ?? EMDefOf.EM_HumanMilk; // 无奶类型时回退，避免 NRE
+            milkProductDef = DefDatabase<ThingDef>.GetNamedSilentFail("Milk") ?? MilkCumDefOf.EM_HumanMilk; // 无奶类型时回退，避免 NRE
         if (Widgets.ButtonText(buttonRect, "        " + milkProductDef.DisplayText(), true, true, true, TextAnchor.MiddleLeft))
         {
             Window_Search searchWindow = new(namesToProducts[currentOptionDef.defName].SetMilkType) { windowRect = new Rect(buttonRect.x, buttonRect.y, buttonRect.width, 500) };
@@ -98,7 +98,7 @@ public class Widget_MilkableTable
         {
             if (DefDatabase<ThingDef>.GetNamedSilentFail(defName) is ThingDef def)
             {
-                namesToProducts[defName] = EqualMilkingSettings.GetDefaultMilkProduct(def);
+                namesToProducts[defName] = MilkCumSettings.GetDefaultMilkProduct(def);
             }
             else
             {
@@ -118,7 +118,7 @@ public class Widget_MilkableTable
             }
             if (!namesToProducts[defName].isMilkable)
             {
-                namesToProducts[defName] = EqualMilkingSettings.GetDefaultMilkProduct(def);
+                namesToProducts[defName] = MilkCumSettings.GetDefaultMilkProduct(def);
                 namesToProducts[defName].isMilkable = true;
             }
 

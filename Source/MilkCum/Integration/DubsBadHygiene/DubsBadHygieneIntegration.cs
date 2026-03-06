@@ -43,7 +43,7 @@ namespace MilkCum.Integration.DubsBadHygiene;
         public static float GetHygieneRiskFactorForMastitis(Pawn pawn)
         {
             if (pawn?.needs == null) return 0f;
-            if (IsDubsBadHygieneActive() && EqualMilkingSettings.useDubsBadHygieneForMastitis && _cachedHygieneNeedDef != null)
+            if (IsDubsBadHygieneActive() && MilkCumSettings.useDubsBadHygieneForMastitis && _cachedHygieneNeedDef != null)
             {
                 var need = pawn.needs.TryGetNeed(_cachedHygieneNeedDef);
                 if (need != null)

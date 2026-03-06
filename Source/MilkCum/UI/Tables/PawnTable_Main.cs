@@ -14,7 +14,7 @@ public class MainTabWindow : MainTabWindow_PawnTable
     private string buttonText = Lang.All.CapitalizeFirst();
     protected override float ExtraBottomSpace => 53f; //default 53
     protected override float ExtraTopSpace => 40f; //default 0 //40 for button
-    protected override PawnTableDef PawnTableDef => EMDefOf.Milk_PawnTable;
+    protected override PawnTableDef PawnTableDef => MilkCumDefOf.Milk_PawnTable;
     protected override IEnumerable<Pawn> Pawns => pawns;
     private IEnumerable<Pawn> pawns = Find.CurrentMap.mapPawns.AllPawns.Where(p => p.Faction == Faction.OfPlayer || p.IsPrisonerOfColony || p.IsSlaveOfColony || p.IsOnHoldingPlatform);
     //the commented out sections would only be needed if we had multiple tabs and a button to swap between them 

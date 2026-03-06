@@ -15,7 +15,7 @@ internal static class ApplyPatches
     static ApplyPatches()
     {
         Harmony = new HarmonyLib.Harmony("com.akaster.rimworld.mod.equalmilking.vme_harmonypatch");
-        Log.Message("[Equal Milking]: Vanilla Milk Expanded Loaded, Patching...");
+        Log.Message("[MilkCum]: Vanilla Milk Expanded Loaded, Patching...");
 
         var boxType = AccessTools.TypeByName("CompAssignableToPawn_Box");
         if (boxType != null)
@@ -94,7 +94,7 @@ public static class CompAssignableToPawn_Box_Patch
         }
         catch (Exception ex)
         {
-            Verse.Log.Warning($"[Equal Milking] CompAssignableToPawn_Box AssigningCandidates_Prefix: {ex.Message}");
+            Verse.Log.Warning($"[MilkCum] CompAssignableToPawn_Box AssigningCandidates_Prefix: {ex.Message}");
             __result = Enumerable.Empty<Pawn>();
             return false;
         }

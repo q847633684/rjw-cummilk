@@ -35,6 +35,7 @@
 | 压力因子满池乘数与溢出模拟 | [design/压力因子满池乘数与溢出](design/压力因子满池乘数与溢出.md) | #双池 #压力 #溢出 |
 | 架构原则与重组建议 | [design/架构原则与重组建议](design/架构原则与重组建议.md) | #架构 #SOLID #重组 #命名空间 #Integrations |
 | Source 目录结构梳理 | [design/Source目录结构梳理](design/Source目录结构梳理.md) | #目录 #索引 #层级 |
+| 未使用代码与函数清单 | [design/未使用代码与函数清单](design/未使用代码与函数清单.md) | #未使用 #DeadCode #API |
 
 ---
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
@@ -19,7 +19,7 @@ public static class PawnMilkPoolExtensions
         if (pawn == null) return (0f, 0f);
         var list = pawn.GetBreastList();
         if (list == null || list.Count == 0) return (0f, 0f);
-        float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
+        float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
         float totalCap = 0f;
         for (int i = 0; i < list.Count; i++)
         {
@@ -48,10 +48,10 @@ public static class PawnMilkPoolExtensions
         leftFactor = 0f;
         rightFactor = 0f;
         if (pawn == null) return;
-        if (!EqualMilkingSettings.rjwBreastSizeEnabled) return;
+        if (!MilkCumSettings.rjwBreastSizeEnabled) return;
         var list = pawn.GetBreastList();
         if (list == null || list.Count == 0) return;
-        float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
+        float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
         try
         {
             float totalCap = 0f;
@@ -75,12 +75,12 @@ public static class PawnMilkPoolExtensions
     {
         var result = new List<FluidPoolEntry>();
         if (pawn == null) return result;
-        if (!EqualMilkingSettings.rjwBreastSizeEnabled) return result;
+        if (!MilkCumSettings.rjwBreastSizeEnabled) return result;
         try
         {
             var list = pawn.GetBreastList();
             if (list == null || list.Count == 0) return result;
-            float coeff = EqualMilkingSettings.rjwBreastCapacityCoefficient;
+            float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
             int currentPair = 0;
             for (int i = 0; i < list.Count; i++)
             {
@@ -103,21 +103,21 @@ public static class PawnMilkPoolExtensions
         return result;
     }
 
-    public static ThingDef MilkDef(this Pawn pawn) => EqualMilkingSettings.GetMilkProductDef(pawn);
-    public static float MilkAmount(this Pawn pawn) => EqualMilkingSettings.GetMilkAmount(pawn);
+    public static ThingDef MilkDef(this Pawn pawn) => MilkCumSettings.GetMilkProductDef(pawn);
+    public static float MilkAmount(this Pawn pawn) => MilkCumSettings.GetMilkAmount(pawn);
     public static float MilkMarketValue(this Pawn pawn) => pawn.MilkDef()?.BaseMarketValue ?? 0;
-    public static bool MilkTypeCanBreastfeed(this Pawn mom) => EqualMilkingSettings.MilkTypeCanBreastfeed(mom);
-    public static bool CanBreastfeedEver(this Pawn mom, Pawn baby) => EqualMilkingSettings.CanBreastfeedEver(mom, baby);
+    public static bool MilkTypeCanBreastfeed(this Pawn mom) => MilkCumSettings.MilkTypeCanBreastfeed(mom);
+    public static bool CanBreastfeedEver(this Pawn mom, Pawn baby) => MilkCumSettings.CanBreastfeedEver(mom, baby);
     public static HediffComp_EqualMilkingLactating LactatingHediffComp(this Pawn pawn) => pawn.health.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>();
     public static Hediff LactatingHediff(this Pawn pawn) => pawn.health.hediffSet?.GetFirstHediffOfDef(HediffDefOf.Lactating);
-    public static HediffWithComps_EqualMilkingLactating LactatingHediffWithComps(this Pawn pawn) => pawn.LactatingHediff() as HediffWithComps_EqualMilkingLactating;
+    public static HediffWithComps_MilkCumLactating LactatingHediffWithComps(this Pawn pawn) => pawn.LactatingHediff() as HediffWithComps_MilkCumLactating;
 
     /// <summary>规格：乳腺炎/堵塞等健康影响进水流速。返�?1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最�?0.5。part �?null 时按全身（任一乳腺炎即生效）；part 非空时仅当该部位的乳腺炎生效，对应「哪对乳房的哪一侧」</summary>
     public static float GetMilkFlowMultiplierFromConditions(this Pawn pawn, BodyPartRecord part = null)
     {
         if (pawn?.health?.hediffSet == null) return 1f;
-        if (EMDefOf.EM_Mastitis == null) return 1f;
-        var mastitis = pawn.health.hediffSet.hediffs.Where(x => x.def == EMDefOf.EM_Mastitis);
+        if (MilkCumDefOf.EM_Mastitis == null) return 1f;
+        var mastitis = pawn.health.hediffSet.hediffs.Where(x => x.def == MilkCumDefOf.EM_Mastitis);
         Hediff h = part == null ? mastitis.FirstOrDefault() : mastitis.FirstOrDefault(m => m.Part == part);
         if (h == null) return 1f;
         float penalty = h.Severity * 0.5f;
@@ -188,7 +188,7 @@ public static class PawnMilkPoolExtensions
     {
         leftMultiplier = 0f;
         rightMultiplier = 0f;
-        if (pawn == null || !EqualMilkingSettings.rjwBreastSizeEnabled) return;
+        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return;
         try
         {
             var list = pawn.GetBreastList();
@@ -253,8 +253,8 @@ public static class PawnMilkPoolExtensions
             {
                 float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
                 float fullE = milkComp.GetFullnessForKey(e.Key);
-                pressureE = EqualMilkingSettings.enablePressureFactor
-                    ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
+                pressureE = MilkCumSettings.enablePressureFactor
+                    ? MilkCumSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
                     : (fullE >= stretch ? 0f : 1f);
             }
             float weight = conditionsE * e.FlowMultiplier * pressureE * comp.GetLetdownReflexFlowMultiplier(e.Key);
@@ -279,8 +279,8 @@ public static class PawnMilkPoolExtensions
         if (string.IsNullOrEmpty(e.Key)) return 1f;
         float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
         float fullE = milkComp.GetFullnessForKey(sideKey);
-        return EqualMilkingSettings.enablePressureFactor
-            ? EqualMilkingSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
+        return MilkCumSettings.enablePressureFactor
+            ? MilkCumSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
             : (fullE >= stretch ? 0f : 1f);
     }
 

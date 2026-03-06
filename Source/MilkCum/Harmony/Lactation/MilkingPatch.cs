@@ -146,7 +146,7 @@ public static class Need_Food_LactatingNutrition_Patch
             return;
         var milkable = pawn.CompEquallyMilkable();
         if (milkable == null) return;
-        int basis = Mathf.Clamp(EqualMilkingSettings.lactationExtraNutritionBasis, 0, 300);
+        int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
         float factor = basis / 150f;
         // 产奶额外扣饱食度（池未满时）
         if (milkable.Fullness < milkable.maxFullness)
@@ -267,39 +267,39 @@ public static class ProlactinAddictionPatch
         if (hediff == null)
             return;
         // 耐受：本剂在 XML 中在 Lactating 之后添加，故当前已含本剂 +ProlactinToleranceGainPerDose。吃药前 t_before = 当前 - 该值。
-        float tBefore = Mathf.Max(0f, EqualMilkingSettings.GetProlactinTolerance(pawn) - EqualMilkingSettings.ProlactinToleranceGainPerDose);
+        float tBefore = Mathf.Max(0f, MilkCumSettings.GetProlactinTolerance(pawn) - MilkCumSettings.ProlactinToleranceGainPerDose);
         float rawSeverity = giveHediff.severity;
 
         // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）。TryMergeWith 已对 L 加了 rawSeverity，此处只补耐受后的增量 deltaS，故传 deltaS - rawSeverity 避免 L 重复累加。
         if (hediff.Severity > rawSeverity)
         {
-            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(tBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
             float deltaLOnly = deltaS - rawSeverity;
             if (hediff.comps != null)
                 foreach (var c in hediff.comps)
                     if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaLOnly); break; }
-            WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
+            WorldComponent_MilkCumAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
             return;
         }
 
         // 水池模型吸收延迟：先移除刚加的 Lactating，到点时再挂并 AddFromDrug(Δs, t_before)
         pawn.health.RemoveHediff(hediff);
         var world = Find.World;
-        var delayComp = world?.GetComponent<WorldComponent_EqualMilkingAbsorptionDelay>();
+        var delayComp = world?.GetComponent<WorldComponent_MilkCumAbsorptionDelay>();
         if (delayComp != null)
         {
-            int endTick = Find.TickManager.TicksGame + WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(pawn);
+            int endTick = Find.TickManager.TicksGame + WorldComponent_MilkCumAbsorptionDelay.GetAbsorptionDelayTicks(pawn);
             delayComp.ScheduleLactating(pawn, rawSeverity, endTick, tBefore);
         }
         else
         {
             // 无 World 时（如测试）立即生效：Δs = raw × E_tol(t_before)，进水 ΔL = Δs × C_dose。3.3 动物差异化：乘种族药物倍率。
-            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(tBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(tBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
             var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
             if (reapply?.comps != null)
                 foreach (var c in reapply.comps)
                     if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaS); break; }
-            WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
+            WorldComponent_MilkCumAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
         }
     }
 }

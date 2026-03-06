@@ -14,12 +14,12 @@ public static class MenuHelper
         Pawn pawn = thing as Pawn ?? (thing as Building_HoldingPlatform)?.HeldPawn;
         if (pawn == null) { return false; }
         if (!pawn.IsMilkable()) { return false; }
-        if (EqualMilkingSettings.showMechOptions && pawn.IsColonyMech && MechanitorUtility.IsMechanitor(pawn)) { return true; }
-        if (EqualMilkingSettings.showColonistOptions && pawn.IsFreeNonSlaveColonist) { return true; }
-        if (EqualMilkingSettings.showSlaveOptions && pawn.IsSlaveOfColony) { return true; }
-        if (EqualMilkingSettings.showPrisonerOptions && pawn.IsPrisonerOfColony) { return true; }
-        if (EqualMilkingSettings.showAnimalOptions && pawn.IsNormalAnimal() && pawn.Faction == Faction.OfPlayer) { return true; }
-        if (EqualMilkingSettings.showMiscOptions && (pawn.IsOnHoldingPlatform || pawn.Faction == Faction.OfPlayer)) { return true; }
+        if (MilkCumSettings.showMechOptions && pawn.IsColonyMech && MechanitorUtility.IsMechanitor(pawn)) { return true; }
+        if (MilkCumSettings.showColonistOptions && pawn.IsFreeNonSlaveColonist) { return true; }
+        if (MilkCumSettings.showSlaveOptions && pawn.IsSlaveOfColony) { return true; }
+        if (MilkCumSettings.showPrisonerOptions && pawn.IsPrisonerOfColony) { return true; }
+        if (MilkCumSettings.showAnimalOptions && pawn.IsNormalAnimal() && pawn.Faction == Faction.OfPlayer) { return true; }
+        if (MilkCumSettings.showMiscOptions && (pawn.IsOnHoldingPlatform || pawn.Faction == Faction.OfPlayer)) { return true; }
         return false;
     }
     internal static IEnumerable<FloatMenuOption> InjectMenuOptions(this Thing thing, Pawn actor)
@@ -28,27 +28,27 @@ public static class MenuHelper
         ListerThings listerThings = map.listerThings;
         Pawn pawn = thing as Pawn ?? (thing as Building_HoldingPlatform)?.HeldPawn;
         if (pawn == null) { yield break; } // This should never happen, but just in case
-        if (listerThings.ThingsOfDef(EMDefOf.EM_Prolactin).Any(prolactin => prolactin.IsInAnyStorage()) && !(pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.Severity >= 1f))
+        if (listerThings.ThingsOfDef(MilkCumDefOf.EM_Prolactin).Any(prolactin => prolactin.IsInAnyStorage()) && !(pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.Severity >= 1f))
         {
-            yield return new FloatMenuOption(Lang.GiveTo(EMDefOf.EM_Prolactin.label, thing.LabelShort), delegate
+            yield return new FloatMenuOption(Lang.GiveTo(MilkCumDefOf.EM_Prolactin.label, thing.LabelShort), delegate
             {
-                Job job = new(EMDefOf.EM_InjectLactatingDrug, listerThings.ThingsOfDef(EMDefOf.EM_Prolactin).FirstOrDefault(), pawn)
+                Job job = new(MilkCumDefOf.EM_InjectLactatingDrug, listerThings.ThingsOfDef(MilkCumDefOf.EM_Prolactin).FirstOrDefault(), pawn)
                 {
                     count = 1
                 };
                 actor.jobs.TryTakeOrderedJob(job);
-            }, EMDefOf.EM_Prolactin);
+            }, MilkCumDefOf.EM_Prolactin);
         }
-        if (listerThings.ThingsOfDef(EMDefOf.EM_Lucilactin).Any(lucilactin => lucilactin.IsInAnyStorage()))
+        if (listerThings.ThingsOfDef(MilkCumDefOf.EM_Lucilactin).Any(lucilactin => lucilactin.IsInAnyStorage()))
         {
-            yield return new FloatMenuOption(Lang.GiveTo(EMDefOf.EM_Lucilactin.label, thing.LabelShort), delegate
+            yield return new FloatMenuOption(Lang.GiveTo(MilkCumDefOf.EM_Lucilactin.label, thing.LabelShort), delegate
             {
-                Job job = new(EMDefOf.EM_InjectLactatingDrug, listerThings.ThingsOfDef(EMDefOf.EM_Lucilactin).FirstOrDefault(), pawn)
+                Job job = new(MilkCumDefOf.EM_InjectLactatingDrug, listerThings.ThingsOfDef(MilkCumDefOf.EM_Lucilactin).FirstOrDefault(), pawn)
                 {
                     count = 1
                 };
                 actor.jobs.TryTakeOrderedJob(job);
-            }, EMDefOf.EM_Lucilactin);
+            }, MilkCumDefOf.EM_Lucilactin);
         }
     }
     internal static IEnumerable<FloatMenuOption> BreastfeedMenuOptions(this Thing thing, Pawn actor)
@@ -59,7 +59,7 @@ public static class MenuHelper
         {
             yield return FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(Lang.Join(Lang.Breastfeed, pawn.LabelShort), delegate
                 {
-                    actor.jobs.TryTakeOrderedJob(new Job(EMDefOf.EM_ForcedBreastfeed, pawn) { count = 1 });
+                    actor.jobs.TryTakeOrderedJob(new Job(MilkCumDefOf.EM_ForcedBreastfeed, pawn) { count = 1 });
                 }, actor.MilkDef()), actor, pawn);
         }
         string suckleText = Lang.Join(ThingDefOf.Beer.ingestible.ingestCommandString.Replace("{0}", "SomeonesRoom".Translate().Replace("{PAWN_labelShort}", pawn.LabelShort).Replace("{1}", Lang.Milk)));
@@ -67,7 +67,7 @@ public static class MenuHelper
         {
             yield return FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(suckleText, delegate
             {
-                actor.jobs.TryTakeOrderedJob(new Job(EMDefOf.EM_ActiveSuckle, pawn) { count = 1 });
+                actor.jobs.TryTakeOrderedJob(new Job(MilkCumDefOf.EM_ActiveSuckle, pawn) { count = 1 });
             }, actor.MilkDef()), actor, pawn);
         }
     }

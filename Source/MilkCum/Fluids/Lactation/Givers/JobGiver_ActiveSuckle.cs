@@ -39,10 +39,10 @@ public class JobGiver_ActiveSuckle : JobGiver_GetFood
                 }
             }
         }
-        if (tmpPawns.Count > 0 && EMDefOf.EM_ActiveSuckle != null)
+        if (tmpPawns.Count > 0 && MilkCumDefOf.EM_ActiveSuckle != null)
         {
             tmpPawns.SortBy(x => x.PositionHeld.DistanceToSquared(pawn.PositionHeld));
-            return JobMaker.MakeJob(EMDefOf.EM_ActiveSuckle, tmpPawns[0]);
+            return JobMaker.MakeJob(MilkCumDefOf.EM_ActiveSuckle, tmpPawns[0]);
         }
         return null;
     }

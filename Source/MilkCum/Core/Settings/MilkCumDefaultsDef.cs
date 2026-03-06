@@ -3,7 +3,7 @@ using Verse;
 namespace MilkCum.Core.Settings;
 
 /// <summary>建议 22：关键默认值 Def，供「从 Def 加载默认」使用；若 XML 未加载则用 GetBuiltinDefaults()。其他 mod 可 patch GetBuiltinDefaults 改内置值。</summary>
-public class EqualMilkingDefaultsDef : Def
+public class MilkCumDefaultsDef : Def
 {
 	// 基准泌乳天数（池模型 B_T / B_T_birth）
 	public float baselineMilkDurationDays = 5f;
@@ -22,9 +22,9 @@ public class EqualMilkingDefaultsDef : Def
 	public bool aiPreferHighFullnessTargets = true;
 
 	/// <summary>内置默认值（当 XML 未加载时使用；其他 mod 可 patch 此方法修改）。</summary>
-	public static EqualMilkingDefaultsDef GetBuiltinDefaults()
+	public static MilkCumDefaultsDef GetBuiltinDefaults()
 	{
-		return new EqualMilkingDefaultsDef
+		return new MilkCumDefaultsDef
 		{
 			defName = "EM_Defaults",
 			label = "EM.DefaultsDefLabel",

@@ -43,7 +43,7 @@ public static class FoodEnergyHelper
         }
         else if (baby.needs.energy != null)
         {
-            consumed = hediffComp.GreedyConsume(amount / EqualMilkingSettings.nutritionToEnergyFactor) * EqualMilkingSettings.nutritionToEnergyFactor;
+            consumed = hediffComp.GreedyConsume(amount / MilkCumSettings.nutritionToEnergyFactor) * MilkCumSettings.nutritionToEnergyFactor;
             baby.needs.energy.CurLevel += consumed;
         }
         else

@@ -23,75 +23,75 @@ public static class Lang
     }
     private static void LoadDefTranslationsImpl()
     {
-        if (EMDefOf.EM_Lucilactin != null)
+        if (MilkCumDefOf.EM_Lucilactin != null)
         {
-            EMDefOf.EM_Lucilactin.ingestible.ingestCommandString = Lang.Inject;
-            EMDefOf.EM_Lucilactin.ingestible.ingestReportString = Lang.Injecting;
-            EMDefOf.EM_Lucilactin.SetDefaultDesc(Lang.Join(Lang.Add, Lang.Lactating) + "(" + Lang.Permanent + ")");
+            MilkCumDefOf.EM_Lucilactin.ingestible.ingestCommandString = Lang.Inject;
+            MilkCumDefOf.EM_Lucilactin.ingestible.ingestReportString = Lang.Injecting;
+            MilkCumDefOf.EM_Lucilactin.SetDefaultDesc(Lang.Join(Lang.Add, Lang.Lactating) + "(" + Lang.Permanent + ")");
         }
-        if (EMDefOf.EM_Prolactin != null)
+        if (MilkCumDefOf.EM_Prolactin != null)
         {
-            EMDefOf.EM_Prolactin.ingestible.ingestCommandString = Lang.Inject;
-            EMDefOf.EM_Prolactin.ingestible.ingestReportString = Lang.Injecting;
-            EMDefOf.EM_Prolactin.SetDefaultDesc(Lang.Join(Lang.Add, Lang.Lactating));
+            MilkCumDefOf.EM_Prolactin.ingestible.ingestCommandString = Lang.Inject;
+            MilkCumDefOf.EM_Prolactin.ingestible.ingestReportString = Lang.Injecting;
+            MilkCumDefOf.EM_Prolactin.SetDefaultDesc(Lang.Join(Lang.Add, Lang.Lactating));
         }
-        if (EMDefOf.EM_ActiveSuckle != null)
-            EMDefOf.EM_ActiveSuckle.reportString = JobDefOf.BabySuckle.reportString;
-        if (EMDefOf.EM_ForcedBreastfeed != null)
-            EMDefOf.EM_ForcedBreastfeed.reportString = JobDefOf.Breastfeed.reportString;
+        if (MilkCumDefOf.EM_ActiveSuckle != null)
+            MilkCumDefOf.EM_ActiveSuckle.reportString = JobDefOf.BabySuckle.reportString;
+        if (MilkCumDefOf.EM_ForcedBreastfeed != null)
+            MilkCumDefOf.EM_ForcedBreastfeed.reportString = JobDefOf.Breastfeed.reportString;
 
         if (HediffDefOf.Lactating != null)
             HediffDefOf.Lactating.SetDefaultDesc(HediffDefOf.Lactating.description.RemoveTailingLines(2)); // 删除原版怀孕率相关末两行；若当前语言有 DefInjected（Lactating.description）则不会覆盖，见 Languages/.../DefInjected/HediffDef
-        if (EMDefOf.Milk_Fullness != null)
-            EMDefOf.Milk_Fullness.SetDefaultLabel(Lang.MilkFullness);
-        if (EMDefOf.Milk_RemainingDays != null)
-            EMDefOf.Milk_RemainingDays.SetDefaultLabel("EM.PoolRemainingDays".Translate());
-        if (EMDefOf.Milk_Lactating != null)
-            EMDefOf.Milk_Lactating.SetDefaultLabel(Lang.Lactating);
-        if (EMDefOf.Milk_MilkType != null)
-            EMDefOf.Milk_MilkType.SetDefaultLabel(Lang.MilkType);
-        if (EMDefOf.Milk_MainButton != null)
-            EMDefOf.Milk_MainButton.SetDefaultLabel("Equal_Milking".Translate());
+        if (MilkCumDefOf.Milk_Fullness != null)
+            MilkCumDefOf.Milk_Fullness.SetDefaultLabel(Lang.MilkFullness);
+        if (MilkCumDefOf.Milk_RemainingDays != null)
+            MilkCumDefOf.Milk_RemainingDays.SetDefaultLabel("EM.PoolRemainingDays".Translate());
+        if (MilkCumDefOf.Milk_Lactating != null)
+            MilkCumDefOf.Milk_Lactating.SetDefaultLabel(Lang.Lactating);
+        if (MilkCumDefOf.Milk_MilkType != null)
+            MilkCumDefOf.Milk_MilkType.SetDefaultLabel(Lang.MilkType);
+        if (MilkCumDefOf.Milk_MainButton != null)
+            MilkCumDefOf.Milk_MainButton.SetDefaultLabel("Equal_Milking".Translate());
 
-        if (EMDefOf.EM_HumanMilk != null)
+        if (MilkCumDefOf.EM_HumanMilk != null)
         {
-            EMDefOf.EM_HumanMilk.SetDefaultLabel(Lang.Join(Lang.Human, Lang.Milk));
-            EMDefOf.EM_HumanMilk.SetDefaultDesc(Lang.Join(Lang.Human, Lang.Milk) + "\n" + "Milk".DefDesc<ThingDef>().RemoveLeadingLines(1));
+            MilkCumDefOf.EM_HumanMilk.SetDefaultLabel(Lang.Join(Lang.Human, Lang.Milk));
+            MilkCumDefOf.EM_HumanMilk.SetDefaultDesc(Lang.Join(Lang.Human, Lang.Milk) + "\n" + "Milk".DefDesc<ThingDef>().RemoveLeadingLines(1));
         }
-        if (EMDefOf.EM_MilkEntity != null)
+        if (MilkCumDefOf.EM_MilkEntity != null)
         {
-            EMDefOf.EM_MilkEntity.SetDefaultLabel(Lang.Join(Lang.Milk, Lang.Entities));
-            EMDefOf.EM_MilkEntity.verb = Lang.Milk;
-            EMDefOf.EM_MilkEntity.gerund = Lang.Milking;
+            MilkCumDefOf.EM_MilkEntity.SetDefaultLabel(Lang.Join(Lang.Milk, Lang.Entities));
+            MilkCumDefOf.EM_MilkEntity.verb = Lang.Milk;
+            MilkCumDefOf.EM_MilkEntity.gerund = Lang.Milking;
         }
 
-        if (EMDefOf.EM_Lactation_Enhanced != null)
+        if (MilkCumDefOf.EM_Lactation_Enhanced != null)
         {
-            EMDefOf.EM_Lactation_Enhanced.SetDefaultLabel(Lang.Join(Lang.Enhanced, Lang.Lactating));
-            EMDefOf.EM_Lactation_Enhanced.labelShortAdj = EMDefOf.EM_Lactation_Enhanced.label;
-            EMDefOf.EM_Lactation_Enhanced.SetDefaultDesc();
+            MilkCumDefOf.EM_Lactation_Enhanced.SetDefaultLabel(Lang.Join(Lang.Enhanced, Lang.Lactating));
+            MilkCumDefOf.EM_Lactation_Enhanced.labelShortAdj = MilkCumDefOf.EM_Lactation_Enhanced.label;
+            MilkCumDefOf.EM_Lactation_Enhanced.SetDefaultDesc();
         }
-        if (EMDefOf.EM_Lactation_Poor != null)
+        if (MilkCumDefOf.EM_Lactation_Poor != null)
         {
-            EMDefOf.EM_Lactation_Poor.SetDefaultLabel(Lang.Join(Lang.Poor, Lang.Lactating));
-            EMDefOf.EM_Lactation_Poor.labelShortAdj = EMDefOf.EM_Lactation_Poor.label;
-            EMDefOf.EM_Lactation_Poor.SetDefaultDesc();
+            MilkCumDefOf.EM_Lactation_Poor.SetDefaultLabel(Lang.Join(Lang.Poor, Lang.Lactating));
+            MilkCumDefOf.EM_Lactation_Poor.labelShortAdj = MilkCumDefOf.EM_Lactation_Poor.label;
+            MilkCumDefOf.EM_Lactation_Poor.SetDefaultDesc();
         }
-        if (EMDefOf.EM_Permanent_Lactation != null)
+        if (MilkCumDefOf.EM_Permanent_Lactation != null)
         {
-            EMDefOf.EM_Permanent_Lactation.SetDefaultLabel(Lang.Join(Lang.Permanent, Lang.Lactating));
-            EMDefOf.EM_Permanent_Lactation.labelShortAdj = EMDefOf.EM_Permanent_Lactation.label;
-            EMDefOf.EM_Permanent_Lactation.SetDefaultDesc();
+            MilkCumDefOf.EM_Permanent_Lactation.SetDefaultLabel(Lang.Join(Lang.Permanent, Lang.Lactating));
+            MilkCumDefOf.EM_Permanent_Lactation.labelShortAdj = MilkCumDefOf.EM_Permanent_Lactation.label;
+            MilkCumDefOf.EM_Permanent_Lactation.SetDefaultDesc();
         }
-        if (EMDefOf.EM_MilkingPump != null)
+        if (MilkCumDefOf.EM_MilkingPump != null)
         {
-            EMDefOf.EM_MilkingPump.SetDefaultLabel(Lang.Join(Lang.Milking.CapitalizeFirst(), Lang.Pump));
-            EMDefOf.EM_MilkingPump.SetDefaultDesc(Lang.DesignatedFor.Replace("{0}", Lang.Join(Lang.Milking, $"({Lang.Self})")));
+            MilkCumDefOf.EM_MilkingPump.SetDefaultLabel(Lang.Join(Lang.Milking.CapitalizeFirst(), Lang.Pump));
+            MilkCumDefOf.EM_MilkingPump.SetDefaultDesc(Lang.DesignatedFor.Replace("{0}", Lang.Join(Lang.Milking, $"({Lang.Self})")));
         }
-        if (EMDefOf.EM_MilkingElectric != null)
+        if (MilkCumDefOf.EM_MilkingElectric != null)
         {
-            EMDefOf.EM_MilkingElectric.SetDefaultLabel(Lang.Join(Lang.Electric, Lang.Milking, Lang.Pump));
-            EMDefOf.EM_MilkingElectric.SetDefaultDesc(Lang.DesignatedFor.Replace("{0}", Lang.Join(Lang.Milking, $"({Lang.Self})")));
+            MilkCumDefOf.EM_MilkingElectric.SetDefaultLabel(Lang.Join(Lang.Electric, Lang.Milking, Lang.Pump));
+            MilkCumDefOf.EM_MilkingElectric.SetDefaultDesc(Lang.DesignatedFor.Replace("{0}", Lang.Join(Lang.Milking, $"({Lang.Self})")));
         }
     }
     public static DefInjectionPackage.DefInjection DefInjectionFor(this Def def, string field)
@@ -210,8 +210,6 @@ public static class Lang
     public static string Inject => DefDatabase<ThingDef>.GetNamed("GoJuice").ingestible.ingestCommandString;
     public static string Injecting => DefDatabase<ThingDef>.GetNamed("GoJuice").ingestible.ingestReportString;
     public static string Pump = SameWordsIn("PollutionPump".DefLabel<ThingDef>(), "MoisturePump".DefLabel<ThingDef>());
-    public static string Spot = SameWordsIn("CaravanPackingSpot".DefLabel<ThingDef>(), "PartySpot".DefLabel<ThingDef>());
-    public static string SpotDesc = SameWordsIn("CaravanPackingSpot".DefDesc<ThingDef>(), "PartySpot".DefDesc<ThingDef>());
     public static string StatFactor = "StatFactor".DefLabel<ScenPartDef>();
 
     public static string Label(this HungerCategory hungerCategory)
@@ -229,10 +227,6 @@ public static class Lang
             default:
                 return Fed;
         }
-    }
-    public static string Of(this string noun, string adj)
-    {
-        return "ThingMadeOfStuffLabel".Translate(adj, noun);
     }
     public static string GiveTo(string from, string to)
     {

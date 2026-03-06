@@ -10,7 +10,7 @@ namespace MilkCum.Fluids.Lactation.Givers;
 /// <summary>
 /// Allow non-humanlike to breastfeed
 /// </summary>
-public class JobGiver_EqualBreastfeed : ThinkNode_JobGiver
+public class JobGiver_MilkCumBreastfeed : ThinkNode_JobGiver
 {
 	private readonly List<Pawn> tmpBabies = new();
 	protected virtual IEnumerable<Pawn> Babies(Pawn pawn)
@@ -57,10 +57,10 @@ public class JobGiver_EqualBreastfeed : ThinkNode_JobGiver
 			tmpBabies.Add(baby);
 		}
 		// Distance sort
-		if (tmpBabies.Count > 0 && EMDefOf.EM_ForcedBreastfeed != null)
+		if (tmpBabies.Count > 0 && MilkCumDefOf.EM_ForcedBreastfeed != null)
 		{
 			tmpBabies.SortBy(x => x.PositionHeld.DistanceToSquared(pawn.PositionHeld));
-			Job job = JobMaker.MakeJob(EMDefOf.EM_ForcedBreastfeed, tmpBabies[0]);
+			Job job = JobMaker.MakeJob(MilkCumDefOf.EM_ForcedBreastfeed, tmpBabies[0]);
 			job.count = 1;
 			return job;
 		}

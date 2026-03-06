@@ -226,7 +226,7 @@ public static class ChildcareUtility_Patch
     {
         List<CodeInstruction> codes = new(instructions);
         MethodInfo original = AccessTools.Method(typeof(MapPawns), nameof(MapPawns.FreeHumanlikesOfFaction), new[] { typeof(Faction) });
-        MethodInfo getBreastfeedablePawns = AccessTools.Method(typeof(EqualMilkingSettings), nameof(EqualMilkingSettings.GetAutoBreastfeedablePawnsList));
+        MethodInfo getBreastfeedablePawns = AccessTools.Method(typeof(MilkCumSettings), nameof(MilkCumSettings.GetAutoBreastfeedablePawnsList));
 
         for (int i = 0; i < codes.Count; i++)
         {
@@ -307,9 +307,9 @@ public static class ChildcareUtility_Patch
                 canTargetFires = false,
                 canTargetBuildings = false,
                 canTargetItems = false,
-                canTargetAnimals = EqualMilkingSettings.animalBreastfeed.AllowBreastfeeding,
-                canTargetHumans = EqualMilkingSettings.humanlikeBreastfeed.AllowBreastfeeding,
-                canTargetMechs = EqualMilkingSettings.mechanoidBreastfeed.AllowBreastfeeding,
+                canTargetAnimals = MilkCumSettings.animalBreastfeed.AllowBreastfeeding,
+                canTargetHumans = MilkCumSettings.humanlikeBreastfeed.AllowBreastfeeding,
+                canTargetMechs = MilkCumSettings.mechanoidBreastfeed.AllowBreastfeeding,
                 canTargetPlants = false
             };
             return false;
@@ -336,10 +336,10 @@ public static class WorkGiver_Breastfeed_Patch
     [HarmonyPatch(nameof(WorkGiver_Breastfeed.PotentialWorkThingsGlobal))]
     public static void PotentialWorkThingsGlobal_Postfix(ref IEnumerable<Thing> __result, Pawn pawn)
     {
-        if (EqualMilkingSettings.humanlikeBreastfeed.BreastfeedMechanoid
-        || EqualMilkingSettings.humanlikeBreastfeed.OverseerBreastfeed
-        || EqualMilkingSettings.animalBreastfeed.BreastfeedMechanoid
-        || EqualMilkingSettings.mechanoidBreastfeed.BreastfeedMechanoid)
+        if (MilkCumSettings.humanlikeBreastfeed.BreastfeedMechanoid
+        || MilkCumSettings.humanlikeBreastfeed.OverseerBreastfeed
+        || MilkCumSettings.animalBreastfeed.BreastfeedMechanoid
+        || MilkCumSettings.mechanoidBreastfeed.BreastfeedMechanoid)
         {
             __result = __result.Concat(pawn.Map.mapPawns.SpawnedColonyMechs.Where(x => x.needs?.energy?.CurLevelPercentage < 0.2f));
         }
@@ -368,7 +368,7 @@ public static class HediffComp_Chargeable_Patch
                 num = Mathf.Min(desiredCharge, __instance.Charge);
                 var drainedKeys = new List<string>();
                 comp.DrainForConsume(num, drainedKeys);
-                (__instance.parent as HediffWithComps_EqualMilkingLactating)?.OnGatheredLetdownByKeys(drainedKeys);
+                (__instance.parent as HediffWithComps_MilkCumLactating)?.OnGatheredLetdownByKeys(drainedKeys);
                 lactating.SyncChargeFromPool();
             }
             else

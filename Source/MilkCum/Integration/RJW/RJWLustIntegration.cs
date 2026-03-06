@@ -17,7 +17,7 @@ public static class RJWLustIntegration
     /// <summary>他人吸奶/被哺乳：每次 SuckleFromLactatingPawn 成功时给母亲与婴儿增加一点性需求。</summary>
     public static void OnSuckleFromLactatingPawn(Pawn feeder, Pawn baby)
     {
-        if (feeder == null || !EqualMilkingSettings.rjwLustFromNursingEnabled) return;
+        if (feeder == null || !MilkCumSettings.rjwLustFromNursingEnabled) return;
         AddSexNeed(feeder, SexNeedPerSuckleTick);
         if (baby != null)
             AddSexNeed(baby, SexNeedPerSuckleTick);
@@ -27,12 +27,12 @@ public static class RJWLustIntegration
     public static void OnBreastfeedComplete(Pawn mother, Pawn baby)
     {
         if (mother == null) return;
-        if (EqualMilkingSettings.rjwLustFromNursingEnabled)
+        if (MilkCumSettings.rjwLustFromNursingEnabled)
         {
             AddSexNeed(mother, SexNeedPerBreastfeedComplete);
             if (baby != null) AddSexNeed(baby, SexNeedPerBreastfeedComplete);
         }
-        if (EqualMilkingSettings.rjwSexSatisfactionAfterNursingEnabled)
+        if (MilkCumSettings.rjwSexSatisfactionAfterNursingEnabled)
         {
             int now = Find.TickManager.TicksGame;
             LastNursedTick[mother] = now;
@@ -64,7 +64,7 @@ public static class RJWLustIntegration
     /// <summary>泌乳期时每 NeedInterval 给性需求加一点（减缓衰减/略提升）。</summary>
     public static void ApplyLactatingSexNeedBonus(Pawn pawn, Need need)
     {
-        if (pawn == null || need == null || !EqualMilkingSettings.rjwSexNeedLactatingBonusEnabled || !pawn.IsInLactatingState()) return;
+        if (pawn == null || need == null || !MilkCumSettings.rjwSexNeedLactatingBonusEnabled || !pawn.IsInLactatingState()) return;
         float cur = need.CurLevel;
         need.CurLevel = Mathf.Clamp01(cur + SexNeedLactatingBonusPerInterval);
     }

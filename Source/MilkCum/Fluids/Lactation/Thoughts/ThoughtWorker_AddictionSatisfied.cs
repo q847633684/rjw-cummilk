@@ -1,4 +1,4 @@
-﻿using MilkCum.Core;
+using MilkCum.Core;
 using RimWorld;
 using Verse;
 
@@ -8,7 +8,7 @@ namespace MilkCum.Fluids.Lactation.Thoughts;
     {
         protected override ThoughtState CurrentStateInternal(Pawn p)
         {
-            var addiction = p?.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Prolactin_Addiction);
+            var addiction = p?.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Prolactin_Addiction);
             if (addiction == null) return ThoughtState.Inactive;
             if (addiction.CurStageIndex != 0) return ThoughtState.Inactive; // 0 = 满足
             return ThoughtState.ActiveAtStage(0);

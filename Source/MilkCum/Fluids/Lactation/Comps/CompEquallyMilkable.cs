@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
@@ -73,7 +73,7 @@ public class CompEquallyMilkable : CompMilkable
     /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，�?Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返�?&gt; 0</summary>
     public float GetReabsorbedNutritionPerDay()
     {
-        if (!EqualMilkingSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
+        if (!MilkCumSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
         var entries = Pawn.GetBreastPoolEntries();
         if (entries.Count == 0) return 0f;
         float healthPercent = 1f;
@@ -90,7 +90,7 @@ public class CompEquallyMilkable : CompMilkable
         if (reabsorbedPoolPerStep <= 0f) return 0f;
         float reabsorbedPoolPerDay = reabsorbedPoolPerStep * (60000f / 60f); // �?60 tick 一�?
         return reabsorbedPoolPerDay * PoolModelConstants.NutritionPerPoolUnit
-            * Mathf.Clamp01(EqualMilkingSettings.reabsorbNutritionEfficiency);
+            * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency);
     }
 
     public override void PostExposeData()
@@ -209,15 +209,15 @@ public class CompEquallyMilkable : CompMilkable
         if (parent is Pawn p)
         {
             float baseMax = Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
-            if (EqualMilkingSettings.enableTissueAdaptation)
+            if (MilkCumSettings.enableTissueAdaptation)
             {
                 float effectiveMax = baseMax + capacityAdaptation;
                 float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
                 float step = 60f / 60000f; // �?60 tick = 0.001 游戏�?
-                float theta = Mathf.Max(0f, EqualMilkingSettings.adaptationTheta);
-                float omega = Mathf.Max(0f, EqualMilkingSettings.adaptationOmega);
+                float theta = Mathf.Max(0f, MilkCumSettings.adaptationTheta);
+                float omega = Mathf.Max(0f, MilkCumSettings.adaptationOmega);
                 capacityAdaptation += step * (theta * Mathf.Max(P - 0.85f, 0f) - omega * (1f - P));
-                float capMax = baseMax * Mathf.Clamp(EqualMilkingSettings.adaptationCapMaxRatio, 0f, 1f);
+                float capMax = baseMax * Mathf.Clamp(MilkCumSettings.adaptationCapMaxRatio, 0f, 1f);
                 capacityAdaptation = Mathf.Clamp(capacityAdaptation, 0f, capMax);
             }
             maxFullness = baseMax + capacityAdaptation;
@@ -250,7 +250,7 @@ public class CompEquallyMilkable : CompMilkable
         if (parent is not Pawn pawn || !pawn.SpawnedOrAnyParentSpawned || !pawn.IsColonyPawn() || pawn.Faction == null)
             return;
         // 永久泌乳基因：确保有 Lactating 并维持高 severity
-        if (pawn.genes?.HasActiveGene(EMDefOf.EM_Permanent_Lactation) == true)
+        if (pawn.genes?.HasActiveGene(MilkCumDefOf.EM_Permanent_Lactation) == true)
         {
             Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
             lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
@@ -264,7 +264,7 @@ public class CompEquallyMilkable : CompMilkable
             return;
         }
         // 设置：殖民地成年雌性动物始终泌�?
-        if (EqualMilkingSettings.femaleAnimalAdultAlwaysLactating && pawn.IsAdultFemaleAnimalOfColony())
+        if (MilkCumSettings.femaleAnimalAdultAlwaysLactating && pawn.IsAdultFemaleAnimalOfColony())
         {
             Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
             lactating.Severity = Mathf.Max(lactating.Severity, 1f);
@@ -280,14 +280,14 @@ public class CompEquallyMilkable : CompMilkable
             return;
         cachedWasLactatingWithDrugInduced = nowLactatingWithDrug;
 
-        if (EMDefOf.EM_LactatingGain != null)
+        if (MilkCumDefOf.EM_LactatingGain != null)
         {
             if (nowLactatingWithDrug)
             {
-                if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_LactatingGain) == null)
-                    Pawn.health.AddHediff(EMDefOf.EM_LactatingGain, Pawn.GetBreastOrChestPart());
+                if (Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactatingGain) == null)
+                    Pawn.health.AddHediff(MilkCumDefOf.EM_LactatingGain, Pawn.GetBreastOrChestPart());
             }
-            else if (Pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_LactatingGain) is Hediff gain)
+            else if (Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactatingGain) is Hediff gain)
                 Pawn.health.RemoveHediff(gain);
         }
     }
@@ -300,11 +300,11 @@ public class CompEquallyMilkable : CompMilkable
         float currentLactation = lactatingComp.CurrentLactationAmount;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
-        float drive = EqualMilkingSettings.GetEffectiveDrive(currentLactation);
+        float drive = MilkCumSettings.GetEffectiveDrive(currentLactation);
         float basePerDay = drive * hungerFactor
             * Pawn.GetMilkFlowMultiplierFromConditions()
             * Pawn.GetMilkFlowMultiplierFromGenes()
-            * EqualMilkingSettings.defaultFlowMultiplierForHumanlike;
+            * MilkCumSettings.defaultFlowMultiplierForHumanlike;
         var entries = Pawn.GetBreastPoolEntries();
         // Active 已保证有乳池才进入，此处不再判空
         breastFullness ??= new Dictionary<string, float>();
@@ -315,11 +315,11 @@ public class CompEquallyMilkable : CompMilkable
         float stretchTotal = entries.Sum(e => e.Capacity * PoolModelConstants.StretchCapFactor);
         // 接近撑大时不再传 minFactorWhenNearFull（带下限公式已内�?f_min，最低生产自然≥0.02�?
         // 喷乳反射 R：按侧生效，每侧进水�?× GetLetdownReflexFlowMultiplier(sideKey)；每 tick 统一衰减各侧 R
-        if (EqualMilkingSettings.enableLetdownReflex)
+        if (MilkCumSettings.enableLetdownReflex)
             lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
         // 四层模型：炎�?I 离散更新与乳腺炎触发（每 60 tick）；�?MilkRelatedHealthHelper
         MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
-        if (EqualMilkingSettings.enableToleranceDynamic)
+        if (MilkCumSettings.enableToleranceDynamic)
             lactatingComp.UpdateToleranceDynamic(currentLactation, 60f / 60000f);
         // 按对分组、每�?TickGrowth：见 记忆�?design/双池与PairIndex；进水周�?60 tick：见 记忆�?decisions/ADR-001-进水与衰减周�?
         var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
@@ -337,16 +337,16 @@ public class CompEquallyMilkable : CompMilkable
                 float stretchRight = rightCap * PoolModelConstants.StretchCapFactor;
                 float curLeft = breastFullness.TryGetValue(leftE.Key, out float vl) ? vl : 0f;
                 float curRight = breastFullness.TryGetValue(rightE.Key, out float vr) ? vr : 0f;
-                float pressureLeft = EqualMilkingSettings.enablePressureFactor
-                    ? EqualMilkingSettings.GetPressureFactor(curLeft / Mathf.Max(0.001f, stretchLeft))
+                float pressureLeft = MilkCumSettings.enablePressureFactor
+                    ? MilkCumSettings.GetPressureFactor(curLeft / Mathf.Max(0.001f, stretchLeft))
                     : (curLeft >= stretchLeft ? 0f : 1f);
-                float pressureRight = EqualMilkingSettings.enablePressureFactor
-                    ? EqualMilkingSettings.GetPressureFactor(curRight / Mathf.Max(0.001f, stretchRight))
+                float pressureRight = MilkCumSettings.enablePressureFactor
+                    ? MilkCumSettings.GetPressureFactor(curRight / Mathf.Max(0.001f, stretchRight))
                     : (curRight >= stretchRight ? 0f : 1f);
                 float conditionsLeft = Pawn.GetConditionsForSide(leftE.Key);
                 float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
-                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * (EqualMilkingSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f);
-                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * (EqualMilkingSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f);
+                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f);
+                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f);
                 var pairPool = new FluidPoolState();
                 pairPool.SetFrom(curLeft, curRight, 0);
                 float overflow = pairPool.TickGrowth(flowLeft, flowRight, leftCap, rightCap, stretchLeft, stretchRight);
@@ -360,11 +360,11 @@ public class CompEquallyMilkable : CompMilkable
                 {
                     float stretchCap = e.Capacity * PoolModelConstants.StretchCapFactor;
                     float current = breastFullness.TryGetValue(e.Key, out float v) ? v : 0f;
-                    float pressure = EqualMilkingSettings.enablePressureFactor
-                        ? EqualMilkingSettings.GetPressureFactor(current / Mathf.Max(0.001f, stretchCap))
+                    float pressure = MilkCumSettings.enablePressureFactor
+                        ? MilkCumSettings.GetPressureFactor(current / Mathf.Max(0.001f, stretchCap))
                         : (current >= stretchCap ? 0f : 1f);
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
-                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * (EqualMilkingSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f);
+                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f);
                     var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
                     breastFullness[e.Key] = newFullness;
                     overflowTotal += overflow;
@@ -394,7 +394,7 @@ public class CompEquallyMilkable : CompMilkable
     /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图</summary>
     private void TrySendFullPoolLetter()
     {
-        if (!EqualMilkingSettings.enableFullPoolLetter || Pawn == null || !Pawn.Spawned || !Pawn.IsColonyPawn()
+        if (!MilkCumSettings.enableFullPoolLetter || Pawn == null || !Pawn.Spawned || !Pawn.IsColonyPawn()
             || ticksFullPool < 60000) return;
         int now = Find.TickManager.TicksGame;
         if (lastFullPoolLetterTick >= 0 && now - lastFullPoolLetterTick < 120000) return;
@@ -411,8 +411,8 @@ public class CompEquallyMilkable : CompMilkable
     {
         if (overflowThisTick <= 0f || Pawn == null || !Pawn.Spawned || Pawn.Map == null) { return; }
         overflowAccumulator += overflowThisTick;
-        var filthDef = !string.IsNullOrEmpty(EqualMilkingSettings.overflowFilthDefName)
-            ? DefDatabase<ThingDef>.GetNamedSilentFail(EqualMilkingSettings.overflowFilthDefName)
+        var filthDef = !string.IsNullOrEmpty(MilkCumSettings.overflowFilthDefName)
+            ? DefDatabase<ThingDef>.GetNamedSilentFail(MilkCumSettings.overflowFilthDefName)
             : null;
         filthDef ??= DefDatabase<ThingDef>.GetNamedSilentFail("Filth_Vomit");
         if (filthDef != null)
@@ -425,8 +425,8 @@ public class CompEquallyMilkable : CompMilkable
                 filthSpawned++;
             }
             if (filthSpawned > 0 && Pawn.RaceProps.Humanlike && Pawn.needs?.mood?.thoughts?.memories != null
-                && EMDefOf.EM_MilkOverflow != null)
-                Pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_MilkOverflow);
+                && MilkCumDefOf.EM_MilkOverflow != null)
+                Pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_MilkOverflow);
             if (filthSpawned > 0 && Pawn.Spawned && Pawn.Map != null)
             {
                 string moteText = "EM.MilkOverflowMote".Translate();
@@ -555,7 +555,7 @@ public class CompEquallyMilkable : CompMilkable
         float drained = DrainForConsume(amountToTake, drainedKeys);
         pawn.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys);
         float yieldFactor = doer.GetStatValue(StatDefOf.AnimalGatherYield);
-        Building_Milking milkingSpot = (doer.jobs?.curDriver as JobDriver_EquallyMilk)?.MilkBuilding;
+        Building_Milking milkingSpot = (doer.jobs?.curDriver as JobDriver_MilkCumMilk)?.MilkBuilding;
         if (milkingSpot != null)
             yieldFactor += milkingSpot.YieldOffset();
         // AnimalGatherYield 为数量倍率（原�?1.5+），非成功概率；effectiveYield = drained × yieldFactor，上�?drained�?
@@ -575,9 +575,9 @@ public class CompEquallyMilkable : CompMilkable
                 Thing thing = ThingMaker.MakeThing(ResourceDef);
                 if (thing.TryGetComp<CompShowProducer>() is CompShowProducer compShowProducer && pawn.RaceProps.Humanlike)
                 {
-                    if (EqualMilkingSettings.HasRaceTag(thing))
+                    if (MilkCumSettings.HasRaceTag(thing))
                         compShowProducer.producerKind = pawn.kindDef;
-                    if (EqualMilkingSettings.HasPawnTag(thing))
+                    if (MilkCumSettings.HasPawnTag(thing))
                         compShowProducer.producer = pawn;
                 }
                 thing.stackCount = stack;
@@ -593,20 +593,20 @@ public class CompEquallyMilkable : CompMilkable
         {
             if (MilkPermissionExtensions.IsAllowedSuckler(milkedPawn, doer))
             {
-                if (EMDefOf.EM_AllowedMilking != null)
-                    milkedPawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_AllowedMilking);
-                if (milkedPawn.HasDrugInducedLactation() && EMDefOf.EM_Prolactin_Joy != null)
-                    milkedPawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_Prolactin_Joy);
+                if (MilkCumDefOf.EM_AllowedMilking != null)
+                    milkedPawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_AllowedMilking);
+                if (milkedPawn.HasDrugInducedLactation() && MilkCumDefOf.EM_Prolactin_Joy != null)
+                    milkedPawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_Prolactin_Joy);
             }
-            else if (EMDefOf.EM_ForcedMilking != null)
-                milkedPawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_ForcedMilking);
+            else if (MilkCumDefOf.EM_ForcedMilking != null)
+                milkedPawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_ForcedMilking);
         }
         // 10.8-6：记录最近一次挤奶时刻，供「长时间未挤奶」心情判�?
         lastGatheredTick = Find.TickManager.TicksGame;
         // 规格：挤奶时略微缓解乳房不�?乳腺�?
-        if (parent is Pawn pawnForMastitis && EMDefOf.EM_Mastitis != null)
+        if (parent is Pawn pawnForMastitis && MilkCumDefOf.EM_Mastitis != null)
         {
-            var mastitis = pawnForMastitis.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_Mastitis);
+            var mastitis = pawnForMastitis.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
             if (mastitis != null && mastitis.Severity > 0.01f)
             {
                 mastitis.Severity = Mathf.Max(0f, mastitis.Severity - 0.05f);

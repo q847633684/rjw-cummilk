@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace MilkCum.Fluids.Lactation.Givers;
 [StaticConstructorOnStartup]
-public class WorkGiver_EquallyMilkEntity : WorkGiver_EquallyMilk
+public class WorkGiver_MilkCumMilkEntity : WorkGiver_MilkCumMilk
 {
     /// <summary>
     /// Somehow potential work thing global just doesn't process entities, Must use potential work thing request

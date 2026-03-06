@@ -21,7 +21,7 @@ internal static class ApplyPatches
     static ApplyPatches()
     {
         Harmony = new HarmonyLib.Harmony("com.akaster.rimworld.mod.equalmilking.pipe");
-        Log.Message("[Equal Milking]: Vanilla Expanded Framework Loaded, Adding Pipe Systems...");
+        Log.Message("[MilkCum]: Vanilla Expanded Framework Loaded, Adding Pipe Systems...");
         AddResourceConversions();
         EventHelper.OnPostLoadLong += RegisterPipeNets;
         EventHelper.OnPostLoadLong += ResolveLang;
@@ -31,17 +31,17 @@ internal static class ApplyPatches
     }
     public static void ResolveLang()
     {
-        if (EMDefOf.EM_PipeNetworks != null)
-            EMDefOf.EM_PipeNetworks.label = Lang.Join(Lang.Milk, Pipe);
+        if (MilkCumDefOf.EM_PipeNetworks != null)
+            MilkCumDefOf.EM_PipeNetworks.label = Lang.Join(Lang.Milk, Pipe);
         DefDatabase<DesignatorDropdownGroupDef>.GetNamed("EM_MilkTaps").label = Lang.Join(Lang.Milk, Tap);
         DefDatabase<DesignatorDropdownGroupDef>.GetNamed("EM_MilkPipes").label = Lang.Join(Lang.Milk, Pipe);
 
-        if (EMDefOf.EM_MilkTap != null) EMDefOf.EM_MilkTap.label = Lang.Join(Lang.Milk, Tap);
-        if (EMDefOf.EM_HumanMilkTap != null) EMDefOf.EM_HumanMilkTap.label = Lang.Join(Lang.Human, Lang.Milk, Tap);
-        if (EMDefOf.EM_MilkPipe != null) EMDefOf.EM_MilkPipe.label = Lang.Join(Lang.Milk, Pipe);
-        if (EMDefOf.EM_UndergroundMilkPipe != null) EMDefOf.EM_UndergroundMilkPipe.label = Lang.Join(Hidden, Lang.Milk, Pipe);
-        if (EMDefOf.EM_MilkValve != null) EMDefOf.EM_MilkValve.label = Lang.Join(Lang.Milk, Valve);
-        if (EMDefOf.EM_MilkContainer != null) EMDefOf.EM_MilkContainer.label = Lang.Join(Lang.Milk, Lang.Container);
+        if (MilkCumDefOf.EM_MilkTap != null) MilkCumDefOf.EM_MilkTap.label = Lang.Join(Lang.Milk, Tap);
+        if (MilkCumDefOf.EM_HumanMilkTap != null) MilkCumDefOf.EM_HumanMilkTap.label = Lang.Join(Lang.Human, Lang.Milk, Tap);
+        if (MilkCumDefOf.EM_MilkPipe != null) MilkCumDefOf.EM_MilkPipe.label = Lang.Join(Lang.Milk, Pipe);
+        if (MilkCumDefOf.EM_UndergroundMilkPipe != null) MilkCumDefOf.EM_UndergroundMilkPipe.label = Lang.Join(Hidden, Lang.Milk, Pipe);
+        if (MilkCumDefOf.EM_MilkValve != null) MilkCumDefOf.EM_MilkValve.label = Lang.Join(Lang.Milk, Valve);
+        if (MilkCumDefOf.EM_MilkContainer != null) MilkCumDefOf.EM_MilkContainer.label = Lang.Join(Lang.Milk, Lang.Container);
 
         DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet").resource.name = Lang.Milk;
         DefDatabase<PipeNetDef>.GetNamed("EM_HumanMilkNet").resource.name = Lang.Join(Lang.Human, Lang.Milk);
@@ -72,8 +72,8 @@ internal static class ApplyPatches
     public static void AdjustContainerSize()
     {
         // Adjust milk container capacity dynamically
-        if (EMDefOf.EM_MilkContainer == null) return;
-        foreach (CompProperties_ResourceStorage comp in EMDefOf.EM_MilkContainer.comps.Where(x => x is CompProperties_ResourceStorage).Cast<CompProperties_ResourceStorage>())
+        if (MilkCumDefOf.EM_MilkContainer == null) return;
+        foreach (CompProperties_ResourceStorage comp in MilkCumDefOf.EM_MilkContainer.comps.Where(x => x is CompProperties_ResourceStorage).Cast<CompProperties_ResourceStorage>())
         {
             foreach (KeyValuePair<ThingDef, List<PipeNetDef>> pair in pipeNets)
             {
@@ -89,8 +89,8 @@ internal static class ApplyPatches
     {
         // 7.6：仅动物产出的原版 Milk 进入管道；人奶 EM_HumanMilk 与精液 Cumpilation_Cum 均不进入管道，直接落格。
         ThingDef milkDef = DefDatabase<ThingDef>.GetNamed("Milk");
-        EMDefOf.EM_MilkingPump.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
-        EMDefOf.EM_MilkingElectric.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
+        MilkCumDefOf.EM_MilkingPump.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
+        MilkCumDefOf.EM_MilkingElectric.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
     }
     public static bool IsConnectedToPipeNetStorage(this ThingWithComps thing, PipeNetDef def)
     {
@@ -133,7 +133,7 @@ internal static class ApplyPatches
     {
         public static void Postfix(ThingWithComps __instance, Vector3 drawLoc, bool flip)
         {
-            if (__instance.def.modContentPack?.Name == EqualMilkingMod.equalMilkingMod.Name && __instance.def.graphicData?.attachments != null)
+            if (__instance.def.modContentPack?.Name == MilkCumMod.milkCumMod.Name && __instance.def.graphicData?.attachments != null)
             {
                 foreach (GraphicData attachment in __instance.def.graphicData.attachments)
                 {

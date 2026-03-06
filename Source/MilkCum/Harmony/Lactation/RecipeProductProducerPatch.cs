@@ -21,8 +21,8 @@ public static class Bill_Production_Notify_IterationCompleted_Patch
             if (t?.def == null) continue;
             var comp = t.TryGetComp<CompShowProducer>();
             if (comp == null) continue;
-            if (EqualMilkingSettings.HasPawnTag(t) && comp.producer != null) { source = comp; break; }
-            if (EqualMilkingSettings.HasRaceTag(t) && comp.producerKind != null && source == null) source = comp;
+            if (MilkCumSettings.HasPawnTag(t) && comp.producer != null) { source = comp; break; }
+            if (MilkCumSettings.HasRaceTag(t) && comp.producerKind != null && source == null) source = comp;
         }
         if (source == null) return;
 

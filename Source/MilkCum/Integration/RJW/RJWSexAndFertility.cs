@@ -15,15 +15,15 @@ public static class RJWSexAndFertility
     /// <summary>3.2：性行为后为泌乳者增加少量池进水（若设置开启）。</summary>
     public static void ApplyPostSexLactationBoost(Pawn pawn)
     {
-        if (pawn?.health?.hediffSet == null || !EqualMilkingSettings.rjwSexAddsLactationBoost
-            || EqualMilkingSettings.rjwSexLactationBoostDeltaS <= 0f) return;
+        if (pawn?.health?.hediffSet == null || !MilkCumSettings.rjwSexAddsLactationBoost
+            || MilkCumSettings.rjwSexLactationBoostDeltaS <= 0f) return;
         var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff?.comps == null) return;
         foreach (var c in hediff.comps)
         {
             if (c is HediffComp_EqualMilkingLactating comp)
             {
-                float deltaS = EqualMilkingSettings.rjwSexLactationBoostDeltaS * EqualMilkingSettings.GetProlactinToleranceFactor(pawn) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
+                float deltaS = MilkCumSettings.rjwSexLactationBoostDeltaS * MilkCumSettings.GetProlactinToleranceFactor(pawn) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
                 comp.AddFromDrug(deltaS);
                 break;
             }
@@ -32,7 +32,7 @@ public static class RJWSexAndFertility
 
     public static void GiveSexSatisfactionAfterNursing(Pawn pawn)
     {
-        if (pawn?.needs == null || !EqualMilkingSettings.rjwSexSatisfactionAfterNursingEnabled) return;
+        if (pawn?.needs == null || !MilkCumSettings.rjwSexSatisfactionAfterNursingEnabled) return;
         if (!RJWLustIntegration.WasRecentlyNursed(pawn)) return;
         RJWLustIntegration.AddSexNeed(pawn, SexSatisfactionBonusAfterNursing);
     }
@@ -57,12 +57,12 @@ public static class JobDriver_Sex_End_Patch
         if (partner != null) RJWSexAndFertility.GiveSexSatisfactionAfterNursing(partner);
         RJWSexAndFertility.ApplyPostSexLactationBoost(initiator);
         if (partner != null) RJWSexAndFertility.ApplyPostSexLactationBoost(partner);
-        if (EqualMilkingSettings.rjwLactatingInSexDescriptionEnabled && EMDefOf.EM_HadSexWhileLactating != null)
+        if (MilkCumSettings.rjwLactatingInSexDescriptionEnabled && MilkCumDefOf.EM_HadSexWhileLactating != null)
         {
             if (initiator?.needs?.mood?.thoughts?.memories != null && initiator.IsInLactatingState())
-                initiator.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_HadSexWhileLactating);
+                initiator.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_HadSexWhileLactating);
             if (partner?.needs?.mood?.thoughts?.memories != null && partner.IsInLactatingState())
-                partner.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_HadSexWhileLactating);
+                partner.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_HadSexWhileLactating);
         }
     }
 }
@@ -81,7 +81,7 @@ public static class PawnCapacityWorker_Fertility_Lactating_Patch
         Pawn pawn = diffSet?.pawn;
         if (pawn == null || __result <= 0f) return;
         if (!pawn.IsInLactatingState()) return;
-        float factor = Mathf.Clamp01(EqualMilkingSettings.rjwLactationFertilityFactor);
+        float factor = Mathf.Clamp01(MilkCumSettings.rjwLactationFertilityFactor);
         __result *= factor;
     }
 }

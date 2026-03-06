@@ -7,9 +7,9 @@ public static class GeneHelper
 {
     public static void ReloadImpliedGenes()
     {
-        if (EqualMilkingSettings.genes == null) { return; }
-        EqualMilkingSettings.genes.RemoveWhere(x => x?.ThingDef == null);
-        foreach (Gene_MilkTypeData geneData in EqualMilkingSettings.genes)
+        if (MilkCumSettings.genes == null) { return; }
+        MilkCumSettings.genes.RemoveWhere(x => x?.ThingDef == null);
+        foreach (Gene_MilkTypeData geneData in MilkCumSettings.genes)
         {
             if (geneData?.ThingDef != null)
             {

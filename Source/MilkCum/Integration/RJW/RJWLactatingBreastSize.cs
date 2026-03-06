@@ -28,7 +28,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
 
     public override void GameComponentTick()
     {
-        if (!EqualMilkingSettings.rjwBreastSizeEnabled || Find.TickManager.TicksGame % TickInterval != 0) return;
+        if (!MilkCumSettings.rjwBreastSizeEnabled || Find.TickManager.TicksGame % TickInterval != 0) return;
         foreach (Map map in Find.Maps)
         {
             if (map?.mapPawns?.AllPawnsSpawned == null) continue;

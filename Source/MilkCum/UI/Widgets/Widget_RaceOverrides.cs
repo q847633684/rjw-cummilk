@@ -28,17 +28,17 @@ public class Widget_RaceOverrides
 		list.Begin(inRect);
 		list.Label("EM.RaceOverridesSection".Translate());
 		list.Gap(4f);
-		string raceAlways = string.Join(", ", EqualMilkingSettings.raceCanAlwaysLactate ?? new List<string>());
+		string raceAlways = string.Join(", ", MilkCumSettings.raceCanAlwaysLactate ?? new List<string>());
 		Rect rAlways = list.GetRect(UNIT_SIZE);
 		Widgets.Label(rAlways.LeftHalf(), "EM.RaceCanAlwaysLactate".Translate());
 		raceAlways = Widgets.TextField(rAlways.RightHalf(), raceAlways, 128);
-		EqualMilkingSettings.raceCanAlwaysLactate = ParseCommaSeparatedDefNames(raceAlways);
+		MilkCumSettings.raceCanAlwaysLactate = ParseCommaSeparatedDefNames(raceAlways);
 		list.Gap(6f);
-		string raceNever = string.Join(", ", EqualMilkingSettings.raceCannotLactate ?? new List<string>());
+		string raceNever = string.Join(", ", MilkCumSettings.raceCannotLactate ?? new List<string>());
 		Rect rNever = list.GetRect(UNIT_SIZE);
 		Widgets.Label(rNever.LeftHalf(), "EM.RaceCannotLactate".Translate());
 		raceNever = Widgets.TextField(rNever.RightHalf(), raceNever, 128);
-		EqualMilkingSettings.raceCannotLactate = ParseCommaSeparatedDefNames(raceNever);
+		MilkCumSettings.raceCannotLactate = ParseCommaSeparatedDefNames(raceNever);
 		list.End();
 	}
 }

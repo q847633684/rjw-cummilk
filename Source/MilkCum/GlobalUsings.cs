@@ -1,4 +1,4 @@
-// 重构后 Core 子命名空间，供全项目解析 EqualMilkingSettings / EventHelper / Lang / Constants
+// 重构后 Core 子命名空间，供全项目解析 MilkCumSettings / EventHelper / Lang / Constants
 global using MilkCum.Core.Settings;
 global using MilkCum.Core.Utils;
 global using MilkCum.Core.Constants;

@@ -1,4 +1,4 @@
-﻿using Verse;
+using Verse;
 using UnityEngine;
 using System;
 
@@ -14,7 +14,7 @@ public class HediffComp_AbsorptionDelayTip : HediffComp
             try
             {
                 if (parent?.pawn == null) return null;
-                int remaining = WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(parent.pawn);
+                int remaining = WorldComponent_MilkCumAbsorptionDelay.GetRemainingTicksForPawn(parent.pawn);
                 if (remaining <= 0) return null;
                 string timeStr = TicksToTimeString(remaining);
                 return "EM.AbsorptionDelayRemaining".Translate(timeStr).Resolve();

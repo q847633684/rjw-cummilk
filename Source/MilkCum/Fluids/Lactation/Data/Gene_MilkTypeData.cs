@@ -49,7 +49,7 @@ public class Gene_MilkTypeData : IExposable
         geneDef.biostatMet = this.biostatMet;
         geneDef.biostatArc = this.biostatArc;
         geneDef.displayCategory = DefDatabase<GeneCategoryDef>.GetNamed("Milk");
-        geneDef.modContentPack = EqualMilkingMod.equalMilkingMod;
+        geneDef.modContentPack = MilkCumMod.milkCumMod;
         geneDef.exclusionTags = new List<string> { "MilkType" };
         geneDef.statFactors = new List<StatModifier>();
         geneDef.statOffsets = new List<StatModifier>();
@@ -63,13 +63,13 @@ public class Gene_MilkTypeData : IExposable
     {
         if (other?.thingDefName == null) { this.thingDefName = null; return; }
         // Remove duplicates
-        if (EqualMilkingSettings.genes.Contains(this))
+        if (MilkCumSettings.genes.Contains(this))
         {
-            foreach (Gene_MilkTypeData data in EqualMilkingSettings.genes.ToList())
+            foreach (Gene_MilkTypeData data in MilkCumSettings.genes.ToList())
             {
                 if (data != this && data.thingDefName == other.thingDefName)
                 {
-                    EqualMilkingSettings.genes.Remove(data);
+                    MilkCumSettings.genes.Remove(data);
                 }
             }
         }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using RimWorld;
@@ -27,11 +27,11 @@ public class PendingLactatingEntry : IExposable
 }
 
 /// <summary>水池模型吸收延迟：吃药后延迟一段时间再�?Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图</summary>
-public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
+public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
 {
     private List<PendingLactatingEntry> pending = new List<PendingLactatingEntry>();
 
-    public WorldComponent_EqualMilkingAbsorptionDelay(global::RimWorld.Planet.World world) : base(world) { }
+    public WorldComponent_MilkCumAbsorptionDelay(global::RimWorld.Planet.World world) : base(world) { }
 
     public override void ExposeData()
     {
@@ -73,8 +73,8 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
             endTick = newEndTick;
         }
         pending.Add(new PendingLactatingEntry { pawn = p, rawSeverity = rawSeverity, endTick = endTick, toleranceBefore = toleranceBefore });
-        if (EMDefOf.EM_AbsorptionDelay != null && p.health?.hediffSet?.GetFirstHediffOfDef(EMDefOf.EM_AbsorptionDelay) == null)
-            p.health.AddHediff(EMDefOf.EM_AbsorptionDelay, p.GetBreastOrChestPart());
+        if (MilkCumDefOf.EM_AbsorptionDelay != null && p.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_AbsorptionDelay) == null)
+            p.health.AddHediff(MilkCumDefOf.EM_AbsorptionDelay, p.GetBreastOrChestPart());
     }
 
     public override void WorldComponentTick()
@@ -99,10 +99,10 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
     private static void ApplyDelayedLactating(Pawn pawn, float rawSeverity, float toleranceBefore)
     {
         if (pawn?.health?.hediffSet == null) return;
-        if (EMDefOf.EM_AbsorptionDelay != null && pawn.health.hediffSet.GetFirstHediffOfDef(EMDefOf.EM_AbsorptionDelay) is Hediff absorptionHediff)
+        if (MilkCumDefOf.EM_AbsorptionDelay != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_AbsorptionDelay) is Hediff absorptionHediff)
             pawn.health.RemoveHediff(absorptionHediff);
             // Δs = rawSeverity × E_tol(t_before)：已包含一次耐受削弱，进水时不再�?E�?.3 动物差异化：乘种族药物倍率�?
-            float deltaS = rawSeverity * EqualMilkingSettings.GetProlactinToleranceFactor(toleranceBefore) * EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(toleranceBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
         var hediff = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
         if (hediff?.comps == null) return;
         foreach (var c in hediff.comps)
@@ -116,20 +116,20 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
         // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋（高量心情由 EM_Prolactin_HighThought 显示�?
         ApplyProlactinMoodEffects(pawn, rawSeverity);
         // 首次药物泌乳成就类记忆（仅一次）
-        if (EMDefOf.EM_FirstLactationDrug != null && pawn.needs?.mood?.thoughts?.memories != null
-            && !pawn.needs.mood.thoughts.memories.Memories.Any(m => m.def == EMDefOf.EM_FirstLactationDrug))
-            pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_FirstLactationDrug);
+        if (MilkCumDefOf.EM_FirstLactationDrug != null && pawn.needs?.mood?.thoughts?.memories != null
+            && !pawn.needs.mood.thoughts.memories.Memories.Any(m => m.def == MilkCumDefOf.EM_FirstLactationDrug))
+            pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_FirstLactationDrug);
     }
 
     /// <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴�?hediff），供延迟生效与�?World 立即生效共用</summary>
     public static void ApplyProlactinMoodEffects(Pawn pawn, float severity)
     {
         if (pawn == null) return;
-        if (pawn.needs?.mood?.thoughts?.memories != null && EMDefOf.EM_Prolactin_Joy != null)
-            pawn.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_Prolactin_Joy);
-        if (severity >= 2f && EMDefOf.EM_Prolactin_High != null)
+        if (pawn.needs?.mood?.thoughts?.memories != null && MilkCumDefOf.EM_Prolactin_Joy != null)
+            pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_Prolactin_Joy);
+        if (severity >= 2f && MilkCumDefOf.EM_Prolactin_High != null)
         {
-            var high = pawn.health.GetOrAddHediff(EMDefOf.EM_Prolactin_High, pawn.GetBreastOrChestPart());
+            var high = pawn.health.GetOrAddHediff(MilkCumDefOf.EM_Prolactin_High, pawn.GetBreastOrChestPart());
             if (high.Severity < 1f) high.Severity = 1f;
         }
     }
@@ -146,7 +146,7 @@ public class WorldComponent_EqualMilkingAbsorptionDelay : WorldComponent
     public static int GetRemainingTicksForPawn(Pawn p)
     {
         if (p == null || Find.World == null) return 0;
-        var comp = Find.World.GetComponent<WorldComponent_EqualMilkingAbsorptionDelay>();
+        var comp = Find.World.GetComponent<WorldComponent_MilkCumAbsorptionDelay>();
         return comp?.GetRemainingTicksForPawnCore(p) ?? 0;
     }
 

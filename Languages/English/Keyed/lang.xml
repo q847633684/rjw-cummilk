@@ -1,5 +1,5 @@
 <LanguageData>
-    <Equal_Milking>Equal Milking</Equal_Milking>
+    <Equal_Milking>MilkCum</Equal_Milking>
     <!-- Main / Sub tab labels -->
     <EM.Tab.MilkAndFluids>Milk &amp; fluids</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>Breastfeed</EM.Tab.Breastfeed>
@@ -112,11 +112,11 @@
     <EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
     <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
-    <EM.DevModeNotLactating>{0} is not lactating (no Equal Milking lactation hediff).</EM.DevModeNotLactating>
+    <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>
     <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
     <EM.LoadDefaultsFromDef>Load defaults from Def</EM.LoadDefaultsFromDef>
     <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
-    <EM.DefaultsDefLabel>Equal Milking defaults</EM.DefaultsDefLabel>
+    <EM.DefaultsDefLabel>MilkCum defaults</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>Needs milking</EM.FullPoolLetterTitle>
     <EM.FullPoolLetterText>{0} has been at full milk pool for over a day; consider milking to avoid discomfort or overflow.</EM.FullPoolLetterText>

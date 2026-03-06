@@ -20,10 +20,10 @@ internal static class ApplyPatches
     static ApplyPatches()
     {
         Harmony = new HarmonyLib.Harmony("com.akaster.rimworld.mod.equalmilking.rjw");
-        Log.Message("[Equal Milking]: RJW Loaded, Patching...");
+        Log.Message("[MilkCum]: RJW Loaded, Patching...");
         if (AccessTools.TypeByName("SexFluidDef") == null)
         {
-            Log.Warning("[Equal Milking]: RJW version too old, aborting.");
+            Log.Warning("[MilkCum]: RJW version too old, aborting.");
             return;
         }
         // 只处理本命名空间内的 patch 类

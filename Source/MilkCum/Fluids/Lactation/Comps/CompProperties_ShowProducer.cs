@@ -1,4 +1,4 @@
-﻿using MilkCum.Core;
+using MilkCum.Core;
 using RimWorld;
 using Verse;
 using System.Linq;
@@ -25,12 +25,12 @@ public class CompShowProducer : ThingComp
     public override string TransformLabel(string label)
     {
         label = base.TransformLabel(label);
-        if (producerKind != null && EqualMilkingSettings.HasRaceTag(this.parent))
+        if (producerKind != null && MilkCumSettings.HasRaceTag(this.parent))
         {
             label = Lang.Join(producerKind.race.label, label);
         }
         else { this.producerKind = null; }
-        if (producer != null && EqualMilkingSettings.HasPawnTag(this.parent))
+        if (producer != null && MilkCumSettings.HasPawnTag(this.parent))
         {
             label = "SomeonesRoom".Translate().Replace("{PAWN_labelShort}", producer.LabelShort).Replace("{1}", label);
         }

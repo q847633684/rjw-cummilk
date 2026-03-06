@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using Verse;
 using MilkCum.Core;
 
@@ -17,7 +17,7 @@ public class ThoughtWorker_HighToleranceLowMilk : ThoughtWorker
 		var hediff = p.LactatingHediffWithComps();
 		var comp = hediff?.comps?.Find(c => c is HediffComp_EqualMilkingLactating) as HediffComp_EqualMilkingLactating;
 		if (comp == null) return ThoughtState.Inactive;
-		float tolerance = EqualMilkingSettings.GetProlactinTolerance(p);
+		float tolerance = MilkCumSettings.GetProlactinTolerance(p);
 		if (tolerance < ToleranceThreshold) return ThoughtState.Inactive;
 		if (comp.CurrentLactationAmount > LowLThreshold) return ThoughtState.Inactive;
 		return ThoughtState.ActiveAtStage(0);

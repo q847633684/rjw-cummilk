@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using MilkCum.Core;
 using RimWorld;
 using Verse;
@@ -17,11 +17,11 @@ public class Hediff_LactatingGain : HediffWithComps
         {
             if (_stage == null) _stage = new HediffStage();
             float gainOffset = 0f;
-            if (EqualMilkingSettings.lactatingGainEnabled && EqualMilkingSettings.lactatingGainCapModPercent > 0f)
+            if (MilkCumSettings.lactatingGainEnabled && MilkCumSettings.lactatingGainCapModPercent > 0f)
             {
                 float L = pawn?.LactatingHediffComp()?.CurrentLactationAmount ?? 0f;
-                float drive = EqualMilkingSettings.GetEffectiveDrive(L);
-                float pct = UnityEngine.Mathf.Clamp(EqualMilkingSettings.lactatingGainCapModPercent, 0f, 0.20f);
+                float drive = MilkCumSettings.GetEffectiveDrive(L);
+                float pct = UnityEngine.Mathf.Clamp(MilkCumSettings.lactatingGainCapModPercent, 0f, 0.20f);
                 gainOffset = pct * drive;
             }
             if (_capMods == null)

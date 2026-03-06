@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using RimWorld;
@@ -131,9 +131,9 @@ public static class MilkPermissionExtensions
     /// <summary>分娩后首次泌乳成就类记忆；仅当尚未拥有该记忆时发放，供原�?RJW 分娩入口统一调用</summary>
     public static void TryGiveFirstLactationBirthMemory(Pawn mother)
     {
-        if (mother == null || EMDefOf.EM_FirstLactationBirth == null || mother.needs?.mood?.thoughts?.memories == null) return;
-        if (mother.needs.mood.thoughts.memories.Memories.Any(m => m.def == EMDefOf.EM_FirstLactationBirth)) return;
-        mother.needs.mood.thoughts.memories.TryGainMemory(EMDefOf.EM_FirstLactationBirth);
+        if (mother == null || MilkCumDefOf.EM_FirstLactationBirth == null || mother.needs?.mood?.thoughts?.memories == null) return;
+        if (mother.needs.mood.thoughts.memories.Memories.Any(m => m.def == MilkCumDefOf.EM_FirstLactationBirth)) return;
+        mother.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_FirstLactationBirth);
     }
 
     public static bool IsAdult(this Pawn pawn)
@@ -146,12 +146,12 @@ public static class MilkPermissionExtensions
         if (pawn.IsNormalAnimal())
         {
             return (pawn.ageTracker.CurLifeStage?.developmentalStage ?? DevelopmentalStage.Adult) > DevelopmentalStage.Baby
-                && pawn.ageTracker.AgeBiologicalYearsFloat > EqualMilkingSettings.animalBreastfeed.BabyAge;
+                && pawn.ageTracker.AgeBiologicalYearsFloat > MilkCumSettings.animalBreastfeed.BabyAge;
         }
         if (pawn.RaceProps.IsMechanoid)
         {
             return (pawn.ageTracker.CurLifeStage?.developmentalStage ?? DevelopmentalStage.Adult) > DevelopmentalStage.Baby
-                && pawn.ageTracker.AgeBiologicalYearsFloat > EqualMilkingSettings.mechanoidBreastfeed.BabyAge;
+                && pawn.ageTracker.AgeBiologicalYearsFloat > MilkCumSettings.mechanoidBreastfeed.BabyAge;
         }
         return true;
     }

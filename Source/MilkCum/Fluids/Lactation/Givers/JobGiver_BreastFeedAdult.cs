@@ -8,7 +8,7 @@ namespace MilkCum.Fluids.Lactation.Givers;
 /// <summary>
 /// Allow non-humanlike to breastfeed
 /// </summary>
-public class JobGiver_BreastFeedAdult : JobGiver_EqualBreastfeed
+public class JobGiver_BreastFeedAdult : JobGiver_MilkCumBreastfeed
 {
     protected override IEnumerable<Pawn> Babies(Pawn pawn)
     {

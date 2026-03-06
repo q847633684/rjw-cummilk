@@ -21,7 +21,7 @@
     <WorkGiverDef>
         <defName>EM_MilkEntity</defName>
         <label>Milk entities</label>
-        <giverClass>MilkCum.Milk.Givers.WorkGiver_EquallyMilkEntity</giverClass>
+        <giverClass>MilkCum.Fluids.Lactation.Givers.WorkGiver_MilkCumMilkEntity</giverClass>
         <workType>Handling</workType>
         <verb>milk</verb>
         <gerund>milking</gerund>

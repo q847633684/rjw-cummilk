@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using MilkCum.Core;
 using RimWorld;
 using UnityEngine;
@@ -7,7 +7,7 @@ using Verse.AI;
 using Verse.Sound;
 
 namespace MilkCum.Fluids.Lactation.Jobs;
-public class JobDriver_EquallyMilk : JobDriver_Milk
+public class JobDriver_MilkCumMilk : JobDriver_Milk
 {
     private float gatherProgress;
     /// <summary>按容量量化：本次挤奶所需工作量，�?MilkAmount 与池满度计算</summary>
@@ -32,11 +32,11 @@ public class JobDriver_EquallyMilk : JobDriver_Milk
     {
         CompEquallyMilkable comp = Target?.CompEquallyMilkable();
         if (comp == null)
-            return EqualMilkingSettings.milkingWorkTotalBase;
+            return MilkCumSettings.milkingWorkTotalBase;
         float milkAmt = Target.MilkAmount();
-        float capMult = Mathf.Clamp(1f + EqualMilkingSettings.milkingCapacityFactor * (milkAmt - 1f), 0.5f, 2.5f);
+        float capMult = Mathf.Clamp(1f + MilkCumSettings.milkingCapacityFactor * (milkAmt - 1f), 0.5f, 2.5f);
         float fullMult = 0.5f + 0.5f * Mathf.Clamp01(comp.Fullness / Mathf.Max(0.01f, comp.maxFullness));
-        return EqualMilkingSettings.milkingWorkTotalBase * capMult * fullMult;
+        return MilkCumSettings.milkingWorkTotalBase * capMult * fullMult;
     }
 
     public override bool TryMakePreToilReservations(bool errorOnFailed)
@@ -80,7 +80,7 @@ public class JobDriver_EquallyMilk : JobDriver_Milk
         {
             wait.initAction = delegate { workTotal = GetWorkTotal(); };
         }
-        wait.WithEffect(EMDefOf.EM_Milk, TargetIndex.A);
+        wait.WithEffect(MilkCumDefOf.EM_Milk, TargetIndex.A);
         wait.tickAction = delegate
         {
             Pawn actor = wait.actor;

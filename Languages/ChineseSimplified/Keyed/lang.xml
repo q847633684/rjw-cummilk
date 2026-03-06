@@ -1,5 +1,5 @@
 <LanguageData>
-    <Equal_Milking>平等产奶</Equal_Milking>
+    <Equal_Milking>精液和母乳</Equal_Milking>
     <!-- 主 Tab / 子 Tab 标签 -->
     <EM.Tab.MilkAndFluids>产奶与体液</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>哺乳</EM.Tab.Breastfeed>
@@ -111,11 +111,11 @@
     <EM.DefaultFlowMultiplierForHumanlikeDesc>所有单位奶池流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
-    <EM.DevModeNotLactating>{0} 未处于泌乳期（无平等产奶泌乳 hediff）。</EM.DevModeNotLactating>
+    <EM.DevModeNotLactating>{0} 未处于泌乳期（无泌乳 hediff）。</EM.DevModeNotLactating>
     <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>
     <EM.LoadDefaultsFromDef>从 Def 加载默认</EM.LoadDefaultsFromDef>
     <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
-    <EM.DefaultsDefLabel>平等产奶默认值</EM.DefaultsDefLabel>
+    <EM.DefaultsDefLabel>精液和母乳默认值</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>需要挤奶</EM.FullPoolLetterTitle>
     <EM.FullPoolLetterText>{0} 的奶池已满超过一天，建议挤奶以免不适或溢出。</EM.FullPoolLetterText>
