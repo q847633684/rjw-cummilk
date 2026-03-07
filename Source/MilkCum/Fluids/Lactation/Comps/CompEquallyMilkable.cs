@@ -1,7 +1,10 @@
 using System.Collections.Generic;
-using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Hediffs;
+using MilkCum.Fluids.Lactation.Helpers;
+using MilkCum.Fluids.Lactation.Jobs;
+using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -15,6 +18,7 @@ public class CompEquallyMilkable : CompMilkable
     protected override int ResourceAmount => (int)Pawn.MilkAmount();
     protected override ThingDef ResourceDef => Pawn.MilkDef();
     protected virtual float fResourceAmount => Pawn.MilkAmount();
+    /// <summary>吸奶 session 累计量（池单位，1 池 = 1 瓶）。吸奶统一到 Drain 后由 ChildcareHelper 累加，结束时用于 amountFed/心情/outcomeDoers。</summary>
     public float breastfedAmount = 0f;
     public float maxFullness = 1f;
 
@@ -41,7 +45,6 @@ public class CompEquallyMilkable : CompMilkable
             return milkSettings;
         }
     }
-    internal List<Pawn> assignedFeeders = new();
     /// <summary>谁可以使用我的奶。名单为空时会预填子女/伴侣；仅名单内的人可吸奶/挤奶</summary>
     internal List<Pawn> allowedSucklers = new();
     /// <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）</summary>
@@ -70,11 +73,93 @@ public class CompEquallyMilkable : CompMilkable
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
+    /// <summary>缓存 GetBreastPoolEntries()，每 60 tick 失效，减少每 tick 分配与 GC。</summary>
+    private List<FluidPoolEntry> cachedEntries;
+    private int cachedEntriesTick = -1;
+    private const int CacheInvalidateInterval = 60;
+
+    private List<FluidPoolEntry> GetCachedEntries()
+    {
+        int now = Find.TickManager.TicksGame;
+        if (cachedEntries != null && (now - cachedEntriesTick) <= CacheInvalidateInterval)
+            return cachedEntries;
+        cachedEntries = Pawn != null ? Pawn.GetBreastPoolEntries() : new List<FluidPoolEntry>();
+        cachedEntriesTick = now;
+        return cachedEntries;
+    }
+
+    /// <summary>池侧数量（左+右等），用于机器挤奶并行扣量时算每侧速率。使用缓存，避免每 tick 分配。</summary>
+    public int BreastSideCount => Mathf.Max(1, GetCachedEntries().Count);
+
+    /// <summary>按 PairIndex 分组并按 PairIndex 顺序排列，用于 UpdateMilkPools。无 LINQ，减少 GC。</summary>
+    private static List<List<FluidPoolEntry>> BuildPairGroupsByPairIndex(List<FluidPoolEntry> entries)
+    {
+        var pairIndexToGroup = new Dictionary<int, int>();
+        var pairGroups = new List<List<FluidPoolEntry>>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (!pairIndexToGroup.TryGetValue(e.PairIndex, out int idx))
+            {
+                idx = pairGroups.Count;
+                pairIndexToGroup[e.PairIndex] = idx;
+                pairGroups.Add(new List<FluidPoolEntry>());
+            }
+            pairGroups[idx].Add(e);
+        }
+        pairGroups.Sort((a, b) => (a.Count > 0 ? a[0].PairIndex : 0).CompareTo(b.Count > 0 ? b[0].PairIndex : 0));
+        return pairGroups;
+    }
+
+    /// <summary>按 PairIndex 分组并按该对总满度降序排列，用于 Drain 选侧（最满的对先扣）。无 LINQ，减少 GC。</summary>
+    private List<List<FluidPoolEntry>> BuildPairGroupsByFullnessDescending(List<FluidPoolEntry> entries)
+    {
+        var pairIndexToGroup = new Dictionary<int, int>();
+        var pairGroups = new List<List<FluidPoolEntry>>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (!pairIndexToGroup.TryGetValue(e.PairIndex, out int idx))
+            {
+                idx = pairGroups.Count;
+                pairIndexToGroup[e.PairIndex] = idx;
+                pairGroups.Add(new List<FluidPoolEntry>());
+            }
+            pairGroups[idx].Add(e);
+        }
+        float SumFullness(List<FluidPoolEntry> list)
+        {
+            float s = 0f;
+            for (int j = 0; j < list.Count; j++)
+                s += GetFullnessForKey(list[j].Key);
+            return s;
+        }
+        pairGroups.Sort((a, b) => SumFullness(b).CompareTo(SumFullness(a)));
+        return pairGroups;
+    }
+
+    /// <summary>挤奶/吸奶时的挤出流速（池单位/秒），由「挤出乳压」、喷乳反射与种族倍率决定，与目标瓶数无关。取量 = 流速 × 时间。机器挤奶时 building 提供 SpeedOffset 加速。
+    /// 挤出乳压采用满度平方（越满越好挤），与生产用的 Pressure 抑制曲线区分。</summary>
+    public float GetMilkingFlowRate(bool isMachine, Building_Milking building = null)
+    {
+        float baseFlowPerSecond = 60f / Mathf.Max(0.01f, MilkCumSettings.milkingWorkTotalBase);
+        float raceMult = MilkCumSettings.GetRaceDrugDeltaSMultiplier(Pawn);
+        var lactatingComp = Pawn?.LactatingHediffComp();
+        if (lactatingComp == null) return baseFlowPerSecond * raceMult;
+        float letdown = Mathf.Max(0.01f, lactatingComp.GetLetdownReflexFlowMultiplier());
+        // 挤出压力：满度平方，越满越好挤（与生产用 Logistic 抑制区分）
+        float maxF = Mathf.Max(0.01f, maxFullness);
+        float f = Mathf.Clamp01(Fullness / maxF);
+        float extractionPressure = f * f;
+        float speedMult = 1f + (isMachine ? (building?.SpeedOffset() ?? 0f) : 0f);
+        return baseFlowPerSecond * raceMult * extractionPressure * letdown * Mathf.Max(0.01f, speedMult);
+    }
+
     /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，由 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 > 0</summary>
     public float GetReabsorbedNutritionPerDay()
     {
         if (!MilkCumSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
-        var entries = Pawn.GetBreastPoolEntries();
+        var entries = GetCachedEntries();
         if (entries.Count == 0) return 0f;
         float healthPercent = 1f;
         if (Pawn.health?.summaryHealth != null)
@@ -105,10 +190,10 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
         Scribe_Values.Look(ref capacityAdaptation, "EM.CapacityAdaptation", 0f);
         List<string> breastKeys = (Scribe.mode == LoadSaveMode.Saving && breastFullness != null)
-            ? breastFullness.Keys.ToList()
+            ? new List<string>(breastFullness.Keys)
             : new List<string>();
         List<float> breastVals = (Scribe.mode == LoadSaveMode.Saving && breastFullness != null)
-            ? breastFullness.Values.ToList()
+            ? new List<float>(breastFullness.Values)
             : new List<float>();
         Scribe_Collections.Look(ref breastKeys, "BreastFullnessKeys", LookMode.Value);
         Scribe_Collections.Look(ref breastVals, "BreastFullnessValues", LookMode.Value);
@@ -125,7 +210,6 @@ public class CompEquallyMilkable : CompMilkable
             SyncLeftRightFromBreastFullness();
         }
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
-        Scribe_Collections.Look(ref assignedFeeders, "CanBeFedBy", LookMode.Reference);
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
         Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
         if (Scribe.mode == LoadSaveMode.PostLoadInit && lastGatheredTick < 0)
@@ -146,7 +230,7 @@ public class CompEquallyMilkable : CompMilkable
     private void SyncLeftRightFromBreastFullness()
     {
         if (Pawn == null || breastFullness == null) return;
-        var entries = Pawn.GetBreastPoolEntries();
+        var entries = GetCachedEntries();
         float left = 0f, right = 0f;
         foreach (var e in entries)
         {
@@ -172,10 +256,8 @@ public class CompEquallyMilkable : CompMilkable
     {
         allowedSucklers ??= new List<Pawn>();
         allowedConsumers ??= new List<Pawn>();
-        assignedFeeders ??= new List<Pawn>();
         allowedSucklers.RemoveAll(p => p == null || p.Destroyed);
         allowedConsumers.RemoveAll(p => p == null || p.Destroyed);
-        assignedFeeders.RemoveAll(p => p == null || p.Destroyed);
         if (allowedSucklers.Count == 0 && parent is Pawn p)
         {
             var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
@@ -196,7 +278,7 @@ public class CompEquallyMilkable : CompMilkable
                 cachedActive = false;
                 return false;
             }
-            cachedActive = pawn.IsLactating() && pawn.IsMilkable() && pawn.GetBreastPoolEntries().Count > 0;
+            cachedActive = pawn.IsLactating() && pawn.IsMilkable() && (pawn == Pawn ? GetCachedEntries().Count : pawn.GetBreastPoolEntries().Count) > 0;
             updateTick = Find.TickManager.TicksGame + 500;
             return cachedActive;
         }
@@ -222,10 +304,14 @@ public class CompEquallyMilkable : CompMilkable
             }
             maxFullness = baseMax + capacityAdaptation;
             // 池子上限统一为撑大总容量（开/关压力因子都在此处停产、允许填到撑大、溢出）
-            var entriesForCap = p.GetBreastPoolEntries();
-            float stretchTotal = entriesForCap.Count > 0
-                ? entriesForCap.Sum(e => e.Capacity * PoolModelConstants.StretchCapFactor)
-                : maxFullness;
+            var entriesForCap = GetCachedEntries();
+            float stretchTotal = maxFullness;
+            if (entriesForCap.Count > 0)
+            {
+                stretchTotal = 0f;
+                for (int i = 0; i < entriesForCap.Count; i++)
+                    stretchTotal += entriesForCap[i].Capacity * PoolModelConstants.StretchCapFactor;
+            }
             if (leftFullness + rightFullness > stretchTotal)
                 SetFullness(stretchTotal, stretchTotal);
         }
@@ -305,14 +391,16 @@ public class CompEquallyMilkable : CompMilkable
             * Pawn.GetMilkFlowMultiplierFromConditions()
             * Pawn.GetMilkFlowMultiplierFromGenes()
             * MilkCumSettings.defaultFlowMultiplierForHumanlike;
-        var entries = Pawn.GetBreastPoolEntries();
+        var entries = GetCachedEntries();
         // Active 已保证有乳池才进入，此处不再判空
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 60f;
         SyncLeftRightFromBreastFullness();
         // 撑大后仍按压力曲线算生产，TickGrowth 将超出撑大部分算溢出，实现持续微量溢出
-        float stretchTotal = entries.Sum(e => e.Capacity * PoolModelConstants.StretchCapFactor);
+        float stretchTotal = 0f;
+        for (int i = 0; i < entries.Count; i++)
+            stretchTotal += entries[i].Capacity * PoolModelConstants.StretchCapFactor;
         // 接近撑大时不再传 minFactorWhenNearFull（带下限公式已内置 f_min，最低生产自然≥0.02）
         // 喷乳反射 R：按侧生效，每侧进水 × GetLetdownReflexFlowMultiplier(sideKey)；每 tick 统一衰减各侧 R
         if (MilkCumSettings.enableLetdownReflex)
@@ -321,15 +409,15 @@ public class CompEquallyMilkable : CompMilkable
         MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
         if (MilkCumSettings.enableToleranceDynamic)
             lactatingComp.UpdateToleranceDynamic(currentLactation, 60f / 60000f);
-        // 按对分组、每次 TickGrowth：见 记忆库 design/双池与PairIndex；进水周期 60 tick：见 记忆库 decisions/ADR-001-进水与衰减周期
-        var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
-        foreach (var group in byPair)
+        // 按对分组、按 PairIndex 顺序：见 记忆库 design/双池与PairIndex；进水周期 60 tick
+        var pairGroups = BuildPairGroupsByPairIndex(entries);
+        for (int g = 0; g < pairGroups.Count; g++)
         {
-            var list = group.ToList();
+            var list = pairGroups[g];
             if (list.Count == 2)
             {
-                var leftE = list.FirstOrDefault(e => e.IsLeft);
-                var rightE = list.FirstOrDefault(e => !e.IsLeft);
+                FluidPoolEntry leftE = list[0].IsLeft ? list[0] : list[1];
+                FluidPoolEntry rightE = list[0].IsLeft ? list[1] : list[0];
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftCap = leftE.Capacity;
                 float rightCap = rightE.Capacity;
@@ -451,7 +539,7 @@ public class CompEquallyMilkable : CompMilkable
         float factor = target / total;
         if (breastFullness != null)
         {
-            var keys = breastFullness.Keys.ToList();
+            var keys = new List<string>(breastFullness.Keys);
             foreach (var k in keys)
                 breastFullness[k] = Mathf.Max(0f, breastFullness[k] * factor);
         }
@@ -470,7 +558,7 @@ public class CompEquallyMilkable : CompMilkable
     {
         if (amount <= 0f || Pawn == null) return 0f;
         breastFullness ??= new Dictionary<string, float>();
-        var entries = Pawn.GetBreastPoolEntries();
+        var entries = GetCachedEntries();
         if (entries.Count == 0)
         {
             SyncLeftRightFromBreastFullness();
@@ -478,18 +566,16 @@ public class CompEquallyMilkable : CompMilkable
             return 0f;
         }
         float remaining = amount;
-        // 按「该对总满度」从高到低排序，最满的对先扣，多对时轮转自然、后面的对也能被吸到
-        var byPair = entries.GroupBy(e => e.PairIndex)
-            .OrderByDescending(g => g.Sum(e => GetFullnessForKey(e.Key)))
-            .ToList();
-        foreach (var group in byPair)
+        // 按「该对总满度」从高到低排序，最满的对先扣
+        var pairGroups = BuildPairGroupsByFullnessDescending(entries);
+        for (int g = 0; g < pairGroups.Count; g++)
         {
+            var list = pairGroups[g];
             if (remaining <= 0f) break;
-            var list = group.ToList();
             if (list.Count == 2)
             {
-                var leftE = list.FirstOrDefault(e => e.IsLeft);
-                var rightE = list.FirstOrDefault(e => !e.IsLeft);
+                FluidPoolEntry leftE = list[0].IsLeft ? list[0] : list[1];
+                FluidPoolEntry rightE = list[0].IsLeft ? list[1] : list[0];
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftF = GetFullnessForKey(leftE.Key);
                 float rightF = GetFullnessForKey(rightE.Key);
@@ -517,8 +603,9 @@ public class CompEquallyMilkable : CompMilkable
             }
             else
             {
-                foreach (var e in list)
+                for (int j = 0; j < list.Count; j++)
                 {
+                    var e = list[j];
                     if (remaining <= 0f || string.IsNullOrEmpty(e.Key)) continue;
                     float f = GetFullnessForKey(e.Key);
                     float take = Mathf.Min(remaining, f);
@@ -549,6 +636,96 @@ public class CompEquallyMilkable : CompMilkable
         SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
         return amount - remaining;
+    }
+
+    /// <summary>
+    /// 吸奶专用：只从「当前最满的一侧」扣量（一口只能吸一侧）。选侧规则与 DrainForConsume 一致：对总满度优先、同对内较满一侧、相同时先左。
+    /// 挤奶仍用 DrainForConsume（可多侧/双乳同时挤）。
+    /// </summary>
+    public float DrainForConsumeSingleSide(float amount, List<string> drainedKeys = null)
+    {
+        if (amount <= 0f || Pawn == null) return 0f;
+        breastFullness ??= new Dictionary<string, float>();
+        var entries = GetCachedEntries();
+        if (entries.Count == 0)
+        {
+            SyncLeftRightFromBreastFullness();
+            SyncBaseFullness();
+            return 0f;
+        }
+        // 与 DrainForConsume 相同顺序选出「第一个会被扣」的那一侧
+        var pairGroups = BuildPairGroupsByFullnessDescending(entries);
+        string singleKey = null;
+        float singleFullness = 0f;
+        for (int g = 0; g < pairGroups.Count; g++)
+        {
+            var list = pairGroups[g];
+            if (list.Count == 2)
+            {
+                FluidPoolEntry leftE = list[0].IsLeft ? list[0] : list[1];
+                FluidPoolEntry rightE = list[0].IsLeft ? list[1] : list[0];
+                if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
+                float leftF = GetFullnessForKey(leftE.Key);
+                float rightF = GetFullnessForKey(rightE.Key);
+                bool preferLeft = true;
+                bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && preferLeft);
+                singleKey = drainLeftFirst ? leftE.Key : rightE.Key;
+                singleFullness = drainLeftFirst ? leftF : rightF;
+                break;
+            }
+            if (list.Count >= 1 && !string.IsNullOrEmpty(list[0].Key))
+            {
+                singleKey = list[0].Key;
+                singleFullness = GetFullnessForKey(singleKey);
+                break;
+            }
+        }
+        if (string.IsNullOrEmpty(singleKey) || singleFullness <= 0f)
+        {
+            SyncBaseFullness();
+            return 0f;
+        }
+        float take = Mathf.Min(amount, singleFullness);
+        breastFullness[singleKey] = Mathf.Max(0f, singleFullness - take);
+        drainedKeys?.Add(singleKey);
+        SyncLeftRightFromBreastFullness();
+        SyncBaseFullness();
+        return take;
+    }
+
+    /// <summary>
+    /// 机器挤奶专用：每侧按相同速率并行扣量（两侧同时减），用于电动吸奶器等。每 tick 每侧最多扣 amountPerSide，总扣量 = 各侧实际扣量之和。
+    /// </summary>
+    /// <param name="amountPerSide">每侧本 tick 最多扣的池单位量</param>
+    /// <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key</param>
+    /// <returns>实际扣掉的总量</returns>
+    public float DrainForConsumeParallel(float amountPerSide, List<string> drainedKeys = null)
+    {
+        if (amountPerSide <= 0f || Pawn == null) return 0f;
+        breastFullness ??= new Dictionary<string, float>();
+        var entries = GetCachedEntries();
+        if (entries.Count == 0)
+        {
+            SyncLeftRightFromBreastFullness();
+            SyncBaseFullness();
+            return 0f;
+        }
+        float totalDrained = 0f;
+        foreach (var e in entries)
+        {
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            float f = GetFullnessForKey(e.Key);
+            float take = Mathf.Min(amountPerSide, f);
+            if (take > 0f)
+            {
+                breastFullness[e.Key] = Mathf.Max(0f, f - take);
+                drainedKeys?.Add(e.Key);
+                totalDrained += take;
+            }
+        }
+        SyncLeftRightFromBreastFullness();
+        SyncBaseFullness();
+        return totalDrained;
     }
 
     /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。</summary>

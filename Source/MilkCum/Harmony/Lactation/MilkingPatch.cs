@@ -438,7 +438,7 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
 }
 
 /// <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。</summary>
-[HarmonyPatch(typeof(Thing), nameof(Thing.GetStatValue), new[] { typeof(StatDef), typeof(int) })]
+[HarmonyPatch(typeof(Thing), "GetStatValue", new[] { typeof(StatDef), typeof(int) })]
 public static class Thing_GetStatValue_PartialMilkNutrition_Patch
 {
     [HarmonyPrefix]

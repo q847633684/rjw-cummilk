@@ -5,6 +5,7 @@ using Verse;
 using RimWorld;
 using MilkCum.Core.Utils;
 using MilkCum.Harmony;
+using MilkCum.Harmony.Compatibility;
 
 namespace MilkCum.Core;
 
@@ -62,7 +63,7 @@ public static class ModInit
         JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(MilkCumMod.Harmony);
         ProlactinAddictionPatch.ApplyIfPossible(MilkCumMod.Harmony);
         CumpilationIntegration.ApplyPatches(MilkCumMod.Harmony);
-        MilkCum.Harmony.Compatibility.RjwMilkHumanWorkGiverPatch.ApplyPatches(MilkCumMod.Harmony);
+        RjwMilkHumanWorkGiverPatch.ApplyPatches(MilkCumMod.Harmony);
     }
 
     public static void Init()

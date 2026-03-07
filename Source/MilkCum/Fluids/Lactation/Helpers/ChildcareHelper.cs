@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using Verse;
 using Verse.AI;
@@ -6,6 +7,7 @@ using RimWorld;
 using UnityEngine;
 using RimWorld.Planet;
 using MilkCum.Core;
+using MilkCum.Fluids.Lactation.Hediffs;
 using static RimWorld.ChildcareUtility;
 
 namespace MilkCum.Fluids.Lactation.Helpers;
@@ -35,33 +37,56 @@ public static class ChildcareHelper
     }
     public static bool SuckleFromLactatingPawn(Pawn baby, Pawn feeder, int delta = 1)
     {
-        HediffComp_Chargeable hediffComp_Chargeable = feeder.LactatingHediff().TryGetComp<HediffComp_Chargeable>();
         if (!baby.TryGetFoodOrEnergyNeed(out float wanted, out float maxLevel)) { return false; }
-        // ??????? milkingWorkTotalBase + ???? ???? tick ?????????????? 300
+
+        var comp = feeder.CompEquallyMilkable();
+        var lactatingHediff = feeder.LactatingHediffWithComps();
+        var lactatingComp = lactatingHediff?.TryGetComp<HediffComp_EqualMilkingLactating>();
+
+        if (comp == null || lactatingComp == null)
+            return false;
+
+        // 吸奶流速与挤奶统一：GetMilkingFlowRate（挤出乳压 f² × letdown），再按池量与需求上限
+        float flowPerSecond = comp.GetMilkingFlowRate(false, null);
+        float ratePerTick = flowPerSecond / 60f * (float)delta;
+
         float milkAmt = feeder.MilkAmount();
-        float capMult = Mathf.Clamp(1f + MilkCumSettings.milkingCapacityFactor * (milkAmt - 1f), 0.5f, 2.5f);
-        float effectiveTime = MilkCumSettings.milkingWorkTotalBase * capMult / MilkCumSettings.GetRaceDrugDeltaSMultiplier(feeder);
-        // ???/Charge ????? GreedyConsume
-        float toConsumeInTicks = Mathf.Min(maxLevel * ((float)delta) / effectiveTime);
-        if (feeder.MilkDef().ingestible.CachedNutrition <= 0)
+        float amountNormalizer = milkAmt / 3f;
+        float nutritionMilt = feeder.MilkDef().ingestible.CachedNutrition <= 0f ? 1f
+            : feeder.MilkDef().ingestible.CachedNutrition / DefDatabase<ThingDef>.GetNamed("Milk").ingestible.CachedNutrition;
+        if (nutritionMilt <= 0f) nutritionMilt = 1f;
+        amountNormalizer *= nutritionMilt * 2f;
+
+        float toDrainPool = Mathf.Min(ratePerTick, comp.Fullness);
+        if (feeder.MilkDef().ingestible.CachedNutrition > 0f)
+            toDrainPool = Mathf.Min(toDrainPool, wanted / amountNormalizer);
+
+        var drainedKeys = new List<string>();
+        float actualDrained = comp.DrainForConsumeSingleSide(toDrainPool, drainedKeys);
+        lactatingHediff.OnGatheredLetdownByKeys(drainedKeys);
+        lactatingComp.SyncChargeFromPool();
+
+        comp.breastfedAmount += actualDrained;
+
+        float nutritionEquivalent = actualDrained * amountNormalizer;
+        if (baby.needs.food != null)
         {
-            float nonNutritionConsumed = hediffComp_Chargeable.GreedyConsume(toConsumeInTicks);
-            feeder.CompEquallyMilkable().breastfedAmount += nonNutritionConsumed * Constants.MILK_CHARGE_FACTOR;
-            return nonNutritionConsumed != wanted
-                && Mathf.Approximately(nonNutritionConsumed, toConsumeInTicks)
-                && !Mathf.Approximately(feeder.CompEquallyMilkable().breastfedAmount * feeder.MilkAmount(), 1f);
+            baby.needs.food.CurLevel += nutritionEquivalent;
         }
-        float toConsume = Mathf.Min(toConsumeInTicks, wanted);
-        float consumed = baby.TryConsumeBreastMilk(hediffComp_Chargeable, toConsume);
+        else if (baby.needs.energy != null)
+        {
+            baby.needs.energy.CurLevel += nutritionEquivalent / MilkCumSettings.nutritionToEnergyFactor;
+        }
+
         Caravan caravan = baby.GetCaravan();
         if (caravan != null && feeder.GetCaravan() == caravan)
-        {
-            feeder.mindState.BreastfeedCaravan(baby, consumed / maxLevel);
-        }
-        Pawn_IdeoTracker ideo = baby.ideo;
-        ideo?.IncreaseIdeoExposureIfBabyTick(feeder.Ideo, 1);
-        feeder.CompEquallyMilkable().breastfedAmount += consumed * Constants.MILK_CHARGE_FACTOR;
-        return consumed != wanted && Mathf.Approximately(consumed, toConsume);
+            feeder.mindState.BreastfeedCaravan(baby, nutritionEquivalent / maxLevel);
+        baby.ideo?.IncreaseIdeoExposureIfBabyTick(feeder.Ideo, 1);
+
+        bool stillWant = feeder.MilkDef().ingestible.CachedNutrition <= 0f
+            ? (baby.needs.food != null ? baby.needs.food.CurLevel < maxLevel - 0.01f : (baby.needs.energy?.CurLevel ?? 0f) < maxLevel - 0.01f) && comp.Fullness > 0f
+            : (nutritionEquivalent < wanted && actualDrained >= toDrainPool * 0.99f);
+        return stillWant;
     }
     internal static Toil Breastfeed(Pawn pawn, Pawn baby, Action readyForNextToil)
     {
@@ -109,8 +134,11 @@ public static class ChildcareHelper
     {
         return delegate
         {
-            float amountFed = pawn.CompEquallyMilkable().breastfedAmount * pawn.MilkAmount();
-            pawn.CompEquallyMilkable().breastfedAmount = 0f;
+            var comp = pawn.CompEquallyMilkable();
+            // ????? Drain?breastfedAmount ?????1 ? = 1 ???amountFed ?????
+            float amountFed = comp?.breastfedAmount ?? 0f;
+            if (comp != null)
+                comp.breastfedAmount = 0f;
             if (amountFed >= 1f - float.Epsilon)
             {
                 baby.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedMe, pawn, null);
@@ -145,7 +173,8 @@ public static class ChildcareHelper
         {
             return () => baby.needs?.food?.CurLevelPercentage ?? baby.needs.energy.CurLevelPercentage;
         }
-        return () => pawn.CompEquallyMilkable().breastfedAmount / (1f / pawn.MilkAmount());
+        // ????? Drain?breastfedAmount ?????? 1 ????
+        return () => pawn.CompEquallyMilkable()?.breastfedAmount ?? 0f;
     }
     internal static bool IsMomsFault(this BreastfeedFailReason? reason)
     {

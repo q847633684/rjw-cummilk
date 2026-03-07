@@ -9,13 +9,13 @@ using Verse.Sound;
 namespace MilkCum.Fluids.Lactation.Jobs;
 public class JobDriver_MilkCumMilk : JobDriver_Milk
 {
-    /// <summary>流速驱动：本场次目标取量（整瓶数，池单位）</summary>
+    private const float EPS = 0.001f;
+    /// <summary>本场次目标取量（整瓶数，池单位）</summary>
     private float amountToTake;
-    /// <summary>流速驱动：已取量累计</summary>
+    /// <summary>已取量累计（池单位）</summary>
     private float totalDrained;
-    /// <summary>本场次时长（tick），用于算 ratePerTick = amountToTake / workTotal</summary>
-    private float workTotal = 400f;
     private Sustainer milkSustainer;
+    private readonly List<string> drainedKeys = new();
     public Pawn Target => job.GetTarget(TargetIndex.A).Thing as Pawn;
     public Building_Milking MilkBuilding => job.GetTarget(TargetIndex.B).Thing as Building_Milking;
     public override void ExposeData()
@@ -23,7 +23,6 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
         base.ExposeData();
         Scribe_Values.Look(ref amountToTake, "amountToTake", 0f);
         Scribe_Values.Look(ref totalDrained, "totalDrained", 0f);
-        Scribe_Values.Look(ref workTotal, "workTotal", 400f);
     }
 
     protected override CompHasGatherableBodyResource GetComp(Pawn animal)
@@ -31,18 +30,14 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
         return animal.CompEquallyMilkable();
     }
 
-    /// <summary>按容量量化：本场次时长（tick）= 基准 × capMult × fullMult ÷ (1+工具速度加成)；工具 SpeedOffset 使电动比手动更快。</summary>
-    private float GetWorkTotal()
+    /// <summary>初始化本场次目标取量（整瓶数）；不足 1 瓶时 amountToTake=0，由 initAction 结束为 Incompletable。</summary>
+    private void InitMilkingSession()
     {
         CompEquallyMilkable comp = Target?.CompEquallyMilkable();
-        if (comp == null)
-            return MilkCumSettings.milkingWorkTotalBase;
-        float milkAmt = Target.MilkAmount();
-        float capMult = Mathf.Clamp(1f + MilkCumSettings.milkingCapacityFactor * (milkAmt - 1f), 0.5f, 2.5f);
-        float fullMult = 0.5f + 0.5f * Mathf.Clamp01(comp.Fullness / Mathf.Max(0.01f, comp.maxFullness));
-        float baseWork = MilkCumSettings.milkingWorkTotalBase * capMult * fullMult;
-        float speedMult = 1f + (MilkBuilding?.SpeedOffset() ?? 0f);
-        return baseWork / Mathf.Max(0.01f, speedMult);
+        if (comp == null) return;
+        float whole = Mathf.Floor(comp.Fullness);
+        amountToTake = whole >= 1f ? whole : 0f;
+        totalDrained = 0f;
     }
 
     public override bool TryMakePreToilReservations(bool errorOnFailed)
@@ -50,16 +45,6 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
         return base.TryMakePreToilReservations(errorOnFailed)
             && (MilkBuilding == null
             || pawn.Reserve(MilkBuilding, job, 1, -1, null, errorOnFailed));
-    }
-    /// <summary>流速驱动：初始化本场次目标取量、时长与速率</summary>
-    private void InitMilkingSession()
-    {
-        CompEquallyMilkable comp = Target?.CompEquallyMilkable();
-        if (comp == null) return;
-        float whole = Mathf.Floor(comp.Fullness);
-        amountToTake = whole >= 1f ? whole : 0f;
-        workTotal = GetWorkTotal();
-        totalDrained = 0f;
     }
 
     protected override IEnumerable<Toil> MakeNewToils()
@@ -86,16 +71,37 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
                     PawnUtility.ForceWait(Target, 15000, null, true, true);
                 }
                 InitMilkingSession();
+                if (amountToTake < 1f)
+                {
+                    wait.actor.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    return;
+                }
             };
         }
         else if (MilkBuilding != null)
         {
             yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.OnCell, true);
-            wait.initAction = delegate { InitMilkingSession(); };
+            wait.initAction = delegate
+            {
+                InitMilkingSession();
+                if (amountToTake < 1f)
+                {
+                    wait.actor.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    return;
+                }
+            };
         }
         else
         {
-            wait.initAction = delegate { InitMilkingSession(); };
+            wait.initAction = delegate
+            {
+                InitMilkingSession();
+                if (amountToTake < 1f)
+                {
+                    wait.actor.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    return;
+                }
+            };
         }
         wait.WithEffect(MilkCumDefOf.EM_Milk, TargetIndex.A);
         wait.tickAction = delegate
@@ -110,24 +116,42 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             if (amountToTake <= 0f)
             {
                 if (totalDrained > 0f)
+                {
                     comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                    totalDrained = 0f;
+                }
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded);
                 return;
             }
             actor.skills?.Learn(SkillDefOf.Animals, 0.13f);
-            float ratePerTick = amountToTake / Mathf.Max(0.01f, workTotal);
+            // 流速由乳压/喷乳反射决定，取量 = 流速 × 时间（不再用 取量/时间 反推流速）
+            float flowPerSecond = comp.GetMilkingFlowRate(MilkBuilding != null, MilkBuilding);
+            float ratePerTick = flowPerSecond / 60f;
             float remaining = amountToTake - totalDrained;
             float drain = Mathf.Min(ratePerTick, remaining, comp.Fullness);
             if (drain <= 0f || totalDrained >= amountToTake)
             {
                 if (totalDrained > 0f)
+                {
                     comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                    totalDrained = 0f;
+                }
                 this.milkSustainer?.End();
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded);
                 return;
             }
-            var drainedKeys = new List<string>();
-            float actualDrained = comp.DrainForConsume(drain, drainedKeys);
+            drainedKeys.Clear();
+            float actualDrained;
+            if (MilkBuilding != null)
+            {
+                int sideCount = comp.BreastSideCount;
+                float ratePerSide = Mathf.Min(ratePerTick, remaining) / sideCount;
+                actualDrained = comp.DrainForConsumeParallel(ratePerSide, drainedKeys);
+            }
+            else
+            {
+                actualDrained = comp.DrainForConsume(drain, drainedKeys);
+            }
             // 通知泌乳反射：本 tick 被扣量的池侧 key，用于更新喷乳反射 R 与流速倍率
             Target.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys);
             Target.LactatingHediffComp()?.SyncChargeFromPool();
@@ -138,10 +162,13 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
                     this.milkSustainer = SoundDefOf.Recipe_Surgery.TrySpawnSustainer(SoundInfo.InMap(Target, MaintenanceType.None));
                 this.milkSustainer.Maintain();
             }
-            if (totalDrained >= amountToTake - 0.001f)
+            if (totalDrained >= amountToTake - EPS)
             {
                 if (totalDrained > 0f)
+                {
                     comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                    totalDrained = 0f;
+                }
                 this.milkSustainer?.End();
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded);
             }
@@ -149,6 +176,9 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
         wait.AddFinishAction(delegate
         {
             this.milkSustainer?.End();
+            // 挤奶被打断时，已扣的池量仍产瓶，不丢失
+            if (totalDrained > 0f && Target?.CompEquallyMilkable() is CompEquallyMilkable comp)
+                comp.SpawnBottlesForDrainedAmount(totalDrained, pawn, MilkBuilding);
             if (Target?.CurJobDef == JobDefOf.Wait_MaintainPosture)
             {
                 Target.jobs.EndCurrentJob(JobCondition.InterruptForced);
@@ -159,15 +189,6 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             wait.FailOnDespawnedOrNull(TargetIndex.A);
             wait.FailOnCannotTouch(TargetIndex.A, PathEndMode.Touch);
         }
-        wait.AddEndCondition(delegate
-        {
-            CompEquallyMilkable comp = Target.CompEquallyMilkable();
-            if (totalDrained > 0f)
-                return JobCondition.Ongoing;
-            if (comp.ActiveAndFull)
-                return JobCondition.Ongoing;
-            return JobCondition.Incompletable;
-        });
         wait.defaultCompleteMode = ToilCompleteMode.Never;
         wait.WithProgressBar(TargetIndex.A, () => amountToTake <= 0f ? 0f : Mathf.Clamp01(totalDrained / amountToTake));
         wait.activeSkill = () => SkillDefOf.Animals;

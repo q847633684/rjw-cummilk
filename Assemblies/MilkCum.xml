@@ -225,6 +225,9 @@
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GatherResourcesIntervalDays">
             <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.breastfedAmount">
+            <summary>吸奶 session 累计量（池单位，1 池 = 1 瓶）。吸奶统一到 Drain 后由 ChildcareHelper 累加，结束时用于 amountFed/心情/outcomeDoers。</summary>
+        </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.leftFullness">
             <summary>水池模型：左乳水位（0～左乳容量），与右乳合计 0～maxFullness；总容量 = 左+右（正常为 1+1=2）。由 SyncLeftRightFromBreastFullness 从 breastFullness 汇总</summary>
         </member>
@@ -266,6 +269,22 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedEntries">
+            <summary>缓存 GetBreastPoolEntries()，每 60 tick 失效，减少每 tick 分配与 GC。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BreastSideCount">
+            <summary>池侧数量（左+右等），用于机器挤奶并行扣量时算每侧速率。使用缓存，避免每 tick 分配。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildPairGroupsByPairIndex(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>按 PairIndex 分组并按 PairIndex 顺序排列，用于 UpdateMilkPools。无 LINQ，减少 GC。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildPairGroupsByFullnessDescending(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>按 PairIndex 分组并按该对总满度降序排列，用于 Drain 选侧（最满的对先扣）。无 LINQ，减少 GC。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRate(System.Boolean,MilkCum.Core.Building_Milking)">
+            <summary>挤奶/吸奶时的挤出流速（池单位/秒），由「挤出乳压」、喷乳反射与种族倍率决定，与目标瓶数无关。取量 = 流速 × 时间。机器挤奶时 building 提供 SpeedOffset 加速。
+            挤出乳压采用满度平方（越满越好挤），与生产用的 Pressure 抑制曲线区分。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
             <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，由 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 > 0</summary>
@@ -318,20 +337,34 @@
             <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激</param>
             <returns>实际扣掉的量</returns>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Gathered(Verse.Pawn)">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeSingleSide(System.Single,System.Collections.Generic.List{System.String})">
             <summary>
-            挤奶：只取整瓶对应的池单位（向下取整），不满一瓶的余量留在乳房；从所有乳房对按顺序扣量（与 DrainForConsume 一致），再按实际扣量产出奶。
-            支持一次性调用（Gathered）或由 Job 按流速逐 tick 扣池后调用本方法生成奶瓶。
+            吸奶专用：只从「当前最满的一侧」扣量（一口只能吸一侧）。选侧规则与 DrainForConsume 一致：对总满度优先、同对内较满一侧、相同时先左。
+            挤奶仍用 DrainForConsume（可多侧/双乳同时挤）。
             </summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeParallel(System.Single,System.Collections.Generic.List{System.String})">
+            <summary>
+            机器挤奶专用：每侧按相同速率并行扣量（两侧同时减），用于电动吸奶器等。每 tick 每侧最多扣 amountPerSide，总扣量 = 各侧实际扣量之和。
+            </summary>
+            <param name="amountPerSide">每侧本 tick 最多扣的池单位量</param>
+            <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key</param>
+            <returns>实际扣掉的总量</returns>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SpawnBottlesForDrainedAmount(System.Single,Verse.Pawn,MilkCum.Core.Building_Milking)">
-            <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。</summary>
+            <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.HasTorsoOrBreastInjury(Verse.Pawn)">
             <summary>是否有躯干/乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
             <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Comps.CompProperties_PartialMilk">
+            <summary>未满一瓶的人奶：存储实际取量（0~1 池单位），食用时营养按此值计算。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Comps.CompPartialMilk">
+            <summary>未满一瓶的人奶 Comp：fillAmount 为已取池单位（&lt;1），用于营养计算与存档。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompShowProducer.CompInspectStringExtra">
             <summary>物品悬浮/检查面板：显示产主与允许使用名单（只读现有 Comp 数据），减少重复点进设置</summary>
@@ -630,19 +663,13 @@
             <summary>清除泌乳缓存（如 hediff 变更时可调，非必须）</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.amountToTake">
-            <summary>流速驱动：本场次目标取量（整瓶数，池单位）</summary>
+            <summary>本场次目标取量（整瓶数，池单位）</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.totalDrained">
-            <summary>流速驱动：已取量累计</summary>
-        </member>
-        <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.workTotal">
-            <summary>本场次时长（tick），用于算 ratePerTick = amountToTake / workTotal</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.GetWorkTotal">
-            <summary>按容量量化：本场次时长（tick）= 基准 × capMult × fullMult ÷ (1+工具速度加成)；工具 SpeedOffset 使电动比手动更快。</summary>
+            <summary>已取量累计（池单位）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.InitMilkingSession">
-            <summary>流速驱动：初始化本场次目标取量、时长与速率</summary>
+            <summary>初始化本场次目标取量（整瓶数）；不足 1 瓶时 amountToTake=0，由 initAction 结束为 Incompletable。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_AddictionSatisfied">
             <summary>10.8-5：当成瘾处于满足阶段时显示小幅正面心情</summary>
@@ -779,6 +806,17 @@
             This fixes a missing check in vanilla code
             </summary>
         </member>
+        <member name="T:MilkCum.Harmony.Compatibility.RjwMilkHumanWorkGiverPatch">
+            <summary>
+            方案 A 轻量：当目标拥有 CompEquallyMilkable 且 ActiveAndFull 时，禁止 RJW 的 WorkGiver_MilkHuman 派发 MilkHuman，
+            仅由本 mod 的 WorkGiver_MilkCumMilk 派发 JobDefOf.Milk + JobDriver_MilkCumMilk，统一走流速挤奶。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Harmony.Compatibility.RjwMilkHumanWorkGiverPatch.HasJobOnThing_Prefix(System.Object,Verse.Pawn,Verse.Thing,System.Boolean@)">
+            <summary>
+            若当前是 RJW 的挤奶 WorkGiver 且目标有本 mod 的 CompEquallyMilkable 且可挤，则不再派发 RJW 的 MilkHuman job。
+            </summary>
+        </member>
         <member name="T:MilkCum.Harmony.StatWorker_ShouldShowFor_Patch">
             <summary>
             信息卡统计 NRE 全局防护。StatsReportUtility.StatsToDraw 会枚举分类下所有 StatDef 并调用 Worker.ShouldShowFor(req)。
@@ -887,6 +925,9 @@
         </member>
         <member name="T:MilkCum.Harmony.HediffComp_SexPart_CompTipStringExtra_Patch">
             <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块。仅当「有泌乳且当前为 RJW 乳房行」时追加；没有泌乳不追加，非乳房行不追加（genitalFamily != Breasts 已 return）。若 __result 中已包含本块（同一 getter 被调用两次并拼接时会重复），则不再追加以免同一悬浮内出现两份相同内容。</summary>
+        </member>
+        <member name="T:MilkCum.Harmony.Thing_GetStatValue_PartialMilkNutrition_Patch">
+            <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。</summary>
         </member>
         <member name="T:MilkCum.Harmony.WorkGiver_Ingest_MilkProductFilter">
             <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
