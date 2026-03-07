@@ -36,6 +36,7 @@
     <EM.BreastfeedCapacityFactor>吸奶容量系数</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>挤奶工作量基准</EM.MilkingWorkTotalBase>
     <EM.MilkingCapacityFactor>挤奶容量系数</EM.MilkingCapacityFactor>
+    <EM.MilkAmountDesc>挤奶按池满度全部排出，产量只影响挤奶工作量；哺乳时长由设置与婴儿需求决定，产量仅参与份数/Charge 换算。</EM.MilkAmountDesc>
     <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
     <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>增益偏移：{0}</EM.LactatingGainPercent>
@@ -45,12 +46,23 @@
     <EM.ProducerRestrictionsColumn>谁可使用我的奶 / 谁可吃奶制品或精液制品</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以使用我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
     <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
+    <EM.MilkTagsTableHeaderDesc>奶制品/精液制品在信息中是否显示种族或产奶者名称。开启「显示动物名」后，产主限制（谁可以吃我的制品）才会生效。</EM.MilkTagsTableHeaderDesc>
+    <EM.RequiresRJWMod>需要 RJW（rim.job.world）模组。</EM.RequiresRJWMod>
+    <EM.WindowSearchTitle>选择物品</EM.WindowSearchTitle>
+    <EM.SearchItemsPlaceholder>按名称或 defName 搜索…</EM.SearchItemsPlaceholder>
+    <EM.Lactating>泌乳</EM.Lactating>
+    <EM.MilkFullnessColumnTip>池满度（0～100%）。无本 mod 泌乳 Comp 时显示「-」。</EM.MilkFullnessColumnTip>
+    <EM.MilkRemainingDaysColumnTip>参考剩余泌乳天数（由 L 与基准天数推算）。未泌乳或永久泌乳时显示「-」。</EM.MilkRemainingDaysColumnTip>
+    <EM.MilkEquivalentDoseColumnTip>当前 L 折算的等效催乳素剂量（只读）。1 剂 ≈ 0.5 L。</EM.MilkEquivalentDoseColumnTip>
+    <EM.LactatingColumnTip>是否处于泌乳状态。蓝色=临时，红色=永久（层数）。</EM.LactatingColumnTip>
+    <EM.GeneConfigTitle>奶类型基因配置</EM.GeneConfigTitle>
     <EM.WhoCanSuckleFromMe>谁可以使用我的奶</EM.WhoCanSuckleFromMe>
     <EM.WhoCanSuckleFromMeDefault>下方名单默认已勾选子女与伴侣；可添加或移除。</EM.WhoCanSuckleFromMeDefault>
     <EM.WhoCanUseMyMilkProducts>谁可以吃我的奶制品</EM.WhoCanUseMyMilkProducts>
     <EM.WhoCanUseMyMilkProductsDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkProductsDefault>
     <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
     <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
+    <EM.ProducerRestrictionConsumersRequiresTagPawn>此限制仅在「设置 → 奶标签」中为该类物品开启「显示动物名」时生效；当前未开启，故不显示名单。</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>女性：谁可以使用我的奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
     <EM.HealthTabRestrictionsButton>谁可用我的奶 / 奶制品 / 精液制品</EM.HealthTabRestrictionsButton>
     <EM.Specify>指定</EM.Specify>
@@ -192,7 +204,7 @@
     <EM.PoolBreastLabelSuffix>：</EM.PoolBreastLabelSuffix>
     <EM.MilkQuality>乳汁质量：{0}</EM.MilkQuality>
     <EM.LactatingProductRate>产物倍率：{0} x{1}</EM.LactatingProductRate>
-    <EM.LactatingProductLine>{0}：x{1}</EM.LactatingProductLine>
+    <EM.LactatingProductLine>{0}：{1}</EM.LactatingProductLine>
     <EM.LactatingExtraNutrition>额外营养消耗：{0} / 天</EM.LactatingExtraNutrition>
     <EM.LactatingExtraNutritionShort>额外营养：{0} / 天</EM.LactatingExtraNutritionShort>
     <EM.PoolRemainingDaysLine>剩余天数：{0}</EM.PoolRemainingDaysLine>

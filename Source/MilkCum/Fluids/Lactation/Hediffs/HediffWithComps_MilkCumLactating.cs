@@ -707,24 +707,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 }
             };
 
-            // 4. 产物
-            lines.Add("EM.PoolSectionProduct".Translate());
-            if (CompEquallyMilkable != null)
-            {
-                if (Pawn.MilkDef() != null)
-                    lines.Add("  " + "EM.LactatingProductLine".Translate(Pawn.MilkDef().label, (Pawn.MilkAmount() * totalMilk).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-                if (MilkCumSettings.enableMilkQuality)
-                {
-                    float q = GetMilkQuality();
-                    lines.Add("  " + "EM.MilkQuality".Translate(q.ToStringPercent()));
-                }
-            }
-            else if (Pawn.MilkDef() != null)
-            {
-                lines.Add("  " + (Lang.MilkFullness + ": " + (Charge / maxF).ToStringPercent()));
-                lines.Add("  " + "EM.LactatingProductLine".Translate(Pawn.MilkDef().label, (Pawn.MilkAmount() * (CompEquallyMilkable?.Fullness ?? 0f)).ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-            };
-
             // 5. 消�?
             lines.Add("EM.PoolSectionConsumption".Translate());
             if (growthSpeed > 0f && !isFull && Pawn.needs?.food != null)

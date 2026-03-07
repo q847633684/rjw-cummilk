@@ -55,9 +55,14 @@ public class Widget_DefaultSetting
                 };
             }
         }
-        TabDrawer.DrawTabs(inRect.ContractedBy(UNIT_SIZE), tabs);
+        // Tab 行占固定高度，内容区从下方起算，避免 contentRect 高度为负时只显示标签不显示内容
+        const float TabRowHeight = 36f;
+        Rect tabRect = new Rect(inRect.x + UNIT_SIZE, inRect.y, inRect.width - UNIT_SIZE * 2f, TabRowHeight);
+        TabDrawer.DrawTabs(tabRect, tabs);
         if (setting == null) { return; }
-		Rect contentRect = inRect.ContractedBy(UNIT_SIZE * 2f);
+        float contentHeight = Mathf.Max(0f, inRect.height - TabRowHeight - UNIT_SIZE);
+        if (contentHeight <= 0f) { return; }
+        Rect contentRect = new Rect(inRect.x + UNIT_SIZE, inRect.y + TabRowHeight, inRect.width - UNIT_SIZE * 2f, contentHeight);
         Listing_Standard listing = new();
         listing.Begin(contentRect);
         GUI.color = Color.gray;

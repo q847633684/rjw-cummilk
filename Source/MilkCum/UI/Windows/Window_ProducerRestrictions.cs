@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Verse.Sound;
+using MilkCum.Core.Settings;
 using static MilkCum.Core.Utils.Lang;
 
 namespace MilkCum.UI;
@@ -24,6 +25,7 @@ public class Window_ProducerRestrictions : Window
         comp = pawn?.CompEquallyMilkable();
         closeOnClickedOutside = true;
         draggable = true;
+        optionalTitle = "EM.ProducerRestrictionsTitle".Translate(producer?.LabelShort ?? "");
     }
 
     private IEnumerable<Pawn> ColonyPawns()
@@ -60,16 +62,22 @@ public class Window_ProducerRestrictions : Window
             y += SeparatorHeight * 2;
         }
 
-        // 女性：谁可以吃我的奶制品 / 男性：谁可以吃我的精液制品。用性别+泌乳双重判断，避免 RJW 等 mod 的性别显示与 vanilla 不一致
+        // 谁可以吃我的奶制品/精液制品：仅当奶标签里对应物品种类开启「显示动物名」时生效，否则完全隐藏该区块
         bool forCumProducts = producer.gender == Gender.Male && !producer.IsLactating();
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), forCumProducts ? "EM.WhoCanUseMyCumProducts".Translate() : "EM.WhoCanUseMyMilkProducts".Translate());
-        y += EntryHeight;
-        GUI.color = Color.gray;
-        Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f),
-            forCumProducts ? "EM.WhoCanUseMyCumProductsDefault".Translate() : "EM.WhoCanUseMyMilkProductsDefault".Translate());
-        GUI.color = Color.white;
-        y += EntryHeight;
-        DrawListSection(inRect, ref y, comp.allowedConsumers, Allow, Forbid, ColonyPawns().ToList(), null);
+        bool showConsumersSection = forCumProducts
+            ? MilkCumSettings.IsProducerRestrictionConsumersEffectiveForCumProducts()
+            : MilkCumSettings.IsProducerRestrictionConsumersEffectiveForMilkProducts();
+        if (showConsumersSection)
+        {
+            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), forCumProducts ? "EM.WhoCanUseMyCumProducts".Translate() : "EM.WhoCanUseMyMilkProducts".Translate());
+            y += EntryHeight;
+            GUI.color = Color.gray;
+            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f),
+                forCumProducts ? "EM.WhoCanUseMyCumProductsDefault".Translate() : "EM.WhoCanUseMyMilkProductsDefault".Translate());
+            GUI.color = Color.white;
+            y += EntryHeight;
+            DrawListSection(inRect, ref y, comp.allowedConsumers, Allow, Forbid, ColonyPawns().ToList(), null);
+        }
     }
 
     private void DrawListSection(Rect inRect, ref float y, List<Pawn> list, string allowLabel, string forbidLabel, List<Pawn> allCandidates, HashSet<Pawn> exclude)
@@ -90,7 +98,8 @@ public class Window_ProducerRestrictions : Window
                 SoundDefOf.Click.PlayOneShotOnCamera();
             }
             Widgets.ThingIcon(new Rect(row.x, row.y, h, h), p);
-            Widgets.Label(new Rect(row.x + h + 4f, row.y, row.width - h - ButtonWidth - 12f, h), p.LabelCap);
+            float labelWidth = Mathf.Max(0f, row.width - h - ButtonWidth - 12f);
+            Widgets.Label(new Rect(row.x + h + 4f, row.y, labelWidth, h), p.LabelCap);
             y += h;
         }
         y += SeparatorHeight;
@@ -106,7 +115,8 @@ public class Window_ProducerRestrictions : Window
                 SoundDefOf.Click.PlayOneShotOnCamera();
             }
             Widgets.ThingIcon(new Rect(row.x, row.y, h, h), p);
-            Widgets.Label(new Rect(row.x + h + 4f, row.y, row.width - h - ButtonWidth - 12f, h), p.LabelCap);
+            float labelWidth = Mathf.Max(0f, row.width - h - ButtonWidth - 12f);
+            Widgets.Label(new Rect(row.x + h + 4f, row.y, labelWidth, h), p.LabelCap);
             y += h;
         }
     }

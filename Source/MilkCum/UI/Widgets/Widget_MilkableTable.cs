@@ -10,6 +10,7 @@ using static MilkCum.Core.Constants.Constants;
 namespace MilkCum.UI;
 public class Widget_MilkableTable
 {
+    private const string ProductButtonPadding = "        ";
     private readonly Dictionary<string, RaceMilkType> namesToProducts;
     private Vector2 scrollPosition = Vector2.zero;
     public Widget_MilkableTable(Dictionary<string, RaceMilkType> namesToProducts)
@@ -35,20 +36,20 @@ public class Widget_MilkableTable
 
         WidgetRow widgetRow = new(rect.x, rect.y, UIDirection.RightThenDown, rect.width);
         Text.Font = GameFont.Tiny;
-        string lactatingLabel = HediffDefOf.Lactating?.label ?? "Lactating";
+        string lactatingLabel = HediffDefOf.Lactating?.label ?? "EM.Lactating".Translate();
         widgetRow.Label(Lang.Pawn, UNIT_SIZE * 8, null);
         widgetRow.Label(lactatingLabel, UNIT_SIZE * 3, null);
         widgetRow.Label(Lang.MilkType, UNIT_SIZE * 6, Lang.MilkTypeDesc);
         widgetRow.Label(Lang.MilkAmount, UNIT_SIZE * 3, Lang.MilkAmountDesc);
         Text.Font = GameFont.Small;
 		Rect tableRect = new(rect.x, rect.y + UNIT_SIZE, rect.width, rect.height - UNIT_SIZE);
-		Rect scrollRect = new(tableRect.x, tableRect.y + UNIT_SIZE, tableRect.width - UNIT_SIZE, pawnDefs.Count() * UNIT_SIZE);
+		Rect scrollRect = new(tableRect.x, tableRect.y, tableRect.width - UNIT_SIZE, pawnDefs.Count() * UNIT_SIZE);
 		Widgets.BeginScrollView(tableRect, ref scrollPosition, scrollRect, true);
 		try
 		{
 		using (IEnumerator<ThingDef> enumerator = pawnDefs.GetEnumerator())
         {
-            float y_Offset = tableRect.y;
+            float y_Offset = tableRect.y - UNIT_SIZE;
             while (enumerator.MoveNext())
             {
                 ThingDef pawnDef = enumerator.Current;
@@ -85,7 +86,7 @@ public class Widget_MilkableTable
         }
         if (milkProductDef == null)
             milkProductDef = DefDatabase<ThingDef>.GetNamedSilentFail("Milk") ?? MilkCumDefOf.EM_HumanMilk; // 无奶类型时回退，避免 NRE
-        if (Widgets.ButtonText(buttonRect, "        " + milkProductDef.DisplayText(), true, true, true, TextAnchor.MiddleLeft))
+        if (Widgets.ButtonText(buttonRect, ProductButtonPadding + milkProductDef.DisplayText(), true, true, true, TextAnchor.MiddleLeft))
         {
             Window_Search searchWindow = new(namesToProducts[currentOptionDef.defName].SetMilkType) { windowRect = new Rect(buttonRect.x, buttonRect.y, buttonRect.width, 500) };
             Find.WindowStack.Add(searchWindow);

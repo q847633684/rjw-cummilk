@@ -17,13 +17,13 @@ public class Window_Search : Window
 	private readonly Action<ThingDef> onClose;
 	public Window_Search(Action<ThingDef> onClose)
 	{
-		this.doCloseX = true;
-		this.closeOnClickedOutside = true;
-		this.absorbInputAroundWindow = true;
-		this.closeOnAccept = true;
-		this.searchResults = AllDefs;
+		optionalTitle = "EM.WindowSearchTitle".Translate();
+		doCloseX = true;
+		closeOnClickedOutside = true;
+		absorbInputAroundWindow = true;
+		closeOnAccept = true;
+		searchResults = AllDefs;
 		this.onClose = onClose;
-
 	}
 	public override void PreClose()
 	{
@@ -33,13 +33,21 @@ public class Window_Search : Window
 	public override void DoWindowContents(Rect inRect)
 	{
 		Text.Font = GameFont.Small;
-		Rect quickSearchRect = new(inRect.x, inRect.y, inRect.width - 2 * Text.LineHeight, UNIT_SIZE);
+		// 占位提示（多语言）：搜索框无原生 placeholder 时用灰字提示
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, Text.LineHeight), "EM.SearchItemsPlaceholder".Translate());
+		GUI.color = Color.white;
+		Rect quickSearchRect = new(inRect.x, inRect.y + Text.LineHeight, inRect.width - 2 * Text.LineHeight, UNIT_SIZE);
 		quickSearchWidget.OnGUI(quickSearchRect, UpdateFilteredDefs);
 		Listing_Standard listing_Standard = new(GameFont.Small);
 		Text.Anchor = TextAnchor.MiddleLeft;
 
-		Widgets.BeginScrollView(new Rect(inRect.x, inRect.y + UNIT_SIZE * 2, inRect.width, inRect.height - UNIT_SIZE * 2), ref scrollPosition, new Rect(inRect.x, inRect.y + UNIT_SIZE, inRect.width - Text.LineHeight, searchResults.Count * Text.LineHeight));
-		Rect listingRect = new(inRect.x, inRect.y + UNIT_SIZE, inRect.width - Text.LineHeight, 999999);
+		float listTop = inRect.y + Text.LineHeight + UNIT_SIZE;
+		float listHeight = inRect.height - Text.LineHeight - UNIT_SIZE;
+		Rect outRect = new(inRect.x, listTop, inRect.width, listHeight);
+		Rect contentRect = new(inRect.x, listTop, inRect.width - Text.LineHeight, Mathf.Max(1f, searchResults.Count * Text.LineHeight));
+		Widgets.BeginScrollView(outRect, ref scrollPosition, contentRect);
+		Rect listingRect = new(inRect.x, listTop, inRect.width - Text.LineHeight, 999999);
 		listing_Standard.Begin(listingRect);
 		listing_Standard.verticalSpacing = 2f;
 		foreach (ThingDef def in searchResults)

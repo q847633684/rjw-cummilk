@@ -36,7 +36,7 @@
 
 | 子 Tab | 内容 | 说明/描述需求 |
 |--------|------|----------------|
-| **总览** | 哺乳总览说明、营养→能量、哺乳时间 breastfeedTime | 谁可以喂谁、单次哺乳时长、机械族营养换算。 |
+| **总览** | 哺乳总览说明、营养→能量 | 谁可以喂谁、机械族营养换算；吸奶流速由产奶表产量调节（无单独哺乳时长设置）。 |
 | **人形** | Widget_BreastfeedSettings 人形部分 | 允许哺乳、可喂人/动物/机械等。 |
 | **动物** | Widget_BreastfeedSettings 动物部分 | 同上。 |
 | **机械族** | Widget_BreastfeedSettings 机械族部分 | 同上。 |
@@ -90,8 +90,7 @@
 |------|------|----------------|
 | **哺乳总览** | 一句说明：谁可以喂谁、在下面分类型设置。 | 新增 EM.BreastfeedOverviewDesc。 |
 | **营养→能量** | nutritionToEnergyFactor（机械族哺乳） | 保留；Tooltip 说明用于机械族哺乳时的营养换算。 |
-| **哺乳时间** | breastfeedTime | 从高级移入；Tooltip：单次哺乳动作时长（tick）。 |
-| **人形/动物/机械族** | 现有 Widget_BreastfeedSettings 三子 Tab | 保留；每类「允许哺乳」「可喂人/动物/机械」等已有逻辑，补一句区块描述即可。 |
+| **人形/动物/机械族** | 现有 Widget_BreastfeedSettings 三子 Tab | 保留；每类「允许哺乳」「可喂人/动物/机械」等已有逻辑，补一句区块描述即可。吸奶流速由产奶表产量调节，无 breastfeedTime 设置。 |
 
 ### Tab 3：健康与风险（乳腺炎、耐受、溢出、AI）
 

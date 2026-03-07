@@ -3,6 +3,7 @@ using UnityEngine;
 using Verse;
 
 namespace MilkCum.UI;
+/// <summary>奶类型基因配置弹窗。若后续增加选项导致内容超出窗口，可改为可滚动或按内容计算高度。</summary>
 public class Dialog_GeneConfig : Window
 {
     private readonly Gene_MilkTypeData gene_MilkType;
@@ -11,8 +12,9 @@ public class Dialog_GeneConfig : Window
     public override Vector2 InitialSize => new(280f, 450f);
     public Dialog_GeneConfig(Action<Gene_MilkTypeData> onConfirm, Gene_MilkTypeData gene_MilkType = null)
     {
+        optionalTitle = "EM.GeneConfigTitle".Translate();
         this.onConfirm = onConfirm;
-        this.draggable = true;
+        draggable = true;
         this.closeOnAccept = false;
         this.closeOnClickedOutside = true;
         this.absorbInputAroundWindow = true;

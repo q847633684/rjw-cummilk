@@ -17,4 +17,8 @@ public class PawnColumnWorker_MilkEquivalentDose : PawnColumnWorker_Text
         if (oneDoseL <= 0f || L <= 0f) return "-";
         return (L / oneDoseL).ToString("F1");
     }
+    protected override string GetHeaderTip(PawnTable table)
+    {
+        return "EM.MilkEquivalentDoseColumnTip".Translate();
+    }
 }

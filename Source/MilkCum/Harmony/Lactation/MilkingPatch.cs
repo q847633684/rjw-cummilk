@@ -404,7 +404,7 @@ internal static class BreastPoolTooltipHelper
     }
 }
 
-/// <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块，保证「人类乳房」等 RJW 乳房 hediff 悬停时一定显示储量/流速。</summary>
+/// <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块。仅当「有泌乳且当前为 RJW 乳房行」时追加；没有泌乳不追加，非乳房行不追加（genitalFamily != Breasts 已 return）。若 __result 中已包含本块（同一 getter 被调用两次并拼接时会重复），则不再追加以免同一悬浮内出现两份相同内容。</summary>
 [HarmonyPatch(typeof(HediffComp_SexPart), "get_CompTipStringExtra")]
 public static class HediffComp_SexPart_CompTipStringExtra_Patch
 {
@@ -419,11 +419,13 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
         {
             Pawn pawn = parent.pawn;
             if (pawn.CompEquallyMilkable() == null || !pawn.IsLactating()) return;
+            string sectionLabel = parent.LabelCap;
+            string blockHeader = "EM.PoolBreastSectionHeader".Translate(sectionLabel);
+            if (!string.IsNullOrEmpty(__result) && __result.Contains(blockHeader)) return;
             string poolKey = pawn.GetPoolKeyForBreastHediff(parent);
             if (string.IsNullOrEmpty(poolKey)) return;
             var entries = pawn.GetPoolEntriesForBreastHediff(parent);
             if (entries.Count == 0) return;
-            string sectionLabel = parent.LabelCap;
             string block = BreastPoolTooltipHelper.BuildBreastPairBlock(sectionLabel, entries, poolKey, pawn);
             if (!string.IsNullOrEmpty(block))
                 __result = (__result ?? "") + "\n" + block;
@@ -432,5 +434,20 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
         {
             Log.Warning($"[MilkCum] HediffComp_SexPart CompTipStringExtra breast pool append: {ex.Message}");
         }
+    }
+}
+
+/// <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。</summary>
+[HarmonyPatch(typeof(Thing), nameof(Thing.GetStatValue), new[] { typeof(StatDef), typeof(int) })]
+public static class Thing_GetStatValue_PartialMilkNutrition_Patch
+{
+    [HarmonyPrefix]
+    public static bool Prefix(Thing __instance, StatDef stat, ref float __result)
+    {
+        if (stat != StatDefOf.Nutrition) return true;
+        var comp = __instance.TryGetComp<Fluids.Lactation.Comps.CompPartialMilk>();
+        if (comp == null || comp.fillAmount <= 0f) return true;
+        __result = comp.fillAmount;
+        return false;
     }
 }

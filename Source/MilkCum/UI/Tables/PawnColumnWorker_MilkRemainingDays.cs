@@ -13,4 +13,8 @@ public class PawnColumnWorker_MilkRemainingDays : PawnColumnWorker_Text
 		if (comp == null || comp.RemainingDays <= 0f) return "-";
 		return comp.RemainingDays.ToString("F1") + "d";
 	}
+	protected override string GetHeaderTip(PawnTable table)
+	{
+		return "EM.MilkRemainingDaysColumnTip".Translate();
+	}
 }

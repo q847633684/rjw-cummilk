@@ -10,7 +10,7 @@ namespace MilkCum.Fluids.Lactation.Comps;
 public class CompEquallyMilkable : CompMilkable
 {
     protected Pawn Pawn => parent as Pawn;
-    /// <summary>产出周期已移除，挤奶间隔固定�?1 天（水池模型不依赖此值）</summary>
+    /// <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）</summary>
     protected override int GatherResourcesIntervalDays => 1;
     protected override int ResourceAmount => (int)Pawn.MilkAmount();
     protected override ThingDef ResourceDef => Pawn.MilkDef();
@@ -18,14 +18,14 @@ public class CompEquallyMilkable : CompMilkable
     public float breastfedAmount = 0f;
     public float maxFullness = 1f;
 
-    /// <summary>水池模型：左乳水位（0～左乳容量），与右乳合计 0～maxFullness；总容�?= �?右（正常�?1+1=2）。由 SyncLeftRightFromBreastFullness �?breastFullness 汇总</summary>
+    /// <summary>水池模型：左乳水位（0～左乳容量），与右乳合计 0～maxFullness；总容量 = 左+右（正常为 1+1=2）。由 SyncLeftRightFromBreastFullness 从 breastFullness 汇总</summary>
     private float leftFullness;
-    /// <summary>水池模型：右乳水位（0～右乳基础容量），与左乳合�?0～maxFullness</summary>
+    /// <summary>水池模型：右乳水位（0～右乳基础容量），与左乳合计 0～maxFullness</summary>
     private float rightFullness;
-    /// <summary>按单�?key（Part.def.defName �?defName_L/R）的水位，用于左1/�?/�?/�? 独立进水与展示。有则优先；无则�?left/right 反推</summary>
+    /// <summary>按单个 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则由 left/right 反推</summary>
     private Dictionary<string, float> breastFullness = new Dictionary<string, float>();
 
-    /// <summary>当前总奶量（0~maxFullness），双池�?= leftFullness + rightFullness；对外只读</summary>
+    /// <summary>当前总奶量（0~maxFullness），双池和 = leftFullness + rightFullness；对外只读</summary>
     public new float Fullness => leftFullness + rightFullness;
     public float LeftFullness => leftFullness;
     public float RightFullness => rightFullness;
@@ -42,35 +42,35 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
     internal List<Pawn> assignedFeeders = new();
-    /// <summary>谁可以使用我的奶。名单为空时会预填子�?伴侣；仅名单内的人可吸奶/挤奶</summary>
+    /// <summary>谁可以使用我的奶。名单为空时会预填子女/伴侣；仅名单内的人可吸奶/挤奶</summary>
     internal List<Pawn> allowedSucklers = new();
-    /// <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚�?奴隶产主时亦不默认允许殖民者（7.4）</summary>
+    /// <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）</summary>
     internal List<Pawn> allowedConsumers = new();
     private int updateTick = 0;
     private bool cachedActive = false;
     /// <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）</summary>
     private float overflowAccumulator = 0f;
-    /// <summary>10.8-6：最近一次被挤奶的游�?tick，用于「长时间未挤奶」心情判定</summary>
+    /// <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定</summary>
     private int lastGatheredTick = -1;
-    /// <summary>规格：连续满池（Fullness�?5% maxFullness）的 tick 数，用于乳腺�?堵塞触发</summary>
+    /// <summary>规格：连续满池（Fullness ≥ 5% maxFullness）的 tick 数，用于乳腺炎堵塞触发</summary>
     private int ticksFullPool;
     /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏</summary>
     private int lastFullPoolLetterTick = -1;
-    /// <summary>四层模型（阶�?.2）：组织适应导致的容量增�?�?，maxFullness = 基础容量 + 本值</summary>
+    /// <summary>四层模型（阶段 0.2）：组织适应导致的容量增量，maxFullness = 基础容量 + 本值</summary>
     private float capacityAdaptation;
-    /// <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间�?60 tick</summary>
+    /// <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick</summary>
     private bool cachedWasLactatingWithDrugInduced = false;
-    /// <summary>满池溢出累计量（�?Debug 显示用）</summary>
+    /// <summary>满池溢出累计量（仅 Debug 显示用）</summary>
     internal float OverflowAccumulator => overflowAccumulator;
 
-    /// <summary>�?key 取该乳当前水位，用于健康页悬停等；无�?key 时返�?0</summary>
+    /// <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
     public float GetFullnessForKey(string key)
     {
         if (string.IsNullOrEmpty(key) || breastFullness == null) return 0f;
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
-    /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，�?Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返�?&gt; 0</summary>
+    /// <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，由 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 > 0</summary>
     public float GetReabsorbedNutritionPerDay()
     {
         if (!MilkCumSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
@@ -88,7 +88,7 @@ public class CompEquallyMilkable : CompMilkable
                 reabsorbedPoolPerStep += (cur - e.Capacity) * (1f - shrinkFactor);
         }
         if (reabsorbedPoolPerStep <= 0f) return 0f;
-        float reabsorbedPoolPerDay = reabsorbedPoolPerStep * (60000f / 60f); // �?60 tick 一�?
+        float reabsorbedPoolPerDay = reabsorbedPoolPerStep * (60000f / 60f); // 每 60 tick 一次
         return reabsorbedPoolPerDay * PoolModelConstants.NutritionPerPoolUnit
             * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency);
     }
@@ -133,16 +133,16 @@ public class CompEquallyMilkable : CompMilkable
         SyncBaseFullness();
     }
 
-    /// <summary>10.8-6：最近一次被挤奶的游�?tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>
+    /// <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>
     public int LastGatheredTick => lastGatheredTick;
 
-    /// <summary>将双池总和同步到基�?fullness，供可能读取基类字段的代码使用</summary>
+    /// <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用</summary>
     private void SyncBaseFullness()
     {
         fullness = Mathf.Clamp(leftFullness + rightFullness, 0f, maxFullness);
     }
 
-    /// <summary>�?per-breast 字典汇总到 leftFullness / rightFullness（按 GetBreastPoolEntries �?IsLeft）</summary>
+    /// <summary>从 per-breast 字典汇总到 leftFullness / rightFullness（按 GetBreastPoolEntries 的 IsLeft）</summary>
     private void SyncLeftRightFromBreastFullness()
     {
         if (Pawn == null || breastFullness == null) return;
@@ -159,7 +159,7 @@ public class CompEquallyMilkable : CompMilkable
         rightFullness = right;
     }
 
-    /// <summary>泌乳结束时清空双池（�?HediffComp_EqualMilkingLactating 调用）</summary>
+    /// <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）</summary>
     public void ClearPools()
     {
         leftFullness = 0f;
@@ -167,7 +167,7 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness?.Clear();
         SyncBaseFullness();
     }
-    /// <summary>确保列表�?null、移除无效引用；名单为空时预填子�?伴侣（默认勾选）</summary>
+    /// <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（默认勾选）</summary>
     public void EnsureSaveCompatAllowedLists()
     {
         allowedSucklers ??= new List<Pawn>();
@@ -184,7 +184,7 @@ public class CompEquallyMilkable : CompMilkable
                     allowedSucklers.Add(pawn);
         }
     }
-    /// <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆�?design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick �?EnsureLactatingHediffFromConditions 中执行</summary>
+    /// <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库 design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行</summary>
     protected override bool Active
     {
         get
@@ -205,7 +205,7 @@ public class CompEquallyMilkable : CompMilkable
     public override void CompTick()
     {
         if (!parent.IsHashIntervalTick(60)) { return; }
-        // �?tick 同步总容量（单乳 0.5 / 双乳 (�?右Severity)/2），供满池判定与显示
+        // 每 tick 同步总容量（单乳 0.5 / 双乳 (左+右Severity)/2），供满池判定与显示
         if (parent is Pawn p)
         {
             float baseMax = Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
@@ -213,7 +213,7 @@ public class CompEquallyMilkable : CompMilkable
             {
                 float effectiveMax = baseMax + capacityAdaptation;
                 float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
-                float step = 60f / 60000f; // �?60 tick = 0.001 游戏�?
+                float step = 60f / 60000f; // 每 60 tick = 0.001 游戏日
                 float theta = Mathf.Max(0f, MilkCumSettings.adaptationTheta);
                 float omega = Mathf.Max(0f, MilkCumSettings.adaptationOmega);
                 capacityAdaptation += step * (theta * Mathf.Max(P - 0.85f, 0f) - omega * (1f - P));
@@ -229,7 +229,7 @@ public class CompEquallyMilkable : CompMilkable
             if (leftFullness + rightFullness > stretchTotal)
                 SetFullness(stretchTotal, stretchTotal);
         }
-        // 基因/物种/设置驱动�?Lactating 维护、药物泌乳增益、胀�?hediff 变化很慢�?20 tick�? 秒）足够
+        // 基因/物种/设置驱动的 Lactating 维护、药物泌乳增益、胀满 hediff 变化很慢，20 tick（约 1 秒）足够
         if (parent.IsHashIntervalTick(120))
         {
             EnsureLactatingHediffFromConditions();
@@ -237,14 +237,14 @@ public class CompEquallyMilkable : CompMilkable
             MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, Fullness, maxFullness);
         }
         if (!Active) { return; }
-        // LOD：非当前地图�?pawn �?300 tick 更新一次池，降低规模大时的负担；需结合 Profiler 验证�?
+        // LOD：非当前地图的 pawn 每 300 tick 更新一次池，降低规模大时的负担；需结合 Profiler 验证
         bool onCurrentMap = Pawn?.MapHeld == null || Pawn.MapHeld == Find.CurrentMap;
         if (onCurrentMap || parent.IsHashIntervalTick(300))
             UpdateMilkPools();
         if (parent.IsHashIntervalTick(2000)) MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, Fullness, ticksFullPool);
     }
 
-    /// <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避�?Active getter 产生副作用</summary>
+    /// <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避免 Active getter 产生副作用</summary>
     private void EnsureLactatingHediffFromConditions()
     {
         if (parent is not Pawn pawn || !pawn.SpawnedOrAnyParentSpawned || !pawn.IsColonyPawn() || pawn.Faction == null)
@@ -256,14 +256,14 @@ public class CompEquallyMilkable : CompMilkable
             lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
             return;
         }
-        // 非人形且不可挤奶：移�?Lactating
+        // 非人形且不可挤奶：移除 Lactating
         if (!pawn.RaceProps.Humanlike && !pawn.IsMilkable())
         {
             if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) is Hediff lactating)
                 pawn.health.RemoveHediff(lactating);
             return;
         }
-        // 设置：殖民地成年雌性动物始终泌�?
+        // 设置：殖民地成年雌性动物始终泌乳
         if (MilkCumSettings.femaleAnimalAdultAlwaysLactating && pawn.IsAdultFemaleAnimalOfColony())
         {
             Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
@@ -292,7 +292,7 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分�?60 tick �?ShrinkPerStep 向基础容量收敛），回缩吸收�?GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突</summary>
+    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛），回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
@@ -311,17 +311,17 @@ public class CompEquallyMilkable : CompMilkable
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 60f;
         SyncLeftRightFromBreastFullness();
-        // 撑大后仍按压力曲线算生产，TickGrowth 将超出撑大部分算溢出，实现持续微量溢�?
+        // 撑大后仍按压力曲线算生产，TickGrowth 将超出撑大部分算溢出，实现持续微量溢出
         float stretchTotal = entries.Sum(e => e.Capacity * PoolModelConstants.StretchCapFactor);
-        // 接近撑大时不再传 minFactorWhenNearFull（带下限公式已内�?f_min，最低生产自然≥0.02�?
-        // 喷乳反射 R：按侧生效，每侧进水�?× GetLetdownReflexFlowMultiplier(sideKey)；每 tick 统一衰减各侧 R
+        // 接近撑大时不再传 minFactorWhenNearFull（带下限公式已内置 f_min，最低生产自然≥0.02）
+        // 喷乳反射 R：按侧生效，每侧进水 × GetLetdownReflexFlowMultiplier(sideKey)；每 tick 统一衰减各侧 R
         if (MilkCumSettings.enableLetdownReflex)
             lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
-        // 四层模型：炎�?I 离散更新与乳腺炎触发（每 60 tick）；�?MilkRelatedHealthHelper
+        // 四层模型：炎症 I 离散更新与乳腺炎触发（每 60 tick）；见 MilkRelatedHealthHelper
         MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
         if (MilkCumSettings.enableToleranceDynamic)
             lactatingComp.UpdateToleranceDynamic(currentLactation, 60f / 60000f);
-        // 按对分组、每�?TickGrowth：见 记忆�?design/双池与PairIndex；进水周�?60 tick：见 记忆�?decisions/ADR-001-进水与衰减周�?
+        // 按对分组、每次 TickGrowth：见 记忆库 design/双池与PairIndex；进水周期 60 tick：见 记忆库 decisions/ADR-001-进水与衰减周期
         var byPair = entries.GroupBy(e => e.PairIndex).OrderBy(g => g.Key).ToList();
         foreach (var group in byPair)
         {
@@ -406,7 +406,7 @@ public class CompEquallyMilkable : CompMilkable
         Find.LetterStack.ReceiveLetter(title, text, LetterDefOf.NegativeEvent, new TargetInfo(Pawn));
     }
 
-    /// <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污�?Def 由设置指定</summary>
+    /// <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定</summary>
     private void HandleOverflow(float overflowThisTick)
     {
         if (overflowThisTick <= 0f || Pawn == null || !Pawn.Spawned || Pawn.Map == null) { return; }
@@ -438,7 +438,7 @@ public class CompEquallyMilkable : CompMilkable
     }
 
     /// <summary>
-    /// 设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量�?
+    /// 设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
     /// </summary>
     /// <param name="value">目标总水量</param>
     /// <param name="cap">可选；不传时用 maxFullness 为上限；传时用于 clamp（如关压力因子时用撑大总容量）</param>
@@ -447,7 +447,7 @@ public class CompEquallyMilkable : CompMilkable
         float target = Mathf.Clamp(value, 0f, cap ?? maxFullness);
         float total = leftFullness + rightFullness;
         if (total <= 0f) { SyncBaseFullness(); return; }
-        // target >= total 时也按比例缩放，保证 leftFullness + rightFullness == target，避免与 base.fullness 不同�?
+        // target >= total 时也按比例缩放，保证 leftFullness + rightFullness == target，避免与 base.fullness 不同步
         float factor = target / total;
         if (breastFullness != null)
         {
@@ -461,9 +461,9 @@ public class CompEquallyMilkable : CompMilkable
     }
 
     /// <summary>
-    /// 吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图；记忆�?design/双池与PairIndex、记忆库/decisions/ADR-003-选侧先左�?
+    /// 吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图；记忆库 design/双池与PairIndex、记忆库/decisions/ADR-003-选侧先左。
     /// </summary>
-    /// <param name="amount">要扣的池单位量（�?Charge/Fullness 同单位）</param>
+    /// <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
     /// <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激</param>
     /// <returns>实际扣掉的量</returns>
     public float DrainForConsume(float amount, List<string> drainedKeys = null)
@@ -493,7 +493,7 @@ public class CompEquallyMilkable : CompMilkable
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftF = GetFullnessForKey(leftE.Key);
                 float rightF = GetFullnessForKey(rightE.Key);
-                // 同对内只按满度；左右相等时先左（与性别/变�?无性别种族无关�?
+                // 同对内只按满度；左右相等时先左（与性别/变性/无性别种族无关）
                 bool preferLeft = true;
                 bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && preferLeft);
                 string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
@@ -531,41 +531,40 @@ public class CompEquallyMilkable : CompMilkable
                 }
             }
         }
+        // 浮点余量吸收：remaining 仅为浮点误差（< 0.001）时从池中再扣掉，使返回值与请求整数量一致，避免 1.9999999 导致少发一瓶
+        const float floatDustEpsilon = 0.001f;
+        if (remaining > 1E-6f && remaining < floatDustEpsilon)
+        {
+            foreach (var e in entries)
+            {
+                if (remaining <= 1E-6f || string.IsNullOrEmpty(e.Key)) break;
+                float f = GetFullnessForKey(e.Key);
+                if (f <= 0f) continue;
+                float take = Mathf.Min(remaining, f);
+                breastFullness[e.Key] = Mathf.Max(0f, f - take);
+                if (drainedKeys != null && !drainedKeys.Contains(e.Key)) drainedKeys.Add(e.Key);
+                remaining -= take;
+            }
+        }
         SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
         return amount - remaining;
     }
-    /// <summary>
-    /// 挤奶：从所有乳房对按顺序扣量（�?DrainForConsume 一致），再按实际扣量产出奶�?
-    /// </summary>
-    new public void Gathered(Pawn doer)
+
+    /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。</summary>
+    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null)
     {
-        if (!Active)
-        {
-            Log.Error(string.Concat(doer, " gathered body resources while not Active: ", parent));
-        }
-        Pawn pawn = parent as Pawn;
-        float amountToTake = Mathf.Min(fResourceAmount, Fullness);
-        if (amountToTake <= 0f)
+        if (totalDrained <= 0f)
         {
             SyncBaseFullness();
             return;
         }
-        var drainedKeys = new List<string>();
-        float drained = DrainForConsume(amountToTake, drainedKeys);
-        pawn.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys);
-        float yieldFactor = doer.GetStatValue(StatDefOf.AnimalGatherYield);
-        Building_Milking milkingSpot = (doer.jobs?.curDriver as JobDriver_MilkCumMilk)?.MilkBuilding;
-        if (milkingSpot != null)
-            yieldFactor += milkingSpot.YieldOffset();
-        // AnimalGatherYield 为数量倍率（原�?1.5+），非成功概率；effectiveYield = drained × yieldFactor，上�?drained�?
-        float effectiveYield = Mathf.Min(drained, drained * Mathf.Max(0f, yieldFactor));
-        int num = GenMath.RoundRandom(effectiveYield);
-        if (num <= 0 && parent.Map != null && effectiveYield < drained)
-        {
-            MoteMaker.ThrowText((doer.DrawPos + parent.DrawPos) / 2f, parent.Map, Lang.ProductWasted, 3.65f);
-        }
-        else if (num > 0)
+        Pawn pawn = parent as Pawn;
+        // JobDriver 传累加小数（2.3、0.98 等），向下取整得瓶数；0.999f 容错避免 1.999… 少发一瓶
+        int num = Mathf.FloorToInt(totalDrained);
+        if (totalDrained - num >= 0.999f)
+            num++;
+        if (num > 0)
         {
             pawn.LactatingHediffWithComps()?.OnGathered();
             while (num > 0)
@@ -587,8 +586,26 @@ public class CompEquallyMilkable : CompMilkable
                     GenPlace.TryPlaceThing(thing, doer.Position, doer.Map, ThingPlaceMode.Near);
             }
         }
+        else if (totalDrained >= 0.001f && totalDrained < 1f && MilkCumDefOf.EM_HumanMilkPartial != null && ResourceDef == MilkCumDefOf.EM_HumanMilk)
+        {
+            // 未满 1 瓶：生成「人奶(未满)」，营养 = totalDrained，可继续存放/食用
+            pawn.LactatingHediffWithComps()?.OnGathered();
+            Thing thing = ThingMaker.MakeThing(MilkCumDefOf.EM_HumanMilkPartial);
+            if (thing.TryGetComp<CompPartialMilk>() is CompPartialMilk compPartial)
+                compPartial.fillAmount = totalDrained;
+            if (thing.TryGetComp<CompShowProducer>() is CompShowProducer compShowProducer && pawn.RaceProps.Humanlike)
+            {
+                if (MilkCumSettings.HasRaceTag(thing))
+                    compShowProducer.producerKind = pawn.kindDef;
+                if (MilkCumSettings.HasPawnTag(thing))
+                    compShowProducer.producer = pawn;
+            }
+            if (milkingSpot != null)
+                milkingSpot.PlaceMilkThing(thing);
+            else
+                GenPlace.TryPlaceThing(thing, doer.Position, doer.Map, ThingPlaceMode.Near);
+        }
         SyncBaseFullness();
-        // 10.8-5：挤奶心情细�?�?被允许的人挤奶给正面记忆，否则给强制挤奶负面记忆
         if (parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
         {
             if (MilkPermissionExtensions.IsAllowedSuckler(milkedPawn, doer))
@@ -601,9 +618,7 @@ public class CompEquallyMilkable : CompMilkable
             else if (MilkCumDefOf.EM_ForcedMilking != null)
                 milkedPawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_ForcedMilking);
         }
-        // 10.8-6：记录最近一次挤奶时刻，供「长时间未挤奶」心情判�?
         lastGatheredTick = Find.TickManager.TicksGame;
-        // 规格：挤奶时略微缓解乳房不�?乳腺�?
         if (parent is Pawn pawnForMastitis && MilkCumDefOf.EM_Mastitis != null)
         {
             var mastitis = pawnForMastitis.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
@@ -616,9 +631,9 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>是否有躯�?乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
+    /// <summary>是否有躯干/乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
     public static bool HasTorsoOrBreastInjury(Pawn pawn) => MilkRelatedHealthHelper.HasTorsoOrBreastInjury(pawn);
-    /// <summary>是否允许被该泌乳者自动喂食。仅�?canBeFed 开关；不再使用「谁可以喂我」列表</summary>
+    /// <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表</summary>
     public bool AllowedToBeAutoFedBy(Pawn pawn)
     {
         return this.MilkSettings?.canBeFed == true;

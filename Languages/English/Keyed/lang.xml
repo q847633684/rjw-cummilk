@@ -37,6 +37,7 @@
     <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>Milking work total base</EM.MilkingWorkTotalBase>
     <EM.MilkingCapacityFactor>Milking capacity factor</EM.MilkingCapacityFactor>
+    <EM.MilkAmountDesc>Milking drains the full pool; yield only affects milking work total. Nursing duration is set by options and baby need; yield only affects portion/Charge conversion.</EM.MilkAmountDesc>
     <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>Gain offset: {0}</EM.LactatingGainPercent>
@@ -46,12 +47,23 @@
     <EM.ProducerRestrictionsColumn>Who can use my milk / eat my milk or cum products</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>Female (lactating): who can use my milk, who can eat my milk products. Male: who can eat my cum products. Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>
     <EM.ProducerRestrictionsTitle>{0}'s restrictions</EM.ProducerRestrictionsTitle>
+    <EM.MilkTagsTableHeaderDesc>Whether milk/cum product info shows race or producer name. "Show animal names" must be enabled for producer restrictions (who can eat my products) to apply.</EM.MilkTagsTableHeaderDesc>
+    <EM.RequiresRJWMod>Requires RJW (rim.job.world) mod.</EM.RequiresRJWMod>
+    <EM.WindowSearchTitle>Select item</EM.WindowSearchTitle>
+    <EM.SearchItemsPlaceholder>Search by name or defName...</EM.SearchItemsPlaceholder>
+    <EM.Lactating>Lactating</EM.Lactating>
+    <EM.MilkFullnessColumnTip>Pool fullness (0–100%). Shows "-" if the pawn has no EM lactation comp.</EM.MilkFullnessColumnTip>
+    <EM.MilkRemainingDaysColumnTip>Estimated remaining lactation days (from L and baseline duration). Shows "-" if not lactating or permanent.</EM.MilkRemainingDaysColumnTip>
+    <EM.MilkEquivalentDoseColumnTip>Current L expressed as equivalent prolactin doses (read-only). One dose ≈ 0.5 L.</EM.MilkEquivalentDoseColumnTip>
+    <EM.LactatingColumnTip>Whether the pawn is lactating. Blue = temporary, red = permanent (stack count).</EM.LactatingColumnTip>
+    <EM.GeneConfigTitle>Milk type gene config</EM.GeneConfigTitle>
     <EM.WhoCanSuckleFromMe>Who can use my milk</EM.WhoCanSuckleFromMe>
     <EM.WhoCanSuckleFromMeDefault>List below is pre-filled with children and partner by default; add or remove as needed.</EM.WhoCanSuckleFromMeDefault>
     <EM.WhoCanUseMyMilkProducts>Who can eat my milk products</EM.WhoCanUseMyMilkProducts>
     <EM.WhoCanUseMyMilkProductsDefault>Default: only me. Add pawns to also allow them to eat my milk or food made from my milk.</EM.WhoCanUseMyMilkProductsDefault>
     <EM.WhoCanUseMyCumProducts>Who can eat my cum products</EM.WhoCanUseMyCumProducts>
     <EM.WhoCanUseMyCumProductsDefault>Default: only me. Add pawns to also allow them to eat my cum or cum-based products.</EM.WhoCanUseMyCumProductsDefault>
+    <EM.ProducerRestrictionConsumersRequiresTagPawn>This restriction only applies when "Show pawn name" is enabled for that product type under Settings → Milk tags. Currently off, so the list is hidden.</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>Female: who can use my milk, who can eat my milk products. Male: who can eat my cum products. Set per producer in the Milk table — click "Specify" (…) on the row.</EM.ProducerRestrictionsHint>
     <EM.HealthTabRestrictionsButton>Who can use my milk / milk or cum products</EM.HealthTabRestrictionsButton>
     <EM.Specify>Specify</EM.Specify>
@@ -195,7 +207,7 @@
     <EM.PoolBreastLabelSuffix>: </EM.PoolBreastLabelSuffix>
     <EM.MilkQuality>Milk quality: {0}</EM.MilkQuality>
     <EM.LactatingProductRate>Product rate: {0} x{1}</EM.LactatingProductRate>
-    <EM.LactatingProductLine>{0}: x{1}</EM.LactatingProductLine>
+    <EM.LactatingProductLine>{0}: {1}</EM.LactatingProductLine>
     <EM.LactatingExtraNutrition>Extra nutrition: {0} / day</EM.LactatingExtraNutrition>
     <EM.LactatingExtraNutritionShort>Extra nutrition: {0} / day</EM.LactatingExtraNutritionShort>
     <EM.PoolRemainingDaysLine>Remaining days: {0}</EM.PoolRemainingDaysLine>

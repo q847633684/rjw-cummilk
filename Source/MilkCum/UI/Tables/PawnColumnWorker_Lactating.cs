@@ -26,4 +26,8 @@ public class PawnColumnWorker_Lactating : PawnColumnWorker_Icon
         if (lactating.Severity >= 1) { return Lang.Lactating + "(" + Lang.Permanent + ")" + " x" + lactating.Severity.ToString("F0"); }
         return null;
     }
+    protected override string GetHeaderTip(PawnTable table)
+    {
+        return "EM.LactatingColumnTip".Translate();
+    }
 }

@@ -12,16 +12,33 @@ public class Widget_BreastfeedSettings
 	private readonly HumanlikeBreastfeed humanlikeBreastfeed;
 	private readonly AnimalBreastfeed animalBreastfeed;
 	private readonly MechanoidBreastfeed mechanoidBreastfeed;
-	private int tabIndex = 0;
+
 	public Widget_BreastfeedSettings(HumanlikeBreastfeed humanlikeBreastfeed, AnimalBreastfeed animalBreastfeed, MechanoidBreastfeed mechanoidBreastfeed)
 	{
 		this.humanlikeBreastfeed = humanlikeBreastfeed;
 		this.animalBreastfeed = animalBreastfeed;
 		this.mechanoidBreastfeed = mechanoidBreastfeed;
 	}
-	public void Draw(Rect inRect)
+
+	/// <summary>主/子 Tab 结构下：仅绘制总览（营养→能量、回缩吸收）。</summary>
+	public void DrawOverview(Rect inRect)
 	{
 		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
+		string overviewDesc = "EM.BreastfeedOverviewDesc".Translate();
+		if (!string.IsNullOrEmpty(overviewDesc))
+		{
+			GUI.color = Color.gray;
+			Widgets.Label(inRect, overviewDesc);
+			GUI.color = Color.white;
+			inRect.y += UNIT_SIZE * 2;
+		}
+		DrawNutritionEnergyBlock(ref inRect);
+		inRect.y += UNIT_SIZE * 2;
+	}
+
+	/// <summary>营养→能量、额外饥饿、回缩吸收：Draw 与 DrawOverview 共用。</summary>
+	private static void DrawNutritionEnergyBlock(ref Rect inRect)
+	{
 		string buffer = MilkCumSettings.nutritionToEnergyFactor.ToString();
 		Widgets.TextFieldNumericLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), "(" + Lang.Join(Lang.Breastfeed, Lang.Mechanoid) + ")" + Lang.Join(Lang.Nutrition, "=>", Lang.Energy, Lang.StatFactor), ref MilkCumSettings.nutritionToEnergyFactor, ref buffer, 1f);
 		inRect.y += UNIT_SIZE;
@@ -34,55 +51,13 @@ public class Widget_BreastfeedSettings
 		float effF = MilkCumSettings.reabsorbNutritionEfficiency;
 		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref effF, new FloatRange(0f, 1f), "EM.ReabsorbNutritionEfficiencyLabel".Translate((MilkCumSettings.reabsorbNutritionEfficiency * 100f).ToString("F0") + "%"), 0.05f);
 		MilkCumSettings.reabsorbNutritionEfficiency = Mathf.Clamp01(effF);
-		inRect.y += UNIT_SIZE * 2;
-		inRect.height -= UNIT_SIZE * 4;
-		List<TabRecord> tabs = new()
-		{
-			new(Lang.Colonist.CapitalizeFirst(), () => tabIndex = 0, tabIndex == 0),
-			new(Lang.Animal.CapitalizeFirst(), () => tabIndex = 1, tabIndex == 1),
-			new(Lang.Mechanoid.CapitalizeFirst(), () => tabIndex = 2, tabIndex == 2)
-		};
-		TabDrawer.DrawTabs(inRect, tabs);
-		Widgets.DrawMenuSection(inRect);
-		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
-		inRect.width -= UNIT_SIZE;
-		DrawTabContent(inRect, tabIndex);
+		inRect.y += UNIT_SIZE;
 	}
 
-	/// <summary>主/子 Tab 结构下：仅绘制总览（营养→能量、哺乳时间）。</summary>
-	public void DrawOverview(Rect inRect)
-	{
-		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
-		string overviewDesc = "EM.BreastfeedOverviewDesc".Translate();
-		if (!string.IsNullOrEmpty(overviewDesc))
-		{
-			GUI.color = Color.gray;
-			Widgets.Label(inRect, overviewDesc);
-			GUI.color = Color.white;
-			inRect.y += UNIT_SIZE * 2;
-		}
-		string bufferEnergy = MilkCumSettings.nutritionToEnergyFactor.ToString();
-		Widgets.TextFieldNumericLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), "(" + Lang.Join(Lang.Breastfeed, Lang.Mechanoid) + ")" + Lang.Join(Lang.Nutrition, "=>", Lang.Energy, Lang.StatFactor), ref MilkCumSettings.nutritionToEnergyFactor, ref bufferEnergy, 1f);
-		inRect.y += UNIT_SIZE * 2;
-		float basisOverview = MilkCumSettings.lactationExtraNutritionBasis;
-		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref basisOverview, new FloatRange(0f, 300f), "EM.LactationExtraNutritionFactor".Translate(MilkCumSettings.lactationExtraNutritionBasis.ToString()), 5f);
-		MilkCumSettings.lactationExtraNutritionBasis = Mathf.RoundToInt(basisOverview);
-		inRect.y += UNIT_SIZE;
-		Widgets.CheckboxLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), "EM.ReabsorbNutritionEnabled".Translate(), ref MilkCumSettings.reabsorbNutritionEnabled);
-		inRect.y += UNIT_SIZE;
-		float effOverview = MilkCumSettings.reabsorbNutritionEfficiency;
-		Widgets.HorizontalSlider(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), ref effOverview, new FloatRange(0f, 1f), "EM.ReabsorbNutritionEfficiencyLabel".Translate((MilkCumSettings.reabsorbNutritionEfficiency * 100f).ToString("F0") + "%"), 0.05f);
-		MilkCumSettings.reabsorbNutritionEfficiency = Mathf.Clamp01(effOverview);
-		inRect.y += UNIT_SIZE * 2;
-		string bufferTime = MilkCumSettings.breastfeedTime.ToString();
-		Widgets.TextFieldNumericLabeled(new Rect(inRect.x, inRect.y, inRect.width, UNIT_SIZE), Lang.Join(Lang.Breastfeed, Lang.Time), ref MilkCumSettings.breastfeedTime, ref bufferTime, 1f);
-	}
-
-	/// <summary>主/子 Tab 结构下：仅绘制指定子 Tab 内容（0=人形，1=动物，2=机械族），不画内层 Tab 栏。</summary>
+	/// <summary>主/子 Tab 结构下：仅绘制指定子 Tab 内容。index 0=人形，1=动物，2=机械族（对应哺乳子 Tab 1/2/3）。</summary>
 	public void DrawTab(Rect inRect, int index)
 	{
 		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
-		float y = inRect.y;
 		DrawTabContent(inRect, index);
 	}
 

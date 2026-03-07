@@ -3,7 +3,7 @@
     <xpath>
       Defs/HediffDef[defName="Lactating"]/comps/li[@Class="HediffCompProperties_Lactating"]</xpath>
     <value>
-      <li Class="HediffCompProperties_EqualMilkingLactating">
+      <li Class="MilkCum.Fluids.Lactation.Hediffs.HediffCompProperties_EqualMilkingLactating">
         <ticksToFullCharge>150000</ticksToFullCharge>
         <initialCharge>0</initialCharge>
         <fullChargeAmount>1</fullChargeAmount>

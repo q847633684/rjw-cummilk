@@ -37,9 +37,11 @@ public static class ChildcareHelper
     {
         HediffComp_Chargeable hediffComp_Chargeable = feeder.LactatingHediff().TryGetComp<HediffComp_Chargeable>();
         if (!baby.TryGetFoodOrEnergyNeed(out float wanted, out float maxLevel)) { return false; }
-        float effectiveTime = MilkCumSettings.breastfeedTime / MilkCumSettings.GetRaceDrugDeltaSMultiplier(feeder);
-        float capMult = Mathf.Clamp(1f + MilkCumSettings.breastfeedCapacityFactor * (feeder.MilkAmount() - 1f), 0.5f, 2f);
-        effectiveTime *= capMult;
+        // ??????? milkingWorkTotalBase + ???? ???? tick ?????????????? 300
+        float milkAmt = feeder.MilkAmount();
+        float capMult = Mathf.Clamp(1f + MilkCumSettings.milkingCapacityFactor * (milkAmt - 1f), 0.5f, 2.5f);
+        float effectiveTime = MilkCumSettings.milkingWorkTotalBase * capMult / MilkCumSettings.GetRaceDrugDeltaSMultiplier(feeder);
+        // ???/Charge ????? GreedyConsume
         float toConsumeInTicks = Mathf.Min(maxLevel * ((float)delta) / effectiveTime);
         if (feeder.MilkDef().ingestible.CachedNutrition <= 0)
         {
@@ -113,7 +115,7 @@ public static class ChildcareHelper
             {
                 baby.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedMe, pawn, null);
                 pawn.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedBaby, baby, null);
-                // 3.1：哺�?被哺乳记忆，便于社交与关系（�?other 的记忆可影响 opinion�?
+                // 3.1 ?????? 1 ?????/???? EM ?????EM_NursedBy / EM_NursedSomeone??????????
                 if (MilkCumDefOf.EM_NursedBy != null)
                     baby.needs?.mood?.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_NursedBy, pawn, null);
                 if (MilkCumDefOf.EM_NursedSomeone != null)

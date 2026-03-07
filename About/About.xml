@@ -7,6 +7,8 @@
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
+
+  <!-- 前置依赖：缺一不可，未安装则无法启用本 mod -->
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>
@@ -16,32 +18,40 @@
     </li>
     <li>
       <packageId>Ludeon.RimWorld.Biotech</packageId>
-      <displayName>Biotech</displayName>
+      <displayName>Biotech（生物科技 DLC）</displayName>
     </li>
     <li>
       <packageId>rim.job.world</packageId>
-      <displayName>RimJobWorld</displayName>
+      <displayName>RimJobWorld（RJW）</displayName>
       <downloadUrl>https://gitgud.io/Ed86/rjw</downloadUrl>
     </li>
   </modDependencies>
+
+  <!-- 加载顺序：本 mod 在这些 mod 之后加载（可选 mod 也会参与排序） -->
   <loadAfter>
+    <li>Ludeon.RimWorld.Core</li>
     <li>brrainz.harmony</li>
     <li>Ludeon.RimWorld.Biotech</li>
+    <li>rim.job.world</li>
     <li>drilledhead.milkexpanded</li>
     <li>akaster.vme.patch</li>
     <li>oskarpotocki.vanillafactionsexpanded.core</li>
-    <li>rim.job.world</li>
     <li>c0ffee.rimworld.animations</li>
   </loadAfter>
+
+  <!-- 本 mod 需在这些 mod 之前加载（如 rjw-genes 依赖本 mod 的 Def） -->
   <loadBefore>
     <li>Vegapnk.rjw.genes</li>
   </loadBefore>
+
+  <!-- 已知冲突：与以下 mod 同时启用会导致功能重复或报错，请勿同时订阅 -->
   <incompatibleWith>
     <li>rjw.milk.humanoid</li>
     <li>Mlie.MilkableColonists</li>
     <li>tory187.rjw.gatheredrjw</li>
     <li>rjw.bucket</li>
   </incompatibleWith>
+
   <description>
 泌乳与精液系统。牛奶和精液合二为一的模组。
   - 牛奶：泌乳、泵送、可食用者（允许的消费者）。

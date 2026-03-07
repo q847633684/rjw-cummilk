@@ -8,6 +8,7 @@ public static class MilkCumDefOf
     public static ThingDef EM_Prolactin;
     public static ThingDef EM_Lucilactin;
     public static ThingDef EM_HumanMilk;
+    public static ThingDef EM_HumanMilkPartial;
     public static ThingDef EM_MilkingPump;
     public static ThingDef EM_MilkingElectric;
     public static JobDef EM_InjectLactatingDrug;

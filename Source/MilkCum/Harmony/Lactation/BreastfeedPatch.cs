@@ -359,7 +359,8 @@ public static class HediffComp_Chargeable_Patch
             float nutritionMilt = __instance.Pawn.MilkDef().ingestible.CachedNutrition / DefDatabase<ThingDef>.GetNamed("Milk").ingestible.CachedNutrition; //Normalize to milk nutrition
             if (nutritionMilt == 0) { nutritionMilt = 1f; } // Drugs as milk
             amountNormalizer *= nutritionMilt;
-            amountNormalizer /= 8f; //Charge is 8x vanilla, 0.125 max, 0.31 min
+            // 吸奶流速与挤奶同量级：×2 使 amountNormalizer ≥ 1 量级，避免 1/8 导致扣池放大 24 倍失控。人形约 2/3，流速约 0.3 池/秒（与挤奶一致）
+            amountNormalizer *= 2f;
             desiredCharge /= amountNormalizer;
             float num;
             var comp = __instance.Pawn.CompEquallyMilkable();
