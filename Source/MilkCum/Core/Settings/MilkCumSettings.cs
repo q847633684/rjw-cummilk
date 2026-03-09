@@ -42,11 +42,19 @@ internal class MilkCumSettings : ModSettings
 	public static bool reabsorbNutritionEnabled = true;
 	/// <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
 	public static float reabsorbNutritionEfficiency = 0.5f;
+	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
+	public static bool lactationPoolTickLog = false;
 	/// <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
 	public static void LactationLog(string message)
 	{
 		if (Verse.Prefs.DevMode && !string.IsNullOrEmpty(message))
 			Verse.Log.Message("[MilkCum.Lactation] " + message);
+	}
+	/// <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/乳池/回缩/吸奶明细。</summary>
+	public static void PoolTickLog(string message)
+	{
+		if (Verse.Prefs.DevMode && lactationPoolTickLog && !string.IsNullOrEmpty(message))
+			Verse.Log.Message("[MilkCum.Pool] " + message);
 	}
 	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
 	public static AnimalBreastfeed animalBreastfeed = new();
@@ -351,6 +359,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref Cumpilation_EnableOscillationMechanics, "Cumpilation.EnableOscillationMechanics", true);
 		Scribe_Values.Look(ref Cumpilation_EnableOscillationMechanicsForAnimals, "Cumpilation.EnableOscillationMechanicsForAnimals", false);
 		Scribe_Values.Look(ref Cumpilation_EnableDebugLogging, "Cumpilation.EnableDebugLogging", false);
+		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
 		Scribe_Values.Look(ref CumpilationLeak_EnableFilthGeneration, "CumpilationLeak.EnableFilthGeneration", true);
 		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateBucket, "CumpilationLeak.EnableAutoDeflateBucket", false);
 		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateClean, "CumpilationLeak.EnableAutoDeflateClean", false);

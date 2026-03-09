@@ -404,13 +404,14 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 60f;
+        float extraFall60 = 0f;
         // 同一时刻、先扣营养再加池：本周期（60 tick）产奶对应的饱食度/能量在此处扣除，与进水同步
         if (Fullness < maxFullness && Pawn != null)
         {
             int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
             float factor = basis / 150f;
             const float interval60PerDay = 60f / 60000f;
-            float extraFall60 = lactatingComp.ExtraNutritionPerDay() * factor * interval60PerDay;
+            extraFall60 = lactatingComp.ExtraNutritionPerDay() * factor * interval60PerDay;
             if (Pawn.needs?.food != null)
                 Pawn.needs.food.CurLevel = Mathf.Clamp(Pawn.needs.food.CurLevel - extraFall60, 0f, Pawn.needs.food.MaxLevel);
             else if (Pawn.needs?.energy != null)
@@ -420,6 +421,7 @@ public class CompEquallyMilkable : CompMilkable
             }
         }
         SyncLeftRightFromBreastFullness();
+        float fullnessBefore = Fullness;
         // 撑大后仍按压力曲线算生产，TickGrowth 将超出撑大部分算溢出，实现持续微量溢出
         float stretchTotal = 0f;
         for (int i = 0; i < entries.Count; i++)
@@ -498,11 +500,12 @@ public class CompEquallyMilkable : CompMilkable
             }
         }
         // 满池回缩：同一时刻、先回缩再加回营养（本 60 tick 回缩的池量折算饱食度/能量加回）
+        float addBack = 0f;
         if (reabsorbedPoolThisStep > 0f && MilkCumSettings.reabsorbNutritionEnabled && Pawn != null)
         {
             int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
             float factor = basis / 150f;
-            float addBack = reabsorbedPoolThisStep * PoolModelConstants.NutritionPerPoolUnit
+            addBack = reabsorbedPoolThisStep * PoolModelConstants.NutritionPerPoolUnit
                 * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency) * factor;
             if (Pawn.needs?.food != null)
                 Pawn.needs.food.CurLevel = Mathf.Clamp(Pawn.needs.food.CurLevel + addBack, 0f, Pawn.needs.food.MaxLevel);
@@ -517,6 +520,12 @@ public class CompEquallyMilkable : CompMilkable
         SyncBaseFullness();
         HandleOverflow(overflowTotal);
         TrySendFullPoolLetter();
+        if (MilkCumSettings.lactationPoolTickLog && Verse.Prefs.DevMode && Pawn != null)
+        {
+            float flowAdded = Fullness - fullnessBefore + reabsorbedPoolThisStep;
+            float curLevel = Pawn.needs?.food != null ? Pawn.needs.food.CurLevel : (Pawn.needs?.energy != null ? Pawn.needs.energy.CurLevel : -1f);
+            MilkCumSettings.PoolTickLog($"{Pawn.Name} 饱食={curLevel:F3} 营养-{extraFall60:F4} 乳池+{flowAdded:F4} 回缩-{reabsorbedPoolThisStep:F4} 营养+{addBack:F4} 池满={Fullness:F3}");
+        }
     }
 
     /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图</summary>

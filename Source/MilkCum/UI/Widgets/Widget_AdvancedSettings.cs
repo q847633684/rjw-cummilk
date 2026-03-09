@@ -59,6 +59,8 @@ public class Widget_AdvancedSettings
 		list.Gap(6f);
 		list.Label("EM.DevModeLactationPanel".Translate());
 		list.Gap(4f);
+		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationPoolTickLog".Translate(), ref MilkCumSettings.lactationPoolTickLog);
+		list.Gap(4f);
 		if (Current.ProgramState != ProgramState.Playing || Find.CurrentMap == null)
 		{
 			list.Label("EM.DevModeNoGame".Translate());

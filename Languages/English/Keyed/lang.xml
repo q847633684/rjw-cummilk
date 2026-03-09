@@ -129,6 +129,7 @@
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>
     <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
+    <EM.LactationPoolTickLog>Log each 60-tick: nutrition deducted, pool added, reabsorbed, sucked (DevMode)</EM.LactationPoolTickLog>
     <EM.LoadDefaultsFromDef>Load defaults from Def</EM.LoadDefaultsFromDef>
     <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
     <EM.DefaultsDefLabel>MilkCum defaults</EM.DefaultsDefLabel>

@@ -380,6 +380,8 @@ public static class HediffComp_Chargeable_Patch
                 }
             }
             __result = num;
+            if (num > 0f)
+                MilkCumSettings.PoolTickLog($"消费(Charge) {__instance.Pawn?.Name} 池-{num:F4}");
             return false;
         }
         return true;

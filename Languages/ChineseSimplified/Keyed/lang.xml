@@ -128,6 +128,7 @@
     <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} 未处于泌乳期（无泌乳 hediff）。</EM.DevModeNotLactating>
     <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>
+    <EM.LactationPoolTickLog>每 60 tick 输出：营养扣除、乳池增加、回缩、吸奶（开发模式）</EM.LactationPoolTickLog>
     <EM.LoadDefaultsFromDef>从 Def 加载默认</EM.LoadDefaultsFromDef>
     <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
     <EM.DefaultsDefLabel>精液和母乳默认值</EM.DefaultsDefLabel>

@@ -7,6 +7,7 @@ using RimWorld;
 using UnityEngine;
 using RimWorld.Planet;
 using MilkCum.Core;
+using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Integration.DubsBadHygiene;
 using static RimWorld.ChildcareUtility;
@@ -68,6 +69,8 @@ public static class ChildcareHelper
         comp.breastfedAmount += actualDrained;
 
         float nutritionEquivalent = actualDrained * nutritionPerPoolUnit;
+        if (actualDrained > 0f)
+            MilkCumSettings.PoolTickLog($"吸奶 {feeder.Name} -> {baby.Name} 池-{actualDrained:F4} 营养+{nutritionEquivalent:F4}");
         if (baby.needs.food != null)
         {
             baby.needs.food.CurLevel = Mathf.Min(baby.needs.food.CurLevel + nutritionEquivalent, baby.needs.food.MaxLevel);

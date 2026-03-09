@@ -85,8 +85,14 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.reabsorbNutritionEfficiency">
             <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationPoolTickLog">
+            <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
+        </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.LactationLog(System.String)">
             <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
+        </member>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.PoolTickLog(System.String)">
+            <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/乳池/回缩/吸奶明细。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient">
             <summary>乳房容量系数：左右乳容量 = RJW Severity × 本系数，2=默认，与泌乳效率等可调项对应。</summary>
