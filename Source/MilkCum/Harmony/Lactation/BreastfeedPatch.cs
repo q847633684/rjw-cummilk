@@ -355,13 +355,7 @@ public static class HediffComp_Chargeable_Patch
     {
         if (__instance is HediffComp_EqualMilkingLactating lactating && __instance.Pawn.IsMilkable())
         {
-            float amountNormalizer = __instance.Pawn.MilkAmount() / 3f; //Milk amount normalized to human lactating speed
-            float nutritionMilt = __instance.Pawn.MilkDef().ingestible.CachedNutrition / DefDatabase<ThingDef>.GetNamed("Milk").ingestible.CachedNutrition; //Normalize to milk nutrition
-            if (nutritionMilt == 0) { nutritionMilt = 1f; } // Drugs as milk
-            amountNormalizer *= nutritionMilt;
-            // 吸奶流速与挤奶同量级：×2 使 amountNormalizer ≥ 1 量级，避免 1/8 导致扣池放大 24 倍失控。人形约 2/3，流速约 0.3 池/秒（与挤奶一致）
-            amountNormalizer *= 2f;
-            desiredCharge /= amountNormalizer;
+            // 乳池→营养 1:1：desiredCharge 与池单位同尺度，扣多少池即消耗多少营养
             float num;
             var comp = __instance.Pawn.CompEquallyMilkable();
             if (comp != null)
@@ -385,7 +379,7 @@ public static class HediffComp_Chargeable_Patch
                     lactating.SetMilkFullness(__instance.Charge - num);
                 }
             }
-            __result = num * amountNormalizer;
+            __result = num;
             return false;
         }
         return true;

@@ -36,6 +36,7 @@
 | 架构原则与重组建议 | [design/架构原则与重组建议](design/架构原则与重组建议.md) | #架构 #SOLID #重组 #命名空间 #Integrations |
 | Source 目录结构梳理 | [design/Source目录结构梳理](design/Source目录结构梳理.md) | #目录 #索引 #层级 |
 | 未使用代码与函数清单 | [design/未使用代码与函数清单](design/未使用代码与函数清单.md) | #未使用 #DeadCode #API |
+| 逻辑审阅：营养与泌乳一致性 | [design/逻辑审阅-营养与泌乳一致性](design/逻辑审阅-营养与泌乳一致性.md) | #审阅 #营养 #乳池 #1:1 #Need_Food |
 | 吸奶时间模拟 | [design/吸奶时间模拟](design/吸奶时间模拟.md) | #吸奶 #时间 #公式 #模拟 |
 | 挤奶时间模拟 | [design/挤奶时间模拟](design/挤奶时间模拟.md) | #挤奶 #时间 #公式 #模拟 #流速 |
 | UI 审阅结论 | [design/UI审阅结论](design/UI审阅结论.md) | #UI #审阅 #设置 #翻译 |

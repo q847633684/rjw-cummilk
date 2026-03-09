@@ -5,11 +5,13 @@ using UnityEngine;
 using Verse;
 
 namespace MilkCum.Integration.DubsBadHygiene;
-    /// <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。</summary>
+    /// <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。喝奶（吸奶或食用奶瓶）时满足 DBH 的饮水(Thirst)需求。</summary>
     public static class DubsBadHygieneIntegration
     {
         private static NeedDef _cachedHygieneNeedDef;
         private static bool _cachedHygieneNeedChecked;
+        private static NeedDef _cachedThirstNeedDef;
+        private static bool _cachedThirstNeedChecked;
 
         /// <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef 或检测到 DBH 模组）。</summary>
         public static bool IsDubsBadHygieneActive()
@@ -27,6 +29,34 @@ namespace MilkCum.Integration.DubsBadHygiene;
                     _cachedHygieneNeedDef = needDef;
             }
             return _cachedHygieneNeedDef != null || IsDubsBadHygieneModPresent();
+        }
+
+        /// <summary>饮水(Thirst)需求是否可用（DBH 已加载且启用 Thirst 时）。</summary>
+        public static bool IsThirstNeedAvailable()
+        {
+            if (!IsDubsBadHygieneActive()) return false;
+            if (_cachedThirstNeedChecked) return _cachedThirstNeedDef != null;
+            _cachedThirstNeedChecked = true;
+            _cachedThirstNeedDef = DefDatabase<NeedDef>.GetNamedSilentFail("Thirst")
+                ?? DefDatabase<NeedDef>.GetNamedSilentFail("DBH_Thirst");
+            if (_cachedThirstNeedDef == null)
+            {
+                var needDef = DefDatabase<NeedDef>.AllDefs.FirstOrDefault(d =>
+                    d.defName != null && d.defName.IndexOf("Thirst", System.StringComparison.OrdinalIgnoreCase) >= 0);
+                if (needDef != null)
+                    _cachedThirstNeedDef = needDef;
+            }
+            return _cachedThirstNeedDef != null;
+        }
+
+        /// <summary>为喝奶者满足饮水需求。amount 为池单位/营养当量（1 池单位=1 营养），按 1:1 加到 Thirst.CurLevel，上限 MaxLevel。仅当 DBH 已加载且存在 Thirst 需求时生效。</summary>
+        public static void SatisfyThirst(Pawn pawn, float amount)
+        {
+            if (pawn?.needs == null || amount <= 0f || !IsThirstNeedAvailable() || _cachedThirstNeedDef == null)
+                return;
+            var need = pawn.needs.TryGetNeed(_cachedThirstNeedDef);
+            if (need == null) return;
+            need.CurLevel = Mathf.Min(need.MaxLevel, need.CurLevel + amount);
         }
 
         private static bool IsDubsBadHygieneModPresent()

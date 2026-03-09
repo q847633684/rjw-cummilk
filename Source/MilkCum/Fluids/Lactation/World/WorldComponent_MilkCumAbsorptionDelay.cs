@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
+using MilkCum.Core.Settings;
 using RimWorld;
 using RimWorld.Planet;
 using Verse;
@@ -101,24 +102,38 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         if (pawn?.health?.hediffSet == null) return;
         if (MilkCumDefOf.EM_AbsorptionDelay != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_AbsorptionDelay) is Hediff absorptionHediff)
             pawn.health.RemoveHediff(absorptionHediff);
-            // Δs = rawSeverity × E_tol(t_before)：已包含一次耐受削弱，进水时不再�?E�?.3 动物差异化：乘种族药物倍率�?
-            float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(toleranceBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
-        var hediff = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
-        if (hediff?.comps == null) return;
-        foreach (var c in hediff.comps)
+        // Δs = rawSeverity × E_tol(t_before)：已包含一次耐受削弱；动物差异化：乘种族药物倍率
+        float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(toleranceBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
+        MilkCumSettings.LactationLog($"Prolactin delayed apply: {pawn?.Name}, deltaS={deltaS:F3}");
+        try
         {
-            if (c is HediffComp_EqualMilkingLactating comp)
+            BodyPartRecord bodyPart = null;
+            try { bodyPart = pawn.GetBreastOrChestPart(); }
+            catch (System.Exception ex)
             {
-                comp.AddFromDrug(deltaS);
-                break;
+                MilkCumSettings.LactationLog($"GetBreastOrChestPart failed: {ex.GetType().Name}: {ex.Message}");
             }
+            var hediff = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, bodyPart) as HediffWithComps;
+            if (hediff?.comps == null) return;
+            foreach (var c in hediff.comps)
+            {
+                if (c is HediffComp_EqualMilkingLactating comp)
+                {
+                    comp.AddFromDrug(deltaS);
+                    break;
+                }
+            }
+            // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋（高量心情由 EM_Prolactin_HighThought 显示）
+            ApplyProlactinMoodEffects(pawn, rawSeverity);
+            // 首次药物泌乳成就类记忆（仅一次）
+            if (MilkCumDefOf.EM_FirstLactationDrug != null && pawn.needs?.mood?.thoughts?.memories != null
+                && !pawn.needs.mood.thoughts.memories.Memories.Any(m => m.def == MilkCumDefOf.EM_FirstLactationDrug))
+                pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_FirstLactationDrug);
         }
-        // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋（高量心情由 EM_Prolactin_HighThought 显示�?
-        ApplyProlactinMoodEffects(pawn, rawSeverity);
-        // 首次药物泌乳成就类记忆（仅一次）
-        if (MilkCumDefOf.EM_FirstLactationDrug != null && pawn.needs?.mood?.thoughts?.memories != null
-            && !pawn.needs.mood.thoughts.memories.Memories.Any(m => m.def == MilkCumDefOf.EM_FirstLactationDrug))
-            pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_FirstLactationDrug);
+        catch (System.Exception ex)
+        {
+            Verse.Log.Error($"[MilkCum.Lactation] Prolactin delayed apply failed for {pawn?.Name}: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
+        }
     }
 
     /// <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴�?hediff），供延迟生效与�?World 立即生效共用</summary>

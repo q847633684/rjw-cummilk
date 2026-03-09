@@ -6,9 +6,6 @@
   <!-- 催乳素耐受 EM_Prolactin_Tolerance -->
   <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
   <EM_Prolactin_Tolerance.label>催乳素耐受</EM_Prolactin_Tolerance.label>
-  <EM_Prolactin_Tolerance.stages.0.label>轻微耐受</EM_Prolactin_Tolerance.stages.0.label>
-  <EM_Prolactin_Tolerance.stages.1.label>中度耐受</EM_Prolactin_Tolerance.stages.1.label>
-  <EM_Prolactin_Tolerance.stages.2.label>高度耐受</EM_Prolactin_Tolerance.stages.2.label>
 
   <!-- 催乳素兴奋 EM_Prolactin_High -->
   <EM_Prolactin_High.description>催乳素带来的短期愉悦感；协调能力与意识略有下降。</EM_Prolactin_High.description>
@@ -17,8 +14,6 @@
   <!-- 催乳素成瘾 EM_Prolactin_Addiction -->
   <EM_Prolactin_Addiction.description>对催乳素成瘾。</EM_Prolactin_Addiction.description>
   <EM_Prolactin_Addiction.label>催乳素成瘾</EM_Prolactin_Addiction.label>
-  <EM_Prolactin_Addiction.stages.0.label>满足</EM_Prolactin_Addiction.stages.0.label>
-  <EM_Prolactin_Addiction.stages.1.label>戒断</EM_Prolactin_Addiction.stages.1.label>
 
   <!-- ========== 精液和母乳 Health Conditions ========== -->
   <!-- Cumpilation_Cumflation 体内精液膨胀 -->

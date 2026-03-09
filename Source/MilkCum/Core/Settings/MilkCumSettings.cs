@@ -42,6 +42,12 @@ internal class MilkCumSettings : ModSettings
 	public static bool reabsorbNutritionEnabled = true;
 	/// <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
 	public static float reabsorbNutritionEfficiency = 0.5f;
+	/// <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
+	public static void LactationLog(string message)
+	{
+		if (Verse.Prefs.DevMode && !string.IsNullOrEmpty(message))
+			Verse.Log.Message("[MilkCum.Lactation] " + message);
+	}
 	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
 	public static AnimalBreastfeed animalBreastfeed = new();
 	public static MechanoidBreastfeed mechanoidBreastfeed = new();

@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Linq;
 using rjw;
 using MilkCum.Core;
+using MilkCum.Core.Settings;
 using MilkCum.Harmony;
 
 namespace MilkCum.RJW;
@@ -90,6 +91,7 @@ public static class Hediff_BasePregnancy_Patch
                 lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
             }
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
+            MilkCumSettings.LactationLog($"RJW PostBirth lactation: {mother.Name}");
             MilkPermissionExtensions.TryGiveFirstLactationBirthMemory(mother);
         }
         if (mother.IsInLactatingState() && mother.CompEquallyMilkable() is CompEquallyMilkable comp && mother.CanBreastfeedEver(baby))

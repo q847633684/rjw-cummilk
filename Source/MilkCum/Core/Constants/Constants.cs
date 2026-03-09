@@ -4,7 +4,6 @@ public static class Constants
 {
     public const string MILK_TYPE_PREFIX = "milkType_";
     public const float UNIT_SIZE = 32f;
-    public const float MILK_CHARGE_FACTOR = 8f / 3f; // Max 0.125 => 1, 3 Milk full charge
 }
 
 /// <summary>水池模型常量：规格第七节、第一节、十四节已定。详见 记忆库/domain/代码常量与公式对应。</summary>
@@ -32,6 +31,6 @@ public static class PoolModelConstants
     public const float ShrinkPerStep = 0.009f;
     /// <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
     public const float DoseToLFactor = 1f;
-    /// <summary>1 池单位对应的营养：ExtraNutritionPerDay = flow × 本值；改池容量或 L 单位时只改此处即可保持平衡。</summary>
+    /// <summary>1 池单位 = 1 营养（设计对等）：产奶花 1 营养得 1 池、喝奶花 1 池得 1 营养。ExtraNutritionPerDay = flow×本值；Need_Food 补丁按此扣饱食度，CompPartialMilk 食用时 fillAmount 直接作营养。原版饱食条 0..MaxLevel(≈1)，泌乳时额外掉条属设计。</summary>
     public const float NutritionPerPoolUnit = 1f;
 }

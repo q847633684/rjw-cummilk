@@ -343,13 +343,17 @@ public class CompEquallyMilkable : CompMilkable
         {
             Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
             lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
+            MilkCumSettings.LactationLog($"Lactating ensured (permanent gene): {pawn.Name}");
             return;
         }
         // 非人形且不可挤奶：移除 Lactating
         if (!pawn.RaceProps.Humanlike && !pawn.IsMilkable())
         {
             if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) is Hediff lactating)
+            {
+                MilkCumSettings.LactationLog($"Lactating removed (not milkable): {pawn.Name}");
                 pawn.health.RemoveHediff(lactating);
+            }
             return;
         }
         // 设置：殖民地成年雌性动物始终泌乳
@@ -357,6 +361,7 @@ public class CompEquallyMilkable : CompMilkable
         {
             Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
             lactating.Severity = Mathf.Max(lactating.Severity, 1f);
+            MilkCumSettings.LactationLog($"Lactating ensured (animal always): {pawn.Name}");
         }
     }
 
@@ -399,6 +404,21 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 60f;
+        // 同一时刻、先扣营养再加池：本周期（60 tick）产奶对应的饱食度/能量在此处扣除，与进水同步
+        if (Fullness < maxFullness && Pawn != null)
+        {
+            int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
+            float factor = basis / 150f;
+            const float interval60PerDay = 60f / 60000f;
+            float extraFall60 = lactatingComp.ExtraNutritionPerDay() * factor * interval60PerDay;
+            if (Pawn.needs?.food != null)
+                Pawn.needs.food.CurLevel = Mathf.Clamp(Pawn.needs.food.CurLevel - extraFall60, 0f, Pawn.needs.food.MaxLevel);
+            else if (Pawn.needs?.energy != null)
+            {
+                float extraFallEnergy60 = lactatingComp.ExtraEnergyPerDay() * factor * interval60PerDay;
+                Pawn.needs.energy.CurLevel = Mathf.Clamp(Pawn.needs.energy.CurLevel - extraFallEnergy60, 0f, Pawn.needs.energy.MaxLevel);
+            }
+        }
         SyncLeftRightFromBreastFullness();
         // 撑大后仍按压力曲线算生产，TickGrowth 将超出撑大部分算溢出，实现持续微量溢出
         float stretchTotal = 0f;
@@ -466,11 +486,28 @@ public class CompEquallyMilkable : CompMilkable
         if (Pawn?.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
         float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
+        float reabsorbedPoolThisStep = 0f;
         foreach (var e in entries)
         {
             if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
             if (cur > e.Capacity)
+            {
+                float shrinkAmount = (cur - e.Capacity) * (1f - shrinkFactor);
+                reabsorbedPoolThisStep += shrinkAmount;
                 breastFullness[e.Key] = e.Capacity + (cur - e.Capacity) * shrinkFactor;
+            }
+        }
+        // 满池回缩：同一时刻、先回缩再加回营养（本 60 tick 回缩的池量折算饱食度/能量加回）
+        if (reabsorbedPoolThisStep > 0f && MilkCumSettings.reabsorbNutritionEnabled && Pawn != null)
+        {
+            int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
+            float factor = basis / 150f;
+            float addBack = reabsorbedPoolThisStep * PoolModelConstants.NutritionPerPoolUnit
+                * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency) * factor;
+            if (Pawn.needs?.food != null)
+                Pawn.needs.food.CurLevel = Mathf.Clamp(Pawn.needs.food.CurLevel + addBack, 0f, Pawn.needs.food.MaxLevel);
+            else if (Pawn.needs?.energy != null)
+                Pawn.needs.energy.CurLevel = Mathf.Clamp(Pawn.needs.energy.CurLevel + addBack / MilkCumSettings.nutritionToEnergyFactor, 0f, Pawn.needs.energy.MaxLevel);
         }
         SyncLeftRightFromBreastFullness();
         var pool = new FluidPoolState();

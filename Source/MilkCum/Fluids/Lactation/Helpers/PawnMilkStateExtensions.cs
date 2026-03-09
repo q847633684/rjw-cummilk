@@ -8,7 +8,8 @@ using static MilkCum.Fluids.Lactation.Helpers.Categories;
 namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
-/// 泌乳状态与分类：是否可产奶、是否泌乳、泌乳状态缓存、默认奶设置、基础营养/天�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+/// 泌乳状态与分类：是否可产奶、是否泌乳、泌乳状态缓存、默认奶设置。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
+/// </summary>
 public static class PawnMilkStateExtensions
 {
     private const int LactatingStateCacheTicks = 60;
@@ -27,11 +28,6 @@ public static class PawnMilkStateExtensions
             PawnCategory.Entity => MilkCumSettings.entitySetting.Copy(),
             _ => null,
         };
-    }
-
-    public static float BaseNutritionPerDay(this Pawn p)
-    {
-        return p.ageTracker.CurLifeStage.hungerRateFactor * p.RaceProps.baseHungerRate * 2.6666667E-05f * 60000f;
     }
 
     public static bool IsMilkable(this Pawn pawn) => MilkCumSettings.IsMilkable(pawn);

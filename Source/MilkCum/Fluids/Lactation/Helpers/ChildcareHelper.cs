@@ -8,6 +8,7 @@ using UnityEngine;
 using RimWorld.Planet;
 using MilkCum.Core;
 using MilkCum.Fluids.Lactation.Hediffs;
+using MilkCum.Integration.DubsBadHygiene;
 using static RimWorld.ChildcareUtility;
 
 namespace MilkCum.Fluids.Lactation.Helpers;
@@ -51,15 +52,13 @@ public static class ChildcareHelper
         float ratePerTick = flowPerSecond / 60f * (float)delta;
 
         float milkAmt = feeder.MilkAmount();
-        float amountNormalizer = milkAmt / 3f;
-        float nutritionMilt = feeder.MilkDef().ingestible.CachedNutrition <= 0f ? 1f
-            : feeder.MilkDef().ingestible.CachedNutrition / DefDatabase<ThingDef>.GetNamed("Milk").ingestible.CachedNutrition;
-        if (nutritionMilt <= 0f) nutritionMilt = 1f;
-        amountNormalizer *= nutritionMilt * 2f;
-
+        // 营养→乳池 / 乳池→营养 统一 1:1：1 池单位 = 1 营养，吸出多少池就加多少饱食度（与 Need_Food 补丁一致）
+        const float nutritionPerPoolUnit = 1f;
         float toDrainPool = Mathf.Min(ratePerTick, comp.Fullness);
-        if (feeder.MilkDef().ingestible.CachedNutrition > 0f)
-            toDrainPool = Mathf.Min(toDrainPool, wanted / amountNormalizer);
+        if (baby.needs?.food != null)
+            toDrainPool = Mathf.Min(toDrainPool, wanted / nutritionPerPoolUnit);
+        else if (baby.needs?.energy != null)
+            toDrainPool = Mathf.Min(toDrainPool, (wanted * MilkCumSettings.nutritionToEnergyFactor) / nutritionPerPoolUnit);
 
         var drainedKeys = new List<string>();
         float actualDrained = comp.DrainForConsumeSingleSide(toDrainPool, drainedKeys);
@@ -68,24 +67,24 @@ public static class ChildcareHelper
 
         comp.breastfedAmount += actualDrained;
 
-        float nutritionEquivalent = actualDrained * amountNormalizer;
+        float nutritionEquivalent = actualDrained * nutritionPerPoolUnit;
         if (baby.needs.food != null)
         {
-            baby.needs.food.CurLevel += nutritionEquivalent;
+            baby.needs.food.CurLevel = Mathf.Min(baby.needs.food.CurLevel + nutritionEquivalent, baby.needs.food.MaxLevel);
         }
         else if (baby.needs.energy != null)
         {
-            baby.needs.energy.CurLevel += nutritionEquivalent / MilkCumSettings.nutritionToEnergyFactor;
+            baby.needs.energy.CurLevel = Mathf.Min(baby.needs.energy.CurLevel + nutritionEquivalent / MilkCumSettings.nutritionToEnergyFactor, baby.needs.energy.MaxLevel);
         }
+
+        DubsBadHygieneIntegration.SatisfyThirst(baby, actualDrained);
 
         Caravan caravan = baby.GetCaravan();
         if (caravan != null && feeder.GetCaravan() == caravan)
             feeder.mindState.BreastfeedCaravan(baby, nutritionEquivalent / maxLevel);
         baby.ideo?.IncreaseIdeoExposureIfBabyTick(feeder.Ideo, 1);
 
-        bool stillWant = feeder.MilkDef().ingestible.CachedNutrition <= 0f
-            ? (baby.needs.food != null ? baby.needs.food.CurLevel < maxLevel - 0.01f : (baby.needs.energy?.CurLevel ?? 0f) < maxLevel - 0.01f) && comp.Fullness > 0f
-            : (nutritionEquivalent < wanted && actualDrained >= toDrainPool * 0.99f);
+        bool stillWant = (baby.needs.food != null ? baby.needs.food.CurLevel < maxLevel - 0.01f : (baby.needs.energy?.CurLevel ?? 0f) < maxLevel - 0.01f) && comp.Fullness > 0f;
         return stillWant;
     }
     internal static Toil Breastfeed(Pawn pawn, Pawn baby, Action readyForNextToil)
@@ -173,7 +172,7 @@ public static class ChildcareHelper
         {
             return () => baby.needs?.food?.CurLevelPercentage ?? baby.needs.energy.CurLevelPercentage;
         }
-        // ????? Drain?breastfedAmount ?????? 1 ????
+        // 无 CachedNutrition 时用 breastfedAmount 表示进度（或池满度）
         return () => pawn.CompEquallyMilkable()?.breastfedAmount ?? 0f;
     }
     internal static bool IsMomsFault(this BreastfeedFailReason? reason)

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MilkCum.Core;
+using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Hediffs;
+using MilkCum.Fluids.Lactation.Helpers;
 using RimWorld;
 using rjw;
 using UnityEngine;
@@ -64,6 +67,7 @@ public static class Hediff_Pregnant_Patch
         {
             mother.health.GetOrAddHediff(HediffDefOf.Lactating, mother.GetBreastOrChestPart());
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
+            MilkCumSettings.LactationLog($"Birth lactation (animal): {mother.Name}");
             return;
         }
         if (mother.RaceProps?.Humanlike == true && mother.health?.hediffSet != null
@@ -73,16 +77,17 @@ public static class Hediff_Pregnant_Patch
         }
         // 人类分娩：若已有 Lactating（如药物）也叠加剩余天数+10、当前泌乳量+基础值
         if (mother.RaceProps?.Humanlike == true)
+        {
             PoolModelBirthHelper.ApplyBirthPoolValues(mother);
+            MilkCumSettings.LactationLog($"Birth lactation (humanlike): {mother.Name}");
+        }
         MilkPermissionExtensions.TryGiveFirstLactationBirthMemory(mother);
     }
 }
 [HarmonyPatch(typeof(Need_Food))]
 public static class Need_Food_Patch
 {
-    /// <summary>
-    /// Add hunger rate from lactating to food need tip string
-    /// </summary>
+    /// <summary>为饱食度悬停提示追加「饥饿率」拆解：当前饥饿档位、各 hediff 的 hungerRateFactor/hungerRateFactorOffset、最终乘数。本 mod 的 Lactating 已不用饥饿率，但可显示其他 hediff（如戒断）的影响。</summary>
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Need_Food.GetTipString))]
     public static void GetTipString_PostFix(Need_Food __instance, ref string __result)
@@ -129,45 +134,6 @@ public static class Need_Food_Patch
     }
 }
 
-/// <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
-[HarmonyPatch(typeof(Need_Food))]
-[HarmonyPatch(nameof(Need_Food.NeedInterval))]
-public static class Need_Food_LactatingNutrition_Patch
-{
-    /// <summary>Need_Food.NeedInterval 的调用间隔（tick），用于将每日流速折算为每间隔的饱食度变化。</summary>
-    private const int NeedTicksInterval = 150;
-
-    [HarmonyPostfix]
-    public static void Postfix(Need_Food __instance)
-    {
-        Pawn pawn = __instance.pawn;
-        if (pawn?.health?.hediffSet == null) return;
-        if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.TryGetComp<HediffComp_EqualMilkingLactating>() is not HediffComp_EqualMilkingLactating comp)
-            return;
-        var milkable = pawn.CompEquallyMilkable();
-        if (milkable == null) return;
-        int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
-        float factor = basis / 150f;
-        // 产奶额外扣饱食度（池未满时）
-        if (milkable.Fullness < milkable.maxFullness)
-        {
-            float flowPerDay = comp.ExtraNutritionPerDay();
-            if (flowPerDay > 0f)
-            {
-                float extraFall = flowPerDay * factor * (NeedTicksInterval / 60000f);
-                __instance.CurLevel = Mathf.Max(0f, __instance.CurLevel - extraFall);
-            }
-        }
-        // 回缩吸收：满池回缩时未溢出部分折算为营养，加回饱食度
-        float reabsorbedPerDay = milkable.GetReabsorbedNutritionPerDay();
-        if (reabsorbedPerDay > 0f)
-        {
-            float reabsorbedPerInterval = reabsorbedPerDay * factor * (NeedTicksInterval / 60000f);
-            __instance.CurLevel = Mathf.Min(__instance.MaxLevel, __instance.CurLevel + reabsorbedPerInterval);
-        }
-    }
-}
-
 /// <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
 [HarmonyPatch(typeof(Pawn_HealthTracker))]
 [HarmonyPatch(nameof(Pawn_HealthTracker.RemoveHediff))]
@@ -179,6 +145,7 @@ public static class HediffSet_Remove_Patch
         if (hediff?.def != HediffDefOf.Lactating) return;
         Pawn pawn = hediff.pawn;
         if (pawn == null) return;
+        MilkCumSettings.LactationLog($"Lactating removed, ClearPools: {pawn.Name}");
         var comp = pawn.CompEquallyMilkable();
         if (comp != null)
             comp.ClearPools();
@@ -186,56 +153,7 @@ public static class HediffSet_Remove_Patch
     }
 }
 
-// AnimalProductionUtility_Patch 已移除：原用于隐藏原版产奶统计行（Transpiler 替换 GetCompProperties 为返回 null），
-// 但该替换在信息卡构建 AnimalProductionStats 时易导致 NRE/越界，故改为不 patch。产奶类型/价值见主表格列。见 ADR-004。
-// RaceProperties.SpecialDisplayStats 补丁已移除：与信息卡统计构建流程冲突，导致物品/小人信息卡均无法打开。产奶类型与价值改由主表格列等展示。
-#if v1_5
-[HarmonyPatch(typeof(FloatMenuMakerMap))]
-public static class FloatMenuMakerMap_Patch
-{
-    /// <summary>
-    /// Add breastfeed and inject options to humanlike RMB menu
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(FloatMenuMakerMap.AddHumanlikeOrders))]
-    public static void AddHumanlikeOrders_PostFix(Vector3 clickPos, Pawn pawn, ref List<FloatMenuOption> opts)
-    {
-        using IEnumerator<Thing> enumerator = pawn.Map.thingGrid.ThingsAt(clickPos.ToIntVec3()).GetEnumerator();
-        while (enumerator.MoveNext())
-        {
-            Thing thing = enumerator.Current;
-            // Load entity on platform
-            if (thing is Building_HoldingPlatform building_HoldingPlatform)
-            {
-                thing = building_HoldingPlatform.HeldPawn;
-            }
-            if (thing is Pawn target)
-            {
-                if (!pawn.CanReach(target, PathEndMode.Touch, Danger.Deadly, false, false, TraverseMode.ByPawn)) { continue; }
-                if (pawn != target)
-                {
-                    // Remove original breastfeed option
-                    foreach (FloatMenuOption opt in opts.ToList())
-                    {
-                        if (opt.Label.StartsWith("BabyCareBreastfeedUnable".Translate(target.Named("BABY")))
-                            || opt.Label.StartsWith("BabyCareBreastfeed".Translate(target.Named("BABY"))))
-                        {
-                            opts.Remove(opt);
-                        }
-                    }
-                    opts.AddRange(target.BreastfeedMenuOptions(pawn));
-                }
-                if (target.ShouldShowInjectMenu())
-                {
-                    opts.AddRange(target.InjectMenuOptions(pawn));
-                }
-
-            }
-        }
-    }
-}
-#endif
-
+// AnimalProductionUtility_Patch / RaceProperties.SpecialDisplayStats 补丁已移除，见 ADR-004。右键喂奶与注射由 FloatMenuOptionProvider_* 提供。
 /// <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
 public static class ProlactinAddictionPatch
 {
@@ -295,6 +213,7 @@ public static class ProlactinAddictionPatch
         {
             // 无 World 时（如测试）立即生效：Δs = raw × E_tol(t_before)，进水 ΔL = Δs × C_dose。3.3 动物差异化：乘种族药物倍率。
             float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(tBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            MilkCumSettings.LactationLog($"Prolactin immediate apply: {pawn?.Name}, deltaS={deltaS:F3}");
             var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
             if (reapply?.comps != null)
                 foreach (var c in reapply.comps)

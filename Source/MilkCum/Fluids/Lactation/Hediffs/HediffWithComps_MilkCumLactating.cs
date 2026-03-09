@@ -1,5 +1,6 @@
 using MilkCum.Core;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Helpers;
 using RimWorld;
 using Verse;
 using UnityEngine;
@@ -115,8 +116,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
         int severityInt = Mathf.FloorToInt(severity);
         if (severityInt >= 1) { stage.label = isPermanentLactation ? Lang.Permanent : ""; }
         else { stage.label = ""; }
-        // 额外饥饿/能量改为�?ExtraNutritionPerDay/GetFlowPerDay �?Need_Food/Need 补丁 1:1 施加，此处不再用 offset 增加饥饿
-        stage.hungerRateFactorOffset = 0f;
+        // 不再使用 hungerRateFactorOffset，由 Need_Food.NeedInterval 补丁直接扣/加饱食度（营养↔乳池 1:1）
         if (stage.capMods != null) stage.capMods.Clear();
     }
     private int GetStageIndex(float severity, bool isFull)
@@ -129,6 +129,8 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
     {
         try
         {
+            if (pawn == null || pawn.RaceProps == null)
+                return vanillaStage ?? (vanillaStage = new HediffStage { fertilityFactor = 0.05f });
             if (this.hediffStages == null || this.hediffStages.Length == 0 || this.hediffStages[0] == null)
                 GenStages();
             if (hediffStages == null || hediffStages.Length == 0)
@@ -141,14 +143,17 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
             var comp = pawn.CompEquallyMilkable();
             int raw = GetStageIndex(this.Severity, (comp?.Fullness ?? 0f) >= Mathf.Max(0.01f, comp?.maxFullness ?? 1f));
             int idx = Mathf.Clamp(raw, 0, hediffStages.Length - 1);
-            return hediffStages[idx];
+            HediffStage stage = hediffStages[idx];
+            // 营养→乳池：不再用饥饿率乘数（易出 bug），改由 Need_Food.NeedInterval 补丁直接扣/加饱食度；此处不设 offset。
+            stage.hungerRateFactorOffset = 0f;
+            return stage;
         }
         catch
         {
             return vanillaStage ?? (vanillaStage = new HediffStage { fertilityFactor = 0.05f });
         }
     }
-    public override bool Visible => pawn.IsMilkable() || pawn.RaceProps.Humanlike; //Milkable or breastfeedable in vanilla.
+    public override bool Visible => (pawn?.RaceProps != null) && (pawn.IsMilkable() || pawn.RaceProps.Humanlike); //Milkable or breastfeedable in vanilla.
 }
 public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
 {

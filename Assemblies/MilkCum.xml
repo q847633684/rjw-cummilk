@@ -38,7 +38,7 @@
             <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
         </member>
         <member name="F:MilkCum.Core.Constants.PoolModelConstants.NutritionPerPoolUnit">
-            <summary>1 池单位对应的营养：ExtraNutritionPerDay = flow × 本值；改池容量或 L 单位时只改此处即可保持平衡。</summary>
+            <summary>1 池单位 = 1 营养（设计对等）：产奶花 1 营养得 1 池、喝奶花 1 池得 1 营养。ExtraNutritionPerDay = flow×本值；Need_Food 补丁按此扣饱食度，CompPartialMilk 食用时 fillAmount 直接作营养。原版饱食条 0..MaxLevel(≈1)，泌乳时额外掉条属设计。</summary>
         </member>
         <member name="F:MilkCum.Core.MilkCumDefOf.EM_FirstLactationDrug">
             <summary>首次药物诱发泌乳成就类记忆。</summary>
@@ -84,6 +84,9 @@
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.reabsorbNutritionEfficiency">
             <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
+        </member>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.LactationLog(System.String)">
+            <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient">
             <summary>乳房容量系数：左右乳容量 = RJW Severity × 本系数，2=默认，与泌乳效率等可调项对应。</summary>
@@ -666,7 +669,8 @@
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions">
             <summary>
-            泌乳状态与分类：是否可产奶、是否泌乳、泌乳状态缓存、默认奶设置、基础营养/天�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+            泌乳状态与分类：是否可产奶、是否泌乳、泌乳状态缓存、默认奶设置。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
+            </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions.HasDrugInducedLactation(Verse.Pawn)">
             <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于显�?添加「药物泌乳负担」等</summary>
@@ -913,15 +917,7 @@
             </summary>
         </member>
         <member name="M:MilkCum.Harmony.Need_Food_Patch.GetTipString_PostFix(RimWorld.Need_Food,System.String@)">
-            <summary>
-            Add hunger rate from lactating to food need tip string
-            </summary>
-        </member>
-        <member name="T:MilkCum.Harmony.Need_Food_LactatingNutrition_Patch">
-            <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
-        </member>
-        <member name="F:MilkCum.Harmony.Need_Food_LactatingNutrition_Patch.NeedTicksInterval">
-            <summary>Need_Food.NeedInterval 的调用间隔（tick），用于将每日流速折算为每间隔的饱食度变化。</summary>
+            <summary>为饱食度悬停提示追加「饥饿率」拆解：当前饥饿档位、各 hediff 的 hungerRateFactor/hungerRateFactorOffset、最终乘数。本 mod 的 Lactating 已不用饥饿率，但可显示其他 hediff（如戒断）的影响。</summary>
         </member>
         <member name="T:MilkCum.Harmony.HediffSet_Remove_Patch">
             <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
@@ -951,16 +947,22 @@
             <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。目标在 1.6 可能在不同程序集，可选应用。</summary>
         </member>
         <member name="T:MilkCum.Harmony.Patch_PostIngested_PartnerAteMyProduct">
-            <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。</summary>
+            <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。喝奶（带 CompPartialMilk 的奶瓶）时满足 Dubs Bad Hygiene 的饮水需求。</summary>
         </member>
         <member name="T:MilkCum.Harmony.Bill_Production_Notify_IterationCompleted_Patch">
             <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
         </member>
         <member name="T:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration">
-            <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。</summary>
+            <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。喝奶（吸奶或食用奶瓶）时满足 DBH 的饮水(Thirst)需求。</summary>
         </member>
         <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.IsDubsBadHygieneActive">
             <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef 或检测到 DBH 模组）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.IsThirstNeedAvailable">
+            <summary>饮水(Thirst)需求是否可用（DBH 已加载且启用 Thirst 时）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.SatisfyThirst(Verse.Pawn,System.Single)">
+            <summary>为喝奶者满足饮水需求。amount 为池单位/营养当量（1 池单位=1 营养），按 1:1 加到 Thirst.CurLevel，上限 MaxLevel。仅当 DBH 已加载且存在 Thirst 需求时生效。</summary>
         </member>
         <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Verse.Pawn)">
             <summary>卫生风险系数 0~1（1=最易诱发乳腺炎）。当启用 DBH 联动时用 Hygiene 需求等级（低=高风险）；否则用当前房间清洁度（脏=高风险）。</summary>
