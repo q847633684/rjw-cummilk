@@ -3,6 +3,9 @@
     <!-- 主 Tab / 子 Tab 标签 -->
     <EM.Tab.MilkAndFluids>产奶与体液</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>哺乳</EM.Tab.Breastfeed>
+    <EM.MenuSuckleFrom>吸 {0} 的奶</EM.MenuSuckleFrom>
+    <EM.JobReportBreastfeed>母乳喂养 TargetA。</EM.JobReportBreastfeed>
+    <EM.JobReportSuckleFrom>吸 TargetA 的奶。</EM.JobReportSuckleFrom>
     <EM.Tab.HealthAndRisk>健康与风险</EM.Tab.HealthAndRisk>
     <EM.Tab.EfficiencyAndInterface>效率与界面</EM.Tab.EfficiencyAndInterface>
     <EM.Tab.IntegrationAndAdvanced>联动与扩展</EM.Tab.IntegrationAndAdvanced>
@@ -79,7 +82,7 @@
     <EM.BaselineMilkDurationDays>药物泌乳基准天数：{0} 日</EM.BaselineMilkDurationDays>
     <EM.BaselineMilkDurationDaysDesc>参与 L 衰减：单次剂量（L≈0.5）时剩余天数 ≈ 本值。默认 5 即约 5 日；多剂叠加时总天数 &lt; 剂数×本值。</EM.BaselineMilkDurationDaysDesc>
     <EM.BirthInducedMilkDurationDays>分娩泌乳基准天数：{0} 日</EM.BirthInducedMilkDurationDays>
-    <EM.BirthInducedMilkDurationDaysDesc>分娩诱发泌乳的参考持续天数（当前仅作显示参考，L 衰减由药物基准参与）。</EM.BirthInducedMilkDurationDaysDesc>
+    <EM.BirthInducedMilkDurationDaysDesc>分娩诱发泌乳的持续天数（参与 L 分娩分量的衰减，与药物基准分开）。</EM.BirthInducedMilkDurationDaysDesc>
     <EM.BreastPoolParamsHint>容量、灌满时间、剩余天数由上方参数共同决定；详见 参数联动表 与 乳房容量模拟计算。</EM.BreastPoolParamsHint>
     <EM.BreastPoolParamsInToleranceHint>药物/分娩基准天数已移至「联动与扩展 → 乳房与池」子页，与乳房容量、流速一起调节。</EM.BreastPoolParamsInToleranceHint>
     <EM.RjwLustFromNursing>哺乳/吸奶增加性需求</EM.RjwLustFromNursing>
@@ -113,7 +116,7 @@
     <EM.ToleranceFlowImpactExponent>耐受影响指数：{0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>溢出污物</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>满池溢出时生成的地面污物 Def 名称</EM.OverflowFilthDefName>
-    <EM.BaselineMilkDurationReference>参考：药物泌乳基准 {0} 天，分娩 {1} 天（池模型）。</EM.BaselineMilkDurationReference>
+    <EM.BaselineMilkDurationReference>参考：药物基准 {0} 天，分娩 {1} 天（两分量分别衰减）。</EM.BaselineMilkDurationReference>
     <EM.AiPreferHighFullnessTargets>挤奶时优先满度更高的目标</EM.AiPreferHighFullnessTargets>
     <EM.AiPreferHighFullnessTargetsDesc>开启时，殖民者会优先挤满度更高的小人（降低溢出风险）。</EM.AiPreferHighFullnessTargetsDesc>
     <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）</EM.RaceOverridesSection>

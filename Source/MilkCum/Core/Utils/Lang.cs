@@ -36,9 +36,9 @@ public static class Lang
             MilkCumDefOf.EM_Prolactin.SetDefaultDesc(Lang.Join(Lang.Add, Lang.Lactating));
         }
         if (MilkCumDefOf.EM_ActiveSuckle != null)
-            MilkCumDefOf.EM_ActiveSuckle.reportString = JobDefOf.BabySuckle.reportString;
+            MilkCumDefOf.EM_ActiveSuckle.reportString = "EM.JobReportSuckleFrom".Translate();
         if (MilkCumDefOf.EM_ForcedBreastfeed != null)
-            MilkCumDefOf.EM_ForcedBreastfeed.reportString = JobDefOf.Breastfeed.reportString;
+            MilkCumDefOf.EM_ForcedBreastfeed.reportString = "EM.JobReportBreastfeed".Translate();
 
         if (HediffDefOf.Lactating != null)
             HediffDefOf.Lactating.SetDefaultDesc(HediffDefOf.Lactating.description.RemoveTailingLines(2)); // 删除原版怀孕率相关末两行；若当前语言有 DefInjected（Lactating.description）则不会覆盖，见 Languages/.../DefInjected/HediffDef

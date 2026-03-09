@@ -32,13 +32,25 @@
         <allowedArchonexusCount>80</allowedArchonexusCount>
     </ThingDef>
 
-    <!-- 未满一瓶的人奶：JobDriver 提前结束时生成，食用时营养 = fillAmount（池单位），可继续存放/食用 -->
-    <ThingDef ParentName="EM_HumanMilk">
+    <!-- 未满一瓶的人奶：JobDriver 提前结束时生成，食用时营养 = fillAmount（池单位），可继续存放/食用。不继承 EM_HumanMilk 以免加载顺序导致父 def 未找到。 -->
+    <ThingDef ParentName="OrganicProductBase">
         <defName>EM_HumanMilkPartial</defName>
         <label>human milk (partial)</label>
+        <thingClass>ThingWithComps</thingClass>
+        <tickerType>Rare</tickerType>
+        <graphicData>
+            <graphicClass>Graphic_StackCount</graphicClass>
+            <texPath>Things/Item/Ingestible/HumanMilk</texPath>
+        </graphicData>
+        <socialPropernessMatters>true</socialPropernessMatters>
         <stackLimit>1</stackLimit>
         <statBases>
+            <MarketValue>1.9</MarketValue>
+            <Mass>0.045</Mass>
+            <MaxHitPoints>60</MaxHitPoints>
+            <Flammability>0.2</Flammability>
             <Nutrition>0</Nutrition>
+            <FoodPoisonChanceFixedHuman>0</FoodPoisonChanceFixedHuman>
         </statBases>
         <comps>
             <li Class="CompProperties_Rottable">
@@ -50,5 +62,15 @@
             </li>
             <li Class="MilkCum.Fluids.Lactation.Comps.CompProperties_ShowProducer" />
         </comps>
+        <ingestible>
+            <!-- Nutrition 由 GetStatValue 补丁按 fillAmount 返回，Def 必须为 0；游戏要求 Nutrition==0 时 preferability 为 NeverForNutrition -->
+            <preferability>NeverForNutrition</preferability>
+            <foodType>AnimalProduct, Fluid</foodType>
+            <babiesCanIngest>true</babiesCanIngest>
+        </ingestible>
+        <thingCategories>
+            <li>AnimalProductRaw</li>
+        </thingCategories>
+        <allowedArchonexusCount>80</allowedArchonexusCount>
     </ThingDef>
 </Defs>

@@ -292,22 +292,18 @@ public class Widget_AdvancedSettings
 		Widgets.HorizontalSlider(rBaseline, ref baseline, new FloatRange(1f, 15f), "EM.BaselineMilkDurationDays".Translate(MilkCumSettings.baselineMilkDurationDays.ToString("F0")), 0.5f);
 		MilkCumSettings.baselineMilkDurationDays = baseline;
 		TooltipHandler.TipRegion(rBaseline, "EM.BaselineMilkDurationDaysDesc".Translate());
-		list.Gap(4f);
+		list.Gap(6f);
 		Rect rBirth = list.GetRect(UNIT_SIZE);
-		float birth = MilkCumSettings.birthInducedMilkDurationDays;
-		Widgets.HorizontalSlider(rBirth, ref birth, new FloatRange(1f, 30f), "EM.BirthInducedMilkDurationDays".Translate(MilkCumSettings.birthInducedMilkDurationDays.ToString("F0")), 0.5f);
-		MilkCumSettings.birthInducedMilkDurationDays = birth;
+		float birthInduced = MilkCumSettings.birthInducedMilkDurationDays;
+		Widgets.HorizontalSlider(rBirth, ref birthInduced, new FloatRange(1f, 360f), "EM.BirthInducedMilkDurationDays".Translate(MilkCumSettings.birthInducedMilkDurationDays.ToString("F0")), 1f);
+		MilkCumSettings.birthInducedMilkDurationDays = birthInduced;
 		TooltipHandler.TipRegion(rBirth, "EM.BirthInducedMilkDurationDaysDesc".Translate());
-		list.Gap(4f);
+		list.Gap(6f);
 		GUI.color = Color.gray;
 		list.Label("EM.BaselineMilkDurationReference".Translate(MilkCumSettings.baselineMilkDurationDays.ToString("F0"), MilkCumSettings.birthInducedMilkDurationDays.ToString("F0")));
 		GUI.color = Color.white;
 		list.Gap(6f);
-		// Lactation efficiency and gain
-		Rect rEff = list.GetRect(UNIT_SIZE);
-		Widgets.HorizontalSlider(rEff, ref MilkCumSettings.lactatingEfficiencyMultiplierPerStack, new FloatRange(0.01f, 5f), "EM.LactatingEfficiencyMultiplier".Translate(MilkCumSettings.lactatingEfficiencyMultiplierPerStack.ToString("F2")), 0.01f);
-		TooltipHandler.TipRegion(rEff, "EM.LactatingEfficiencyMultiplierDesc".Translate());
-		list.Gap(4f);
+		// Lactating gain
 		Rect rLactatingGain = list.GetRect(UNIT_SIZE);
 		Widgets.CheckboxLabeled(rLactatingGain, "EM.LactatingGain".Translate(), ref MilkCumSettings.lactatingGainEnabled, false);
 		{ string t = "EM.LactatingGainDesc".Translate(); TooltipHandler.TipRegion(rLactatingGain, string.IsNullOrEmpty(t) ? "EM.LactatingGainDesc" : t); }

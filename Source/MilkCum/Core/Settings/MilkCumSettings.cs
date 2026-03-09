@@ -22,7 +22,6 @@ internal class MilkCumSettings : ModSettings
 {
 	private static Dictionary<string, RaceMilkType> namesToProducts = new();
 	private static Dictionary<string, MilkTag> productsToTags = new();
-	public static float lactatingEfficiencyMultiplierPerStack = 1.25f;
 	/// <summary>按容量量化：挤奶工作量基准（原版 400），实际工作量 = 基准 × 容量系数。</summary>
 	public static float milkingWorkTotalBase = 400f;
 	/// <summary>按容量量化：挤奶工作量随 MilkAmount 的系数，work *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2.5]。</summary>
@@ -86,8 +85,8 @@ internal class MilkCumSettings : ModSettings
 	public static string overflowFilthDefName = "Filth_Vomit";
 	// 基准泌乳持续天数（药物诱发）：参与 L 衰减计算，单次剂量 L≈0.5 时剩余天数 ≈ 本值；默认约 5 日。
 	public static float baselineMilkDurationDays = 5f;
-	// 基准泌乳持续天数（出生诱发）：参与 L 衰减计算，单次剂量 L≈0.5 时剩余天数 ≈ 本值；默认 10，改为 15 可得约 15 日。
-	public static float birthInducedMilkDurationDays = 10f;
+	// 分娩诱发泌乳持续天数：参与 L 衰减计算（分娩分量用本值反推 B_T）；默认 30 日。
+	public static float birthInducedMilkDurationDays = 30f;
 	/// <summary>催乳素单剂在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 同剂叠加一致，默认 0.044）；改 XML 时需同步。</summary>
 	public static float ProlactinToleranceGainPerDose = 0.044f;
 
@@ -95,6 +94,15 @@ internal class MilkCumSettings : ModSettings
 	public static float GetEffectiveBaseValueTForDecay()
 	{
 		float baseline = baselineMilkDurationDays;
+		if (baseline <= 0f) return PoolModelConstants.BaseValueT;
+		float denom = 0.5f / baseline - PoolModelConstants.NegativeFeedbackK * 0.5f;
+		if (denom <= 0.01f) return 100f;
+		return 1f / denom;
+	}
+	/// <summary>分娩泌乳衰减用有效 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
+	public static float GetEffectiveBaseValueTForDecayBirth()
+	{
+		float baseline = birthInducedMilkDurationDays;
 		if (baseline <= 0f) return PoolModelConstants.BaseValueT;
 		float denom = 0.5f / baseline - PoolModelConstants.NegativeFeedbackK * 0.5f;
 		if (denom <= 0.01f) return 100f;
@@ -240,7 +248,6 @@ internal class MilkCumSettings : ModSettings
 	public override void ExposeData()
 	{
 		base.ExposeData();
-		Scribe_Values.Look(ref lactatingEfficiencyMultiplierPerStack, "EM.LactatingEfficiencyMultiplierPerStack", 1.25f);
 		Scribe_Values.Look(ref milkingWorkTotalBase, "EM.MilkingWorkTotalBase", 400f);
 		Scribe_Values.Look(ref milkingCapacityFactor, "EM.MilkingCapacityFactor", 0.2f);
 		Scribe_Values.Look(ref breastfeedCapacityFactor, "EM.BreastfeedCapacityFactor", 0.1f);
@@ -284,7 +291,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
 		Scribe_Values.Look(ref baselineMilkDurationDays, "EM.BaselineMilkDurationDays", 5f);
-		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 10f);
+		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 30f);
 		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);

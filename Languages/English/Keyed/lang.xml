@@ -3,6 +3,9 @@
     <!-- Main / Sub tab labels -->
     <EM.Tab.MilkAndFluids>Milk &amp; fluids</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>Breastfeed</EM.Tab.Breastfeed>
+    <EM.MenuSuckleFrom>Suck {0}'s milk</EM.MenuSuckleFrom>
+    <EM.JobReportBreastfeed>breastfeeding TargetA.</EM.JobReportBreastfeed>
+    <EM.JobReportSuckleFrom>sucking TargetA's milk.</EM.JobReportSuckleFrom>
     <EM.Tab.HealthAndRisk>Health &amp; risk</EM.Tab.HealthAndRisk>
     <EM.Tab.EfficiencyAndInterface>Efficiency &amp; interface</EM.Tab.EfficiencyAndInterface>
     <EM.Tab.IntegrationAndAdvanced>Integration &amp; advanced</EM.Tab.IntegrationAndAdvanced>
@@ -80,7 +83,7 @@
     <EM.BaselineMilkDurationDays>Drug-induced baseline days: {0}</EM.BaselineMilkDurationDays>
     <EM.BaselineMilkDurationDaysDesc>Drives L decay: remaining days for a single dose (L≈0.5) ≈ this value. Default 5 ≈ 5 days; multi-dose total &lt; doses × this.</EM.BaselineMilkDurationDaysDesc>
     <EM.BirthInducedMilkDurationDays>Birth-induced baseline days: {0}</EM.BirthInducedMilkDurationDays>
-    <EM.BirthInducedMilkDurationDaysDesc>Reference duration for birth-induced lactation (display only; L decay uses drug baseline).</EM.BirthInducedMilkDurationDaysDesc>
+    <EM.BirthInducedMilkDurationDaysDesc>Duration for birth-induced lactation (used for L birth-component decay, separate from drug baseline).</EM.BirthInducedMilkDurationDaysDesc>
     <EM.BreastPoolParamsHint>Capacity, fill time and remaining days are determined by the sliders above; see parameter table and breast capacity doc.</EM.BreastPoolParamsHint>
     <EM.BreastPoolParamsInToleranceHint>Drug/birth baseline days are under Integration → Breast &amp; pool, with capacity and flow.</EM.BreastPoolParamsInToleranceHint>
     <EM.RjwLustFromNursing>Nursing adds lust (Need_Sex)</EM.RjwLustFromNursing>
@@ -114,7 +117,7 @@
     <EM.ToleranceFlowImpactExponent>Tolerance impact exponent: {0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>Overflow filth</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>Filth def name when pool overflows</EM.OverflowFilthDefName>
-    <EM.BaselineMilkDurationReference>Reference: drug-induced baseline {0} days, birth-induced {1} days (pool model).</EM.BaselineMilkDurationReference>
+    <EM.BaselineMilkDurationReference>Reference: drug baseline {0} days, birth-induced {1} days (each component decays with its own baseline).</EM.BaselineMilkDurationReference>
     <EM.AiPreferHighFullnessTargets>Prioritize fuller targets when milking</EM.AiPreferHighFullnessTargets>
     <EM.AiPreferHighFullnessTargetsDesc>When enabled, colonists will prefer to milk pawns with higher pool fullness first (reduces overflow risk).</EM.AiPreferHighFullnessTargetsDesc>
     <EM.RaceOverridesSection>Race overrides (whitelist / blacklist)</EM.RaceOverridesSection>

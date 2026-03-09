@@ -251,7 +251,7 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness?.Clear();
         SyncBaseFullness();
     }
-    /// <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（默认勾选）</summary>
+    /// <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图，默认仅子女+伴侣，不包含其他人）。</summary>
     public void EnsureSaveCompatAllowedLists()
     {
         allowedSucklers ??= new List<Pawn>();
@@ -262,8 +262,11 @@ public class CompEquallyMilkable : CompMilkable
         {
             var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
             foreach (Pawn pawn in defaults)
-                if (pawn != null && !pawn.Destroyed && !allowedSucklers.Contains(pawn))
-                    allowedSucklers.Add(pawn);
+            {
+                if (pawn == null || pawn.Destroyed || allowedSucklers.Contains(pawn)) continue;
+                if (p.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != p.MapHeld) continue;
+                allowedSucklers.Add(pawn);
+            }
         }
     }
     /// <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库 design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行</summary>

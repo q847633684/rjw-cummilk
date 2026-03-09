@@ -437,11 +437,18 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
     }
 }
 
-/// <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。</summary>
-[HarmonyPatch(typeof(Thing), "GetStatValue", new[] { typeof(StatDef), typeof(int) })]
+/// <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。目标方法可能为 Thing.GetStatValue(StatDef) 或 (StatDef,int)，或为扩展方法不在 Thing 上；由 ModInit 在找到目标时手动 Patch。</summary>
 public static class Thing_GetStatValue_PartialMilkNutrition_Patch
 {
-    [HarmonyPrefix]
+    public static void ApplyIfPossible(HarmonyLib.Harmony harmony)
+    {
+        MethodBase target = AccessTools.Method(typeof(Thing), "GetStatValue", new[] { typeof(StatDef), typeof(int) })
+            ?? AccessTools.Method(typeof(Thing), "GetStatValue", new[] { typeof(StatDef) });
+        if (target == null) return;
+        var prefix = new HarmonyMethod(typeof(Thing_GetStatValue_PartialMilkNutrition_Patch), nameof(Prefix));
+        harmony.Patch(target, prefix: prefix);
+    }
+
     public static bool Prefix(Thing __instance, StatDef stat, ref float __result)
     {
         if (stat != StatDefOf.Nutrition) return true;

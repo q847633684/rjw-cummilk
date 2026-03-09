@@ -103,6 +103,9 @@
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecay">
             <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
         </member>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecayBirth">
+            <summary>分娩泌乳衰减用有效 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
+        </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetPressureFactor(System.Single)">
             <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.85、f_min=0.02，抑制约在膨胀阶段（P≈基础满/撑大≈0.83～1）开始。</summary>
             <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
@@ -302,7 +305,7 @@
             <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
-            <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（默认勾选）</summary>
+            <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图，默认仅子女+伴侣，不包含其他人）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Active">
             <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库 design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行</summary>
@@ -412,8 +415,14 @@
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean,System.Boolean)">
             <summary>Stage 名（括号内）：仅当真正不衰减时显示「永久」，否则留空；具体「天数：X」在 CompLabelInBracketsExtra 动态显示</summary>
         </member>
-        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.currentLactationAmount">
-            <summary>水池模型（L 驱动）：当前泌乳�?L。唯一状态量；每日衰�?= 1/(B_T×E)+k×L；泌乳结�?L�?</summary>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lactationAmountFromDrug">
+            <summary>水池模型（L 驱动）：药物诱发的 L 分量；衰减用药物基准 B_T。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lactationAmountFromBirth">
+            <summary>水池模型：分娩诱发的 L 分量；衰减用分娩基准 B_T。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.currentLactationAmount">
+            <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.letdownReflexByKey">
             <summary>四层模型：喷乳反�?R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key �?breastFullness 一致，�?HumanBreast_L）。挤�?吸奶某侧仅提升该�?R</summary>
@@ -431,7 +440,10 @@
             <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.RemainingDays">
-            <summary>剩余天数（游戏日）。动力学 dL/dt = -(a+k×L)，精确解 T = (1/k)×ln(1 + k×L/a)；a=1/(B_T×E)。k�? �?a�? 时退化为 L/D(L)</summary>
+            <summary>剩余天数（游戏日）。按分量分别用药物/分娩 B_T；总 L 用加权 B_T_eff 估算。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveBaseValueTForRemaining">
+            <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CurrentLactationAmount">
             <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
@@ -487,20 +499,23 @@
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FormatFlowFactor(System.Single)">
             <summary>流速因子显示用：整数显示为 "1"，否则保�?1�? 位小数</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecayWithBT(System.Single,System.Single)">
+            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由参数传入（药物/分娩分别用各自基准）。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
-            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由设置反推</summary>
+            <summary>每日衰减（药物分量用药物 B_T）；用于显示总衰减量。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
-            <summary>当前 L 下的每日衰减（用于显示）</summary>
+            <summary>当前 L 下的每日衰减（两分量之和，用于显示）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromDrug(System.Single)">
-            <summary>吃药时进水：ΔL = Δs × C_dose。Δs 为本次实际生效的 Lactating 严重度增量（已包含一次耐受削弱）</summary>
+            <summary>吃药时进水：ΔL_drug = Δs × C_dose。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromBirth">
-            <summary>分娩时累加：L += 基础值（不乘有效药效系数）</summary>
+            <summary>分娩时累加：L_birth += 基础值（不乘有效药效系数）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
-            <summary>泌乳结束：清空双池、移�?Lactating hediff</summary>
+            <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ExtraNutritionPerDay">
             <summary>灌满期间额外营养/天：与产奶流速平衡，flow（池单位/天）× NutritionPerPoolUnit；满池后不额外消耗</summary>
@@ -550,10 +565,10 @@
             <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.GetDefaultSucklers(Verse.Pawn)">
-            <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（用于名单为空时预填，不再用“空=默认”判断）</summary>
+            <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（Lover/Spouse，用于名单为空时预填，不再用“空=默认”判断）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsAllowedSuckler(Verse.Pawn,Verse.Pawn)">
-            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶（名单内即可；名单默认预填子女+伴侣）</summary>
+            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣」；名单非空时仅名单内的人可吸奶/挤奶。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.CanConsumeMilkProduct(Verse.Pawn,Verse.Thing)">
             <summary>指定谁可以使用产出的�?精液制品：无 producer 允许；自己始终允许；否则看产�?allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，�?7.4）</summary>
@@ -927,7 +942,7 @@
             <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块。仅当「有泌乳且当前为 RJW 乳房行」时追加；没有泌乳不追加，非乳房行不追加（genitalFamily != Breasts 已 return）。若 __result 中已包含本块（同一 getter 被调用两次并拼接时会重复），则不再追加以免同一悬浮内出现两份相同内容。</summary>
         </member>
         <member name="T:MilkCum.Harmony.Thing_GetStatValue_PartialMilkNutrition_Patch">
-            <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。</summary>
+            <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。目标方法可能为 Thing.GetStatValue(StatDef) 或 (StatDef,int)，或为扩展方法不在 Thing 上；由 ModInit 在找到目标时手动 Patch。</summary>
         </member>
         <member name="T:MilkCum.Harmony.WorkGiver_Ingest_MilkProductFilter">
             <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
@@ -1023,7 +1038,7 @@
             <returns></returns>
         </member>
         <member name="M:MilkCum.UI.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
-            <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
+            <summary>仅泌乳者（女性）显示「谁可以使用我的奶」；男性显示「谁可以吃我的精液制品」；非哺乳者不显示产奶限制列。</summary>
         </member>
         <member name="F:MilkCum.UI.Widget_AdvancedSettings.SectionScrollContentHeight">
             <summary>Fixed height for settings section scroll content. If users report truncation on very high DPI or many options, consider content-based height or ListView (if RimWorld API supports it).</summary>
@@ -1057,6 +1072,10 @@
         </member>
         <member name="T:MilkCum.UI.Window_ProducerRestrictions">
             <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawListSection(UnityEngine.Rect,System.Single@,System.Collections.Generic.List{Verse.Pawn},System.Collections.Generic.List{Verse.Pawn},System.String,System.String,System.Collections.Generic.List{Verse.Pawn},System.Collections.Generic.HashSet{Verse.Pawn})">
+            <param name="displayList">用于显示「已允许」的名单；可与 modifyList 相同，或为空时用默认名单以仅显示。</param>
+            <param name="modifyList">实际被「允许/禁止」按钮修改的名单。</param>
         </member>
         <member name="T:Cumpilation.Bukkake.BukkakeUtility">
             <summary>

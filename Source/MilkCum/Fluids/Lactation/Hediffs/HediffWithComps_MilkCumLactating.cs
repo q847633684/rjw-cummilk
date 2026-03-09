@@ -152,8 +152,12 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
 }
 public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
 {
-    /// <summary>水池模型（L 驱动）：当前泌乳�?L。唯一状态量；每日衰�?= 1/(B_T×E)+k×L；泌乳结�?L�?</summary>
-    private float currentLactationAmount;
+    /// <summary>水池模型（L 驱动）：药物诱发的 L 分量；衰减用药物基准 B_T。</summary>
+    private float lactationAmountFromDrug;
+    /// <summary>水池模型：分娩诱发的 L 分量；衰减用分娩基准 B_T。</summary>
+    private float lactationAmountFromBirth;
+    /// <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
+    private float currentLactationAmount => lactationAmountFromDrug + lactationAmountFromBirth;
     /// <summary>四层模型：喷乳反�?R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key �?breastFullness 一致，�?HumanBreast_L）。挤�?吸奶某侧仅提升该�?R</summary>
     private Dictionary<string, float> letdownReflexByKey;
     /// <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
@@ -169,7 +173,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public CompEquallyMilkable CompEquallyMilkable => this.Pawn.CompEquallyMilkable();
     public HediffWithComps_MilkCumLactating Parent => (HediffWithComps_MilkCumLactating)this.parent;
 
-    /// <summary>剩余天数（游戏日）。动力学 dL/dt = -(a+k×L)，精确解 T = (1/k)×ln(1 + k×L/a)；a=1/(B_T×E)。k�? �?a�? 时退化为 L/D(L)</summary>
+    /// <summary>剩余天数（游戏日）。按分量分别用药物/分娩 B_T；总 L 用加权 B_T_eff 估算。</summary>
     public float RemainingDays
     {
         get
@@ -178,7 +182,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             if (L <= 0f) return 0f;
             float eff = GetEffectiveDrugFactor();
             if (eff <= 0f) return 0f;
-            float bT = MilkCumSettings.GetEffectiveBaseValueTForDecay();
+            float bT = GetEffectiveBaseValueTForRemaining();
             float a = 1f / (bT * eff);
             float k = PoolModelConstants.NegativeFeedbackK;
             if (a <= 0f) return 0f;
@@ -192,6 +196,20 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             return (1f / k) * Mathf.Log(arg);
         }
     }
+    /// <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
+    private float GetEffectiveBaseValueTForRemaining()
+    {
+        float Ld = lactationAmountFromDrug;
+        float Lb = lactationAmountFromBirth;
+        if (Ld <= 0f && Lb <= 0f) return MilkCumSettings.GetEffectiveBaseValueTForDecay();
+        if (Lb <= 0f) return MilkCumSettings.GetEffectiveBaseValueTForDecay();
+        if (Ld <= 0f) return MilkCumSettings.GetEffectiveBaseValueTForDecayBirth();
+        float bTd = MilkCumSettings.GetEffectiveBaseValueTForDecay();
+        float bTb = MilkCumSettings.GetEffectiveBaseValueTForDecayBirth();
+        float denom = Ld / bTd + Lb / bTb;
+        if (denom <= 0f) return bTd;
+        return (Ld + Lb) / denom;
+    }
     /// <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
     public float CurrentLactationAmount => currentLactationAmount;
 
@@ -203,7 +221,17 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public override void CompExposeData()
     {
         base.CompExposeData();
-        Scribe_Values.Look(ref currentLactationAmount, "PoolCurrentLactationAmount", 0f);
+        Scribe_Values.Look(ref lactationAmountFromDrug, "EM.PoolLactationFromDrug", 0f);
+        Scribe_Values.Look(ref lactationAmountFromBirth, "EM.PoolLactationFromBirth", 0f);
+        float legacyTotal = 0f;
+        if (Scribe.mode == LoadSaveMode.Saving)
+            legacyTotal = lactationAmountFromDrug + lactationAmountFromBirth;
+        Scribe_Values.Look(ref legacyTotal, "PoolCurrentLactationAmount", 0f);
+        if (Scribe.mode == LoadSaveMode.LoadingVars && lactationAmountFromDrug <= 0f && lactationAmountFromBirth <= 0f && legacyTotal > 0f)
+        {
+            lactationAmountFromDrug = legacyTotal;
+            lactationAmountFromBirth = 0f;
+        }
         List<string> letdownKeys = null;
         List<float> letdownVals = null;
         if (Scribe.mode == LoadSaveMode.Saving && letdownReflexByKey != null && letdownReflexByKey.Count > 0)
@@ -230,7 +258,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             if (currentLactationAmount <= 0f && Parent.Severity > 0f)
             {
                 float eff = GetEffectiveDrugFactor();
-                currentLactationAmount = Parent.Severity * GetBaseValueNormalized(Pawn) * eff;
+                lactationAmountFromDrug = Parent.Severity * GetBaseValueNormalized(Pawn) * eff;
+                lactationAmountFromBirth = 0f;
             }
             currentInflammation = Mathf.Max(0f, currentInflammation);
             effectiveToleranceE = Mathf.Clamp01(effectiveToleranceE);
@@ -312,7 +341,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float room = Mathf.Max(0f, capDay - milkingLStimulusAccumulatedThisDay);
         float toAdd = Mathf.Min(perEvent, capEvent, room);
         if (toAdd <= 0f) return;
-        currentLactationAmount += toAdd;
+        lactationAmountFromDrug += toAdd;
         milkingLStimulusAccumulatedThisDay += toAdd;
     }
 
@@ -429,31 +458,36 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return v <= 10f ? v.ToString("F2").TrimEnd('0').TrimEnd('.') : v.ToString("F1");
     }
 
-    /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由设置反推</summary>
-    public float GetDailyLactationDecay(float lactationAmount)
+    /// <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由参数传入（药物/分娩分别用各自基准）。</summary>
+    public float GetDailyLactationDecayWithBT(float lactationAmount, float bT)
     {
         float eff = GetEffectiveDrugFactor();
         if (eff <= 0f) return 0f;
-        float bT = MilkCumSettings.GetEffectiveBaseValueTForDecay();
         float D = 1f / (bT * eff) + PoolModelConstants.NegativeFeedbackK * lactationAmount;
         if (MilkCumSettings.enableInflammationModel)
             D += MilkCumSettings.lactationDecayInflammationEta * Mathf.Max(0f, currentInflammation);
         return D;
     }
 
-    /// <summary>当前 L 下的每日衰减（用于显示）</summary>
-    public float GetDailyLactationDecay() => GetDailyLactationDecay(currentLactationAmount);
-
-    /// <summary>吃药时进水：ΔL = Δs × C_dose。Δs 为本次实际生效的 Lactating 严重度增量（已包含一次耐受削弱）</summary>
-    public void AddFromDrug(float deltaSeverity)
+    /// <summary>每日衰减（药物分量用药物 B_T）；用于显示总衰减量。</summary>
+    public float GetDailyLactationDecay(float lactationAmount)
     {
-        currentLactationAmount += deltaSeverity * PoolModelConstants.DoseToLFactor;
+        return GetDailyLactationDecayWithBT(lactationAmount, MilkCumSettings.GetEffectiveBaseValueTForDecay());
     }
 
-    /// <summary>分娩时累加：L += 基础值（不乘有效药效系数）</summary>
+    /// <summary>当前 L 下的每日衰减（两分量之和，用于显示）</summary>
+    public float GetDailyLactationDecay() => GetDailyLactationDecayWithBT(lactationAmountFromDrug, MilkCumSettings.GetEffectiveBaseValueTForDecay()) + GetDailyLactationDecayWithBT(lactationAmountFromBirth, MilkCumSettings.GetEffectiveBaseValueTForDecayBirth());
+
+    /// <summary>吃药时进水：ΔL_drug = Δs × C_dose。</summary>
+    public void AddFromDrug(float deltaSeverity)
+    {
+        lactationAmountFromDrug += deltaSeverity * PoolModelConstants.DoseToLFactor;
+    }
+
+    /// <summary>分娩时累加：L_birth += 基础值（不乘有效药效系数）</summary>
     public void AddFromBirth()
     {
-        currentLactationAmount += GetBaseValueNormalized(Pawn);
+        lactationAmountFromBirth += GetBaseValueNormalized(Pawn);
     }
 
     public override void CompPostTick(ref float severityAdjustment)
@@ -471,7 +505,10 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             if (permanentOrAnimal)
             {
                 if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
-                    currentLactationAmount = PoolModelConstants.BaseValueTBirth;
+                {
+                    lactationAmountFromDrug = PoolModelConstants.BaseValueTBirth;
+                    lactationAmountFromBirth = 0f;
+                }
                 if (!cachedWasPermanentLactation)
                 {
                     cachedWasPermanentLactation = true;
@@ -483,10 +520,17 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             {
                 cachedWasPermanentLactation = false;
                 float step = 200f / 60000f;
-                float dailyDecay = GetDailyLactationDecay(currentLactationAmount) * step;
-                currentLactationAmount = Mathf.Max(0f, currentLactationAmount - dailyDecay);
+                float bTdrug = MilkCumSettings.GetEffectiveBaseValueTForDecay();
+                float bTbirth = MilkCumSettings.GetEffectiveBaseValueTForDecayBirth();
+                float decayDrug = GetDailyLactationDecayWithBT(lactationAmountFromDrug, bTdrug) * step;
+                float decayBirth = GetDailyLactationDecayWithBT(lactationAmountFromBirth, bTbirth) * step;
+                lactationAmountFromDrug = Mathf.Max(0f, lactationAmountFromDrug - decayDrug);
+                lactationAmountFromBirth = Mathf.Max(0f, lactationAmountFromBirth - decayBirth);
                 if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
-                    currentLactationAmount = 0f;
+                {
+                    lactationAmountFromDrug = 0f;
+                    lactationAmountFromBirth = 0f;
+                }
                 if (currentLactationAmount <= 0f)
                 {
                     ResetAndRemoveLactating();
@@ -497,10 +541,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         this.Charge = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
     }
 
-    /// <summary>泌乳结束：清空双池、移�?Lactating hediff</summary>
+    /// <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
     private void ResetAndRemoveLactating()
     {
-        currentLactationAmount = 0f;
+        lactationAmountFromDrug = 0f;
+        lactationAmountFromBirth = 0f;
         CompEquallyMilkable?.ClearPools();
         Pawn.health.RemoveHediff(parent);
     }

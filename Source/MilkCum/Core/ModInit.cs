@@ -62,6 +62,7 @@ public static class ModInit
         WorkGiver_Ingest_MilkProductFilter.ApplyOptionalPatches(MilkCumMod.Harmony);
         JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(MilkCumMod.Harmony);
         ProlactinAddictionPatch.ApplyIfPossible(MilkCumMod.Harmony);
+        Thing_GetStatValue_PartialMilkNutrition_Patch.ApplyIfPossible(MilkCumMod.Harmony);
         CumpilationIntegration.ApplyPatches(MilkCumMod.Harmony);
         RjwMilkHumanWorkGiverPatch.ApplyPatches(MilkCumMod.Harmony);
     }

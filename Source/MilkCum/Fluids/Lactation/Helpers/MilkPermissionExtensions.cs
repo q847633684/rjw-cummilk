@@ -67,11 +67,12 @@ public static class MilkPermissionExtensions
         if (pawn == baby) { return false; }
         if (!pawn.CanBreastfeedEver(baby)) { return false; }
         if (!IsAllowedSuckler(pawn, baby)) { return false; }
-        if (!baby.CompEquallyMilkable().AllowedToBeAutoFedBy(pawn)) { return false; }
+        var babyComp = baby.CompEquallyMilkable();
+        if (babyComp != null && !babyComp.AllowedToBeAutoFedBy(pawn)) { return false; }
         return true;
     }
 
-    /// <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（用于名单为空时预填，不再用“空=默认”判断）</summary>
+    /// <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（Lover/Spouse，用于名单为空时预填，不再用“空=默认”判断）</summary>
     public static List<Pawn> GetDefaultSucklers(Pawn producer)
     {
         var list = new List<Pawn>();
@@ -84,20 +85,22 @@ public static class MilkPermissionExtensions
         }
         foreach (DirectPawnRelation rel in producer.relations.DirectRelations)
         {
-            if (rel.def != PawnRelationDefOf.Lover) continue;
+            if (rel.def != PawnRelationDefOf.Lover && rel.def != PawnRelationDefOf.Spouse) continue;
             if (rel.otherPawn != null && !rel.otherPawn.Destroyed && !list.Contains(rel.otherPawn))
                 list.Add(rel.otherPawn);
         }
         return list;
     }
 
-    /// <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶（名单内即可；名单默认预填子女+伴侣）</summary>
+    /// <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣」；名单非空时仅名单内的人可吸奶/挤奶。</summary>
     public static bool IsAllowedSuckler(Pawn producer, Pawn doer)
     {
         var comp = producer?.CompEquallyMilkable();
         if (comp == null) return true;
         if (comp.allowedSucklers == null) return false;
-        return comp.allowedSucklers.Count > 0 && comp.allowedSucklers.Contains(doer);
+        if (comp.allowedSucklers.Count == 0)
+            return GetDefaultSucklers(producer).Contains(doer);
+        return comp.allowedSucklers.Contains(doer);
     }
 
     /// <summary>指定谁可以使用产出的�?精液制品：无 producer 允许；自己始终允许；否则看产�?allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，�?7.4）</summary>
