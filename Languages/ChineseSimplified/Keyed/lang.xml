@@ -138,6 +138,7 @@
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
     <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
+    <EM.PoolDaysSuffix>日</EM.PoolDaysSuffix>
     <EM.EquivalentDose>等效剂量：{0}</EM.EquivalentDose>
     <EM.EquivalentDoseColumn>等效剂量</EM.EquivalentDoseColumn>
     <EM.ItemProducer>产主：{0}</EM.ItemProducer>
@@ -148,6 +149,7 @@
     <EM.LactatingStateFullShrinking>池满回缩中（吸收补充饱食度）</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>池满（建议挤奶）</EM.LactatingStateFull>
     <EM.MilkFlowStoppedFull>池已满，无流速</EM.MilkFlowStoppedFull>
+    <EM.MilkFlowPressureWhenFull>（满池时受压力抑制，仍微量进水）</EM.MilkFlowPressureWhenFull>
     <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>流速：{0}/天</EM.MilkFlowPerDay>
     <EM.MilkFlowValuePercent>流速：{0}({1})/天</EM.MilkFlowValuePercent>

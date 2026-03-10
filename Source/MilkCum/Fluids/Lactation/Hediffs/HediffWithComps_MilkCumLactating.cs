@@ -350,22 +350,20 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         milkingLStimulusAccumulatedThisDay += toAdd;
     }
 
-    /// <summary>四层模型：当前喷乳反�?R∈[0,1]（用于总览显示）。未启用时返�?1；启用时为各�?R 的加权平均，无数据时不低�?letdownReflexMin</summary>
+    /// <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的算术平均，无数据时返回 0。</summary>
     public float GetLetdownReflex()
     {
         if (!MilkCumSettings.enableLetdownReflex) return 1f;
         var entries = Pawn?.GetBreastPoolEntries();
-        if ((entries?.Count ?? 0) == 0) return Mathf.Clamp01(MilkCumSettings.letdownReflexMin);
+        if ((entries?.Count ?? 0) == 0) return 0f;
         float sumR = 0f;
         int n = 0;
         foreach (var e in entries)
         {
-            float r = GetLetdownReflexForSide(e.Key);
-            float minR = Mathf.Clamp01(MilkCumSettings.letdownReflexMin);
-            sumR += Mathf.Max(minR, r);
+            sumR += GetLetdownReflexForSide(e.Key);
             n++;
         }
-        return n > 0 ? Mathf.Clamp01(sumR / n) : Mathf.Clamp01(MilkCumSettings.letdownReflexMin);
+        return n > 0 ? Mathf.Clamp01(sumR / n) : 0f;
     }
 
     /// <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会�?min 合并）</summary>
@@ -383,18 +381,15 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return GetLetdownReflexRaw(sideKey);
     }
 
-    /// <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时加成模�?1+R×(boost-1)，否�?R（衰减后不低�?minR）</summary>
+    /// <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时倍率 = 1+R×(boost−1)，R 可衰减到 0 时倍率回 1。</summary>
     public float GetLetdownReflexFlowMultiplier(string sideKey)
     {
         if (!MilkCumSettings.enableLetdownReflex) return 1f;
         if (string.IsNullOrEmpty(sideKey) || letdownReflexByKey == null || !letdownReflexByKey.TryGetValue(sideKey, out float rVal))
             return 1f;
-        float minR = Mathf.Clamp01(MilkCumSettings.letdownReflexMin);
-        float r = Mathf.Max(minR, Mathf.Clamp01(rVal));
+        float r = Mathf.Clamp01(rVal);
         float boost = Mathf.Clamp(MilkCumSettings.letdownReflexBoostMultiplier, 1f, 3f);
-        if (boost > 1f)
-            return Mathf.Max(1f, 1f + r * (boost - 1f));
-        return r;
+        return Mathf.Max(1f, 1f + r * (boost - 1f));
     }
 
     /// <summary>进水流速的 R 倍率（全侧平均，用于总产奶效率一行显示）</summary>
@@ -409,14 +404,12 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return entries.Count > 0 ? sum / entries.Count : 1f;
     }
 
-    /// <summary>四层模型：各�?R 指数衰减；仅保留当前池中存在�?key，避免字典无限增长</summary>
+    /// <summary>四层模型：各侧 R 指数衰减，可衰减到 0；仅保留当前池中存在的 key，避免字典无限增长。</summary>
     public void DecayLetdownReflex(float deltaTMinutes)
     {
         if (!MilkCumSettings.enableLetdownReflex || deltaTMinutes <= 0f) return;
         if (letdownReflexByKey == null || letdownReflexByKey.Count == 0) return;
         float lambda = Mathf.Max(0.001f, MilkCumSettings.letdownReflexDecayLambda);
-        bool boostMode = MilkCumSettings.letdownReflexBoostMultiplier > 1f;
-        float minR = Mathf.Clamp01(MilkCumSettings.letdownReflexMin);
         var validKeys = Pawn?.GetBreastPoolEntries()?.Select(e => e.Key).ToHashSet();
         var keys = letdownReflexByKey.Keys.ToList();
         var toRemove = new List<string>();
@@ -428,7 +421,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 continue;
             }
             float r = letdownReflexByKey[key] * Mathf.Exp(-lambda * deltaTMinutes);
-            if (!boostMode && minR >= 1E-5f && r < minR) r = minR;
             if (r < 1E-5f) r = 0f;
             letdownReflexByKey[key] = r;
         }
@@ -722,7 +714,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             bool isShrinking = reabsorbed > 0f;
             float growthSpeed = PawnUtility.BodyResourceGrowthSpeed(Pawn);
 
-            // 1. 状态总括（仅一行：产奶�?/ 池满 / 池满回缩�?/ 饥饿红字�?
+            // 1. 状态总括（仅一行：产奶中 / 池满 / 池满回缩中 / 饥饿红字）
             if (growthSpeed == 0f)
                 lines.Add("LactatingStoppedBecauseHungry".Translate().Colorize(ColorLibrary.RedReadable));
             else if (isFull)
@@ -744,31 +736,37 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lines.Add("  " + "EM.PoolBreastStretchCapLine".Translate(maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
             };
 
-            // 3. 流�?
+            // 3. 产奶流速（池/天）：与 UpdateMilkPools 一致，满池时仍按压力曲线有微量进水，故始终显示 GetFlowPerDayBreakdown 的总流速
             lines.Add("EM.PoolSectionFlow".Translate());
             if (growthSpeed > 0f)
             {
+                var b = GetFlowPerDayBreakdown();
+                lines.Add("  " + "EM.PoolBreastTotalFlowLine".Translate(b.TotalFlow.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 if (isFull)
                 {
-                    lines.Add("  " + "EM.MilkFlowStoppedFull".Translate());
                     if (isShrinking)
                         lines.Add("  " + "EM.ReabsorbedNutritionPerDay".Translate(reabsorbed.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                    if (MilkCumSettings.enablePressureFactor && b.TotalFlow >= 0.001f)
+                        lines.Add("  " + "EM.MilkFlowPressureWhenFull".Translate());
                 }
-                else
+            }
+
+            // 4. 消耗：仅当有额外营养/能量消耗且未满池时才显示整块，避免空标题
+            if (growthSpeed > 0f && !isFull)
+            {
+                float extraNut = Pawn.needs?.food != null ? ExtraNutritionPerDay() : 0f;
+                float extraEnergy = Pawn.needs?.energy != null ? ExtraEnergyPerDay() : 0f;
+                if (extraNut >= 0.0001f || extraEnergy >= 0.0001f)
                 {
-                    var b = GetFlowPerDayBreakdown();
-                    lines.Add("  " + "EM.PoolBreastTotalFlowLine".Translate(b.TotalFlow.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                    lines.Add("EM.PoolSectionConsumption".Translate());
+                    if (Pawn.needs?.food != null && extraNut >= 0.0001f)
+                        lines.Add("  " + "EM.LactatingExtraNutritionShort".Translate(extraNut.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                    if (Pawn.needs?.energy != null && extraEnergy >= 0.0001f)
+                        lines.Add("  " + ("CurrentMechEnergyFallPerDay".Translate() + ": " + extraEnergy.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
                 }
-            };
+            }
 
-            // 5. 消�?
-            lines.Add("EM.PoolSectionConsumption".Translate());
-            if (growthSpeed > 0f && !isFull && Pawn.needs?.food != null)
-                lines.Add("  " + "EM.LactatingExtraNutritionShort".Translate(ExtraNutritionPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-            else if (growthSpeed > 0f && !isFull && Pawn.needs?.energy != null)
-                lines.Add("  " + ("CurrentMechEnergyFallPerDay".Translate() + ": " + ExtraEnergyPerDay().ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-
-            // 6. 周期
+            // 5. 周期
             lines.Add("EM.PoolSectionCycle".Translate());
             lines.Add("  " + ("EM.PoolRemainingDays".Translate() + ": " + (IsPermanentLactation ? Lang.Permanent : RemainingDays.ToString("F1"))));
             float oneDoseL = 0.5f * PoolModelConstants.DoseToLFactor;
@@ -784,14 +782,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             }
         }
     }
-    /// <summary>括号内保留「天�?+ 满度%」，便于一眼看到剩余时间与池满度；悬停展开�?1�? 块详情</summary>
+    /// <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开见下方详情。</summary>
     public override string CompLabelInBracketsExtra
     {
         get
         {
             float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
             float fullness = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : Charge;
-            string head = IsPermanentLactation ? "" : ("EM.PoolDaysPrefix".Translate() + RemainingDays.ToString("F1") + "日)");
+            string head = IsPermanentLactation ? "" : ("(" + "EM.PoolDaysPrefix".Translate() + RemainingDays.ToString("F1") + "EM.PoolDaysSuffix".Translate() + ") ");
             return base.CompLabelInBracketsExtra + head + Lang.MilkFullness + ": " + (fullness / maxF).ToStringPercent();
         }
     }

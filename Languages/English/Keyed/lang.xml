@@ -139,6 +139,7 @@
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
     <EM.PoolDaysPrefix>Days: </EM.PoolDaysPrefix>
+    <EM.PoolDaysSuffix> days</EM.PoolDaysSuffix>
     <EM.EquivalentDose>Equivalent dose: {0}</EM.EquivalentDose>
     <EM.EquivalentDoseColumn>Equiv. dose</EM.EquivalentDoseColumn>
     <EM.ItemProducer>Producer: {0}</EM.ItemProducer>
@@ -149,6 +150,7 @@
     <EM.LactatingStateFullShrinking>Pool full, shrinking (reabsorbed milk adds to food)</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>Pool full (consider milking)</EM.LactatingStateFull>
     <EM.MilkFlowStoppedFull>No inflow (pool full)</EM.MilkFlowStoppedFull>
+    <EM.MilkFlowPressureWhenFull>(when full, pressure reduces flow; small inflow continues)</EM.MilkFlowPressureWhenFull>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
     <EM.MilkFlowValuePercent>Milk flow: {0}({1})/day</EM.MilkFlowValuePercent>

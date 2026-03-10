@@ -120,7 +120,7 @@ internal class MilkCumSettings : ModSettings
 		if (denom <= 0.01f) return 100f;
 		return 1f / denom;
 	}
-	/// <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.85、f_min=0.02，抑制约在膨胀阶段（P≈基础满/撑大≈0.83～1）开始。</summary>
+	/// <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.9、f_min=0.02，奶量达 90% 才开始往下压。</summary>
 	/// <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
 	public static float GetPressureFactor(float P)
 	{
@@ -157,9 +157,9 @@ internal class MilkCumSettings : ModSettings
 	public static List<string> raceCannotLactate = new();
 	// 人形种族默认流速倍率（2 = 单次剂量约 1 日灌满；与 RJW/种族 mod 平衡时也可调）
 	public static float defaultFlowMultiplierForHumanlike = 2f;
-	// 四层模型（阶段1）：压力软抑制。启用时流速乘 PressureFactor(P)；带下限 Logistic，默认 Pc=0.85、k=6、f_min=0.02，抑制约在膨胀阶段（P≈0.83～1）开始。
+	// 四层模型（阶段1）：压力软抑制。启用时流速乘 PressureFactor(P)；带下限 Logistic，默认 Pc=0.9、k=6、f_min=0.02，奶量达 90% 才开始往下压。
 	public static bool enablePressureFactor = true;
-	public static float pressureFactorPc = 0.85f;
+	public static float pressureFactorPc = 0.9f;
 	public static float pressureFactorB = 6f;
 	/// <summary>压力曲线下限 f_min：满池时生产倍率不低于此值，永不归零。推荐 0.02～0.15。</summary>
 	public static float pressureFactorMin = 0.02f;
@@ -167,11 +167,9 @@ internal class MilkCumSettings : ModSettings
 	public static bool enableLetdownReflex = true;
 	/// <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
 	public static float letdownReflexDecayLambda = 0.03f;
-	/// <summary>挤奶/吸奶时 R 的增量 ΔR，Clamp 后 R≤1。</summary>
+	/// <summary>挤奶/吸奶时 R 的增量 ΔR，R 加上后 Clamp 至 1。设大一些（如 1）可一次刺激即满 R。</summary>
 	public static float letdownReflexStimulusDeltaR = 0.45f;
-	/// <summary>喷乳反射 R 的下限：R 衰减不低于此值，避免「不挤奶则产奶效率归零」；0=允许归零。当启用加成倍率时 R 可衰减到 0。</summary>
-	public static float letdownReflexMin = 0.25f;
-	/// <summary>喷乳反射加成倍率：吸奶/挤奶后进水量 = 基础 × (1 + R×(本值-1))，R=1 时为本值倍（1.5~2.5），R=0 时为 1 倍；维持时间由 R 衰减速度决定。≤1 时按旧逻辑（流速×R，且受 R 下限约束）。</summary>
+	/// <summary>喷乳反射加成倍率：进水流速倍率 = 1 + R×(本值−1)，R=1 时为本值倍（建议 1.5~2.5），R=0 时为 1 倍；设为 1 即无加成。</summary>
 	public static float letdownReflexBoostMultiplier = 2f;
 	// 四层模型（阶段2）：炎症 I(t)。启用时每 60 tick 更新 I；I>I_crit 触发乳腺炎；L 衰减加 η·I。
 	public static bool enableInflammationModel = true;
@@ -308,13 +306,12 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
 		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 2f);
 		Scribe_Values.Look(ref enablePressureFactor, "EM.EnablePressureFactor", true);
-		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.85f);
+		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.9f);
 		Scribe_Values.Look(ref pressureFactorB, "EM.PressureFactorB", 6f);
 		Scribe_Values.Look(ref pressureFactorMin, "EM.PressureFactorMin", 0.02f);
 		Scribe_Values.Look(ref enableLetdownReflex, "EM.EnableLetdownReflex", true);
 		Scribe_Values.Look(ref letdownReflexDecayLambda, "EM.LetdownReflexDecayLambda", 0.03f);
 		Scribe_Values.Look(ref letdownReflexStimulusDeltaR, "EM.LetdownReflexStimulusDeltaR", 0.45f);
-		Scribe_Values.Look(ref letdownReflexMin, "EM.LetdownReflexMin", 0.25f);
 		Scribe_Values.Look(ref letdownReflexBoostMultiplier, "EM.LetdownReflexBoostMultiplier", 2f);
 		Scribe_Values.Look(ref enableInflammationModel, "EM.EnableInflammationModel", true);
 		Scribe_Values.Look(ref inflammationAlpha, "EM.InflammationAlpha", 0.1f);

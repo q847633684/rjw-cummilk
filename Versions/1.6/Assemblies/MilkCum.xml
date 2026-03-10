@@ -68,10 +68,7 @@
             <summary>主 Tab 索引，用于替代魔术数字 0～4，便于维护与 DrawSection 传参。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingWorkTotalBase">
-            <summary>按容量量化：挤奶工作量基准（原版 400），实际工作量 = 基准 × 容量系数。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingCapacityFactor">
-            <summary>按容量量化：挤奶工作量随 MilkAmount 的系数，work *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2.5]。</summary>
+            <summary>挤奶流速基准：baseFlowPerSecond = 60/本值（池单位/秒）。默认 60 → 满池约 1 瓶/秒（现实时间）；调大则变慢。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.breastfeedCapacityFactor">
             <summary>按容量量化：吸奶有效时间随喂奶者 MilkAmount 的系数，effectiveTime *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2]。</summary>
@@ -298,8 +295,16 @@
             <summary>按 PairIndex 分组并按该对总满度降序排列，用于 Drain 选侧（最满的对先扣）。无 LINQ，减少 GC。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRate(System.Boolean,MilkCum.Core.Building_Milking)">
-            <summary>挤奶/吸奶时的挤出流速（池单位/秒），由「挤出乳压」、喷乳反射与种族倍率决定，与目标瓶数无关。取量 = 流速 × 时间。机器挤奶时 building 提供 SpeedOffset 加速。
-            挤出乳压采用满度平方（越满越好挤），与生产用的 Pressure 抑制曲线区分。</summary>
+            <summary>挤奶时的挤出流速（池单位/秒）：各侧按「该侧满度/该侧容量」算挤出乳压 f² 与该侧 letdown，求和后×基准×种族×机器倍率。手挤用总流速；机器挤用 GetMilkingFlowRatesPerSide 每侧独立、并行。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRatesPerSide(System.Boolean,MilkCum.Core.Building_Milking)">
+            <summary>各侧的挤出流速（池单位/秒），与 GetCachedEntries() 顺序一致。手挤用其和；机器挤用每侧独立排空、并行，总耗时由最慢一侧决定。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRateForSingleSide">
+            <summary>吸奶专用：按「即将被吸的那一侧」的流速，选侧规则与 DrainForConsumeSingleSide 一致；复用 GetMilkingFlowRatesPerSide 取该侧流速。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFirstDrainSideIndex">
+            <summary>吸奶/单侧扣量时「第一个会被扣」的侧在 GetCachedEntries() 中的下标；与 DrainForConsumeSingleSide 选侧一致。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
             <summary>回缩吸收：仅当本步发生过溢出时才回缩，界面也仅在有溢出时显示。本方法将该回缩量折算为「每日补充营养」；无溢出时返回 0。</summary>
@@ -354,15 +359,15 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeSingleSide(System.Single,System.Collections.Generic.List{System.String})">
             <summary>
-            吸奶专用：只从「当前最满的一侧」扣量（一口只能吸一侧）。选侧规则与 DrainForConsume 一致：对总满度优先、同对内较满一侧、相同时先左。
-            挤奶仍用 DrainForConsume（可多侧/双乳同时挤）。
+            吸奶专用：只从「当前最满的一侧」扣量（一口只能吸一侧）。选侧与 GetFirstDrainSideIndex 一致。
             </summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeParallel(System.Single,System.Collections.Generic.List{System.String})">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeParallel(System.Collections.Generic.IList{System.Single},System.Single,System.Collections.Generic.List{System.String})">
             <summary>
-            机器挤奶专用：每侧按相同速率并行扣量（两侧同时减），用于电动吸奶器等。每 tick 每侧最多扣 amountPerSide，总扣量 = 各侧实际扣量之和。
+            机器挤奶专用：每侧按「该侧流速」独立并行扣量；总扣量不超过 remainingCap。每侧本 tick 最多扣 ratePerSidePerTick[i]（与 GetCachedEntries 顺序一致），若各侧拟扣量之和超过 remainingCap 则按比例缩减。用于左 2.5 秒、右 1 秒同步进行，总耗时由最慢的一侧决定。
             </summary>
-            <param name="amountPerSide">每侧本 tick 最多扣的池单位量</param>
+            <param name="ratePerSidePerTick">每侧本 tick 最多扣的池单位量，顺序同 GetCachedEntries()</param>
+            <param name="remainingCap">本 tick 总扣量上限（通常 = amountToTake - totalDrained）</param>
             <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key</param>
             <returns>实际扣掉的总量</returns>
         </member>

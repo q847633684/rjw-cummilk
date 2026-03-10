@@ -65,8 +65,14 @@ public class CompEquallyMilkable : CompMilkable
     private bool cachedWasLactatingWithDrugInduced = false;
     /// <summary>满池溢出累计量（仅 Debug 显示用）</summary>
     internal float OverflowAccumulator => overflowAccumulator;
-    /// <summary>上一轮 UpdateMilkPools 是否发生溢出；用于界面仅在有溢出时显示回缩吸收。</summary>
-    private bool hadOverflowLastStep = false;
+    /// <summary>上一轮 UpdateMilkPools 是否执行过向基础容量的回缩；界面仅在有回缩时显示回缩吸收。</summary>
+    private bool hadShrinkLastStep = false;
+    /// <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
+    private Dictionary<string, bool> overflowTriggeredByKey = new Dictionary<string, bool>();
+
+    /// <summary>该侧是否处于溢出状态（已触发溢出且当前高于基础容量），用于停泌乳与回缩判定。</summary>
+    private bool IsOverflowState(string key, float cur, float baseCap)
+        => overflowTriggeredByKey.TryGetValue(key, out bool ov) && ov && cur > baseCap;
 
     /// <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
     public float GetFullnessForKey(string key)
@@ -230,11 +236,11 @@ public class CompEquallyMilkable : CompMilkable
         return 0;
     }
 
-    /// <summary>回缩吸收：仅当本步发生过溢出时才回缩，界面也仅在有溢出时显示。本方法将该回缩量折算为「每日补充营养」；无溢出时返回 0。</summary>
+    /// <summary>回缩吸收：仅当该侧触发了溢出逻辑且本步有回缩时，界面显示回缩吸收。本方法将回缩量折算为「每日补充营养」；无回缩时返回 0。</summary>
     public float GetReabsorbedNutritionPerDay()
     {
         if (!MilkCumSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
-        if (!hadOverflowLastStep) return 0f;
+        if (!hadShrinkLastStep) return 0f;
         var entries = GetCachedEntries();
         if (entries.Count == 0) return 0f;
         float healthPercent = 1f;
@@ -245,8 +251,8 @@ public class CompEquallyMilkable : CompMilkable
         foreach (var e in entries)
         {
             if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
-            if (cur > e.Capacity)
-                reabsorbedPoolPerStep += (cur - e.Capacity) * (1f - shrinkFactor);
+            if (!IsOverflowState(e.Key, cur, e.Capacity)) continue;
+            reabsorbedPoolPerStep += (cur - e.Capacity) * (1f - shrinkFactor);
         }
         if (reabsorbedPoolPerStep <= 0f) return 0f;
         float reabsorbedPoolPerDay = reabsorbedPoolPerStep * (60000f / 60f); // 每 60 tick 一次
@@ -462,7 +468,7 @@ public class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛），回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突</summary>
+    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）。仅当本步发生溢出时才执行池水位回缩与回缩吸收；回缩后满度降低、下一轮压力减小流速恢复，效果上从满池微量进水转为明显泌乳，形成逻辑闭环。回缩时超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
@@ -539,11 +545,18 @@ public class CompEquallyMilkable : CompMilkable
                 float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
                 float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f);
                 float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f);
+                if (IsOverflowState(leftE.Key, curLeft, leftCap)) flowLeft = 0f;
+                if (IsOverflowState(rightE.Key, curRight, rightCap)) flowRight = 0f;
                 var pairPool = new FluidPoolState();
                 pairPool.SetFrom(curLeft, curRight, 0);
                 float overflow = pairPool.TickGrowth(flowLeft, flowRight, leftCap, rightCap, stretchLeft, stretchRight);
                 breastFullness[leftE.Key] = pairPool.LeftFullness;
                 breastFullness[rightE.Key] = pairPool.RightFullness;
+                if (overflow > 0f)
+                {
+                    if (pairPool.LeftFullness > leftCap) overflowTriggeredByKey[leftE.Key] = true;
+                    if (pairPool.RightFullness > rightCap) overflowTriggeredByKey[rightE.Key] = true;
+                }
                 overflowTotal += overflow;
             }
             else
@@ -557,35 +570,36 @@ public class CompEquallyMilkable : CompMilkable
                         : (current >= stretchCap ? 0f : 1f);
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
                     float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f);
+                    if (IsOverflowState(e.Key, current, e.Capacity)) flowPerTick = 0f;
                     var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
                     breastFullness[e.Key] = newFullness;
+                    if (overflow > 0f) overflowTriggeredByKey[e.Key] = true;
                     overflowTotal += overflow;
                 }
             }
         }
-        hadOverflowLastStep = overflowTotal > 0f;
         float healthPercent = 1f;
         if (Pawn?.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
         float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
         float reabsorbedPoolThisStep = 0f;
         var reabsorbedPerKey = new Dictionary<string, float>();
-        // 仅当本步发生溢出时才回缩：溢出表示池超过撑大容量，此时才把超出基础容量的部分向基础容量收敛并折算营养加回
-        if (hadOverflowLastStep)
+        foreach (var e in entries)
         {
-            foreach (var e in entries)
+            if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
+            if (cur <= e.Capacity)
             {
-                if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
-                if (cur > e.Capacity)
-                {
-                    float shrinkAmount = (cur - e.Capacity) * (1f - shrinkFactor);
-                    reabsorbedPoolThisStep += shrinkAmount;
-                    reabsorbedPerKey[e.Key] = shrinkAmount;
-                    breastFullness[e.Key] = e.Capacity + (cur - e.Capacity) * shrinkFactor;
-                }
+                overflowTriggeredByKey[e.Key] = false;
+                continue;
             }
+            if (!IsOverflowState(e.Key, cur, e.Capacity)) continue;
+            float shrinkAmount = (cur - e.Capacity) * (1f - shrinkFactor);
+            reabsorbedPoolThisStep += shrinkAmount;
+            reabsorbedPerKey[e.Key] = shrinkAmount;
+            breastFullness[e.Key] = e.Capacity + (cur - e.Capacity) * shrinkFactor;
+            if (breastFullness[e.Key] <= e.Capacity) overflowTriggeredByKey[e.Key] = false;
         }
-        // 满池回缩：同一时刻、先回缩再加回营养（本 60 tick 回缩的池量折算饱食度/能量加回）
+        hadShrinkLastStep = reabsorbedPoolThisStep > 0f;
         float addBack = 0f;
         if (reabsorbedPoolThisStep > 0f && MilkCumSettings.reabsorbNutritionEnabled && Pawn != null)
         {
