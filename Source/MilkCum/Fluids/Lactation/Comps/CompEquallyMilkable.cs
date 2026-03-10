@@ -872,18 +872,6 @@ public class CompEquallyMilkable : CompMilkable
         return totalDrained;
     }
 
-    /// <summary>机器挤奶（旧重载）：每侧按相同速率并行扣量，委托给 DrainForConsumeParallel(IList, float, List)。</summary>
-    public float DrainForConsumeParallel(float amountPerSide, List<string> drainedKeys = null)
-    {
-        if (amountPerSide <= 0f || Pawn == null) return 0f;
-        var entries = GetCachedEntries();
-        if (entries.Count == 0) return 0f;
-        var ratePerSide = new List<float>(entries.Count);
-        for (int i = 0; i < entries.Count; i++)
-            ratePerSide.Add(amountPerSide);
-        return DrainForConsumeParallel(ratePerSide, amountPerSide * entries.Count, drainedKeys);
-    }
-
     /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。</summary>
     public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null)
     {
