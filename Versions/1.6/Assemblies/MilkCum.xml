@@ -279,6 +279,9 @@
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.OverflowAccumulator">
             <summary>满池溢出累计量（仅 Debug 显示用）</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.hadOverflowLastStep">
+            <summary>上一轮 UpdateMilkPools 是否发生溢出；用于界面仅在有溢出时显示回缩吸收。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
         </member>
@@ -299,7 +302,7 @@
             挤出乳压采用满度平方（越满越好挤），与生产用的 Pressure 抑制曲线区分。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
-            <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，由 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 > 0</summary>
+            <summary>回缩吸收：仅当本步发生过溢出时才回缩，界面也仅在有溢出时显示。本方法将该回缩量折算为「每日补充营养」；无溢出时返回 0。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.LastGatheredTick">
             <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>

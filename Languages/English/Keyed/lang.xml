@@ -39,7 +39,6 @@
     <EM.LactationExtraNutritionFactor>Lactation extra hunger: {0} (0=off, 150=1:1, 300=double)</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>Milking work total base</EM.MilkingWorkTotalBase>
-    <EM.MilkingCapacityFactor>Milking capacity factor</EM.MilkingCapacityFactor>
     <EM.MilkAmountDesc>Milking drains the full pool; yield only affects milking work total. Nursing duration is set by options and baby need; yield only affects portion/Charge conversion.</EM.MilkAmountDesc>
     <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>

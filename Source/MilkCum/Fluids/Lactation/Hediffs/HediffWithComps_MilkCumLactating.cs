@@ -622,7 +622,11 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             r.Letdown = r.RjwSum >= 1E-5f ? sumWeightedLetdown / r.RjwSum : (MilkCumSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier() : 1f);
             r.Conditions = flowWithAllFactors >= 1E-5f ? sumWeightedConditions / flowWithAllFactors : r.Conditions;
             if (flowWithAllFactors >= 1E-5f)
+            {
                 flow = baseWithoutConditions * flowWithAllFactors;
+                // 与 UpdateMilkPools 的 basePerDay 一致：实际进水用了全局状态倍率，扣营养也应用同一倍率，保证 营养- ≈ 乳池+
+                flow *= Pawn.GetMilkFlowMultiplierFromConditions();
+            }
             else
             {
                 float basePerDayFallback = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;

@@ -22,10 +22,8 @@ internal class MilkCumSettings : ModSettings
 {
 	private static Dictionary<string, RaceMilkType> namesToProducts = new();
 	private static Dictionary<string, MilkTag> productsToTags = new();
-	/// <summary>按容量量化：挤奶工作量基准（原版 400），实际工作量 = 基准 × 容量系数。</summary>
-	public static float milkingWorkTotalBase = 400f;
-	/// <summary>按容量量化：挤奶工作量随 MilkAmount 的系数，work *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2.5]。</summary>
-	public static float milkingCapacityFactor = 0.2f;
+	/// <summary>挤奶流速基准：baseFlowPerSecond = 60/本值（池单位/秒）。默认 60 → 满池约 1 瓶/秒（现实时间）；调大则变慢。</summary>
+	public static float milkingWorkTotalBase = 60f;
 	/// <summary>按容量量化：吸奶有效时间随喂奶者 MilkAmount 的系数，effectiveTime *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2]。</summary>
 	public static float breastfeedCapacityFactor = 0.1f;
 	public static bool femaleAnimalAdultAlwaysLactating = false;
@@ -262,8 +260,7 @@ internal class MilkCumSettings : ModSettings
 	public override void ExposeData()
 	{
 		base.ExposeData();
-		Scribe_Values.Look(ref milkingWorkTotalBase, "EM.MilkingWorkTotalBase", 400f);
-		Scribe_Values.Look(ref milkingCapacityFactor, "EM.MilkingCapacityFactor", 0.2f);
+		Scribe_Values.Look(ref milkingWorkTotalBase, "EM.MilkingWorkTotalBase", 60f);
 		Scribe_Values.Look(ref breastfeedCapacityFactor, "EM.BreastfeedCapacityFactor", 0.1f);
 		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "EM.FemaleAnimalAdultAlwaysLactating", false);
 		Scribe_Values.Look(ref showMechOptions, "EM.ShowMechOptions", true);

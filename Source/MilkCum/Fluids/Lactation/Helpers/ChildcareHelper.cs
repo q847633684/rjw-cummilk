@@ -48,8 +48,8 @@ public static class ChildcareHelper
         if (comp == null || lactatingComp == null)
             return false;
 
-        // 吸奶流速与挤奶统一：GetMilkingFlowRate（挤出乳压 f² × letdown），再按池量与需求上限
-        float flowPerSecond = comp.GetMilkingFlowRate(false, null);
+        // 吸奶流速：按「被吸的那一侧」的满度与容量算挤出乳压（GetMilkingFlowRateForSingleSide），避免未吸的一侧影响吸奶时间
+        float flowPerSecond = comp.GetMilkingFlowRateForSingleSide();
         float ratePerTick = flowPerSecond / 60f * (float)delta;
 
         float milkAmt = feeder.MilkAmount();

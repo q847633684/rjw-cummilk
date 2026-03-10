@@ -38,7 +38,6 @@
     <EM.LactationExtraNutritionFactor>泌乳额外饥饿：{0}（0=关闭，150=1:1，300=双倍）</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>吸奶容量系数</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>挤奶工作量基准</EM.MilkingWorkTotalBase>
-    <EM.MilkingCapacityFactor>挤奶容量系数</EM.MilkingCapacityFactor>
     <EM.MilkAmountDesc>挤奶按池满度全部排出，产量只影响挤奶工作量；哺乳时长由设置与婴儿需求决定，产量仅参与份数/Charge 换算。</EM.MilkAmountDesc>
     <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
     <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>

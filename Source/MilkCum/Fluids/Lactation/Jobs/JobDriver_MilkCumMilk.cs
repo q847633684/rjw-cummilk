@@ -124,32 +124,34 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
                 return;
             }
             actor.skills?.Learn(SkillDefOf.Animals, 0.13f);
-            // 流速由乳压/喷乳反射决定，取量 = 流速 × 时间（不再用 取量/时间 反推流速）
-            float flowPerSecond = comp.GetMilkingFlowRate(MilkBuilding != null, MilkBuilding);
-            float ratePerTick = flowPerSecond / 60f;
             float remaining = amountToTake - totalDrained;
-            float drain = Mathf.Min(ratePerTick, remaining, comp.Fullness);
-            if (drain <= 0f || totalDrained >= amountToTake)
-            {
-                if (totalDrained > 0f)
-                {
-                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
-                    totalDrained = 0f;
-                }
-                this.milkSustainer?.End();
-                actor.jobs.EndCurrentJob(JobCondition.Succeeded);
-                return;
-            }
             drainedKeys.Clear();
             float actualDrained;
             if (MilkBuilding != null)
             {
-                int sideCount = comp.BreastSideCount;
-                float ratePerSide = Mathf.Min(ratePerTick, remaining) / sideCount;
-                actualDrained = comp.DrainForConsumeParallel(ratePerSide, drainedKeys);
+                // 机器挤奶：每侧按自身流速独立排空，并行进行；总耗时由最慢的一侧决定（如左 2.5 秒、右 1 秒 → 总时间 2.5 秒）
+                var flowRatesPerSide = comp.GetMilkingFlowRatesPerSide(true, MilkBuilding);
+                var ratePerSidePerTick = new List<float>(flowRatesPerSide.Count);
+                for (int i = 0; i < flowRatesPerSide.Count; i++)
+                    ratePerSidePerTick.Add(flowRatesPerSide[i] / 60f);
+                actualDrained = comp.DrainForConsumeParallel(ratePerSidePerTick, remaining, drainedKeys);
             }
             else
             {
+                float flowPerSecond = comp.GetMilkingFlowRate(false, null);
+                float ratePerTick = flowPerSecond / 60f;
+                float drain = Mathf.Min(ratePerTick, remaining, comp.Fullness);
+                if (drain <= 0f || totalDrained >= amountToTake)
+                {
+                    if (totalDrained > 0f)
+                    {
+                        comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                        totalDrained = 0f;
+                    }
+                    this.milkSustainer?.End();
+                    actor.jobs.EndCurrentJob(JobCondition.Succeeded);
+                    return;
+                }
                 actualDrained = comp.DrainForConsume(drain, drainedKeys);
             }
             // 通知泌乳反射：本 tick 被扣量的池侧 key，用于更新喷乳反射 R 与流速倍率
