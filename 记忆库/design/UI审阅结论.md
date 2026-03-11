@@ -8,8 +8,8 @@
 
 | 类型 | 位置 | 说明 |
 |------|------|------|
-| 主设置入口 | `MilkCumSettings.DoWindowContents` | 5 个主 Tab，子 Tab 随主 Tab 变化；内容由各 Widget 的 Draw/DrawSection 提供 |
-| 主 Tab 列表 | 产奶与体液 / 哺乳 / 健康与风险 / 效率与界面 / 联动与扩展 |
+| 主设置入口 | `MilkCumSettings.DoWindowContents` | 4 个主 Tab（方案 B：精液 / 母乳 / 基因与种族 / 权限与默认），子 Tab 随主 Tab 变化；内容由各 Widget 的 Draw/DrawSection 提供 |
+| 主 Tab 列表 | 精液 / 母乳 / 基因与种族 / 权限与默认 |
 | 高级设置块 | `Widget_AdvancedSettings` | 通过 `DrawSection(inRect, mainTab, subTab)` 按 MainTabIndex 与子 Tab 常量分发 |
 | 产奶者表格 | `MainTabWindow` + `Milk_PawnTable` | 主界面按钮筛选（全部/殖民者/囚犯等），表格列由 PawnColumnWorker_* 提供 |
 | 弹窗 | `Window_Search`、`Window_ProducerRestrictions`、`Dialog_GeneConfig`、`Dialog_SelectBedForBucket` |

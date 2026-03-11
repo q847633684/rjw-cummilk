@@ -1,6 +1,19 @@
 <LanguageData>
     <Equal_Milking>MilkCum</Equal_Milking>
-    <!-- Main / Sub tab labels -->
+    <!-- Main / Sub tab labels (方案 B: 精液/母乳/基因与种族/权限与默认) -->
+    <EM.Tab.Cum>Cum / fluids</EM.Tab.Cum>
+    <EM.Tab.Lactation>Lactation</EM.Tab.Lactation>
+    <EM.Tab.GenesAndRaces>Genes &amp; races</EM.Tab.GenesAndRaces>
+    <EM.Tab.PermissionsAndDefaults>Permissions &amp; defaults</EM.Tab.PermissionsAndDefaults>
+    <!-- 专业级 7 主 Tab -->
+    <EM.Tab.CoreSystems>Core systems</EM.Tab.CoreSystems>
+    <EM.Tab.HealthRisk>Health &amp; risk</EM.Tab.HealthRisk>
+    <EM.Tab.Permissions>Permissions &amp; rules</EM.Tab.Permissions>
+    <EM.Tab.Balance>Balance &amp; scaling</EM.Tab.Balance>
+    <EM.Tab.Integrations>Integrations</EM.Tab.Integrations>
+    <EM.Tab.DataRaces>Data &amp; races</EM.Tab.DataRaces>
+    <EM.Tab.DevTools>Dev &amp; diagnostics</EM.Tab.DevTools>
+    <!-- Legacy (unused after 方案 B) -->
     <EM.Tab.MilkAndFluids>Milk &amp; fluids</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>Breastfeed</EM.Tab.Breastfeed>
     <EM.MenuSuckleFrom>Suck {0}'s milk</EM.MenuSuckleFrom>
@@ -12,15 +25,17 @@
     <EM.SubTab.Milk>Milk table</EM.SubTab.Milk>
     <EM.SubTab.MilkTags>Milk tags</EM.SubTab.MilkTags>
     <EM.SubTab.RaceOverrides>Race overrides</EM.SubTab.RaceOverrides>
+    <EM.SubTab.Cum>Cum (Cumpilation)</EM.SubTab.Cum>
+    <EM.SubTab.GirlJuice>Girl juice</EM.SubTab.GirlJuice>
+    <EM.SubTab.FluidsGirlJuicePlaceholder>Girl juice (vaginal fluids) — not implemented yet.</EM.SubTab.FluidsGirlJuicePlaceholder>
     <EM.SubTab.Fluids>Fluids (Cumpilation)</EM.SubTab.Fluids>
     <EM.SubTab.BreastfeedOverview>Overview</EM.SubTab.BreastfeedOverview>
+    <EM.SubTab.BreastfeedByType>Who can feed (by type)</EM.SubTab.BreastfeedByType>
     <EM.SubTab.Mastitis>Mastitis</EM.SubTab.Mastitis>
     <EM.SubTab.DBH>DBH</EM.SubTab.DBH>
     <EM.SubTab.ToleranceOverflow>Tolerance &amp; overflow</EM.SubTab.ToleranceOverflow>
-    <EM.SubTab.LoadFromDef>Load from Def</EM.SubTab.LoadFromDef>
     <EM.SectionDesc_Mastitis>Mastitis/clog: master switch enables the mechanic; sliders set base MTB, over-fullness and hygiene risk multipliers, and humanlike/animal multipliers. Does not choose hygiene data source (that is set on the DBH sub-tab).</EM.SectionDesc_Mastitis>
     <EM.SectionDesc_DBH>When Dubs Bad Hygiene is installed, choose whether mastitis/clog hygiene risk uses DBH's Hygiene need (pawn hygiene bar) or vanilla room cleanliness. Checked = DBH; unchecked = room cleanliness.</EM.SectionDesc_DBH>
-    <EM.SectionDesc_LoadFromDef>Click to apply key defaults from the EM_Defaults Def (mastitis, tolerance, baseline milk days, etc.) to current save. Does not overwrite race whitelist/blacklist. Other mods can patch that Def to change defaults.</EM.SectionDesc_LoadFromDef>
     <EM.SectionDesc_ToleranceOverflow>Whether tolerance affects milk efficiency and the impact exponent; which filth def spawns when pool overflows; whether milking AI prefers fuller targets. Reference line shows pool model baselines.</EM.SectionDesc_ToleranceOverflow>
     <EM.SectionDesc_IdentityAndMenu>Controls whether right-clicking a pawn of each type shows "Give prolactin", "Breastfeed/suckle", etc. in the float menu. Check by target identity (mechanoid/colonist/slave/prisoner/animal/misc) to reduce clutter.</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
@@ -35,6 +50,21 @@
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>Genes &amp; advanced</EM.SubTab.GenesAndAdvanced>
     <EM.SubTab.BreastPool>Breast &amp; pool</EM.SubTab.BreastPool>
+    <!-- 专业级子 Tab -->
+    <EM.SubTab.BreastfeedSystem>Breastfeed system</EM.SubTab.BreastfeedSystem>
+    <EM.SubTab.CumSystem>Cum system</EM.SubTab.CumSystem>
+    <EM.SubTab.FluidBehavior>Fluid behavior</EM.SubTab.FluidBehavior>
+    <EM.SubTab.MastitisSystem>Mastitis</EM.SubTab.MastitisSystem>
+    <EM.SubTab.HygieneSystem>Hygiene</EM.SubTab.HygieneSystem>
+    <EM.SubTab.ToleranceSystem>Tolerance</EM.SubTab.ToleranceSystem>
+    <EM.SubTab.OverflowPollution>Overflow &amp; pollution</EM.SubTab.OverflowPollution>
+    <EM.SubTab.MenuVisibility>Menu visibility</EM.SubTab.MenuVisibility>
+    <EM.SubTab.DefaultBehavior>Default behavior</EM.SubTab.DefaultBehavior>
+    <EM.SubTab.BalanceScaling>Balance &amp; scaling</EM.SubTab.BalanceScaling>
+    <EM.SubTab.RJWIntegration>RJW</EM.SubTab.RJWIntegration>
+    <EM.SubTab.DBHIntegration>DBH</EM.SubTab.DBHIntegration>
+    <EM.SubTab.NutritionSystem>Nutrition</EM.SubTab.NutritionSystem>
+    <EM.SectionDesc_NutritionIntegration>Food ↔ milk pool: mechanoid nutrition→energy factor; lactation extra hunger; reabsorb on shrink. Same logic as in Core → Breastfeed.</EM.SectionDesc_NutritionIntegration>
     <EM.BreastfeedOverviewDesc>Who can feed whom is set below by humanlike / animal / mechanoid. Single feeding duration and mechanoid nutrition→energy here.</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>Lactation extra hunger: {0} (0=off, 150=1:1, 300=double)</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
@@ -131,8 +161,7 @@
     <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>
     <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
     <EM.LactationPoolTickLog>Log each 60-tick: nutrition deducted, pool added, reabsorbed, sucked (DevMode)</EM.LactationPoolTickLog>
-    <EM.LoadDefaultsFromDef>Load defaults from Def</EM.LoadDefaultsFromDef>
-    <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
+    <EM.LactationDrugIntakeLog>Drug intake debug: log Δs, inflow ΔL, remaining days change on each dose</EM.LactationDrugIntakeLog>
     <EM.DefaultsDefLabel>MilkCum defaults</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>Needs milking</EM.FullPoolLetterTitle>

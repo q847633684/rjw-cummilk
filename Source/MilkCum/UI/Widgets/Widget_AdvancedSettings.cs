@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
+using MilkCum.Core.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -16,19 +17,20 @@ public class Widget_AdvancedSettings
 
 	private Vector2 _sectionScrollPosition = Vector2.zero;
 
-	// 健康与风险子 Tab 索引
+	// 健康子 Tab 索引（专业级：4 个 = 乳腺炎 / 卫生 / 耐受 / 溢出）
 	private const int SubTabHealth_Mastitis = 0;
 	private const int SubTabHealth_DBH = 1;
-	private const int SubTabHealth_ToleranceOverflow = 2;
-	private const int SubTabHealth_LoadFromDef = 3;
-	// 效率与界面子 Tab 索引
+	private const int SubTabHealth_Tolerance = 2;
+	private const int SubTabHealth_Overflow = 3;
+	// 效率与界面
 	private const int SubTabEfficiency_IdentityAndMenu = 0;
 	private const int SubTabEfficiency_BreastPool = 1;
-	// 联动与扩展子 Tab 索引
+	// 模组联动：RJW / DBH / 营养系统
 	private const int SubTabIntegration_RJW = 0;
 	private const int SubTabIntegration_DBH = 1;
+	private const int SubTabIntegration_Nutrition = 2;
 
-	/// <summary>Main/sub tab layout; mainTab is MainTabIndex (Health=2, Efficiency=3, Integration=4).</summary>
+	/// <summary>专业级 7 主 Tab：按 mainTab 分发到健康/权限/数值/联动等区块。</summary>
 	public void DrawSection(Rect inRect, int mainTab, int subTab)
 	{
 		float topMargin = 36f;
@@ -37,12 +39,14 @@ public class Widget_AdvancedSettings
 		Widgets.BeginScrollView(scrollViewRect, ref _sectionScrollPosition, scrollContent, true);
 		try
 		{
-			if (mainTab == (int)MainTabIndex.HealthAndRisk)
+			if (mainTab == (int)MainTabIndex.HealthRisk)
 				DrawHealthSection(scrollContent, subTab);
-			else if (mainTab == (int)MainTabIndex.EfficiencyAndInterface)
-				DrawEfficiencyOrInterfaceSection(scrollContent, subTab);
-			else if (mainTab == (int)MainTabIndex.IntegrationAndAdvanced)
-				DrawIntegrationSection(scrollContent, subTab);
+			else if (mainTab == (int)MainTabIndex.Permissions && subTab == 0)
+				DrawEfficiencyOrInterfaceSection(scrollContent, SubTabEfficiency_IdentityAndMenu);
+			else if (mainTab == (int)MainTabIndex.Balance)
+				DrawEfficiencyOrInterfaceSection(scrollContent, SubTabEfficiency_BreastPool);
+			else if (mainTab == (int)MainTabIndex.Integrations)
+				DrawIntegrationSectionExtended(scrollContent, subTab);
 		}
 		finally
 		{
@@ -60,6 +64,7 @@ public class Widget_AdvancedSettings
 		list.Label("EM.DevModeLactationPanel".Translate());
 		list.Gap(4f);
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationPoolTickLog".Translate(), ref MilkCumSettings.lactationPoolTickLog);
+		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationDrugIntakeLog".Translate(), ref MilkCumSettings.lactationDrugIntakeLog);
 		list.Gap(4f);
 		if (Current.ProgramState != ProgramState.Playing || Find.CurrentMap == null)
 		{
@@ -95,19 +100,10 @@ public class Widget_AdvancedSettings
 			DrawMastitisBlock(list);
 		else if (subTab == SubTabHealth_DBH)
 			DrawDbhBlock(list);
-		else if (subTab == SubTabHealth_ToleranceOverflow)
-			DrawToleranceOverflowBlock(list);
-		else if (subTab == SubTabHealth_LoadFromDef)
-		{
-			GUI.color = Color.gray;
-			list.Label("EM.SectionDesc_LoadFromDef".Translate());
-			GUI.color = Color.white;
-			list.Gap(4f);
-			Rect rLoadDef = list.GetRect(UNIT_SIZE);
-			if (Widgets.ButtonText(rLoadDef, "EM.LoadDefaultsFromDef".Translate()))
-				MilkCumSettings.ApplyDefaultsFromDef();
-			TooltipHandler.TipRegion(rLoadDef, "EM.LoadDefaultsFromDefDesc".Translate());
-		}
+		else if (subTab == SubTabHealth_Tolerance)
+			DrawToleranceBlock(list);
+		else if (subTab == SubTabHealth_Overflow)
+			DrawOverflowBlock(list);
 		list.End();
 	}
 
@@ -168,7 +164,7 @@ public class Widget_AdvancedSettings
 		TooltipHandler.TipRegion(rDbhMastitis, string.IsNullOrEmpty(t) ? "EM.UseDubsBadHygieneForMastitisDesc" : t);
 	}
 
-	private void DrawToleranceOverflowBlock(Listing_Standard list)
+	private void DrawToleranceBlock(Listing_Standard list)
 	{
 		GUI.color = Color.gray;
 		list.Label("EM.SectionDesc_ToleranceOverflow".Translate());
@@ -184,7 +180,10 @@ public class Widget_AdvancedSettings
 		float toleranceFlowImpactExponent = MilkCumSettings.toleranceFlowImpactExponent;
 		Widgets.HorizontalSlider(rExp, ref toleranceFlowImpactExponent, new FloatRange(0.1f, 3f), "EM.ToleranceFlowImpactExponent".Translate(MilkCumSettings.toleranceFlowImpactExponent.ToString("F1")), 0.1f);
 		MilkCumSettings.toleranceFlowImpactExponent = toleranceFlowImpactExponent;
-		list.Gap(6f);
+	}
+
+	private void DrawOverflowBlock(Listing_Standard list)
+	{
 		list.Label("EM.OverflowFilthSection".Translate());
 		list.Gap(4f);
 		string overflowFilth = MilkCumSettings.overflowFilthDefName ?? "";
@@ -202,6 +201,13 @@ public class Widget_AdvancedSettings
 		Widgets.CheckboxLabeled(rAiFullness, "EM.AiPreferHighFullnessTargets".Translate(), ref aiPreferHighFullnessTargets, false);
 		MilkCumSettings.aiPreferHighFullnessTargets = aiPreferHighFullnessTargets;
 		TooltipHandler.TipRegion(rAiFullness, "EM.AiPreferHighFullnessTargetsDesc".Translate());
+	}
+
+	private void DrawToleranceOverflowBlock(Listing_Standard list)
+	{
+		DrawToleranceBlock(list);
+		list.Gap(6f);
+		DrawOverflowBlock(list);
 	}
 
 	private void DrawEfficiencyOrInterfaceSection(Rect content, int subTab)
@@ -257,6 +263,59 @@ public class Widget_AdvancedSettings
 		else if (subTab == SubTabIntegration_DBH && DubsBadHygieneIntegration.IsDubsBadHygieneActive())
 			DrawDbhBlock(list);
 		list.End();
+	}
+
+	/// <summary>专业级：RJW / DBH / 营养系统 三子 Tab。</summary>
+	private void DrawIntegrationSectionExtended(Rect content, int subTab)
+	{
+		var list = new Listing_Standard();
+		list.Begin(content);
+		if (subTab == SubTabIntegration_RJW)
+		{
+			if (ModLister.GetModWithIdentifier("rim.job.world") != null)
+			{
+				GUI.color = Color.gray;
+				list.Label("EM.SectionDesc_RJW".Translate());
+				GUI.color = Color.white;
+				list.Gap(4f);
+				GUI.color = Color.gray;
+				list.Label("EM.RJWSection".Translate());
+				GUI.color = Color.white;
+				list.Gap(4f);
+				DrawRjwBlock(list);
+			}
+			else
+			{
+				GUI.color = Color.gray;
+				list.Label("EM.RequiresRJWMod".Translate());
+				GUI.color = Color.white;
+			}
+		}
+		else if (subTab == SubTabIntegration_DBH)
+			DrawDbhBlock(list);
+		else if (subTab == SubTabIntegration_Nutrition)
+			DrawNutritionBlock(list);
+		list.End();
+	}
+
+	private void DrawNutritionBlock(Listing_Standard list)
+	{
+		GUI.color = Color.gray;
+		list.Label("EM.SectionDesc_NutritionIntegration".Translate());
+		GUI.color = Color.white;
+		list.Gap(4f);
+		string buffer = MilkCumSettings.nutritionToEnergyFactor.ToString();
+		Widgets.TextFieldNumericLabeled(list.GetRect(UNIT_SIZE), "(" + Lang.Join(Lang.Breastfeed, Lang.Mechanoid) + ")" + Lang.Join(Lang.Nutrition, "=>", Lang.Energy, Lang.StatFactor), ref MilkCumSettings.nutritionToEnergyFactor, ref buffer, 1f);
+		list.Gap(4f);
+		float basisF = MilkCumSettings.lactationExtraNutritionBasis;
+		Widgets.HorizontalSlider(list.GetRect(UNIT_SIZE), ref basisF, new FloatRange(0f, 300f), "EM.LactationExtraNutritionFactor".Translate(MilkCumSettings.lactationExtraNutritionBasis.ToString()), 5f);
+		MilkCumSettings.lactationExtraNutritionBasis = Mathf.RoundToInt(basisF);
+		list.Gap(4f);
+		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.ReabsorbNutritionEnabled".Translate(), ref MilkCumSettings.reabsorbNutritionEnabled);
+		list.Gap(4f);
+		float effF = MilkCumSettings.reabsorbNutritionEfficiency;
+		Widgets.HorizontalSlider(list.GetRect(UNIT_SIZE), ref effF, new FloatRange(0f, 1f), "EM.ReabsorbNutritionEfficiencyLabel".Translate((MilkCumSettings.reabsorbNutritionEfficiency * 100f).ToString("F0") + "%"), 0.05f);
+		MilkCumSettings.reabsorbNutritionEfficiency = Mathf.Clamp01(effF);
 	}
 
 	/// <summary>Breast and pool: capacity, fill time, remaining days; tunable params with descriptions.</summary>
@@ -353,10 +412,6 @@ public class Widget_AdvancedSettings
 			Rect rDeltaS = list.GetRect(UNIT_SIZE);
 			Widgets.Label(rDeltaS.LeftHalf(), "EM.RjwSexLactationBoostDeltaS".Translate(MilkCumSettings.rjwSexLactationBoostDeltaS.ToString("F2")));
 			MilkCumSettings.rjwSexLactationBoostDeltaS = Widgets.HorizontalSlider(rDeltaS.RightHalf(), MilkCumSettings.rjwSexLactationBoostDeltaS, 0.05f, 0.5f, true);
-			list.Gap(6f);
-			Rect rSexStimulus = list.GetRect(UNIT_SIZE);
-			Widgets.CheckboxLabeled(rSexStimulus, "EM.RjwSexCountsAsStimulus".Translate(), ref MilkCumSettings.rjwSexCountsAsStimulus, false);
-			{ string t = "EM.RjwSexCountsAsStimulusDesc".Translate(); TooltipHandler.TipRegion(rSexStimulus, string.IsNullOrEmpty(t) ? "EM.RjwSexCountsAsStimulusDesc" : t); }
 		}
 	}
 

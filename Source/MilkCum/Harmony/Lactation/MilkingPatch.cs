@@ -188,14 +188,23 @@ public static class ProlactinAddictionPatch
         float tBefore = Mathf.Max(0f, MilkCumSettings.GetProlactinTolerance(pawn) - MilkCumSettings.ProlactinToleranceGainPerDose);
         float rawSeverity = giveHediff.severity;
 
-        // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）。TryMergeWith 已对 L 加了 rawSeverity，此处只补耐受后的增量 deltaS，故传 deltaS - rawSeverity 避免 L 重复累加。
+        // 已处于泌乳期时再次注射：直接生效，不走吸收延迟（不移除、不排队）。若本 tick TryMergeWith 已对本 hediff 加过 raw，则只补 deltaS−raw；否则（未合并或合并到别的 hediff）加全量 deltaS，避免吃药净减 L、剩余天数变短。
         if (hediff.Severity > rawSeverity)
         {
             float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(tBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
-            float deltaLOnly = deltaS - rawSeverity;
             if (hediff.comps != null)
+            {
                 foreach (var c in hediff.comps)
-                    if (c is HediffComp_EqualMilkingLactating comp) { comp.AddFromDrug(deltaLOnly); break; }
+                {
+                    if (c is HediffComp_EqualMilkingLactating comp)
+                    {
+                        float toAdd = comp.MergedFromIngestionThisTick ? (deltaS - rawSeverity) : deltaS;
+                        comp.AddFromDrug(toAdd);
+                        comp.MergedFromIngestionThisTick = false;
+                        break;
+                    }
+                }
+            }
             WorldComponent_MilkCumAbsorptionDelay.ApplyProlactinMoodEffects(pawn, rawSeverity);
             return;
         }

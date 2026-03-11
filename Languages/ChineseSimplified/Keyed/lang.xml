@@ -1,6 +1,19 @@
 <LanguageData>
     <Equal_Milking>精液和母乳</Equal_Milking>
-    <!-- 主 Tab / 子 Tab 标签 -->
+    <!-- 主 Tab / 子 Tab 标签（方案 B：精液/母乳/基因与种族/权限与默认） -->
+    <EM.Tab.Cum>精液</EM.Tab.Cum>
+    <EM.Tab.Lactation>母乳</EM.Tab.Lactation>
+    <EM.Tab.GenesAndRaces>基因与种族</EM.Tab.GenesAndRaces>
+    <EM.Tab.PermissionsAndDefaults>权限与默认</EM.Tab.PermissionsAndDefaults>
+    <!-- 专业级 7 主 Tab -->
+    <EM.Tab.CoreSystems>核心机制</EM.Tab.CoreSystems>
+    <EM.Tab.HealthRisk>健康风险</EM.Tab.HealthRisk>
+    <EM.Tab.Permissions>权限规则</EM.Tab.Permissions>
+    <EM.Tab.Balance>数值平衡</EM.Tab.Balance>
+    <EM.Tab.Integrations>模组联动</EM.Tab.Integrations>
+    <EM.Tab.DataRaces>数据种族</EM.Tab.DataRaces>
+    <EM.Tab.DevTools>调试工具</EM.Tab.DevTools>
+    <!-- 旧主 Tab（方案 B 后未使用，保留兼容） -->
     <EM.Tab.MilkAndFluids>产奶与体液</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>哺乳</EM.Tab.Breastfeed>
     <EM.MenuSuckleFrom>吸 {0} 的奶</EM.MenuSuckleFrom>
@@ -12,15 +25,17 @@
     <EM.SubTab.Milk>产奶表</EM.SubTab.Milk>
     <EM.SubTab.MilkTags>奶标签</EM.SubTab.MilkTags>
     <EM.SubTab.RaceOverrides>种族覆盖</EM.SubTab.RaceOverrides>
+    <EM.SubTab.Cum>精液（Cumpilation）</EM.SubTab.Cum>
+    <EM.SubTab.GirlJuice>妹汁</EM.SubTab.GirlJuice>
+    <EM.SubTab.FluidsGirlJuicePlaceholder>妹汁（阴道分泌液）— 尚未实现。</EM.SubTab.FluidsGirlJuicePlaceholder>
     <EM.SubTab.Fluids>精液/体液</EM.SubTab.Fluids>
     <EM.SubTab.BreastfeedOverview>总览</EM.SubTab.BreastfeedOverview>
+    <EM.SubTab.BreastfeedByType>哺乳（人形/动物/机械）</EM.SubTab.BreastfeedByType>
     <EM.SubTab.Mastitis>乳腺炎</EM.SubTab.Mastitis>
     <EM.SubTab.DBH>DBH</EM.SubTab.DBH>
     <EM.SubTab.ToleranceOverflow>耐受与溢出</EM.SubTab.ToleranceOverflow>
-    <EM.SubTab.LoadFromDef>从 Def 加载</EM.SubTab.LoadFromDef>
     <EM.SectionDesc_Mastitis>乳腺炎/堵塞：总开关决定是否启用；下方参数控制基准 MTB、满池过久与卫生的风险系数、人形/动物乘数。仅影响「是否触发」与「多容易触发」，不决定卫生数据来源（卫生数据来源在 DBH 子页设置）。</EM.SectionDesc_Mastitis>
     <EM.SectionDesc_DBH>当已安装 Dubs Bad Hygiene 时，此处可选乳腺炎/堵塞的「卫生」风险用 DBH 的卫生需求（小人卫生条）还是原版房间清洁度。勾选=用 DBH；不勾=用房间清洁度。</EM.SectionDesc_DBH>
-    <EM.SectionDesc_LoadFromDef>点击后，将 EM_Defaults Def 中的关键默认值（乳腺炎、耐受、基准泌乳天数等）写入当前存档设置。不会覆盖种族白名单/黑名单。其他 mod 可 patch 该 Def 修改默认值。</EM.SectionDesc_LoadFromDef>
     <EM.SectionDesc_ToleranceOverflow>耐受是否影响泌乳效率、影响曲线的指数；满池溢出时生成的地面污物 Def；挤奶 AI 是否优先更满的目标。下方为池模型参考显示。</EM.SectionDesc_ToleranceOverflow>
     <EM.SectionDesc_IdentityAndMenu>控制右键点击某类单位时，是否在浮动菜单中显示「给催乳素」「哺乳/吸奶」等选项。按目标的身份（机械体/殖民者/奴隶/囚犯/动物/其它）分别勾选，可减少无关菜单项。</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>此处为该身份（殖民者/奴隶/囚犯/动物/机械/实体）的默认值。新加入或未单独设置过的单位会使用此默认；在 Milk 主界面表格中可对每个单位单独覆盖。</EM.SectionDesc_DefaultByRole>
@@ -34,6 +49,21 @@
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>基因与高级</EM.SubTab.GenesAndAdvanced>
     <EM.SubTab.BreastPool>乳房与池</EM.SubTab.BreastPool>
+    <!-- 专业级子 Tab -->
+    <EM.SubTab.BreastfeedSystem>哺乳系统</EM.SubTab.BreastfeedSystem>
+    <EM.SubTab.CumSystem>精液系统</EM.SubTab.CumSystem>
+    <EM.SubTab.FluidBehavior>流体行为</EM.SubTab.FluidBehavior>
+    <EM.SubTab.MastitisSystem>乳腺炎</EM.SubTab.MastitisSystem>
+    <EM.SubTab.HygieneSystem>卫生系统</EM.SubTab.HygieneSystem>
+    <EM.SubTab.ToleranceSystem>耐受系统</EM.SubTab.ToleranceSystem>
+    <EM.SubTab.OverflowPollution>溢出与污染</EM.SubTab.OverflowPollution>
+    <EM.SubTab.MenuVisibility>菜单显示</EM.SubTab.MenuVisibility>
+    <EM.SubTab.DefaultBehavior>默认行为</EM.SubTab.DefaultBehavior>
+    <EM.SubTab.BalanceScaling>数值平衡</EM.SubTab.BalanceScaling>
+    <EM.SubTab.RJWIntegration>RJW 联动</EM.SubTab.RJWIntegration>
+    <EM.SubTab.DBHIntegration>DBH 联动</EM.SubTab.DBHIntegration>
+    <EM.SubTab.NutritionSystem>营养系统</EM.SubTab.NutritionSystem>
+    <EM.SectionDesc_NutritionIntegration>食物 ↔ 乳池：机械族营养→能量系数、泌乳额外饥饿、回缩吸收。与核心机制 → 哺乳中的逻辑一致。</EM.SectionDesc_NutritionIntegration>
     <EM.BreastfeedOverviewDesc>谁可以喂谁在下方按人形/动物/机械族设置。此处为单次哺乳时长与机械族营养→能量。</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>泌乳额外饥饿：{0}（0=关闭，150=1:1，300=双倍）</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>吸奶容量系数</EM.BreastfeedCapacityFactor>
@@ -130,8 +160,7 @@
     <EM.DevModeNotLactating>{0} 未处于泌乳期（无泌乳 hediff）。</EM.DevModeNotLactating>
     <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>
     <EM.LactationPoolTickLog>每 60 tick 输出：营养扣除、乳池增加、回缩、吸奶（开发模式）</EM.LactationPoolTickLog>
-    <EM.LoadDefaultsFromDef>从 Def 加载默认</EM.LoadDefaultsFromDef>
-    <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
+    <EM.LactationDrugIntakeLog>吃药进水调试：每次生效时输出 Δs、进水ΔL、剩余时间变化</EM.LactationDrugIntakeLog>
     <EM.DefaultsDefLabel>精液和母乳默认值</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>需要挤奶</EM.FullPoolLetterTitle>

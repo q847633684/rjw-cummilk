@@ -899,6 +899,8 @@ public class CompEquallyMilkable : CompMilkable
             return;
         }
         Pawn pawn = parent as Pawn;
+        // 一次挤奶增加一天泌乳时间
+        pawn?.LactatingHediffWithComps()?.TryGetComp<HediffComp_EqualMilkingLactating>()?.AddRemainingDays(1f);
         // JobDriver 传累加小数（2.3、0.98 等），向下取整得瓶数；0.999f 容错避免 1.999… 少发一瓶
         int num = Mathf.FloorToInt(totalDrained);
         if (totalDrained - num >= 0.999f)

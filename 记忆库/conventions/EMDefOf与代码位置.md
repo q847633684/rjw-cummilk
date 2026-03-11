@@ -24,8 +24,6 @@
 | Hediff | EM_Mastitis, EM_BreastsEngorged, EM_DrugLactationBurden, EM_LactatingGain, EM_AbsorptionDelay |
 | 管道（可选） | EM_PipeNetworks, EM_MilkTap, EM_MilkPipe, EM_MilkValve, EM_MilkContainer 等 |
 
-EM_Defaults 不参与 DefOf 绑定，使用处通过 GetNamedSilentFail 获取。
-
 ## 核心代码位置（便于检索）
 
 | 职责 | 文件/类 |

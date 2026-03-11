@@ -41,6 +41,12 @@
 | 挤奶时间模拟 | [design/挤奶时间模拟](design/挤奶时间模拟.md) | #挤奶 #时间 #公式 #模拟 #流速 |
 | UI 审阅结论 | [design/UI审阅结论](design/UI审阅结论.md) | #UI #审阅 #设置 #翻译 |
 | 激素模型：催乳素维持与泌乳抑制 | [design/激素模型-催乳素与排乳反馈](design/激素模型-催乳素与排乳反馈.md) | #激素 #催乳素 #排乳反馈 #泌乳抑制 |
+| 排乳反馈与原有系统不兼容说明 | [design/排乳反馈与原有系统不兼容说明](design/排乳反馈与原有系统不兼容说明.md) | #排乳反馈 #兼容 #原有系统 #L衰减 |
+| 乳汁系统内子系统划分与目录建议 | [design/乳汁系统内子系统划分与目录建议](design/乳汁系统内子系统划分与目录建议.md) | #乳汁 #泌乳 #池系统 #挤奶吸奶 #目录 |
+| 系统结构总览 | [design/系统结构总览](design/系统结构总览.md) | #系统结构 #母乳 #精液 #妹汁 #UI #建筑物品 |
+| 模组设置UI系统整理与优化方案 | [design/模组设置UI系统整理与优化方案](design/模组设置UI系统整理与优化方案.md) | #UI #模组设置 #Tab #基因种族 #精液母乳妹汁 |
+| 模组设置窗口完整UI结构 | [design/模组设置窗口完整UI结构](design/模组设置窗口完整UI结构.md) | #UI #模组设置 #完整结构 #模拟显示 |
+| 模组设置UI专业级重构方案 | [design/模组设置UI专业级重构方案](design/模组设置UI专业级重构方案.md) | #UI #模组设置 #专业级 #7主Tab #按系统类型分层 |
 | 列表滚动与固定 contentHeight | [design/列表滚动与固定contentHeight](design/列表滚动与固定contentHeight.md) | #UI #滚动 #BeginScrollView #contentHeight |
 
 ---
@@ -59,6 +65,7 @@
 | 标题 | 路径 | 摘要/标签 |
 |------|------|-----------|
 | 领域术语概览 | [domain/00-概览](domain/00-概览.md) | 领域术语概览与 Docs 引用 |
+| Mod 定位：流体系统与三大系统 | [domain/mod定位-流体系统三大系统](domain/mod定位-流体系统三大系统.md) | #流体系统 #精液 #乳汁 #妹汁 #一系统一目录 |
 | 代码常量与公式对应 | [domain/代码常量与公式对应](domain/代码常量与公式对应.md) | #常量 #公式 #PoolModelConstants #tick |
 | 快速参考（参数联动、兼容、坑点） | [domain/快速参考](domain/快速参考.md) | #参数 #兼容 #边界 #坑点 |
 
@@ -87,6 +94,7 @@
 - `#吸收延迟`：见 [decisions/ADR-002-吸收延迟基准](decisions/ADR-002-吸收延迟基准.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
 - `#信息卡`：见 [decisions/ADR-004-信息卡统计补丁移除](decisions/ADR-004-信息卡统计补丁移除.md)
 - `#参数`、`#兼容`、`#坑点`：见 [domain/快速参考](domain/快速参考.md)
+- `#流体系统`、`#一系统一目录`：见 [domain/mod定位-流体系统三大系统](domain/mod定位-流体系统三大系统.md)、[design/Source目录结构梳理](design/Source目录结构梳理.md)
 - `#架构`、`#重组`：见 [design/架构原则与重组建议](design/架构原则与重组建议.md)
 
 ---

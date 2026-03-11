@@ -7,14 +7,16 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>主 Tab 索引，用于替代魔术数字 0～4，便于维护与 DrawSection 传参。</summary>
+/// <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
 public enum MainTabIndex
 {
-	MilkAndFluids = 0,
-	Breastfeed = 1,
-	HealthAndRisk = 2,
-	EfficiencyAndInterface = 3,
-	IntegrationAndAdvanced = 4
+	CoreSystems = 0,
+	HealthRisk = 1,
+	Permissions = 2,
+	Balance = 3,
+	Integrations = 4,
+	DataRaces = 5,
+	DevTools = 6
 }
 
 [StaticConstructorOnStartup]
@@ -42,6 +44,8 @@ internal class MilkCumSettings : ModSettings
 	public static float reabsorbNutritionEfficiency = 0.5f;
 	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
 	public static bool lactationPoolTickLog = false;
+	/// <summary>勾选时，每次吃药进水（AddFromDrug）时输出调试日志：Δs、进水ΔL、剩余时间变化。</summary>
+	public static bool lactationDrugIntakeLog = false;
 	/// <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
 	public static void LactationLog(string message)
 	{
@@ -72,8 +76,6 @@ internal class MilkCumSettings : ModSettings
 	/// <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
 	public static bool rjwSexAddsLactationBoost = false;
 	public static float rjwSexLactationBoostDeltaS = 0.15f;
-	/// <summary>阶段3：性行为是否同时视为排乳刺激（调用 NotifyDrained：更新 lastDrainTick、StimulusBuffer），延寿效果更强。</summary>
-	public static bool rjwSexCountsAsStimulus = false;
 	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
 	public static bool useDubsBadHygieneForMastitis = true;
 	// 乳腺炎可配置：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数
@@ -186,30 +188,8 @@ internal class MilkCumSettings : ModSettings
 	public static float milkingLStimulusPerEvent = 0.03f;
 	public static float milkingLStimulusCapPerEvent = 0.05f;
 	public static float milkingLStimulusCapPerDay = 0.2f;
-	// 激素模型（催乳素与排乳反馈）：排乳刺激独立于炎症；见 记忆库/design/激素模型-催乳素与排乳反馈.md
-	/// <summary>排乳时是否增加 L（催乳素）刺激；与 enableInflammationModel 独立，关闭炎症时仍可保留排乳延寿。</summary>
-	public static bool enableProlactinStimulusFromMilking = true;
-	/// <summary>长期未排乳抑制：启用时 D_eff = D×(1+SuppressionFactor)，SuppressionFactor = α×days^β。</summary>
-	public static bool enableLactationSuppressionFromNoDrain = true;
-	/// <summary>抑制系数 α；SuppressionFactor = α×days_since_drain^β。</summary>
-	public static float suppressionCoeff = 0.02f;
-	/// <summary>抑制指数 β（≥1）；2=未排乳天数平方。</summary>
-	public static float suppressionExponent = 2f;
-	/// <summary>压力 P 参与 L 衰减：D_eff 再乘 (1+δ×P)，满池时 L 衰减更快（FIL 类比）。</summary>
-	public static bool enableSuppressionFromPressure = true;
-	/// <summary>压力对衰减的加成系数 δ；D_eff × (1+δ×P)。</summary>
-	public static float pressureDecayDelta = 0.2f;
-	/// <summary>排乳维持缓冲：启用时 D_eff 除以 (1+γ×StimulusBuffer)，排乳后一段时间内衰减变慢。</summary>
-	public static bool enableStimulusBuffer = true;
-	/// <summary>缓冲对衰减的分母系数 γ；D_eff / (1+γ×Buffer)。</summary>
-	public static float stimulusBufferGamma = 0.5f;
-	/// <summary>每次排乳时 Buffer 增加量 ΔB（有上限）。</summary>
-	public static float stimulusBufferDeltaB = 0.08f;
-	/// <summary>StimulusBuffer 上限。</summary>
-	public static float stimulusBufferCap = 1f;
-	/// <summary>StimulusBuffer 每游戏日衰减量。</summary>
-	public static float stimulusBufferDecayPerDay = 0.2f;
-	// 四层模型（阶段3）：激素饱和 H(L)=1−exp(−a·L)，D_eff=L·H(L)。启用时流速由 D_eff 驱动，低 L 低产、高 L 饱和。
+	// 四层模型（阶段2）：挤奶/吸奶时 L 微幅刺激（带上限），仅 enableInflammationModel 时生效。
+	// 四层模型（阶段2）：激素饱和 H(L)=1−exp(−a·L)，D_eff=L·H(L)。启用时流速由 D_eff 驱动，低 L 低产、高 L 饱和。
 	public static bool enableHormoneSaturation = true;
 	/// <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
 	public static float hormoneSaturationA = 1f;
@@ -309,7 +289,6 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
 		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", false);
 		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
-		Scribe_Values.Look(ref rjwSexCountsAsStimulus, "EM.RjwSexCountsAsStimulus", false);
 		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
 		Scribe_Deep.Look(ref _risk, "EM.MilkRiskSettings");
 		if (_risk == null) _risk = new MilkRiskSettings();
@@ -349,17 +328,6 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref milkingLStimulusPerEvent, "EM.MilkingLStimulusPerEvent", 0.03f);
 		Scribe_Values.Look(ref milkingLStimulusCapPerEvent, "EM.MilkingLStimulusCapPerEvent", 0.05f);
 		Scribe_Values.Look(ref milkingLStimulusCapPerDay, "EM.MilkingLStimulusCapPerDay", 0.2f);
-		Scribe_Values.Look(ref enableProlactinStimulusFromMilking, "EM.EnableProlactinStimulusFromMilking", true);
-		Scribe_Values.Look(ref enableLactationSuppressionFromNoDrain, "EM.EnableLactationSuppressionFromNoDrain", true);
-		Scribe_Values.Look(ref suppressionCoeff, "EM.SuppressionCoeff", 0.02f);
-		Scribe_Values.Look(ref suppressionExponent, "EM.SuppressionExponent", 2f);
-		Scribe_Values.Look(ref enableSuppressionFromPressure, "EM.EnableSuppressionFromPressure", true);
-		Scribe_Values.Look(ref pressureDecayDelta, "EM.PressureDecayDelta", 0.2f);
-		Scribe_Values.Look(ref enableStimulusBuffer, "EM.EnableStimulusBuffer", true);
-		Scribe_Values.Look(ref stimulusBufferGamma, "EM.StimulusBufferGamma", 0.5f);
-		Scribe_Values.Look(ref stimulusBufferDeltaB, "EM.StimulusBufferDeltaB", 0.08f);
-		Scribe_Values.Look(ref stimulusBufferCap, "EM.StimulusBufferCap", 1f);
-		Scribe_Values.Look(ref stimulusBufferDecayPerDay, "EM.StimulusBufferDecayPerDay", 0.2f);
 		Scribe_Values.Look(ref enableHormoneSaturation, "EM.EnableHormoneSaturation", true);
 		Scribe_Values.Look(ref hormoneSaturationA, "EM.HormoneSaturationA", 1f);
 		Scribe_Values.Look(ref hormoneSaturationLRef, "EM.HormoneSaturationLRef", 1f);
@@ -391,6 +359,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref Cumpilation_EnableOscillationMechanicsForAnimals, "Cumpilation.EnableOscillationMechanicsForAnimals", false);
 		Scribe_Values.Look(ref Cumpilation_EnableDebugLogging, "Cumpilation.EnableDebugLogging", false);
 		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
+		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
 		Scribe_Values.Look(ref CumpilationLeak_EnableFilthGeneration, "CumpilationLeak.EnableFilthGeneration", true);
 		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateBucket, "CumpilationLeak.EnableAutoDeflateBucket", false);
 		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateClean, "CumpilationLeak.EnableAutoDeflateClean", false);
@@ -484,20 +453,27 @@ internal class MilkCumSettings : ModSettings
 		mechSetting ??= new MilkSettings();
 		entitySetting ??= new MilkSettings();
 
-		// 主 Tab 栏（5 个）
+		// 主 Tab 栏（专业级：6 个常驻 + 1 个仅 DevMode）
 		List<TabRecord> mainTabs = new()
 		{
-			new("EM.Tab.MilkAndFluids".Translate(), () => { mainTabIndex = (int)MainTabIndex.MilkAndFluids; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.MilkAndFluids),
-			new("EM.Tab.Breastfeed".Translate(), () => { mainTabIndex = (int)MainTabIndex.Breastfeed; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Breastfeed),
-			new("EM.Tab.HealthAndRisk".Translate(), () => { mainTabIndex = (int)MainTabIndex.HealthAndRisk; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.HealthAndRisk),
-			new("EM.Tab.EfficiencyAndInterface".Translate(), () => { mainTabIndex = (int)MainTabIndex.EfficiencyAndInterface; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.EfficiencyAndInterface),
-			new("EM.Tab.IntegrationAndAdvanced".Translate(), () => { mainTabIndex = (int)MainTabIndex.IntegrationAndAdvanced; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.IntegrationAndAdvanced)
+			new("EM.Tab.CoreSystems".Translate(), () => { mainTabIndex = (int)MainTabIndex.CoreSystems; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.CoreSystems),
+			new("EM.Tab.HealthRisk".Translate(), () => { mainTabIndex = (int)MainTabIndex.HealthRisk; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.HealthRisk),
+			new("EM.Tab.Permissions".Translate(), () => { mainTabIndex = (int)MainTabIndex.Permissions; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Permissions),
+			new("EM.Tab.Balance".Translate(), () => { mainTabIndex = (int)MainTabIndex.Balance; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Balance),
+			new("EM.Tab.Integrations".Translate(), () => { mainTabIndex = (int)MainTabIndex.Integrations; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Integrations),
+			new("EM.Tab.DataRaces".Translate(), () => { mainTabIndex = (int)MainTabIndex.DataRaces; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.DataRaces)
 		};
+		if (Prefs.DevMode)
+			mainTabs.Add(new TabRecord("EM.Tab.DevTools".Translate(), () => { mainTabIndex = (int)MainTabIndex.DevTools; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.DevTools));
+		if (mainTabIndex >= mainTabs.Count)
+			mainTabIndex = 0;
 		TabDrawer.DrawTabs(inRect, mainTabs);
 		inRect.yMin += unitSize;
 
 		// 子 Tab 栏（随主 Tab 变化）
 		List<TabRecord> subTabs = GetSubTabs();
+		if (subTabIndex >= subTabs.Count)
+			subTabIndex = 0;
 		if (subTabs.Count > 0)
 		{
 			TabDrawer.DrawTabs(inRect, subTabs);
@@ -507,81 +483,58 @@ internal class MilkCumSettings : ModSettings
 		Widgets.DrawMenuSection(inRect);
 		Rect contentRect = inRect.ContractedBy(unitSize / 2);
 
-		// 根据 mainTabIndex + subTabIndex 分发内容
+		// 专业级 7 主 Tab 内容分发
 		switch (mainTabIndex)
 		{
-			case (int)MainTabIndex.MilkAndFluids:
-				switch (subTabIndex)
-				{
-					case 0:
-						milkableTable ??= new Widget_MilkableTable(namesToProducts);
-						milkableTable.Draw(contentRect);
-						break;
-					case 1:
-						milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
-						milkTagsTable.Draw(contentRect);
-						break;
-					case 2:
-						raceOverridesWidget ??= new Widget_RaceOverrides();
-						raceOverridesWidget.Draw(contentRect);
-						break;
-					case 3:
-						cumpilationSettings ??= new Widget_CumpilationSettings();
-						cumpilationSettings.Draw(contentRect);
-						break;
-				}
-				break;
-			case (int)MainTabIndex.Breastfeed:
-				// subTabIndex 0=总览，1/2/3=人形/动物/机械族 → DrawTab(contentRect, subTabIndex-1) 即 index 0/1/2
+			case (int)MainTabIndex.CoreSystems:
 				breastfeedSettings ??= new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
+				cumpilationSettings ??= new Widget_CumpilationSettings();
 				if (subTabIndex == 0)
-					breastfeedSettings.DrawOverview(contentRect);
-				else
-					breastfeedSettings.DrawTab(contentRect, subTabIndex - 1);
-				break;
-			case (int)MainTabIndex.HealthAndRisk:
-				advancedSettings ??= new Widget_AdvancedSettings();
-				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.HealthAndRisk, subTabIndex);
-				break;
-			case (int)MainTabIndex.EfficiencyAndInterface:
-				advancedSettings ??= new Widget_AdvancedSettings();
-				if (subTabIndex == 0)
-				{
-					// 身份与菜单区块固定高度，便于后续扩展；下方需留足空间给「按身份默认」表格，避免 belowRect 高度为负导致无内容
-					const float IdentitySectionHeightMax = 280f;
-					const float MinBelowHeight = 140f;
-					const float Gap = 10f;
-					float identitySectionHeight = Mathf.Min(IdentitySectionHeightMax, Mathf.Max(0f, contentRect.height - MinBelowHeight - Gap));
-					Rect topRect = new Rect(contentRect.x, contentRect.y, contentRect.width, identitySectionHeight);
-					if (identitySectionHeight > 0f)
-						advancedSettings.DrawSection(topRect, (int)MainTabIndex.EfficiencyAndInterface, 0);
-					float belowHeight = Mathf.Max(0f, contentRect.height - identitySectionHeight - Gap);
-					if (belowHeight > 0f)
-					{
-						Rect belowRect = new Rect(contentRect.x, contentRect.y + identitySectionHeight + Gap, contentRect.width, belowHeight);
-						defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
-						defaultSettingWidget.Draw(belowRect);
-					}
-				}
-				else
-					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.EfficiencyAndInterface, 1);
-				break;
-			case (int)MainTabIndex.IntegrationAndAdvanced:
-				if (subTabIndex == 0 && ModLister.GetModWithIdentifier("rim.job.world") != null)
-				{
-					advancedSettings ??= new Widget_AdvancedSettings();
-					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.IntegrationAndAdvanced, 0);
-				}
+					breastfeedSettings.DrawBreastfeedSystemFull(contentRect);
 				else if (subTabIndex == 1)
+					cumpilationSettings.Draw(contentRect);
+				else
 				{
-					advancedSettings ??= new Widget_AdvancedSettings();
-					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.IntegrationAndAdvanced, 1);
+					GUI.color = Color.gray;
+					Widgets.Label(contentRect, "EM.SubTab.FluidsGirlJuicePlaceholder".Translate());
+					GUI.color = Color.white;
 				}
+				break;
+			case (int)MainTabIndex.HealthRisk:
+				advancedSettings ??= new Widget_AdvancedSettings();
+				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.HealthRisk, subTabIndex);
+				break;
+			case (int)MainTabIndex.Permissions:
+				advancedSettings ??= new Widget_AdvancedSettings();
+				defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
+				if (subTabIndex == 0)
+					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Permissions, 0);
+				else
+					defaultSettingWidget.Draw(contentRect);
+				break;
+			case (int)MainTabIndex.Balance:
+				advancedSettings ??= new Widget_AdvancedSettings();
+				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Balance, 0);
+				break;
+			case (int)MainTabIndex.Integrations:
+				advancedSettings ??= new Widget_AdvancedSettings();
+				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Integrations, subTabIndex);
+				break;
+			case (int)MainTabIndex.DataRaces:
+				milkableTable ??= new Widget_MilkableTable(namesToProducts);
+				milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
+				raceOverridesWidget ??= new Widget_RaceOverrides();
+				geneSetting ??= new Widget_GeneSetting(genes);
+				if (subTabIndex == 0)
+					milkableTable.Draw(contentRect);
+				else if (subTabIndex == 1)
+					milkTagsTable.Draw(contentRect);
+				else if (subTabIndex == 2)
+					raceOverridesWidget.Draw(contentRect);
 				else
 				{
 					float devHeight = Prefs.DevMode ? 220f : 0f;
 					Rect geneRect = new Rect(contentRect.x, contentRect.y, contentRect.width, contentRect.height - devHeight);
-					geneSetting ??= new Widget_GeneSetting(genes);
 					geneSetting.Draw(geneRect);
 					if (Prefs.DevMode)
 					{
@@ -591,47 +544,63 @@ internal class MilkCumSettings : ModSettings
 					}
 				}
 				break;
+			case (int)MainTabIndex.DevTools:
+				advancedSettings ??= new Widget_AdvancedSettings();
+				advancedSettings.DrawDevModeSection(contentRect);
+				break;
 		}
 	}
 
 	private List<TabRecord> GetSubTabs()
 	{
-		return mainTabIndex switch
+		switch (mainTabIndex)
 		{
-			(int)MainTabIndex.MilkAndFluids => new List<TabRecord>
-			{
-				new("EM.SubTab.Milk".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.MilkTags".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-				new("EM.SubTab.RaceOverrides".Translate(), () => subTabIndex = 2, subTabIndex == 2),
-				new("EM.SubTab.Fluids".Translate(), () => subTabIndex = 3, subTabIndex == 3)
-			},
-			(int)MainTabIndex.Breastfeed => new List<TabRecord>
-			{
-				new("EM.SubTab.BreastfeedOverview".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new(Lang.Colonist.CapitalizeFirst(), () => subTabIndex = 1, subTabIndex == 1),
-				new(Lang.Animal.CapitalizeFirst(), () => subTabIndex = 2, subTabIndex == 2),
-				new(Lang.Mechanoid.CapitalizeFirst(), () => subTabIndex = 3, subTabIndex == 3)
-			},
-			(int)MainTabIndex.HealthAndRisk => new List<TabRecord>
-			{
-				new("EM.SubTab.Mastitis".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-				new("EM.SubTab.ToleranceOverflow".Translate(), () => subTabIndex = 2, subTabIndex == 2),
-				new("EM.SubTab.LoadFromDef".Translate(), () => subTabIndex = 3, subTabIndex == 3)
-			},
-			(int)MainTabIndex.EfficiencyAndInterface => new List<TabRecord>
-			{
-				new("EM.SubTab.IdentityAndMenu".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.BreastPool".Translate(), () => subTabIndex = 1, subTabIndex == 1)
-			},
-			(int)MainTabIndex.IntegrationAndAdvanced => new List<TabRecord>
-			{
-				new("EM.SubTab.RJW".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-				new("EM.SubTab.DBH".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-				new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 2, subTabIndex == 2)
-			},
-			_ => new List<TabRecord>()
-		};
+			case (int)MainTabIndex.CoreSystems:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.BreastfeedSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.CumSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.FluidBehavior".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+				};
+			case (int)MainTabIndex.HealthRisk:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.MastitisSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.HygieneSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.ToleranceSystem".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+					new("EM.SubTab.OverflowPollution".Translate(), () => subTabIndex = 3, subTabIndex == 3)
+				};
+			case (int)MainTabIndex.Permissions:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.MenuVisibility".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.DefaultBehavior".Translate(), () => subTabIndex = 1, subTabIndex == 1)
+				};
+			case (int)MainTabIndex.Balance:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.BalanceScaling".Translate(), () => subTabIndex = 0, subTabIndex == 0)
+				};
+			case (int)MainTabIndex.Integrations:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.RJWIntegration".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.DBHIntegration".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.NutritionSystem".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+				};
+			case (int)MainTabIndex.DataRaces:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.Milk".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.MilkTags".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.RaceOverrides".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+					new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 3, subTabIndex == 3)
+				};
+			case (int)MainTabIndex.DevTools:
+				return new List<TabRecord>();
+			default:
+				return new List<TabRecord>();
+		}
 	}
 	private static IEnumerable<ThingDef> GetMilkablePawns()
 	{
@@ -756,23 +725,6 @@ internal class MilkCumSettings : ModSettings
 			compProperties = new CompProperties_ShowProducer();
 			milkDef.comps.Add(compProperties);
 		}
-	}
-	/// <summary>建议 22：从 MilkCumDefaultsDef 加载关键默认值到当前设置；若 XML 未加载则使用内置默认值（其他 mod 可 patch GetBuiltinDefaults）。</summary>
-	public static void ApplyDefaultsFromDef()
-	{
-		var def = DefDatabase<MilkCumDefaultsDef>.GetNamedSilentFail("EM_Defaults") ?? MilkCumDefaultsDef.GetBuiltinDefaults();
-		if (def == null) return;
-		baselineMilkDurationDays = def.baselineMilkDurationDays;
-		birthInducedMilkDurationDays = def.birthInducedMilkDurationDays;
-		allowMastitis = def.allowMastitis;
-		mastitisBaseMtbDays = def.mastitisBaseMtbDays;
-		overFullnessRiskMultiplier = def.overFullnessRiskMultiplier;
-		hygieneRiskMultiplier = def.hygieneRiskMultiplier;
-		allowToleranceAffectMilk = def.allowToleranceAffectMilk;
-		toleranceFlowImpactExponent = def.toleranceFlowImpactExponent;
-		overflowFilthDefName = def.overflowFilthDefName ?? "Filth_Vomit";
-		aiPreferHighFullnessTargets = def.aiPreferHighFullnessTargets;
-		defaultFlowMultiplierForHumanlike = def.defaultFlowMultiplierForHumanlike;
 	}
 	#region Internal setting getters
 	internal static bool IsMilkable(string name)

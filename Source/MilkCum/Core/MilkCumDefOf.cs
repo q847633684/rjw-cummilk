@@ -60,8 +60,6 @@ public static class MilkCumDefOf
     public static HediffDef EM_LactatingGain;
     public static HediffDef EM_AbsorptionDelay;
 
-    // EM_Defaults 不参与 DefOf 绑定，避免 Def 未加载时启动崩溃；使用处通过 GetNamedSilentFail 获取
-
     // 管道系统（VE Framework 可选）：仅主 mod 可解析的 Def 类型；DesignatorDropdownGroupDef/PipeNetDef 在 PipeSystem 项目中用 GetNamed
     public static DesignationCategoryDef EM_PipeNetworks;
     public static ThingDef EM_MilkTap;

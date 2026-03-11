@@ -12,6 +12,8 @@ public class Widget_BreastfeedSettings
 	private readonly HumanlikeBreastfeed humanlikeBreastfeed;
 	private readonly AnimalBreastfeed animalBreastfeed;
 	private readonly MechanoidBreastfeed mechanoidBreastfeed;
+	private Vector2 _allTabsScrollPosition = Vector2.zero;
+	private const float AllTabsContentHeight = 800f;
 
 	public Widget_BreastfeedSettings(HumanlikeBreastfeed humanlikeBreastfeed, AnimalBreastfeed animalBreastfeed, MechanoidBreastfeed mechanoidBreastfeed)
 	{
@@ -54,11 +56,78 @@ public class Widget_BreastfeedSettings
 		inRect.y += UNIT_SIZE;
 	}
 
-	/// <summary>主/子 Tab 结构下：仅绘制指定子 Tab 内容。index 0=人形，1=动物，2=机械族（对应哺乳子 Tab 1/2/3）。</summary>
-	public void DrawTab(Rect inRect, int index)
+	/// <summary>专业级「哺乳系统」一页：总览说明 + 营养→能量/回缩 + 人形/动物/机械三类设置（可滚动）。</summary>
+	public void DrawBreastfeedSystemFull(Rect inRect)
 	{
 		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
-		DrawTabContent(inRect, index);
+		float viewHeight = inRect.height;
+		float contentWidth = inRect.width - 20f;
+		const float contentHeight = 1000f;
+		Rect scrollViewRect = new Rect(inRect.x, inRect.y, inRect.width, viewHeight);
+		Rect scrollContent = new Rect(0f, 0f, contentWidth, contentHeight);
+		Widgets.BeginScrollView(scrollViewRect, ref _allTabsScrollPosition, scrollContent, true);
+		Rect contentRect = new Rect(0f, 0f, contentWidth, contentHeight);
+		float y = 0f;
+		string overviewDesc = "EM.BreastfeedOverviewDesc".Translate();
+		if (!string.IsNullOrEmpty(overviewDesc))
+		{
+			GUI.color = Color.gray;
+			Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE * 2), overviewDesc);
+			GUI.color = Color.white;
+			y += UNIT_SIZE * 2;
+		}
+		Rect nutritionRect = new Rect(0f, y, contentWidth, 300f);
+		DrawNutritionEnergyBlock(ref nutritionRect);
+		y = nutritionRect.y + UNIT_SIZE * 2;
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Colonist.CapitalizeFirst());
+		GUI.color = Color.white;
+		y += UNIT_SIZE;
+		SetupHumanlike(contentRect, ref y, humanlikeBreastfeed);
+		y += UNIT_SIZE * 2;
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Animal.CapitalizeFirst());
+		GUI.color = Color.white;
+		y += UNIT_SIZE;
+		SetupAnimal(contentRect, ref y, animalBreastfeed);
+		y += UNIT_SIZE * 2;
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Mechanoid.CapitalizeFirst());
+		GUI.color = Color.white;
+		y += UNIT_SIZE;
+		SetupMechanoid(contentRect, ref y, mechanoidBreastfeed);
+		Widgets.EndScrollView();
+	}
+
+	/// <summary>合并绘制人形/动物/机械族三类哺乳设置于同一可滚动页（原三个子 Tab 合并为一个）。</summary>
+	public void DrawAllTabs(Rect inRect)
+	{
+		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
+		float viewHeight = inRect.height;
+		float contentWidth = inRect.width - 20f;
+		Rect scrollViewRect = new Rect(inRect.x, inRect.y, inRect.width, viewHeight);
+		Rect scrollContent = new Rect(0f, 0f, contentWidth, AllTabsContentHeight);
+		Widgets.BeginScrollView(scrollViewRect, ref _allTabsScrollPosition, scrollContent, true);
+		Rect contentRect = new Rect(0f, 0f, contentWidth, AllTabsContentHeight);
+		float y = 0f;
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Colonist.CapitalizeFirst());
+		GUI.color = Color.white;
+		y += UNIT_SIZE;
+		SetupHumanlike(contentRect, ref y, humanlikeBreastfeed);
+		y += UNIT_SIZE * 2;
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Animal.CapitalizeFirst());
+		GUI.color = Color.white;
+		y += UNIT_SIZE;
+		SetupAnimal(contentRect, ref y, animalBreastfeed);
+		y += UNIT_SIZE * 2;
+		GUI.color = Color.gray;
+		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Mechanoid.CapitalizeFirst());
+		GUI.color = Color.white;
+		y += UNIT_SIZE;
+		SetupMechanoid(contentRect, ref y, mechanoidBreastfeed);
+		Widgets.EndScrollView();
 	}
 
 	private void DrawTabContent(Rect inRect, int tabIndex)

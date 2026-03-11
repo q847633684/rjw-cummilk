@@ -1,11 +1,25 @@
 # Source 目录结构梳理
 
 以 **Source/索引.md** 为基准，对项目目录层级与代码结构做系统对照后的结论与约定。  
-**当前采用**：统一体液系统 **Fluids/**（Lactation 乳汁 + Cum 精液 + Shared 共享模型），Core/、Integration/、Harmony/、UI/、Debug/ 与设计一致。
+**框架原则**：本 mod 为**流体系统**，包含**精液、乳汁**（母乳/奶）、**妹汁**（阴道分泌液）三大系统；**一个系统对应一个目录**（见 [domain/mod定位-流体系统三大系统](../domain/mod定位-流体系统三大系统.md)）。  
+**当前实现**：Fluids 下 Lactation（乳汁）、Cum（精液）、Shared（共享）；Core/、Integration/、Harmony/、UI/、Debug/ 与设计一致。
 
 ---
 
-## 一、当前目录层级（Fluids 结构）
+## 一、三大系统与目录对应
+
+| 系统 | 目录 | 命名空间/说明 |
+|------|------|----------------|
+| **乳汁**（母乳/奶） | `MilkCum/Fluids/Lactation/` | 泌乳、双池、挤奶/吸奶、耐受、喷乳反射 |
+| **精液** | `MilkCum/Fluids/Cum/` | Cumpilation.*（Cumflation、Gathering、Leaking、Bukkake 等） |
+| **妹汁**（阴道分泌液） | 待定 | 第三大系统，若在本仓库则于 Fluids 下新增对应目录 |
+| **共享** | `MilkCum/Fluids/Shared/` | 池模型、FluidPoolState/Entry/FluidTag、营养/能量 Helper（非独立系统） |
+
+乳汁（母乳）内部可再分为三个逻辑子系统：**泌乳系统**（L、衰减、hediff）、**池系统**（双池、进水、容量）、**挤奶/吸奶系统**（取奶、Job、WorkGiver）；目录是否按此拆分子目录见 [乳汁系统内子系统划分与目录建议](乳汁系统内子系统划分与目录建议.md)。
+
+---
+
+## 二、当前目录层级（Fluids 结构）
 
 | 路径 | 职责 | 命名空间 |
 |------|------|----------|
@@ -43,7 +57,7 @@
 
 ---
 
-## 二、目标结构（用户给定）与当前实现对照
+## 三、目标结构（用户给定）与当前实现对照
 
 | 目标 | 当前实现 |
 |------|----------|
@@ -56,16 +70,17 @@
 
 ---
 
-## 三、后续新增文件约定
+## 四、后续新增文件约定
 
-1. **放哪**：按职责放入上表对应目录；新集成 mod 放在 `MilkCum/Integration/` 下新建子文件夹。
+1. **放哪**：按职责放入上表对应目录；**新系统**在 `MilkCum/Fluids/` 下新建与「乳汁」「精液」平级的目录（一系统一目录）；新集成 mod 放在 `MilkCum/Integration/` 下新建子文件夹。
 2. **索引**：在 **Source/索引.md** 对应章节表格中新增一行，填写文件名、类型、主要函数/成员、功能简述。
 3. **命名空间**：新文件命名空间与所在目录一致；GlobalUsings 已包含 Core.Settings、Core.Stats、Core.Utils、Core.Constants、Fluids.Lactation.*、Fluids.Shared.Data/Models/Helpers、Harmony、Integration.DubsBadHygiene。
 
 ---
 
-## 四、相关文档
+## 五、相关文档
 
 - 目录与类型明细：**Source/索引.md**
+- Mod 定位与三大系统：**记忆库/domain/mod定位-流体系统三大系统.md**
 - 集成模块一览：**记忆库/docs/Integrations索引.md**
 - 架构原则与重组建议：**记忆库/design/架构原则与重组建议.md**

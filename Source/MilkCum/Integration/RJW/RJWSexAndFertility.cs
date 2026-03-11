@@ -25,8 +25,6 @@ public static class RJWSexAndFertility
             {
                 float deltaS = MilkCumSettings.rjwSexLactationBoostDeltaS * MilkCumSettings.GetProlactinToleranceFactor(pawn) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
                 comp.AddFromDrug(deltaS);
-                if (MilkCumSettings.rjwSexCountsAsStimulus)
-                    comp.NotifyDrained();
                 break;
             }
         }
