@@ -17,11 +17,5 @@ namespace Cumpilation
         public static bool EnableOscillationMechanics { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanics; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanics = value; }
         public static bool EnableOscillationMechanicsForAnimals { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanicsForAnimals; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanicsForAnimals = value; }
         public static bool EnableCumpilationDebugLogging { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableDebugLogging; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableDebugLogging = value; }
-
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            // 数据已由 MilkCumSettings.ExposeData 统一读写，此处仅保留空实现以兼容 ModSettings 基类
-        }
     }
 }

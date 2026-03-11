@@ -40,6 +40,7 @@
 | 吸奶时间模拟 | [design/吸奶时间模拟](design/吸奶时间模拟.md) | #吸奶 #时间 #公式 #模拟 |
 | 挤奶时间模拟 | [design/挤奶时间模拟](design/挤奶时间模拟.md) | #挤奶 #时间 #公式 #模拟 #流速 |
 | UI 审阅结论 | [design/UI审阅结论](design/UI审阅结论.md) | #UI #审阅 #设置 #翻译 |
+| 激素模型：催乳素维持与泌乳抑制 | [design/激素模型-催乳素与排乳反馈](design/激素模型-催乳素与排乳反馈.md) | #激素 #催乳素 #排乳反馈 #泌乳抑制 |
 | 列表滚动与固定 contentHeight | [design/列表滚动与固定contentHeight](design/列表滚动与固定contentHeight.md) | #UI #滚动 #BeginScrollView #contentHeight |
 
 ---

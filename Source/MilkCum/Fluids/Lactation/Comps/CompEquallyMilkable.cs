@@ -294,8 +294,12 @@ public class CompEquallyMilkable : CompMilkable
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
         Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
-        if (Scribe.mode == LoadSaveMode.PostLoadInit && lastGatheredTick < 0)
-            lastGatheredTick = Find.TickManager.TicksGame;
+        if (Scribe.mode == LoadSaveMode.PostLoadInit)
+        {
+            EnsureSaveCompatAllowedLists();
+            if (lastGatheredTick < 0)
+                lastGatheredTick = Find.TickManager.TicksGame;
+        }
         SyncBaseFullness();
     }
 
@@ -333,7 +337,7 @@ public class CompEquallyMilkable : CompMilkable
         breastFullness?.Clear();
         SyncBaseFullness();
     }
-    /// <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图，默认仅子女+伴侣，不包含其他人）。</summary>
+    /// <summary>读档时调用（PostLoadInit）：确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图）。</summary>
     public void EnsureSaveCompatAllowedLists()
     {
         allowedSucklers ??= new List<Pawn>();

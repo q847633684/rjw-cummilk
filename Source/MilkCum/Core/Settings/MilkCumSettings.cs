@@ -632,12 +632,6 @@ internal class MilkCumSettings : ModSettings
 	}
 	internal void UpdateMilkCumSettings()
 	{
-		// 7.11: 旧存档兼容 — 补全缺失的 allowedSucklers/allowedConsumers 并清理无效引用
-		foreach (Pawn p in PawnsFinder.AllMaps)
-		{
-			if (p?.CompEquallyMilkable() is CompEquallyMilkable comp)
-				comp.EnsureSaveCompatAllowedLists();
-		}
 		EventHelper.TriggerSettingsChanged();
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
