@@ -75,7 +75,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
     {
         if (this.Severity < 1f)
             this.Severity = Mathf.Min(1f, this.Severity + 0.5f); // 挤奶时最多推�?1，不直接变永久；永久=成瘾且满足需求不衰减
-        LactatingComp?.AddMilkingLStimulus();
+        LactatingComp?.NotifyDrained();
     }
     public void OnGathered(float fullness)
     {
@@ -83,7 +83,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
             this.Severity = 1f;
         else
             this.Severity += fullness;
-        LactatingComp?.AddMilkingLStimulus();
+        LactatingComp?.NotifyDrained();
     }
     /// <summary>挤奶/吸奶后按被扣量的池侧添加喷乳反射刺激（仅被操作的该侧 R 升高）</summary>
     public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys)
@@ -92,6 +92,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
         var comp = LactatingComp;
         foreach (string key in drainedKeys)
             comp?.AddLetdownReflexStimulus(key);
+        comp?.NotifyDrained();
     }
     /// <summary>设计原则 5：stages �?XML 移除，此�?C# 动态生成；capMods �?GenStage 内设置（当前 Clear �?EM_LactatingGain 等独�?Hediff 提供能力），避免�?Def 静态阶段冲突</summary>
     private void GenStages()
@@ -170,6 +171,10 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置</summary>
     private float milkingLStimulusAccumulatedThisDay;
     private int lastMilkingLStimulusDayTick = -1;
+    /// <summary>激素模型：上次成功排乳的游戏 tick；用于长期未排乳抑制（软启动）。-1=从未排乳。</summary>
+    private int lastDrainTick = -1;
+    /// <summary>激素模型：排乳维持缓冲；排乳时 +ΔB（有上限），每游戏日衰减；D_eff 除以 (1+γ×Buffer)。</summary>
+    private float stimulusBuffer;
     /// <summary>耐受动态：有效耐受 E∈[0,1]，dE/dt = μ·L �?ν·E；用�?E_tol 计算</summary>
     private float effectiveToleranceE;
     /// <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
@@ -257,6 +262,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         Scribe_Values.Look(ref currentInflammation, "EM.Inflammation", 0f);
         Scribe_Values.Look(ref milkingLStimulusAccumulatedThisDay, "EM.MilkingLStimulusAccumulatedThisDay", 0f);
         Scribe_Values.Look(ref lastMilkingLStimulusDayTick, "EM.LastMilkingLStimulusDayTick", -1);
+        Scribe_Values.Look(ref lastDrainTick, "EM.LastDrainTick", -1);
+        Scribe_Values.Look(ref stimulusBuffer, "EM.StimulusBuffer", 0f);
         Scribe_Values.Look(ref effectiveToleranceE, "EM.EffectiveToleranceE", 0f);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
@@ -333,7 +340,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>四层模型：挤�?吸奶�?L 微幅刺激，单次与每日带上限</summary>
     public void AddMilkingLStimulus()
     {
-        if (!MilkCumSettings.enableInflammationModel) return;
+        if (!MilkCumSettings.enableProlactinStimulusFromMilking) return;
         float perEvent = Mathf.Clamp(MilkCumSettings.milkingLStimulusPerEvent, 0f, 1f);
         float capEvent = Mathf.Clamp(MilkCumSettings.milkingLStimulusCapPerEvent, 0f, 1f);
         float capDay = Mathf.Clamp(MilkCumSettings.milkingLStimulusCapPerDay, 0f, 1f);
@@ -348,6 +355,21 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         if (toAdd <= 0f) return;
         lactationAmountFromDrug += toAdd;
         milkingLStimulusAccumulatedThisDay += toAdd;
+    }
+
+    /// <summary>激素模型：排乳后统一入口。更新 lastDrainTick、可选增加 StimulusBuffer、可选调用 AddMilkingLStimulus。见 记忆库/design/激素模型-催乳素与排乳反馈.md</summary>
+    public void NotifyDrained()
+    {
+        int now = Find.TickManager.TicksGame;
+        lastDrainTick = now;
+        if (MilkCumSettings.enableStimulusBuffer)
+        {
+            float deltaB = Mathf.Clamp(MilkCumSettings.stimulusBufferDeltaB, 0f, 1f);
+            float cap = Mathf.Max(0f, MilkCumSettings.stimulusBufferCap);
+            stimulusBuffer = Mathf.Min(stimulusBuffer + deltaB, cap);
+        }
+        if (MilkCumSettings.enableProlactinStimulusFromMilking)
+            AddMilkingLStimulus();
     }
 
     /// <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的算术平均，无数据时返回 0。</summary>
@@ -519,10 +541,37 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 float step = 200f / 60000f;
                 float bTdrug = MilkCumSettings.GetEffectiveBaseValueTForDecay();
                 float bTbirth = MilkCumSettings.GetEffectiveBaseValueTForDecayBirth();
-                float decayDrug = GetDailyLactationDecayWithBT(lactationAmountFromDrug, bTdrug) * step;
-                float decayBirth = GetDailyLactationDecayWithBT(lactationAmountFromBirth, bTbirth) * step;
+                float Ddrug = GetDailyLactationDecayWithBT(lactationAmountFromDrug, bTdrug);
+                float Dbirth = GetDailyLactationDecayWithBT(lactationAmountFromBirth, bTbirth);
+                // 激素模型：D_eff = D×(1+SuppressionFactor)×(1+δ×P)/(1+γ×StimulusBuffer)；见 记忆库/design/激素模型-催乳素与排乳反馈.md 第六节
+                float mult = 1f;
+                int now = Find.TickManager.TicksGame;
+                if (MilkCumSettings.enableLactationSuppressionFromNoDrain)
+                {
+                    float daysSinceDrain = lastDrainTick < 0 ? 100f : (now - lastDrainTick) / 60000f;
+                    float a = Mathf.Max(0f, MilkCumSettings.suppressionCoeff);
+                    float b = Mathf.Max(1f, MilkCumSettings.suppressionExponent);
+                    mult *= 1f + a * Mathf.Pow(daysSinceDrain, b);
+                }
+                if (MilkCumSettings.enableSuppressionFromPressure && CompEquallyMilkable != null)
+                {
+                    float maxF = Mathf.Max(0.001f, CompEquallyMilkable.maxFullness);
+                    float P = Mathf.Clamp01(CompEquallyMilkable.Fullness / maxF);
+                    mult *= 1f + MilkCumSettings.pressureDecayDelta * P;
+                }
+                if (MilkCumSettings.enableStimulusBuffer)
+                {
+                    float denom = 1f + MilkCumSettings.stimulusBufferGamma * stimulusBuffer;
+                    if (denom >= 1E-6f) mult /= denom;
+                }
+                float decayDrug = Ddrug * mult * step;
+                float decayBirth = Dbirth * mult * step;
                 lactationAmountFromDrug = Mathf.Max(0f, lactationAmountFromDrug - decayDrug);
                 lactationAmountFromBirth = Mathf.Max(0f, lactationAmountFromBirth - decayBirth);
+                if (MilkCumSettings.enableStimulusBuffer)
+                {
+                    stimulusBuffer = Mathf.Max(0f, stimulusBuffer - MilkCumSettings.stimulusBufferDecayPerDay * step);
+                }
                 if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
                 {
                     lactationAmountFromDrug = 0f;
@@ -750,6 +799,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                         lines.Add("  " + "EM.MilkFlowPressureWhenFull".Translate());
                 }
             }
+            lines.Add("  " + "EM.PoolFlowEstrogenNote".Translate());
 
             // 4. 消耗：仅当有额外营养/能量消耗且未满池时才显示整块，避免空标题
             if (growthSpeed > 0f && !isFull)
@@ -769,6 +819,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             // 5. 周期
             lines.Add("EM.PoolSectionCycle".Translate());
             lines.Add("  " + ("EM.PoolRemainingDays".Translate() + ": " + (IsPermanentLactation ? Lang.Permanent : RemainingDays.ToString("F1"))));
+            if (!IsPermanentLactation && MilkCumSettings.enableLactationSuppressionFromNoDrain)
+                lines.Add("  " + "EM.PoolSuppressionHint".Translate());
             float oneDoseL = 0.5f * PoolModelConstants.DoseToLFactor;
             if (oneDoseL > 0f && currentLactationAmount > 0f)
                 lines.Add("  " + "EM.EquivalentDose".Translate((currentLactationAmount / oneDoseL).ToString("F1")));

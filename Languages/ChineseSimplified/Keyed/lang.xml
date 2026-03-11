@@ -97,6 +97,8 @@
     <EM.RjwSexAddsLactationBoost>性行为后增加奶池</EM.RjwSexAddsLactationBoost>
     <EM.RjwSexAddsLactationBoostDesc>开启后，参与性行为的泌乳者会获得少量奶池进水（ΔL），受耐受与种族倍率影响。</EM.RjwSexAddsLactationBoostDesc>
     <EM.RjwSexLactationBoostDeltaS>性行为泌乳 Δs：{0}</EM.RjwSexLactationBoostDeltaS>
+    <EM.RjwSexCountsAsStimulus>性行为视为排乳刺激</EM.RjwSexCountsAsStimulus>
+    <EM.RjwSexCountsAsStimulusDesc>开启且上方「性行为后增加奶池」开启时，性行为同时更新排乳时间与维持缓冲，延缓 L 衰减（与挤奶/吸奶效果类似）。</EM.RjwSexCountsAsStimulusDesc>
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene（乳腺炎卫生触发）---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>乳腺炎/堵塞使用 DBH 卫生需求</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>开启时，Dubs Bad Hygiene 的卫生需求过低会提高乳腺炎/堵塞风险；关闭则改用房间清洁度。</EM.UseDubsBadHygieneForMastitisDesc>
@@ -137,6 +139,7 @@
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
+    <EM.PoolSuppressionHint>长期不排乳→泌乳抑制↑→自然结束</EM.PoolSuppressionHint>
     <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
     <EM.PoolDaysSuffix>日</EM.PoolDaysSuffix>
     <EM.EquivalentDose>等效剂量：{0}</EM.EquivalentDose>
@@ -155,14 +158,14 @@
     <EM.MilkFlowValuePercent>流速：{0}({1})/天</EM.MilkFlowValuePercent>
     <EM.MilkFlowValuePercentLine>总流速：{0} / 天 （{1}）</EM.MilkFlowValuePercentLine>
     <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
-    <EM.MilkFlowDrive>驱动</EM.MilkFlowDrive>
+    <EM.MilkFlowDrive>泌乳素水平</EM.MilkFlowDrive>
     <EM.MilkFlowHunger>饥饿</EM.MilkFlowHunger>
     <EM.MilkFlowConditions>状态</EM.MilkFlowConditions>
     <EM.MilkFlowGenes>基因</EM.MilkFlowGenes>
     <EM.MilkFlowSetting>设置</EM.MilkFlowSetting>
     <EM.MilkFlowRjw>左右乳</EM.MilkFlowRjw>
     <EM.MilkFlowPressure>压力</EM.MilkFlowPressure>
-    <EM.MilkFlowLetdown>喷乳反射</EM.MilkFlowLetdown>
+    <EM.MilkFlowLetdown>喷乳反射（催产素）</EM.MilkFlowLetdown>
     <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
     <EM.PoolPairFlowLine>{0} 流速：{1}（左：{2}；右：{3}）</EM.PoolPairFlowLine>
     <EM.PoolLeftFlowLine>左乳流速：{0} / 天</EM.PoolLeftFlowLine>
@@ -196,6 +199,7 @@
     <EM.PoolBreastPairSummaryLine2>流速：{0} / 天</EM.PoolBreastPairSummaryLine2>
     <EM.PoolBreastDevModeOnly>只有 DevMode 才显示</EM.PoolBreastDevModeOnly>
     <EM.PoolBreastMechanismLabel>生产机制:</EM.PoolBreastMechanismLabel>
+    <EM.PoolFlowEstrogenNote>（容量与产奶效率受乳腺发育等因素影响，含雌激素等生理因素。）</EM.PoolFlowEstrogenNote>
     <EM.MilkFlowBreastVolume>乳房体积</EM.MilkFlowBreastVolume>
     <EM.PoolBreastPairSummary>总：奶量 {0} / 容量 {1}({2}) / 流速 {3}/天</EM.PoolBreastPairSummary>
     <EM.PoolBreastSideMilk>奶量：{0} ({1})</EM.PoolBreastSideMilk>

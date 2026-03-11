@@ -72,6 +72,8 @@ internal class MilkCumSettings : ModSettings
 	/// <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
 	public static bool rjwSexAddsLactationBoost = false;
 	public static float rjwSexLactationBoostDeltaS = 0.15f;
+	/// <summary>阶段3：性行为是否同时视为排乳刺激（调用 NotifyDrained：更新 lastDrainTick、StimulusBuffer），延寿效果更强。</summary>
+	public static bool rjwSexCountsAsStimulus = false;
 	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
 	public static bool useDubsBadHygieneForMastitis = true;
 	// 乳腺炎可配置：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数
@@ -184,6 +186,29 @@ internal class MilkCumSettings : ModSettings
 	public static float milkingLStimulusPerEvent = 0.03f;
 	public static float milkingLStimulusCapPerEvent = 0.05f;
 	public static float milkingLStimulusCapPerDay = 0.2f;
+	// 激素模型（催乳素与排乳反馈）：排乳刺激独立于炎症；见 记忆库/design/激素模型-催乳素与排乳反馈.md
+	/// <summary>排乳时是否增加 L（催乳素）刺激；与 enableInflammationModel 独立，关闭炎症时仍可保留排乳延寿。</summary>
+	public static bool enableProlactinStimulusFromMilking = true;
+	/// <summary>长期未排乳抑制：启用时 D_eff = D×(1+SuppressionFactor)，SuppressionFactor = α×days^β。</summary>
+	public static bool enableLactationSuppressionFromNoDrain = true;
+	/// <summary>抑制系数 α；SuppressionFactor = α×days_since_drain^β。</summary>
+	public static float suppressionCoeff = 0.02f;
+	/// <summary>抑制指数 β（≥1）；2=未排乳天数平方。</summary>
+	public static float suppressionExponent = 2f;
+	/// <summary>压力 P 参与 L 衰减：D_eff 再乘 (1+δ×P)，满池时 L 衰减更快（FIL 类比）。</summary>
+	public static bool enableSuppressionFromPressure = true;
+	/// <summary>压力对衰减的加成系数 δ；D_eff × (1+δ×P)。</summary>
+	public static float pressureDecayDelta = 0.2f;
+	/// <summary>排乳维持缓冲：启用时 D_eff 除以 (1+γ×StimulusBuffer)，排乳后一段时间内衰减变慢。</summary>
+	public static bool enableStimulusBuffer = true;
+	/// <summary>缓冲对衰减的分母系数 γ；D_eff / (1+γ×Buffer)。</summary>
+	public static float stimulusBufferGamma = 0.5f;
+	/// <summary>每次排乳时 Buffer 增加量 ΔB（有上限）。</summary>
+	public static float stimulusBufferDeltaB = 0.08f;
+	/// <summary>StimulusBuffer 上限。</summary>
+	public static float stimulusBufferCap = 1f;
+	/// <summary>StimulusBuffer 每游戏日衰减量。</summary>
+	public static float stimulusBufferDecayPerDay = 0.2f;
 	// 四层模型（阶段3）：激素饱和 H(L)=1−exp(−a·L)，D_eff=L·H(L)。启用时流速由 D_eff 驱动，低 L 低产、高 L 饱和。
 	public static bool enableHormoneSaturation = true;
 	/// <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
@@ -284,6 +309,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
 		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", false);
 		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
+		Scribe_Values.Look(ref rjwSexCountsAsStimulus, "EM.RjwSexCountsAsStimulus", false);
 		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
 		Scribe_Deep.Look(ref _risk, "EM.MilkRiskSettings");
 		if (_risk == null) _risk = new MilkRiskSettings();
@@ -323,6 +349,17 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref milkingLStimulusPerEvent, "EM.MilkingLStimulusPerEvent", 0.03f);
 		Scribe_Values.Look(ref milkingLStimulusCapPerEvent, "EM.MilkingLStimulusCapPerEvent", 0.05f);
 		Scribe_Values.Look(ref milkingLStimulusCapPerDay, "EM.MilkingLStimulusCapPerDay", 0.2f);
+		Scribe_Values.Look(ref enableProlactinStimulusFromMilking, "EM.EnableProlactinStimulusFromMilking", true);
+		Scribe_Values.Look(ref enableLactationSuppressionFromNoDrain, "EM.EnableLactationSuppressionFromNoDrain", true);
+		Scribe_Values.Look(ref suppressionCoeff, "EM.SuppressionCoeff", 0.02f);
+		Scribe_Values.Look(ref suppressionExponent, "EM.SuppressionExponent", 2f);
+		Scribe_Values.Look(ref enableSuppressionFromPressure, "EM.EnableSuppressionFromPressure", true);
+		Scribe_Values.Look(ref pressureDecayDelta, "EM.PressureDecayDelta", 0.2f);
+		Scribe_Values.Look(ref enableStimulusBuffer, "EM.EnableStimulusBuffer", true);
+		Scribe_Values.Look(ref stimulusBufferGamma, "EM.StimulusBufferGamma", 0.5f);
+		Scribe_Values.Look(ref stimulusBufferDeltaB, "EM.StimulusBufferDeltaB", 0.08f);
+		Scribe_Values.Look(ref stimulusBufferCap, "EM.StimulusBufferCap", 1f);
+		Scribe_Values.Look(ref stimulusBufferDecayPerDay, "EM.StimulusBufferDecayPerDay", 0.2f);
 		Scribe_Values.Look(ref enableHormoneSaturation, "EM.EnableHormoneSaturation", true);
 		Scribe_Values.Look(ref hormoneSaturationA, "EM.HormoneSaturationA", 1f);
 		Scribe_Values.Look(ref hormoneSaturationLRef, "EM.HormoneSaturationLRef", 1f);

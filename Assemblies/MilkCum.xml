@@ -97,6 +97,9 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwSexAddsLactationBoost">
             <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwSexCountsAsStimulus">
+            <summary>阶段3：性行为是否同时视为排乳刺激（调用 NotifyDrained：更新 lastDrainTick、StimulusBuffer），延寿效果更强。</summary>
+        </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.toleranceDynamicMu">
             <summary>耐受累积率 μ（每游戏日）；L 高则 E 上升。</summary>
         </member>
@@ -113,7 +116,7 @@
             <summary>分娩泌乳衰减用有效 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetPressureFactor(System.Single)">
-            <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.85、f_min=0.02，抑制约在膨胀阶段（P≈基础满/撑大≈0.83～1）开始。</summary>
+            <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.9、f_min=0.02，奶量达 90% 才开始往下压。</summary>
             <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveDrive(System.Single)">
@@ -126,16 +129,46 @@
             <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexStimulusDeltaR">
-            <summary>挤奶/吸奶时 R 的增量 ΔR，Clamp 后 R≤1。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexMin">
-            <summary>喷乳反射 R 的下限：R 衰减不低于此值，避免「不挤奶则产奶效率归零」；0=允许归零。当启用加成倍率时 R 可衰减到 0。</summary>
+            <summary>挤奶/吸奶时 R 的增量 ΔR，R 加上后 Clamp 至 1。设大一些（如 1）可一次刺激即满 R。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexBoostMultiplier">
-            <summary>喷乳反射加成倍率：吸奶/挤奶后进水量 = 基础 × (1 + R×(本值-1))，R=1 时为本值倍（1.5~2.5），R=0 时为 1 倍；维持时间由 R 衰减速度决定。≤1 时按旧逻辑（流速×R，且受 R 下限约束）。</summary>
+            <summary>喷乳反射加成倍率：进水流速倍率 = 1 + R×(本值−1)，R=1 时为本值倍（建议 1.5~2.5），R=0 时为 1 倍；设为 1 即无加成。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationDecayInflammationEta">
             <summary>炎症对 L 衰减的抑制因子 η：D += η·I。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.enableProlactinStimulusFromMilking">
+            <summary>排乳时是否增加 L（催乳素）刺激；与 enableInflammationModel 独立，关闭炎症时仍可保留排乳延寿。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.enableLactationSuppressionFromNoDrain">
+            <summary>长期未排乳抑制：启用时 D_eff = D×(1+SuppressionFactor)，SuppressionFactor = α×days^β。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.suppressionCoeff">
+            <summary>抑制系数 α；SuppressionFactor = α×days_since_drain^β。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.suppressionExponent">
+            <summary>抑制指数 β（≥1）；2=未排乳天数平方。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.enableSuppressionFromPressure">
+            <summary>压力 P 参与 L 衰减：D_eff 再乘 (1+δ×P)，满池时 L 衰减更快（FIL 类比）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.pressureDecayDelta">
+            <summary>压力对衰减的加成系数 δ；D_eff × (1+δ×P)。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.enableStimulusBuffer">
+            <summary>排乳维持缓冲：启用时 D_eff 除以 (1+γ×StimulusBuffer)，排乳后一段时间内衰减变慢。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.stimulusBufferGamma">
+            <summary>缓冲对衰减的分母系数 γ；D_eff / (1+γ×Buffer)。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.stimulusBufferDeltaB">
+            <summary>每次排乳时 Buffer 增加量 ΔB（有上限）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.stimulusBufferCap">
+            <summary>StimulusBuffer 上限。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.stimulusBufferDecayPerDay">
+            <summary>StimulusBuffer 每游戏日衰减量。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.hormoneSaturationA">
             <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
@@ -276,8 +309,14 @@
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.OverflowAccumulator">
             <summary>满池溢出累计量（仅 Debug 显示用）</summary>
         </member>
-        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.hadOverflowLastStep">
-            <summary>上一轮 UpdateMilkPools 是否发生溢出；用于界面仅在有溢出时显示回缩吸收。</summary>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.hadShrinkLastStep">
+            <summary>上一轮 UpdateMilkPools 是否执行过向基础容量的回缩；界面仅在有回缩时显示回缩吸收。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.overflowTriggeredByKey">
+            <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsOverflowState(System.String,System.Single,System.Single)">
+            <summary>该侧是否处于溢出状态（已触发溢出且当前高于基础容量），用于停泌乳与回缩判定。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
@@ -307,7 +346,7 @@
             <summary>吸奶/单侧扣量时「第一个会被扣」的侧在 GetCachedEntries() 中的下标；与 DrainForConsumeSingleSide 选侧一致。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
-            <summary>回缩吸收：仅当本步发生过溢出时才回缩，界面也仅在有溢出时显示。本方法将该回缩量折算为「每日补充营养」；无溢出时返回 0。</summary>
+            <summary>回缩吸收：仅当该侧触发了溢出逻辑且本步有回缩时，界面显示回缩吸收。本方法将回缩量折算为「每日补充营养」；无回缩时返回 0。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.LastGatheredTick">
             <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>
@@ -322,7 +361,7 @@
             <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
-            <summary>确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图，默认仅子女+伴侣，不包含其他人）。</summary>
+            <summary>读档时调用（PostLoadInit）：确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Active">
             <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库 design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行</summary>
@@ -334,7 +373,7 @@
             <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.UpdateMilkPools">
-            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛），回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突</summary>
+            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）。仅当本步发生溢出时才执行池水位回缩与回缩吸收；回缩后满度降低、下一轮压力减小流速恢复，效果上从满池微量进水转为明显泌乳，形成逻辑闭环。回缩时超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TrySendFullPoolLetter">
             <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图</summary>
@@ -450,6 +489,12 @@
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.milkingLStimulusAccumulatedThisDay">
             <summary>挤奶 L 刺激：当日已累计量，每游戏日重置</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lastDrainTick">
+            <summary>激素模型：上次成功排乳的游戏 tick；用于长期未排乳抑制（软启动）。-1=从未排乳。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.stimulusBuffer">
+            <summary>激素模型：排乳维持缓冲；排乳时 +ΔB（有上限），每游戏日衰减；D_eff 除以 (1+γ×Buffer)。</summary>
+        </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.effectiveToleranceE">
             <summary>耐受动态：有效耐受 E∈[0,1]，dE/dt = μ·L �?ν·E；用�?E_tol 计算</summary>
         </member>
@@ -486,8 +531,11 @@
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddMilkingLStimulus">
             <summary>四层模型：挤�?吸奶�?L 微幅刺激，单次与每日带上限</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.NotifyDrained">
+            <summary>激素模型：排乳后统一入口。更新 lastDrainTick、可选增加 StimulusBuffer、可选调用 AddMilkingLStimulus。见 记忆库/design/激素模型-催乳素与排乳反馈.md</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflex">
-            <summary>四层模型：当前喷乳反�?R∈[0,1]（用于总览显示）。未启用时返�?1；启用时为各�?R 的加权平均，无数据时不低�?letdownReflexMin</summary>
+            <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的算术平均，无数据时返回 0。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexRaw(System.String)">
             <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会�?min 合并）</summary>
@@ -496,13 +544,13 @@
             <summary>指定侧的 R，无记录时为 0（用于显�?平均）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier(System.String)">
-            <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时加成模�?1+R×(boost-1)，否�?R（衰减后不低�?minR）</summary>
+            <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时倍率 = 1+R×(boost−1)，R 可衰减到 0 时倍率回 1。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier">
             <summary>进水流速的 R 倍率（全侧平均，用于总产奶效率一行显示）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.DecayLetdownReflex(System.Single)">
-            <summary>四层模型：各�?R 指数衰减；仅保留当前池中存在�?key，避免字典无限增长</summary>
+            <summary>四层模型：各侧 R 指数衰减，可衰减到 0；仅保留当前池中存在的 key，避免字典无限增长。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddLetdownReflexStimulus(System.String)">
             <summary>四层模型：挤�?吸奶刺激该侧，R += ΔR，Clamp �?1。仅被刺激的那一侧（如第一对的左乳）提升喷乳反射</summary>
@@ -556,7 +604,7 @@
             <summary>健康页乳房悬�?DevMode：返回「生产机制」顺序的因子行（乳房体积、基因、设置、状态、驱动、饥饿、压力、喷乳反射）</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
-            <summary>括号内保留「天�?+ 满度%」，便于一眼看到剩余时间与池满度；悬停展开�?1�? 块详情</summary>
+            <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开见下方详情。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.SyncChargeFromPool">
             <summary>吸奶/消费后：仅将 Charge 同步为当前池总满度，并触�?OnGathered（不按比例缩放池，因已由 DrainForConsume 按对按侧扣过）</summary>

@@ -98,6 +98,8 @@
     <EM.RjwSexAddsLactationBoost>Sex adds lactation pool boost</EM.RjwSexAddsLactationBoost>
     <EM.RjwSexAddsLactationBoostDesc>When enabled, lactating pawns who have sex gain a small milk pool increase (ΔL). Uses tolerance and race multiplier.</EM.RjwSexAddsLactationBoostDesc>
     <EM.RjwSexLactationBoostDeltaS>Sex lactation Δs: {0}</EM.RjwSexLactationBoostDeltaS>
+    <EM.RjwSexCountsAsStimulus>Sex counts as drain stimulus</EM.RjwSexCountsAsStimulus>
+    <EM.RjwSexCountsAsStimulusDesc>When enabled with "Sex adds lactation pool boost" above, sex also updates last-drain time and stimulus buffer, slowing L decay (similar to milking/nursing).</EM.RjwSexCountsAsStimulusDesc>
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene (mastitis hygiene trigger) ---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>Use DBH Hygiene need for mastitis risk</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>When enabled, low Hygiene (from Dubs Bad Hygiene) increases mastitis/clog risk. When disabled, room cleanliness is used instead.</EM.UseDubsBadHygieneForMastitisDesc>
@@ -138,6 +140,7 @@
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
+    <EM.PoolSuppressionHint>Long time without draining → lactation suppression ↑ → natural end</EM.PoolSuppressionHint>
     <EM.PoolDaysPrefix>Days: </EM.PoolDaysPrefix>
     <EM.PoolDaysSuffix> days</EM.PoolDaysSuffix>
     <EM.EquivalentDose>Equivalent dose: {0}</EM.EquivalentDose>
@@ -156,14 +159,14 @@
     <EM.MilkFlowValuePercent>Milk flow: {0}({1})/day</EM.MilkFlowValuePercent>
     <EM.MilkFlowValuePercentLine>Total flow: {0} / day ({1})</EM.MilkFlowValuePercentLine>
     <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
-    <EM.MilkFlowDrive>Drive</EM.MilkFlowDrive>
+    <EM.MilkFlowDrive>Prolactin level</EM.MilkFlowDrive>
     <EM.MilkFlowHunger>Hunger</EM.MilkFlowHunger>
     <EM.MilkFlowConditions>Conditions</EM.MilkFlowConditions>
     <EM.MilkFlowGenes>Genes</EM.MilkFlowGenes>
     <EM.MilkFlowSetting>Setting</EM.MilkFlowSetting>
     <EM.MilkFlowRjw>L+R</EM.MilkFlowRjw>
     <EM.MilkFlowPressure>Pressure</EM.MilkFlowPressure>
-    <EM.MilkFlowLetdown>Letdown</EM.MilkFlowLetdown>
+    <EM.MilkFlowLetdown>Letdown reflex (oxytocin)</EM.MilkFlowLetdown>
     <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
     <EM.PoolPairFlowLine>{0}: {1}(Left: {2}; Right: {3})</EM.PoolPairFlowLine>
     <EM.PoolLeftFlowLine>Left flow: {0} / day</EM.PoolLeftFlowLine>
@@ -199,6 +202,7 @@
     <EM.PoolBreastPairSummaryLine2>Flow: {0} / day</EM.PoolBreastPairSummaryLine2>
     <EM.PoolBreastDevModeOnly>DevMode only</EM.PoolBreastDevModeOnly>
     <EM.PoolBreastMechanismLabel>Mechanism:</EM.PoolBreastMechanismLabel>
+    <EM.PoolFlowEstrogenNote>(Capacity and flow are affected by mammary development and other factors, including estrogen and related physiology.)</EM.PoolFlowEstrogenNote>
     <EM.MilkFlowBreastVolume>Breast volume</EM.MilkFlowBreastVolume>
     <EM.PoolBreastPairSummary>Total: milk {0} / cap {1}({2}) / flow {3}/day</EM.PoolBreastPairSummary>
     <EM.PoolBreastSideMilk>Milk: {0} ({1})</EM.PoolBreastSideMilk>

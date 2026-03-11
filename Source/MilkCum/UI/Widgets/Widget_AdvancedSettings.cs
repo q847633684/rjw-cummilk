@@ -353,6 +353,10 @@ public class Widget_AdvancedSettings
 			Rect rDeltaS = list.GetRect(UNIT_SIZE);
 			Widgets.Label(rDeltaS.LeftHalf(), "EM.RjwSexLactationBoostDeltaS".Translate(MilkCumSettings.rjwSexLactationBoostDeltaS.ToString("F2")));
 			MilkCumSettings.rjwSexLactationBoostDeltaS = Widgets.HorizontalSlider(rDeltaS.RightHalf(), MilkCumSettings.rjwSexLactationBoostDeltaS, 0.05f, 0.5f, true);
+			list.Gap(6f);
+			Rect rSexStimulus = list.GetRect(UNIT_SIZE);
+			Widgets.CheckboxLabeled(rSexStimulus, "EM.RjwSexCountsAsStimulus".Translate(), ref MilkCumSettings.rjwSexCountsAsStimulus, false);
+			{ string t = "EM.RjwSexCountsAsStimulusDesc".Translate(); TooltipHandler.TipRegion(rSexStimulus, string.IsNullOrEmpty(t) ? "EM.RjwSexCountsAsStimulusDesc" : t); }
 		}
 	}
 
