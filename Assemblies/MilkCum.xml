@@ -79,11 +79,14 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationPoolTickLog">
             <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLog">
+            <summary>DevMode 时勾选则输出泌乳关键路径日志（分娩、进水、移除泌乳等）；关闭可减少刷屏，仅用 PoolTickLog 看明细。</summary>
+        </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationDrugIntakeLog">
             <summary>勾选时，每次吃药进水（AddFromDrug）时输出调试日志：Δs、进水ΔL、剩余时间变化。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.LactationLog(System.String)">
-            <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
+            <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。受 lactationLog 开关控制。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.PoolTickLog(System.String)">
             <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/乳池/回缩/吸奶明细。</summary>
@@ -456,8 +459,11 @@
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.MergedFromIngestionThisTick">
             <summary>本 tick 内 TryMergeWith 是否对本 comp 加过 raw（仅本次 ingestion 有效，不存档）。用于已泌乳再次吃药时区分「已合并→补差」与「未合并→加全量 deltaS」。</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.LastMergedOtherSeverity">
+            <summary>本 tick 合并时传入的 other.Severity，供验证「原版是否已按耐受修正给药 severity」时打日志；仅本次 ingestion 有效，不存档。</summary>
+        </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.RemainingDays">
-            <summary>剩余天数（游戏日）。原版逻辑下由 SeverityPerDay 驱动时用 L÷|severityPerDay|；否则按 B_T 与 D(L,E) 估算。</summary>
+            <summary>剩余天数（游戏日）。有 SeverityPerDay 时用 Parent.Severity÷|severityPerDay| 与信息面板一致；否则用 L÷每日衰减。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveBaseValueTForRemaining">
             <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
@@ -535,7 +541,7 @@
             <summary>分娩时累加：L 与 Severity 均加上基础值（不乘有效药效系数），原版 SeverityPerDay 对总 severity 生效。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
-            <summary>一次吸奶或挤奶增加一天泌乳时间：将 L 与 Severity 增加「一日衰减量×days」，等效延长剩余天数。永久泌乳不生效。</summary>
+            <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
             <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>

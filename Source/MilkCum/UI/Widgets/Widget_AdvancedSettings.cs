@@ -63,6 +63,7 @@ public class Widget_AdvancedSettings
 		list.Gap(6f);
 		list.Label("EM.DevModeLactationPanel".Translate());
 		list.Gap(4f);
+		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationLog".Translate(), ref MilkCumSettings.lactationLog);
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationPoolTickLog".Translate(), ref MilkCumSettings.lactationPoolTickLog);
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationDrugIntakeLog".Translate(), ref MilkCumSettings.lactationDrugIntakeLog);
 		list.Gap(4f);
@@ -346,23 +347,6 @@ public class Widget_AdvancedSettings
 		Widgets.HorizontalSlider(rFlowMult, ref defaultFlowMultiplierForHumanlike, new FloatRange(0.25f, 2f), "EM.DefaultFlowMultiplierForHumanlike".Translate(MilkCumSettings.defaultFlowMultiplierForHumanlike.ToString("F2")), 0.05f);
 		MilkCumSettings.defaultFlowMultiplierForHumanlike = defaultFlowMultiplierForHumanlike;
 		TooltipHandler.TipRegion(rFlowMult, "EM.DefaultFlowMultiplierForHumanlikeDescLong".Translate());
-		list.Gap(6f);
-		// Baseline/birth milk duration days
-		Rect rBaseline = list.GetRect(UNIT_SIZE);
-		float baseline = MilkCumSettings.baselineMilkDurationDays;
-		Widgets.HorizontalSlider(rBaseline, ref baseline, new FloatRange(1f, 15f), "EM.BaselineMilkDurationDays".Translate(MilkCumSettings.baselineMilkDurationDays.ToString("F0")), 0.5f);
-		MilkCumSettings.baselineMilkDurationDays = baseline;
-		TooltipHandler.TipRegion(rBaseline, "EM.BaselineMilkDurationDaysDesc".Translate());
-		list.Gap(6f);
-		Rect rBirth = list.GetRect(UNIT_SIZE);
-		float birthInduced = MilkCumSettings.birthInducedMilkDurationDays;
-		Widgets.HorizontalSlider(rBirth, ref birthInduced, new FloatRange(1f, 360f), "EM.BirthInducedMilkDurationDays".Translate(MilkCumSettings.birthInducedMilkDurationDays.ToString("F0")), 1f);
-		MilkCumSettings.birthInducedMilkDurationDays = birthInduced;
-		TooltipHandler.TipRegion(rBirth, "EM.BirthInducedMilkDurationDaysDesc".Translate());
-		list.Gap(6f);
-		GUI.color = Color.gray;
-		list.Label("EM.BaselineMilkDurationReference".Translate(MilkCumSettings.baselineMilkDurationDays.ToString("F0"), MilkCumSettings.birthInducedMilkDurationDays.ToString("F0")));
-		GUI.color = Color.white;
 		list.Gap(6f);
 		// Lactating gain
 		Rect rLactatingGain = list.GetRect(UNIT_SIZE);

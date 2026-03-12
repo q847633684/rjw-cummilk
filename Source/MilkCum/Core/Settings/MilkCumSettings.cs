@@ -44,12 +44,14 @@ internal class MilkCumSettings : ModSettings
 	public static float reabsorbNutritionEfficiency = 0.5f;
 	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
 	public static bool lactationPoolTickLog = false;
+	/// <summary>DevMode 时勾选则输出泌乳关键路径日志（分娩、进水、移除泌乳等）；关闭可减少刷屏，仅用 PoolTickLog 看明细。</summary>
+	public static bool lactationLog = true;
 	/// <summary>勾选时，每次吃药进水（AddFromDrug）时输出调试日志：Δs、进水ΔL、剩余时间变化。</summary>
 	public static bool lactationDrugIntakeLog = false;
-	/// <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。</summary>
+	/// <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。受 lactationLog 开关控制。</summary>
 	public static void LactationLog(string message)
 	{
-		if (Verse.Prefs.DevMode && !string.IsNullOrEmpty(message))
+		if (Verse.Prefs.DevMode && lactationLog && !string.IsNullOrEmpty(message))
 			Verse.Log.Message("[MilkCum.Lactation] " + message);
 	}
 	/// <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/乳池/回缩/吸奶明细。</summary>
@@ -99,9 +101,9 @@ internal class MilkCumSettings : ModSettings
 	public static float mastitisMtbDaysMultiplierAnimal { get => Risk.mastitisMtbDaysMultiplierAnimal; set => Risk.mastitisMtbDaysMultiplierAnimal = value; }
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
-	// 基准泌乳持续天数（药物诱发）：参与 L 衰减计算，单次剂量 L≈0.5 时剩余天数 ≈ 本值；默认约 5 日。
+	// 基准泌乳持续天数（药物）：仅用于无 SeverityPerDay 时的 RemainingDays 与 GetDailyLactationDecay 显示；主流程已由 LactatingPatch 的 severityPerDay 决定，不再暴露到 UI。
 	public static float baselineMilkDurationDays = 5f;
-	// 分娩诱发泌乳持续天数：参与 L 衰减计算（分娩分量用本值反推 B_T）；默认 30 日。
+	// 分娩诱发泌乳持续天数：仅用于无 SeverityPerDay 时的 RemainingDays 与 GetDailyLactationDecay；主流程同上，不再暴露到 UI。
 	public static float birthInducedMilkDurationDays = 30f;
 	/// <summary>催乳素单剂在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 同剂叠加一致，默认 0.044）；改 XML 时需同步。</summary>
 	public static float ProlactinToleranceGainPerDose = 0.044f;
@@ -359,6 +361,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref Cumpilation_EnableOscillationMechanicsForAnimals, "Cumpilation.EnableOscillationMechanicsForAnimals", false);
 		Scribe_Values.Look(ref Cumpilation_EnableDebugLogging, "Cumpilation.EnableDebugLogging", false);
 		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
+		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);
 		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
 		Scribe_Values.Look(ref CumpilationLeak_EnableFilthGeneration, "CumpilationLeak.EnableFilthGeneration", true);
 		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateBucket, "CumpilationLeak.EnableAutoDeflateBucket", false);

@@ -202,6 +202,9 @@ public static class ProlactinAddictionPatch
                     {
                         if (comp.MergedFromIngestionThisTick)
                         {
+                            // 验证原版是否已按耐受修正给药 severity：若 mergedAdded≈raw → 原版未乘；若 mergedAdded≈effective → 原版已乘，可考虑删补差。
+                            MilkCumSettings.LactationLog($" [MilkCum.验证] 已泌乳再次服药: Pawn={pawn?.LabelShort} | Def_raw={rawSeverity:F3} 合并时other.Severity={comp.LastMergedOtherSeverity:F3} 自算effective={effectiveSeverity:F3} | 若 merged≈raw 则原版未乘耐受；若 merged≈effective 则原版已乘耐受");
+                            comp.LastMergedOtherSeverity = 0f;
                             comp.AddFromDrug(effectiveSeverity - rawSeverity);
                             comp.AddFromDrug(deltaS - effectiveSeverity, syncSeverity: false);
                         }

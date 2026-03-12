@@ -160,6 +160,7 @@
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>
     <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
+    <EM.LactationLog>Lactation key-path log: birth, drug inflow, hediff add/remove (DevMode)</EM.LactationLog>
     <EM.LactationPoolTickLog>Log each 60-tick: nutrition deducted, pool added, reabsorbed, sucked (DevMode)</EM.LactationPoolTickLog>
     <EM.LactationDrugIntakeLog>Drug intake debug: log Δs, inflow ΔL, remaining days change on each dose</EM.LactationDrugIntakeLog>
     <EM.DefaultsDefLabel>MilkCum defaults</EM.DefaultsDefLabel>

@@ -63,6 +63,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
             foreach (var c in comps)
                 if (c is HediffComp_EqualMilkingLactating comp)
                 {
+                    comp.LastMergedOtherSeverity = other.Severity;
                     comp.AddFromDrug(other.Severity, syncSeverity: false);
                     comp.MergedFromIngestionThisTick = true;
                     break;
@@ -183,39 +184,32 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float effectiveToleranceE;
     /// <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
     private bool cachedWasPermanentLactation;
-    /// <summary>本 tick 内 TryMergeWith 是否对本 comp 加过 raw（仅本次 ingestion 有效，不存档）。用于已泌乳再次吃药时区分「已合并→补差」与「未合并→加全量 deltaS」。</summary>
-    internal bool MergedFromIngestionThisTick;
+        /// <summary>本 tick 内 TryMergeWith 是否对本 comp 加过 raw（仅本次 ingestion 有效，不存档）。用于已泌乳再次吃药时区分「已合并→补差」与「未合并→加全量 deltaS」。</summary>
+        internal bool MergedFromIngestionThisTick;
+        /// <summary>本 tick 合并时传入的 other.Severity，供验证「原版是否已按耐受修正给药 severity」时打日志；仅本次 ingestion 有效，不存档。</summary>
+        internal float LastMergedOtherSeverity;
 
     public CompEquallyMilkable CompEquallyMilkable => this.Pawn.CompEquallyMilkable();
     public HediffWithComps_MilkCumLactating Parent => (HediffWithComps_MilkCumLactating)this.parent;
 
-    /// <summary>剩余天数（游戏日）。原版逻辑下由 SeverityPerDay 驱动时用 L÷|severityPerDay|；否则按 B_T 与 D(L,E) 估算。</summary>
+    /// <summary>剩余天数（游戏日）。有 SeverityPerDay 时用 Parent.Severity÷|severityPerDay| 与信息面板一致；否则用 L÷每日衰减。</summary>
     public float RemainingDays
     {
         get
         {
-            float L = currentLactationAmount;
-            if (L <= 0f) return 0f;
             if (Parent?.def?.comps != null)
             {
                 foreach (var c in Parent.def.comps)
                     if (c is HediffCompProperties_SeverityPerDay sp && sp.severityPerDay < 0f)
-                        return L / (-sp.severityPerDay);
+                        return Parent.Severity / (-sp.severityPerDay);
             }
+            float L = currentLactationAmount;
+            if (L <= 0f) return 0f;
             float eff = GetEffectiveDrugFactor();
             if (eff <= 0f) return 0f;
             float bT = GetEffectiveBaseValueTForRemaining();
-            float a = 1f / (bT * eff);
-            float k = PoolModelConstants.NegativeFeedbackK;
-            if (a <= 0f) return 0f;
-            if (k <= 0f)
-            {
-                float D = a;
-                return D <= 0f ? 0f : L / D;
-            }
-            float arg = 1f + k * L / a;
-            if (arg <= 1f) return 0f;
-            return (1f / k) * Mathf.Log(arg);
+            float D = 1f / (bT * eff);
+            return D <= 0f ? 0f : L / D;
         }
     }
     /// <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
@@ -529,13 +523,28 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + baseVal);
     }
 
-    /// <summary>一次吸奶或挤奶增加一天泌乳时间：将 L 与 Severity 增加「一日衰减量×days」，等效延长剩余天数。永久泌乳不生效。</summary>
+    /// <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。</summary>
     public void AddRemainingDays(float days)
     {
         if (days <= 0f || IsPermanentLactation) return;
+        float deltaL;
+        if (Parent?.def?.comps != null)
+        {
+            foreach (var c in Parent.def.comps)
+            {
+                if (c is HediffCompProperties_SeverityPerDay sp && sp.severityPerDay < 0f)
+                {
+                    deltaL = days * (-sp.severityPerDay);
+                    lactationAmountFromDrug += deltaL;
+                    if (Parent != null)
+                        Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaL);
+                    return;
+                }
+            }
+        }
         float dailyDecay = GetDailyLactationDecay();
         if (dailyDecay <= 0f) return;
-        float deltaL = dailyDecay * days;
+        deltaL = dailyDecay * days;
         lactationAmountFromDrug += deltaL;
         if (Parent != null)
             Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaL);

@@ -24,6 +24,8 @@
         <WarningLevel>3</WarningLevel>
         <Prefer32Bit>false</Prefer32Bit>
         <DefineConstants>TRACE</DefineConstants>
+        <!-- 关闭 SDK 自动生成 AssemblyInfo，避免与 obj 下生成的文件重复导致 CS0579 -->
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
         <!-- Custom Macros -->
         <OutDirBase>../../Versions/$(Configuration)</OutDirBase>

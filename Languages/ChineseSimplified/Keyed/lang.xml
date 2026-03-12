@@ -159,6 +159,7 @@
     <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} 未处于泌乳期（无泌乳 hediff）。</EM.DevModeNotLactating>
     <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>
+    <EM.LactationLog>泌乳关键路径日志：分娩、吃药进水、hediff 添加/移除（开发模式）</EM.LactationLog>
     <EM.LactationPoolTickLog>每 60 tick 输出：营养扣除、乳池增加、回缩、吸奶（开发模式）</EM.LactationPoolTickLog>
     <EM.LactationDrugIntakeLog>吃药进水调试：每次生效时输出 Δs、进水ΔL、剩余时间变化</EM.LactationDrugIntakeLog>
     <EM.DefaultsDefLabel>精液和母乳默认值</EM.DefaultsDefLabel>

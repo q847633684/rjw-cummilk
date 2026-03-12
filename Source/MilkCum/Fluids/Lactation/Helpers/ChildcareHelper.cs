@@ -141,11 +141,11 @@ public static class ChildcareHelper
             float amountFed = comp?.breastfedAmount ?? 0f;
             if (comp != null)
                 comp.breastfedAmount = 0f;
-            // 一次吸奶增加一天泌乳时间
+            // 一次吸奶增加 5 天泌乳时间
             if (amountFed > 0f)
             {
                 var lactatingComp = pawn.LactatingHediffWithComps()?.TryGetComp<HediffComp_EqualMilkingLactating>();
-                lactatingComp?.AddRemainingDays(1f);
+                lactatingComp?.AddRemainingDays(5f);
             }
             if (amountFed >= 1f - float.Epsilon)
             {
