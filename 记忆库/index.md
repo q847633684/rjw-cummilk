@@ -18,7 +18,18 @@
 | UI 文案前后对照 | [docs/UI文案前后对照](docs/UI文案前后对照.md) | 术语统一、健康页悬停、硬编码冒号、改文建议与实施顺序 |
 | Integrations 索引 | [docs/Integrations索引](docs/Integrations索引.md) | RJW、PipeSystem、VME、Dubs 路径/命名空间/Harmony ID 收口 |
 | Harmony Patch 主题清单 | [docs/HarmonyPatch主题清单](docs/HarmonyPatch主题清单.md) | 主 mod / RJW / VME / Pipe 的 Patch 按主题分类与注册顺序 |
-| 其它 | 见 [docs/README](docs/README.md) | 待办、建议评估、模拟、设置UI、脚本等 |
+| 其它 | 见 [docs/README](docs/README.md) | 待办、建议评估、模拟、设置UI、脚本、报错记录、Integrations 等 |
+
+---
+
+## 记忆库根目录
+
+| 标题 | 路径 | 说明 |
+|------|------|------|
+| 记忆库说明与检索入口 | [README](README.md) | 用途、目录结构、使用方式与维护约定 |
+| 长记忆模型架构说明 | [架构说明](架构说明.md) | 记忆层级 L2/L3/L4、类型与 schema、写入/检索约定 |
+| 记忆库建议与改进 | [建议与改进](建议与改进.md) | 维护保鲜、覆盖补全、检索与结构改进建议 |
+| 记忆库变更记录 | [changelog-memory](changelog-memory.md) | 记忆库本身的新增、废弃与重要修订 |
 
 ---
 
@@ -93,6 +104,7 @@
 - `#tick`：见 [decisions/ADR-001-进水与衰减周期](decisions/ADR-001-进水与衰减周期.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)、[design/泌乳刷新策略与性能](design/泌乳刷新策略与性能.md)
 - `#吸收延迟`：见 [decisions/ADR-002-吸收延迟基准](decisions/ADR-002-吸收延迟基准.md)、[domain/代码常量与公式对应](domain/代码常量与公式对应.md)
 - `#信息卡`：见 [decisions/ADR-004-信息卡统计补丁移除](decisions/ADR-004-信息卡统计补丁移除.md)
+- `#报错`：见 [docs/报错修复记录](docs/报错修复记录.md)（修错前先查）
 - `#参数`、`#兼容`、`#坑点`：见 [domain/快速参考](domain/快速参考.md)
 - `#流体系统`、`#一系统一目录`：见 [domain/mod定位-流体系统三大系统](domain/mod定位-流体系统三大系统.md)、[design/Source目录结构梳理](design/Source目录结构梳理.md)
 - `#架构`、`#重组`：见 [design/架构原则与重组建议](design/架构原则与重组建议.md)
@@ -118,3 +130,7 @@
 | #坑点 | 已知注意、存档、Def 顺序等 | domain/快速参考 |
 
 （随条目增加可在此补充更多标签与链接）
+
+---
+
+**最后整理**：2026-03

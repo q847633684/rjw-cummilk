@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <ProjectReference Include="..\..\MilkCum\MilkCum.csproj">
+      <ProjectReference Include="..\..\MilkCum.csproj">
         <Private>false</Private>
       </ProjectReference>
     <!-- Vanilla Expanded -->
