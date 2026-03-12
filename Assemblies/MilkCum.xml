@@ -40,6 +40,9 @@
         <member name="F:MilkCum.Core.Constants.PoolModelConstants.NutritionPerPoolUnit">
             <summary>1 池单位 = 1 营养（设计对等）：产奶花 1 营养得 1 池、喝奶花 1 池得 1 营养。ExtraNutritionPerDay = flow×本值；Need_Food 补丁按此扣饱食度，CompPartialMilk 食用时 fillAmount 直接作营养。原版饱食条 0..MaxLevel(≈1)，泌乳时额外掉条属设计。</summary>
         </member>
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_ProlactinAddictionThought">
+            <summary>成瘾心情：ThoughtWorker_Hediff(hediff=EM_Prolactin_Addiction)，阶段 0=满足 +1、阶段 1=戒断 -12。</summary>
+        </member>
         <member name="F:MilkCum.Core.MilkCumDefOf.EM_FirstLactationDrug">
             <summary>首次药物诱发泌乳成就类记忆。</summary>
         </member>
@@ -454,7 +457,7 @@
             <summary>本 tick 内 TryMergeWith 是否对本 comp 加过 raw（仅本次 ingestion 有效，不存档）。用于已泌乳再次吃药时区分「已合并→补差」与「未合并→加全量 deltaS」。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.RemainingDays">
-            <summary>剩余天数（游戏日）。按分量分别用药物/分娩 B_T；总 L 用加权 B_T_eff 估算。</summary>
+            <summary>剩余天数（游戏日）。原版逻辑下由 SeverityPerDay 驱动时用 L÷|severityPerDay|；否则按 B_T 与 D(L,E) 估算。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveBaseValueTForRemaining">
             <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
@@ -520,16 +523,19 @@
             <summary>每日衰减（药物分量用药物 B_T）；用于显示总衰减量。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
-            <summary>当前 L 下的每日衰减（两分量之和，用于显示）</summary>
+            <summary>当前 L 下的每日衰减（仅用于显示/调试；实际衰减由原版 SeverityPerDay 驱动）。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromDrug(System.Single)">
-            <summary>吃药时进水：ΔL_drug = Δs × C_dose。</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddToLAndSeverity(System.Single)">
+            <summary>L 与 Severity 同时增加并封顶到 def.maxSeverity（原版逻辑下两者同步）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromDrug(System.Single,System.Boolean)">
+            <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromBirth">
-            <summary>分娩时累加：L_birth += 基础值（不乘有效药效系数）</summary>
+            <summary>分娩时累加：L 与 Severity 均加上基础值（不乘有效药效系数），原版 SeverityPerDay 对总 severity 生效。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
-            <summary>一次吸奶或挤奶增加一天泌乳时间：将 L 增加「一日衰减量×days」，等效延长剩余天数。永久泌乳不生效。</summary>
+            <summary>一次吸奶或挤奶增加一天泌乳时间：将 L 与 Severity 增加「一日衰减量×days」，等效延长剩余天数。永久泌乳不生效。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
             <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
@@ -704,9 +710,6 @@
         <member name="M:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.InitMilkingSession">
             <summary>初始化本场次目标取量（整瓶数）；不足 1 瓶时 amountToTake=0，由 initAction 结束为 Incompletable。</summary>
         </member>
-        <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_AddictionSatisfied">
-            <summary>10.8-5：当成瘾处于满足阶段时显示小幅正面心情</summary>
-        </member>
         <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_HighToleranceLowMilk">
             <summary>建议 9：高耐受且当前泌乳量(L)偏低时，产生轻微挫败感心情</summary>
         </member>
@@ -719,14 +722,8 @@
         <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_MilkPoolFull">
             <summary>10.8-6：满池时（人类）显示轻微不适心情</summary>
         </member>
-        <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_ProlactinWithdrawal">
-            <summary>10.8-4：仅当成瘾处于戒断阶段时显示催乳素戒断心情</summary>
-        </member>
         <member name="T:MilkCum.Fluids.Lactation.World.PendingLactatingEntry">
-            <summary>吸收延迟待生效条目：�?endTick 时给 pawn 添加 Lactating 并执�?AddFromDrug(deltaSeverity)。见 Docs/泌乳系统逻辑图</summary>
-        </member>
-        <member name="F:MilkCum.Fluids.Lactation.World.PendingLactatingEntry.toleranceBefore">
-            <summary>吃药前的耐受严重�?t_before，用于计�?Δs �?E_tol</summary>
+            <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(effectiveSeverity)。使用游戏按耐受削弱后的 effectiveSeverity 作为 Δs。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay">
             <summary>水池模型吸收延迟：吃药后延迟一段时间再�?Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图</summary>
@@ -736,6 +733,9 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.ApplyProlactinMoodEffects(Verse.Pawn,System.Single)">
             <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴�?hediff），供延迟生效与�?World 立即生效共用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.TryRecordProlactinIngestion(Verse.Pawn)">
+            <summary>挂接原版历史事件：若存在服药/成瘾相关 HistoryEventDef 则记录。原版事件名因版本可能不同，尝试常见名称；RecordEvent 通过 Reflection 调用以兼容不同 RimWorld 版本。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
             <summary>根据代谢率计算吸收延�?tick。用 Lerp 映射 rate→倍率(0.5~1.5)，不做除法，避免 rate 极小或负值时爆炸。原�?MetabolicRate 可为 0.01、负数等</summary>

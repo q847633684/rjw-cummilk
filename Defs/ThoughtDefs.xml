@@ -25,12 +25,18 @@
             </li>
         </stages>
     </ThoughtDef>
-    
+    <!-- 成瘾心情：由原版 Hediff 阶段驱动，ThoughtWorker_Hediff(hediff=EM_Prolactin_Addiction)，阶段 0=满足 +1、阶段 1=戒断 -12 -->
     <ThoughtDef>
-        <defName>EM_Prolactin_Withdrawal</defName>
-        <workerClass>MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_ProlactinWithdrawal</workerClass>
+        <defName>EM_ProlactinAddictionThought</defName>
+        <workerClass>ThoughtWorker_Hediff</workerClass>
+        <hediff>EM_Prolactin_Addiction</hediff>
         <validWhileDespawned>true</validWhileDespawned>
         <stages>
+            <li>
+                <label>催乳素满足</label>
+                <description>身体得到了足够的催乳素，状态平稳。</description>
+                <baseMoodEffect>1</baseMoodEffect>
+            </li>
             <li>
                 <label>催乳素戒断</label>
                 <description>我真的需要再服一剂。没有它我的身体感觉不完整。</description>
@@ -83,19 +89,6 @@
             <li>
                 <label>被允许的人挤奶</label>
                 <description>我允许的人帮我挤奶了，感到安心。</description>
-                <baseMoodEffect>1</baseMoodEffect>
-            </li>
-        </stages>
-    </ThoughtDef>
-    <!-- 10.8-5：成瘾满足时的小幅正面心情 -->
-    <ThoughtDef>
-        <defName>EM_AddictionSatisfied</defName>
-        <workerClass>MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_AddictionSatisfied</workerClass>
-        <validWhileDespawned>true</validWhileDespawned>
-        <stages>
-            <li>
-                <label>催乳素满足</label>
-                <description>身体得到了足够的催乳素，状态平稳。</description>
                 <baseMoodEffect>1</baseMoodEffect>
             </li>
         </stages>

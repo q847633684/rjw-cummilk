@@ -23,7 +23,7 @@
 - JobDef: EM_InjectLactatingDrug, EM_ForcedBreastfeed, EM_ActiveSuckle
 - WorkGiverDef: EM_MilkEntity
 - ChemicalDef: EM_Prolactin_Chemical；NeedDef: Chemical_EM_Prolactin_Chemical（defName = "Chemical_" + ChemicalDef.defName，供物品信息成瘾区块显示）
-- ThoughtDef: EM_Prolactin_Joy, EM_Prolactin_Withdrawal, EM_ForcedMilking, EM_MilkPoolFull 等
+- ThoughtDef: EM_Prolactin_Joy, EM_ProlactinAddictionThought, EM_ForcedMilking, EM_MilkPoolFull 等
 - PawnTableDef / PawnColumnDef: Milk_PawnTable, Milk_Lactating, Milk_Fullness, Milk_RemainingDays, Milk_MainButton
 - StatDef：已移除 EM_Milk_Amount_Factor、EM_Lactating_Efficiency_Factor。
 

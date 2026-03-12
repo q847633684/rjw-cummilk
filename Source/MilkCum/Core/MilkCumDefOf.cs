@@ -31,14 +31,14 @@ public static class MilkCumDefOf
     public static HediffDef EM_Prolactin_Addiction;
     public static NeedDef Chemical_EM_Prolactin_Chemical;
     public static ThoughtDef EM_Prolactin_Joy;
-    public static ThoughtDef EM_Prolactin_Withdrawal;
     public static HediffDef EM_Prolactin_High;
     public static ThoughtDef EM_Prolactin_HighThought;
+    /// <summary>成瘾心情：ThoughtWorker_Hediff(hediff=EM_Prolactin_Addiction)，阶段 0=满足 +1、阶段 1=戒断 -12。</summary>
+    public static ThoughtDef EM_ProlactinAddictionThought;
     public static ThoughtDef EM_HadSexWhileLactating;
     public static ThoughtDef EM_ForcedMilking;
     public static ThoughtDef EM_PartnerAteMyProduct;
     public static ThoughtDef EM_AllowedMilking;
-    public static ThoughtDef EM_AddictionSatisfied;
     public static ThoughtDef EM_MilkPoolFull;
     public static ThoughtDef EM_LongTimeNotMilked;
     public static HediffDef EM_Mastitis;

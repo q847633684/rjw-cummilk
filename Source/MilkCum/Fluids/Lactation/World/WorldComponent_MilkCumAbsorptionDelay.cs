@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
 using RimWorld;
@@ -9,21 +10,18 @@ using UnityEngine;
 
 namespace MilkCum.Fluids.Lactation.World;
 
-/// <summary>吸收延迟待生效条目：�?endTick 时给 pawn 添加 Lactating 并执�?AddFromDrug(deltaSeverity)。见 Docs/泌乳系统逻辑图</summary>
+/// <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(effectiveSeverity)。使用游戏按耐受削弱后的 effectiveSeverity 作为 Δs。</summary>
 public class PendingLactatingEntry : IExposable
 {
     public Pawn pawn;
-    public float rawSeverity;
+    public float effectiveSeverity;
     public int endTick;
-    /// <summary>吃药前的耐受严重�?t_before，用于计�?Δs �?E_tol</summary>
-    public float toleranceBefore;
 
     public void ExposeData()
     {
         Scribe_References.Look(ref pawn, "pawn");
-        Scribe_Values.Look(ref rawSeverity, "severity", 0f);
+        Scribe_Values.Look(ref effectiveSeverity, "effectiveSeverity", 0f);
         Scribe_Values.Look(ref endTick, "endTick", 0);
-        Scribe_Values.Look(ref toleranceBefore, "toleranceBefore", 0f);
     }
 }
 
@@ -57,7 +55,7 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         }
     }
 
-    public void ScheduleLactating(Pawn p, float rawSeverity, int endTick, float toleranceBefore)
+    public void ScheduleLactating(Pawn p, float effectiveSeverity, int endTick)
     {
         if (p == null || endTick <= 0) return;
         if (pending == null) pending = new List<PendingLactatingEntry>();
@@ -65,7 +63,6 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         int remaining = GetRemainingTicksForPawnCore(p);
         if (remaining > 0)
         {
-            // 重复注射：已有吸收延迟时，剩余时间减半；本剂与已有条目统一在新时间点生效�?
             int newEndTick = now + Mathf.Max(1, remaining / 2);
             foreach (var e in pending)
             {
@@ -73,7 +70,7 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
             }
             endTick = newEndTick;
         }
-        pending.Add(new PendingLactatingEntry { pawn = p, rawSeverity = rawSeverity, endTick = endTick, toleranceBefore = toleranceBefore });
+        pending.Add(new PendingLactatingEntry { pawn = p, effectiveSeverity = effectiveSeverity, endTick = endTick });
         if (MilkCumDefOf.EM_AbsorptionDelay != null && p.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_AbsorptionDelay) == null)
             p.health.AddHediff(MilkCumDefOf.EM_AbsorptionDelay, p.GetBreastOrChestPart());
     }
@@ -93,17 +90,17 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
             }
             if (now < e.endTick) continue;
             pending.RemoveAt(i);
-            ApplyDelayedLactating(e.pawn, e.rawSeverity, e.toleranceBefore);
+            ApplyDelayedLactating(e.pawn, e.effectiveSeverity);
         }
     }
 
-    private static void ApplyDelayedLactating(Pawn pawn, float rawSeverity, float toleranceBefore)
+    private static void ApplyDelayedLactating(Pawn pawn, float effectiveSeverity)
     {
         if (pawn?.health?.hediffSet == null) return;
         if (MilkCumDefOf.EM_AbsorptionDelay != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_AbsorptionDelay) is Hediff absorptionHediff)
             pawn.health.RemoveHediff(absorptionHediff);
-        // Δs = rawSeverity × E_tol(t_before)：已包含一次耐受削弱；动物差异化：乘种族药物倍率
-        float deltaS = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(toleranceBefore) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
+        // Δs = 游戏按耐受削弱后的 effectiveSeverity × 种族倍率
+        float deltaS = effectiveSeverity * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
         MilkCumSettings.LactationLog($"Prolactin delayed apply: {pawn?.Name}, deltaS={deltaS:F3}");
         try
         {
@@ -123,12 +120,13 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
                     break;
                 }
             }
-            // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋（高量心情由 EM_Prolactin_HighThought 显示）
-            ApplyProlactinMoodEffects(pawn, rawSeverity);
+            // 10.8-4：药物生效时给愉悦记忆；大剂量时挂催乳素兴奋
+            ApplyProlactinMoodEffects(pawn, effectiveSeverity);
             // 首次药物泌乳成就类记忆（仅一次）
             if (MilkCumDefOf.EM_FirstLactationDrug != null && pawn.needs?.mood?.thoughts?.memories != null
                 && !pawn.needs.mood.thoughts.memories.Memories.Any(m => m.def == MilkCumDefOf.EM_FirstLactationDrug))
                 pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_FirstLactationDrug);
+            TryRecordProlactinIngestion(pawn);
         }
         catch (System.Exception ex)
         {
@@ -147,6 +145,24 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
             var high = pawn.health.GetOrAddHediff(MilkCumDefOf.EM_Prolactin_High, pawn.GetBreastOrChestPart());
             if (high.Severity < 1f) high.Severity = 1f;
         }
+    }
+
+    /// <summary>挂接原版历史事件：若存在服药/成瘾相关 HistoryEventDef 则记录。原版事件名因版本可能不同，尝试常见名称；RecordEvent 通过 Reflection 调用以兼容不同 RimWorld 版本。</summary>
+    internal static void TryRecordProlactinIngestion(Pawn pawn)
+    {
+        if (pawn == null) return;
+        try
+        {
+            HistoryEventDef def = DefDatabase<HistoryEventDef>.GetNamedSilentFail("IngestedDrug")
+                ?? DefDatabase<HistoryEventDef>.GetNamedSilentFail("UsedDrug")
+                ?? DefDatabase<HistoryEventDef>.GetNamedSilentFail("DrugIngestion");
+            if (def == null) return;
+            HistoryEvent ev = new HistoryEvent(def, new NamedArgument(pawn, "doer"));
+            object history = Find.History;
+            if (history != null)
+                history.GetType().GetMethod("RecordEvent", new[] { typeof(HistoryEvent) })?.Invoke(history, new object[] { ev });
+        }
+        catch (System.Exception) { /* 忽略版本差异 */ }
     }
 
     /// <summary>根据代谢率计算吸收延�?tick。用 Lerp 映射 rate→倍率(0.5~1.5)，不做除法，避免 rate 极小或负值时爆炸。原�?MetabolicRate 可为 0.01、负数等</summary>
