@@ -57,13 +57,14 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
             this.Severity = Mathf.Floor(this.Severity);
         if (other.Severity >= 1f || this.Severity >= 1f)
             this.ageTicks = 0;
-        // 水池模型：合并进来的 Severity 也需同步�?L，否则仅吃药�?ingestion postfix 会令 L 增加，调�?基因/其他来源合并会导�?Severity 高但 L 低、产奶流速异�?
+        // 水池模型：合并进来的 Severity 也需同步到 L。合并来自本 tick 吃药时，抑制本次 AddFromDrug 的日志，由 DoIngestionOutcome_Postfix 统一打「一针一条」。
         if (other.Severity > 0f && comps != null)
         {
             foreach (var c in comps)
                 if (c is HediffComp_EqualMilkingLactating comp)
                 {
                     comp.LastMergedOtherSeverity = other.Severity;
+                    comp.SuppressDrugIntakeLog = true; // 已泌乳再次吃药时由 postfix 统一打一条，避免一针两套日志
                     comp.AddFromDrug(other.Severity, syncSeverity: false);
                     comp.MergedFromIngestionThisTick = true;
                     break;
@@ -184,10 +185,12 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float effectiveToleranceE;
     /// <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
     private bool cachedWasPermanentLactation;
-        /// <summary>本 tick 内 TryMergeWith 是否对本 comp 加过 raw（仅本次 ingestion 有效，不存档）。用于已泌乳再次吃药时区分「已合并→补差」与「未合并→加全量 deltaS」。</summary>
+        /// <summary>本 tick 内 TryMergeWith 是否已把 other.Severity 同步到 L（仅本次 ingestion 有效，不存档）。已合并时原版已乘耐受，postfix 不再加量；未合并时 postfix 加 deltaS。</summary>
         internal bool MergedFromIngestionThisTick;
         /// <summary>本 tick 合并时传入的 other.Severity，供验证「原版是否已按耐受修正给药 severity」时打日志；仅本次 ingestion 有效，不存档。</summary>
         internal float LastMergedOtherSeverity;
+        /// <summary>抑制本 tick 内 AddFromDrug 的「吃药进水」调试日志，用于在上层聚合为「每次吃药一条」。不存档。</summary>
+        internal bool SuppressDrugIntakeLog;
 
     public CompEquallyMilkable CompEquallyMilkable => this.Pawn.CompEquallyMilkable();
     public HediffWithComps_MilkCumLactating Parent => (HediffWithComps_MilkCumLactating)this.parent;
@@ -502,15 +505,18 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             AddToLAndSeverity(deltaL);
         else
             lactationAmountFromDrug += deltaL;
-        if (MilkCumSettings.lactationDrugIntakeLog)
+        if (MilkCumSettings.lactationDrugIntakeLog && !SuppressDrugIntakeLog)
         {
             float remainingAfter = RemainingDays;
             float eTol = MilkCumSettings.GetProlactinToleranceFactor(Pawn);
             float raceMult = MilkCumSettings.GetRaceDrugDeltaSMultiplier(Pawn);
             float cDose = PoolModelConstants.DoseToLFactor;
             float rawInferred = (eTol * raceMult > 1E-6f) ? (deltaSeverity / (eTol * raceMult)) : 0f;
-            string note = deltaSeverity < 0f ? " [已泌乳补差: TryMergeWith 已加 raw，此处补 deltaS−raw]" : "";
-            Verse.Log.Message($"[MilkCum] 吃药进水: Pawn={Pawn?.LabelShort} | raw(反推)={rawInferred:F3} Δs={deltaSeverity:F3} E_tol={eTol:F3} 种族倍率={raceMult:F3} C_dose={cDose:F2} | 进水ΔL={deltaL:F3} | 剩余时间 {remainingBefore:F1}→{remainingAfter:F1} 天 (+{remainingAfter - remainingBefore:F1}){note}");
+            float deltaRemaining = remainingAfter - remainingBefore;
+            Verse.Log.Message($"[MilkCum][INFO][LactationDrug] pawn={Pawn?.LabelShort} tick={Find.TickManager.TicksGame} mode=AddFromDrug_Base");
+            Verse.Log.Message($"[MilkCum][INFO][LactationDrug] input rawDef~={rawInferred:F3} Δs={deltaSeverity:F3} E_tol={eTol:F3} raceMult={raceMult:F3} doseToL={cDose:F2}");
+            Verse.Log.Message($"[MilkCum][INFO][LactationDrug] result ΔL={deltaL:F3} remainBefore={remainingBefore:F1}d remainAfter={remainingAfter:F1}d Δremain={deltaRemaining:+0.0;-0.0;0.0}d");
+            Verse.Log.Message($"[MilkCum][INFO][LactationDrug] 公式 泌乳增量Δs≈原始剂量raw({rawInferred:F3})×耐受系数E_tol({eTol:F3})×种族倍率({raceMult:F3})≈{deltaSeverity:F3}；泌乳量增量ΔL=Δs({deltaSeverity:F3})×剂量换算C_dose({cDose:F2})={deltaL:F3}；剩余天数={remainingBefore:F1}d+本次变化Δ天数({deltaRemaining:+0.0;-0.0;0.0})d={remainingAfter:F1}d");
         }
     }
 

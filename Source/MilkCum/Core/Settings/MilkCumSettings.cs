@@ -44,6 +44,8 @@ internal class MilkCumSettings : ModSettings
 	public static float reabsorbNutritionEfficiency = 0.5f;
 	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
 	public static bool lactationPoolTickLog = false;
+	/// <summary>DevMode 且勾选时，输出吸奶/挤奶/机器产奶入口汇总日志（每次操作一组），用于平衡与 AI 调试。</summary>
+	public static bool milkingActionLog = false;
 	/// <summary>DevMode 时勾选则输出泌乳关键路径日志（分娩、进水、移除泌乳等）；关闭可减少刷屏，仅用 PoolTickLog 看明细。</summary>
 	public static bool lactationLog = true;
 	/// <summary>勾选时，每次吃药进水（AddFromDrug）时输出调试日志：Δs、进水ΔL、剩余时间变化。</summary>

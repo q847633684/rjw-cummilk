@@ -481,15 +481,23 @@ public class CompEquallyMilkable : CompMilkable
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
         float drive = MilkCumSettings.GetEffectiveDrive(currentLactation);
-        float basePerDay = drive * hungerFactor
-            * Pawn.GetMilkFlowMultiplierFromConditions()
-            * Pawn.GetMilkFlowMultiplierFromGenes()
-            * MilkCumSettings.defaultFlowMultiplierForHumanlike;
+        float condFactor = Pawn.GetMilkFlowMultiplierFromConditions();
+        float geneFactor = Pawn.GetMilkFlowMultiplierFromGenes();
+        float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
+        float basePerDay = drive * hungerFactor * condFactor * geneFactor * raceFlow;
         var entries = GetCachedEntries();
         // Active 已保证有乳池才进入，此处不再判空
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         float flowPerTickScale = basePerDay / 60000f * 60f;
+        if (MilkCumSettings.lactationPoolTickLog && Pawn != null)
+        {
+            MilkCumSettings.PoolTickLog(
+                $"[MilkCum][INFO][MilkFlow] 小人={Pawn.LabelShort} 泌乳量L={currentLactation:F3} 驱动力drive={drive:F3} 饥饿系数hunger={hungerFactor:F3} 状态系数cond={condFactor:F3} 基因系数genes={geneFactor:F3} 种族流速倍率raceFlow={raceFlow:F3}; " +
+                $"每日基础流速basePerDay=drive({drive:F3})×hunger({hungerFactor:F3})×cond({condFactor:F3})×genes({geneFactor:F3})×raceFlow({raceFlow:F3})={basePerDay:F3}; " +
+                $"每60tick进池量flowPer60tick=basePerDay({basePerDay:F3})/60000×60={flowPerTickScale:F5}；" +
+                $"单侧实际流速≈flowPer60tick×条目流速倍率×该侧状态修正×压力因子×喷乳反射");
+        }
         SyncLeftRightFromBreastFullness();
         // 先更新本 60 tick 内影响流速的状态，再扣营养与进水，保证 ExtraNutritionPerDay() 与进水循环用同一套 R/压力
         if (MilkCumSettings.enableLetdownReflex)
@@ -730,6 +738,8 @@ public class CompEquallyMilkable : CompMilkable
     public float DrainForConsume(float amount, List<string> drainedKeys = null)
     {
         if (amount <= 0f || Pawn == null) return 0f;
+        int tick = Find.TickManager.TicksGame;
+        float fullnessBeforeTotal = Fullness;
         breastFullness ??= new Dictionary<string, float>();
         var entries = GetCachedEntries();
         if (entries.Count == 0)
@@ -808,7 +818,13 @@ public class CompEquallyMilkable : CompMilkable
         }
         SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
-        return amount - remaining;
+        float drained = amount - remaining;
+        if (MilkCumSettings.milkingActionLog && Pawn != null && drained > 0f)
+        {
+            float fullnessAfterTotal = Fullness;
+            MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainForConsume amountReq={amount:F3} drained={drained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
+        }
+        return drained;
     }
 
     /// <summary>
@@ -817,6 +833,8 @@ public class CompEquallyMilkable : CompMilkable
     public float DrainForConsumeSingleSide(float amount, List<string> drainedKeys = null)
     {
         if (amount <= 0f || Pawn == null) return 0f;
+        int tick = Find.TickManager.TicksGame;
+        float fullnessBeforeTotal = Fullness;
         breastFullness ??= new Dictionary<string, float>();
         var entries = GetCachedEntries();
         if (entries.Count == 0)
@@ -835,6 +853,11 @@ public class CompEquallyMilkable : CompMilkable
         drainedKeys?.Add(singleKey);
         SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
+        if (MilkCumSettings.milkingActionLog && Pawn != null && take > 0f)
+        {
+            float fullnessAfterTotal = Fullness;
+            MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainSingleSide amountReq={amount:F3} drained={take:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3} sideKey={singleKey}");
+        }
         return take;
     }
 
@@ -848,6 +871,8 @@ public class CompEquallyMilkable : CompMilkable
     public float DrainForConsumeParallel(IList<float> ratePerSidePerTick, float remainingCap, List<string> drainedKeys = null)
     {
         if (ratePerSidePerTick == null || ratePerSidePerTick.Count == 0 || remainingCap <= 0f || Pawn == null) return 0f;
+        int tick = Find.TickManager.TicksGame;
+        float fullnessBeforeTotal = Fullness;
         breastFullness ??= new Dictionary<string, float>();
         var entries = GetCachedEntries();
         if (entries.Count == 0)
@@ -887,6 +912,11 @@ public class CompEquallyMilkable : CompMilkable
         }
         SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
+        if (MilkCumSettings.milkingActionLog && Pawn != null && totalDrained > 0f)
+        {
+            float fullnessAfterTotal = Fullness;
+            MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainParallel cap={remainingCap:F3} drained={totalDrained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
+        }
         return totalDrained;
     }
 
@@ -899,6 +929,8 @@ public class CompEquallyMilkable : CompMilkable
             return;
         }
         Pawn pawn = parent as Pawn;
+        int tick = Find.TickManager.TicksGame;
+        float fullnessBeforeTotal = Fullness;
         // 一次挤奶增加一天泌乳时间
         pawn?.LactatingHediffWithComps()?.TryGetComp<HediffComp_EqualMilkingLactating>()?.AddRemainingDays(1f);
         // JobDriver 传累加小数（2.3、0.98 等），向下取整得瓶数；0.999f 容错避免 1.999… 少发一瓶
@@ -947,6 +979,11 @@ public class CompEquallyMilkable : CompMilkable
                 GenPlace.TryPlaceThing(thing, doer.Position, doer.Map, ThingPlaceMode.Near);
         }
         SyncBaseFullness();
+        if (MilkCumSettings.milkingActionLog && pawn != null && totalDrained > 0f)
+        {
+            float fullnessAfterTotal = Fullness;
+            MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={pawn.LabelShort} tick={tick} mode=SpawnBottles drained={totalDrained:F3} bottlesTotal={num} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3} doer={doer?.LabelShort}");
+        }
         if (parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
         {
             if (MilkPermissionExtensions.IsAllowedSuckler(milkedPawn, doer))

@@ -79,6 +79,9 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationPoolTickLog">
             <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingActionLog">
+            <summary>DevMode 且勾选时，输出吸奶/挤奶/机器产奶入口汇总日志（每次操作一组），用于平衡与 AI 调试。</summary>
+        </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLog">
             <summary>DevMode 时勾选则输出泌乳关键路径日志（分娩、进水、移除泌乳等）；关闭可减少刷屏，仅用 PoolTickLog 看明细。</summary>
         </member>
@@ -461,6 +464,9 @@
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.LastMergedOtherSeverity">
             <summary>本 tick 合并时传入的 other.Severity，供验证「原版是否已按耐受修正给药 severity」时打日志；仅本次 ingestion 有效，不存档。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.SuppressDrugIntakeLog">
+            <summary>抑制本 tick 内 AddFromDrug 的「吃药进水」调试日志，用于在上层聚合为「每次吃药一条」。不存档。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.RemainingDays">
             <summary>剩余天数（游戏日）。有 SeverityPerDay 时用 Parent.Severity÷|severityPerDay| 与信息面板一致；否则用 L÷每日衰减。</summary>

@@ -14,7 +14,7 @@
         <BaseIntermediateOutputPath>..\..\Build\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
         <Configurations>1.6</Configurations>
         <Platforms>AnyCPU</Platforms>
-        <TargetFramework>net481</TargetFramework>
+        <TargetFramework>net48</TargetFramework>
         <LangVersion>10.0</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);MSB3052;1591</NoWarn>
