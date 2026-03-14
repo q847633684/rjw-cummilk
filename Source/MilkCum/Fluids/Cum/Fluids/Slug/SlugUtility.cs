@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Fluids.Slug
+namespace MilkCum.Fluids.Cum.Fluids.Slug
 {
     public class SlugUtility
     {

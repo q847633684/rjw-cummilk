@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Reactions
+namespace MilkCum.Fluids.Cum.Reactions
 {
     public class Fluid_Record_Mapping : Def
     {

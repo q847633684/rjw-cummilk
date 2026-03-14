@@ -62,7 +62,7 @@ public static class ChildcareHelper
             toDrainPool = Mathf.Min(toDrainPool, (wanted * MilkCumSettings.nutritionToEnergyFactor) / nutritionPerPoolUnit);
 
         var drainedKeys = new List<string>();
-        float actualDrained = comp.DrainForConsumeSingleSide(toDrainPool, drainedKeys);
+        float actualDrained = comp.DrainForConsume(toDrainPool, drainedKeys, singleSideOnly: true);
         lactatingHediff.OnGatheredLetdownByKeys(drainedKeys);
         lactatingComp.SyncChargeFromPool();
 

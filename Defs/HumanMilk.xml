@@ -60,7 +60,7 @@
             <li Class="MilkCum.Fluids.Lactation.Comps.CompProperties_PartialMilk">
                 <fillAmount>0.5</fillAmount>
             </li>
-            <li Class="MilkCum.Fluids.Lactation.Comps.CompProperties_ShowProducer" />
+            <li Class="MilkCum.Fluids.Shared.Comps.CompProperties_ShowProducer" />
         </comps>
         <ingestible>
             <!-- Nutrition 由 GetStatValue 补丁按 fillAmount 返回，Def 必须为 0；游戏要求 Nutrition==0 时 preferability 为 NeverForNutrition -->

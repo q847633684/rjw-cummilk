@@ -1,7 +1,7 @@
 using Verse;
 using RimWorld;
 
-namespace MilkCum.Fluids.Lactation.Comps;
+namespace MilkCum.Fluids.Cum.Comps;
 
 public class CompProperties_CumBucketLink : CompProperties
 {

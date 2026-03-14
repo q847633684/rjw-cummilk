@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     /// <summary>
     /// Adjusts the targetted SexParts fluid-amount based on a linear factor between a configured Max and Min value. 

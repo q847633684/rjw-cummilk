@@ -1,5 +1,5 @@
-using Cumpilation.Common;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Common;
+using MilkCum.Fluids.Cum.Gathering;
 using HarmonyLib;
 using RimWorld;
 using rjw;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     /// <summary>
     /// Initializes and Manages both the "Per Body-Part" Splashes on Bukkake as well as their controllers. 

@@ -6,12 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse.AI;
 using Verse;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Gathering;
 using rjw;
 using Verse.Noise;
 using System.Net.Sockets;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     internal class JobGiver_CleanSelfWithSink : ThinkNode_JobGiver
     {

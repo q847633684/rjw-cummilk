@@ -61,7 +61,7 @@
         <comps>
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
             <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket" />
-            <li Class="MilkCum.Fluids.Lactation.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -91,7 +91,7 @@
                 <deflateMult>1.5</deflateMult>
                 <deflateRate>1</deflateRate>
             </li>
-            <li Class="MilkCum.Fluids.Lactation.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
         <costList>
             <Steel>20</Steel>

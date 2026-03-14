@@ -2,6 +2,7 @@ using System.Reflection;
 using HarmonyLib;
 using MilkCum.Core;
 using MilkCum.Fluids.Lactation.Comps;
+using MilkCum.Fluids.Shared.Comps;
 using MilkCum.Integration.DubsBadHygiene;
 using RimWorld;
 using Verse;
@@ -9,7 +10,7 @@ using Verse.AI;
 
 namespace MilkCum.Harmony;
 
-/// <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
+/// <summary>分配进食任务时排除不允许食用的带产主流体制品（奶/精液）。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
 public static class WorkGiver_Ingest_MilkProductFilter
 {
     static MethodBase GetTargetMethod()

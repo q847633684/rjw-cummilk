@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Verse;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Gathering;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
 
     //Used in Oscillation HeDiffs.

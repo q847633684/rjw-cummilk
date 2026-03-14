@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation
+namespace MilkCum.Fluids.Cum
 {
     [DefOf]
     public static class DefOfs

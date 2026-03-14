@@ -10,9 +10,9 @@ using RimWorld;
 using Verse.Noise;
 using RimWorld.QuestGen;
 using rjw;
-using Cumpilation.Cumflation;
+using MilkCum.Fluids.Cum.Cumflation;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
     public class Comp_ApparelSealCum : ThingComp
     {

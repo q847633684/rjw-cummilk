@@ -3,14 +3,14 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
-using Cumpilation.Cumflation;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Cumflation;
+using MilkCum.Fluids.Cum.Gathering;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using rjw;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
     public class Recipe_ExtractCum : Recipe_Surgery
     {

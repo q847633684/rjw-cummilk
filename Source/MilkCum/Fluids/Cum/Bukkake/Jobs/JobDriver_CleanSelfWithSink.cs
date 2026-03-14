@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse.AI;
 using Verse;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Gathering;
 using rjw;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     public class JobDriver_CleanSelfWithSink : JobDriver
     {

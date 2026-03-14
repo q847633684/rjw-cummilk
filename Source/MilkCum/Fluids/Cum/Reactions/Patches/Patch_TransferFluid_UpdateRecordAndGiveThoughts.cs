@@ -1,5 +1,5 @@
-using Cumpilation.Common;
-using Cumpilation.Cumflation;
+using MilkCum.Fluids.Cum.Common;
+using MilkCum.Fluids.Cum.Cumflation;
 using HarmonyLib;
 using RimWorld;
 using rjw;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Reactions
+namespace MilkCum.Fluids.Cum.Reactions
 {
     [HarmonyPatch(typeof(SexUtility), nameof(SexUtility.TransferFluids))]
     public static class Patch_TransferFluid_UpdateRecordAndGiveThoughts

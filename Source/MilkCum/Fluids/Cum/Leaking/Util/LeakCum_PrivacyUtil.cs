@@ -16,7 +16,7 @@ using RimWorld.Planet;
 using System.Reflection;
 using HarmonyLib;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
     public class LeakCum_PrivacyUtil
     {   

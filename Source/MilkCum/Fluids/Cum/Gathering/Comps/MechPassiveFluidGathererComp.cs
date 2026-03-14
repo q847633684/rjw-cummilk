@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
     /// <summary>
     /// Does basically the same as the Passive-Fluid Gatherer but checks that it's only for mechs that have power. 

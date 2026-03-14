@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
     /// <summary>
     /// Extension that can be added to (storage) buildings, to gather fluids on orgasm. 

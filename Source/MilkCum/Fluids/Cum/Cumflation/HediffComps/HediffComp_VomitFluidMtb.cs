@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {
     public class HediffComp_VomitFluidMtb : HediffComp
     {

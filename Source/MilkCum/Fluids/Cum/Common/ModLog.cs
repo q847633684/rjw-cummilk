@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation
+namespace MilkCum.Fluids.Cum
 {
     public class ModLog
     {
@@ -37,7 +37,7 @@ namespace Cumpilation
 
         public static void Debug(string message)
         {
-            if (Settings.EnableCumpilationDebugLogging)
+            if (Settings.EnableCumDebugLogging)
             {
                 Log.Message($"[{ModId}][debug] {message}");
             }

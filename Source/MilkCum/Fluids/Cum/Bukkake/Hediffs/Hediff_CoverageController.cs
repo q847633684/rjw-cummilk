@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     public class Hediff_CoverageController : HediffWithComps
     {

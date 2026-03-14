@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Verse.AI;
 using System.Reflection;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
 
     [HarmonyPatch(typeof(JobDriver), nameof(JobDriver.Cleanup))] 

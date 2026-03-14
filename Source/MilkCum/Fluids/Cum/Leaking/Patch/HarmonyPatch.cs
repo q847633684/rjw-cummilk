@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Cumpilation;
+using MilkCum.Fluids.Cum;
 using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
 	[HarmonyPatch(typeof(PawnRenderer), "GetDrawParms")]
 	public class Patch_GetDrawParms

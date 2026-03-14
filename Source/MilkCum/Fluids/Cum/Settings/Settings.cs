@@ -1,21 +1,21 @@
 using Verse;
 
-namespace Cumpilation
+namespace MilkCum.Fluids.Cum
 {
-    /// <summary>数据已统一到 MilkCumSettings；此类仅作代理，供 Cumpilation 代码读取。</summary>
+    /// <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
     public class Settings : ModSettings
     {
-        public static bool EnableCumflation { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableCumflation; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableCumflation = value; }
-        public static float GlobalCumflationModifier { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_GlobalCumflationModifier; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_GlobalCumflationModifier = value; }
-        public static bool EnableStuffing { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableStuffing; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableStuffing = value; }
-        public static float GlobalStuffingModifier { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_GlobalStuffingModifier; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_GlobalStuffingModifier = value; }
-        public static bool EnableBukkake { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableBukkake; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableBukkake = value; }
-        public static float GlobaleBukkakeModifier { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_GlobalBukkakeModifier; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_GlobalBukkakeModifier = value; }
-        public static bool EnableFluidGatheringWhileCleaning { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableFluidGatheringWhileCleaning; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableFluidGatheringWhileCleaning = value; }
-        public static float MaxGatheringCheckDistance { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_MaxGatheringCheckDistance; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_MaxGatheringCheckDistance = value; }
-        public static bool EnableProgressingConsumptionThoughts { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableProgressingConsumptionThoughts; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableProgressingConsumptionThoughts = value; }
-        public static bool EnableOscillationMechanics { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanics; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanics = value; }
-        public static bool EnableOscillationMechanicsForAnimals { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanicsForAnimals; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableOscillationMechanicsForAnimals = value; }
-        public static bool EnableCumpilationDebugLogging { get => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableDebugLogging; set => MilkCum.Core.Settings.MilkCumSettings.Cumpilation_EnableDebugLogging = value; }
+        public static bool EnableCumflation { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableCumflation; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableCumflation = value; }
+        public static float GlobalCumflationModifier { get => MilkCum.Core.Settings.MilkCumSettings.Cum_GlobalCumflationModifier; set => MilkCum.Core.Settings.MilkCumSettings.Cum_GlobalCumflationModifier = value; }
+        public static bool EnableStuffing { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableStuffing; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableStuffing = value; }
+        public static float GlobalStuffingModifier { get => MilkCum.Core.Settings.MilkCumSettings.Cum_GlobalStuffingModifier; set => MilkCum.Core.Settings.MilkCumSettings.Cum_GlobalStuffingModifier = value; }
+        public static bool EnableBukkake { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableBukkake; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableBukkake = value; }
+        public static float GlobaleBukkakeModifier { get => MilkCum.Core.Settings.MilkCumSettings.Cum_GlobalBukkakeModifier; set => MilkCum.Core.Settings.MilkCumSettings.Cum_GlobalBukkakeModifier = value; }
+        public static bool EnableFluidGatheringWhileCleaning { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableFluidGatheringWhileCleaning; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableFluidGatheringWhileCleaning = value; }
+        public static float MaxGatheringCheckDistance { get => MilkCum.Core.Settings.MilkCumSettings.Cum_MaxGatheringCheckDistance; set => MilkCum.Core.Settings.MilkCumSettings.Cum_MaxGatheringCheckDistance = value; }
+        public static bool EnableProgressingConsumptionThoughts { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableProgressingConsumptionThoughts; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableProgressingConsumptionThoughts = value; }
+        public static bool EnableOscillationMechanics { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanics; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanics = value; }
+        public static bool EnableOscillationMechanicsForAnimals { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanicsForAnimals; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanicsForAnimals = value; }
+        public static bool EnableCumDebugLogging { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableDebugLogging; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableDebugLogging = value; }
     }
 }

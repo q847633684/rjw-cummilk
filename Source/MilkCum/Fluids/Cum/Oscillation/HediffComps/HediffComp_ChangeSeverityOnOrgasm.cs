@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Oscillation
+namespace MilkCum.Fluids.Cum.Oscillation
 {
     public class HediffComp_ChangeSeverityOnOrgasm : HediffComp
     {

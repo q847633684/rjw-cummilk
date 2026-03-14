@@ -1,10 +1,10 @@
-using Cumpilation.Cumflation;
-using Cumpilation.Gathering;
-using Cumpilation.Reactions;
+using MilkCum.Fluids.Cum.Cumflation;
+using MilkCum.Fluids.Cum.Gathering;
+using MilkCum.Fluids.Cum.Reactions;
 using System;
 using Verse;
 
-namespace Cumpilation
+namespace MilkCum.Fluids.Cum
 {
     [StaticConstructorOnStartup]
     public static class Cumpilation

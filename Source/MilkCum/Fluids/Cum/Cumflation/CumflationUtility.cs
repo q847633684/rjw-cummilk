@@ -1,5 +1,5 @@
-using Cumpilation.Common;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Common;
+using MilkCum.Fluids.Cum.Gathering;
 using rjw;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Verse;
 using static HarmonyLib.Code;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {
     public class CumflationUtility
     {

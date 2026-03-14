@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Gathering;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {
     public class JobDriver_VomitFluid : JobDriver_Vomit
     {

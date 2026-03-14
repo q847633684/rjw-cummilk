@@ -5,11 +5,11 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
-using Cumpilation.Cumflation;
+using MilkCum.Fluids.Cum.Cumflation;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
     public class JobGiver_Deflate : ThinkNode_JobGiver
     {

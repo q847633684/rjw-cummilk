@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
+using MilkCum.Fluids.Shared.Comps;
 using RimWorld;
 using Verse;
 

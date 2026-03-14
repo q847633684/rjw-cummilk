@@ -2,7 +2,7 @@ using RimWorld;
 using rjw;
 using Verse;
 
-namespace Cumpilation.Reactions
+namespace MilkCum.Fluids.Cum.Reactions
 {
     /// <summary>
     /// Handles the updating (and thought-giving) when pawns consume meals with fluid based ingredients. 

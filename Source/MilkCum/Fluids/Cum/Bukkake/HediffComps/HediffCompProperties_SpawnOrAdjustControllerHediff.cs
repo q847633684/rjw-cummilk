@@ -1,6 +1,6 @@
 using Verse;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     public class HediffCompProperties_SpawnOrAdjustControllerHediff : HediffCompProperties
     {

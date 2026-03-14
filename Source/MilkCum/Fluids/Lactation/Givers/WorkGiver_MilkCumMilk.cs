@@ -5,6 +5,7 @@ using RimWorld;
 using RimWorld.Planet;
 using Verse;
 using Verse.AI;
+using MilkCum.Fluids.Cum.Cumflation;
 
 namespace MilkCum.Fluids.Lactation.Givers;
 [StaticConstructorOnStartup]
@@ -35,8 +36,8 @@ public class WorkGiver_MilkCumMilk : WorkGiver_Milk
         CompEquallyMilkable comp = target.CompEquallyMilkable();
         if (comp?.ActiveAndFull == true)
         {
-            // 若目标同时存�?Cumflation，且严重度远高于奶的 fullness，则优先让泄�?Job 抢人
-            var cumflation = Cumpilation.Cumflation.CumflationUtility.GetOrCreateCumflationHediff(target);
+            // 鑻ョ洰鏍囧悓鏃跺瓨锟?Cumflation锛屼笖涓ラ噸搴﹁繙楂樹簬濂剁殑 fullness锛屽垯浼樺厛璁╂硠锟?Job 鎶汉
+            var cumflation = CumflationUtility.GetOrCreateCumflationHediff(target);
             if (cumflation != null && cumflation.Severity > 0.75f && comp.Fullness < comp.maxFullness * 0.75f && !forced)
             {
                 return false;
@@ -65,7 +66,7 @@ public class WorkGiver_MilkCumMilk : WorkGiver_Milk
 		{
 			return colony;
 		}
-		// 优先满度更高的目标，减少溢出
+		// 浼樺厛婊″害鏇撮珮鐨勭洰鏍囷紝鍑忓皯婧㈠嚭
 		return colony
 			.OrderByDescending(t =>
 			{

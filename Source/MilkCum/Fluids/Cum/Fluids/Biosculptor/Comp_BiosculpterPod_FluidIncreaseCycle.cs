@@ -1,4 +1,4 @@
-using Cumpilation.Common;
+using MilkCum.Fluids.Cum.Common;
 using RimWorld;
 using rjw;
 using System;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Fluids
+namespace MilkCum.Fluids.Cum.Fluids
 {
     public class Comp_BiosculpterPod_FluidIncreaseCycle : CompBiosculpterPod_Cycle
     {

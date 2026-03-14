@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse.AI;
 using Verse;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Gathering;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     public class WorkGiver_CleanSelfWithSink : WorkGiver_Scanner
     {

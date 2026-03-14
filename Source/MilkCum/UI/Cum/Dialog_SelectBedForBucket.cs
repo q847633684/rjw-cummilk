@@ -3,8 +3,9 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using MilkCum.Fluids.Cum.Comps;
 
-namespace MilkCum.UI;
+namespace MilkCum.UI.Cum;
 
 public class Dialog_SelectBedForBucket : Window
 {

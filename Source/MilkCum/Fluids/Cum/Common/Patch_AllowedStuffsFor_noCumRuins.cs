@@ -5,7 +5,7 @@ using RimWorld;
 using RimWorld.BaseGen;
 using Verse;
 
-namespace Cumpilation
+namespace MilkCum.Fluids.Cum
 {
 
 

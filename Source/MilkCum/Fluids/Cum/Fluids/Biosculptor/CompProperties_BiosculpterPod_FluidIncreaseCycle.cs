@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cumpilation.Fluids
+namespace MilkCum.Fluids.Cum.Fluids
 {
     public class CompProperties_BiosculpterPod_FluidIncreaseCycle : CompProperties_BiosculpterPod_BaseCycle
     {

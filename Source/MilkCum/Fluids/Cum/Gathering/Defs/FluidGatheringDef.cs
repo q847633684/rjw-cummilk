@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
     public class FluidGatheringDef : Def
     {

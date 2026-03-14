@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Verse;
 using static HarmonyLib.Code;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     public abstract class HediffCompProperties_PartTargetting : HediffCompProperties_PawnTargetting, IPartTargetter
     {

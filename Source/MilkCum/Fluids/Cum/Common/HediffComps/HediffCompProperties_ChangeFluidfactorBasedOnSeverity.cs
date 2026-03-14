@@ -1,4 +1,4 @@
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     public class HediffCompProperties_ChangeFluidfactorBasedOnSeverity : HediffCompProperties_PartTargetting
     {

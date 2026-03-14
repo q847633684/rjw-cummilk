@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Fluids.Slug
+namespace MilkCum.Fluids.Cum.Fluids.Slug
 {
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_OnDeath_TriggerSlugExplosions

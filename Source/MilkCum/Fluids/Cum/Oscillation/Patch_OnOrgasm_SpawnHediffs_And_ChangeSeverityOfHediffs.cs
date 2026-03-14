@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Oscillation
+namespace MilkCum.Fluids.Cum.Oscillation
 {
     [HarmonyPatch(typeof(SexUtility), nameof(SexUtility.SatisfyPersonal))] // Actual on orgasm method
     public static class Patch_OnOrgasm_SpawnHediffs_And_ChangeSeverityOfHediffs

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Fluids
+namespace MilkCum.Fluids.Cum.Fluids
 {
     public class Comp_BiosculpterPod_ResetFluidAmountCycle : CompBiosculpterPod_Cycle
     {

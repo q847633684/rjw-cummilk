@@ -4,12 +4,15 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
+using MilkCum.Fluids.Cum.Comps;
+using MilkCum.Fluids.Shared.Comps;
+
 namespace MilkCum.Harmony;
 
 /// <summary>
-/// 本 Mod 已合并 Cumpilation：为精液物品打产主(producer)，食用规则与奶制品一致(CompShowProducer + allowedConsumers)。
-/// 桶可关联床：仅床主可用空桶；占用时提示“不是你的桶”；共享卧室=混合精液。
-/// 7.13: 单源(ExtractCum、DeflateBucket 单主、Gathering from sex)设 producer；混合桶/清洁污物回收不设 producer。
+/// 鏈?Mod 宸插悎骞?Cumpilation锛氫负绮炬恫鐗╁搧鎵撲骇涓?producer)锛岄鐢ㄨ鍒欎笌濂跺埗鍝佷竴鑷?CompShowProducer + allowedConsumers)銆?
+/// 妗跺彲鍏宠仈搴婏細浠呭簥涓诲彲鐢ㄧ┖妗讹紱鍗犵敤鏃舵彁绀衡€滀笉鏄綘鐨勬《鈥濓紱鍏变韩鍗у=娣峰悎绮炬恫銆?
+/// 7.13: 鍗曟簮(ExtractCum銆丏eflateBucket 鍗曚富銆丟athering from sex)璁?producer锛涙贩鍚堟《/娓呮磥姹＄墿鍥炴敹涓嶈 producer銆?
 /// </summary>
 public static class CumpilationIntegration
 {
@@ -18,7 +21,7 @@ public static class CumpilationIntegration
     public static void ApplyPatches(HarmonyLib.Harmony harmony)
     {
         // Cumpilation is merged into this mod; always apply producer/consumer integration.
-        var jobGiverDeflateType = AccessTools.TypeByName("Cumpilation.Leaking.JobGiver_Deflate");
+        var jobGiverDeflateType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Leaking.JobGiver_Deflate");
         if (jobGiverDeflateType != null)
         {
             var tryFindBucket = AccessTools.Method(jobGiverDeflateType, "TryFindBucketFor");
@@ -28,7 +31,7 @@ public static class CumpilationIntegration
             }
         }
 
-        var extractType = AccessTools.TypeByName("Cumpilation.Leaking.Recipe_ExtractCum");
+        var extractType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Leaking.Recipe_ExtractCum");
         if (extractType != null)
         {
             var spawnCum = AccessTools.Method(extractType, "SpawnCum");
@@ -40,7 +43,7 @@ public static class CumpilationIntegration
             }
         }
 
-        var bucketType = AccessTools.TypeByName("Cumpilation.Leaking.JobDriver_DeflateBucket");
+        var bucketType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Leaking.JobDriver_DeflateBucket");
         if (bucketType != null)
         {
             var bucketSpawnCum = AccessTools.Method(bucketType, "SpawnCum");
@@ -58,8 +61,8 @@ public static class CumpilationIntegration
             harmony.Patch(makeThing, postfix: new HarmonyMethod(typeof(CumpilationIntegration), nameof(ThingMaker_MakeThing_Postfix)));
         }
 
-        // 自慰/性行为时“射进桶”的收集：精液直接生成在建筑格，产主 = 射精的小人
-        var gatheringType = AccessTools.TypeByName("Cumpilation.Gathering.GatheringUtility");
+        // 鑷叞/鎬ц涓烘椂鈥滃皠杩涙《鈥濈殑鏀堕泦锛氱簿娑茬洿鎺ョ敓鎴愬湪寤虹瓚鏍硷紝浜т富 = 灏勭簿鐨勫皬浜?
+        var gatheringType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Gathering.GatheringUtility");
         if (gatheringType != null)
         {
             var handleGatherer = AccessTools.Method(gatheringType, "HandleFluidGatherer");
@@ -153,7 +156,7 @@ public static class CumpilationIntegration
     {
         if (driver == null || fluid == null)
             return null;
-        var deflateCleanType = AccessTools.TypeByName("Cumpilation.Leaking.JobDriver_DeflateClean");
+        var deflateCleanType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Leaking.JobDriver_DeflateClean");
         if (deflateCleanType == null)
             return null;
         var hediffField = AccessTools.Field(deflateCleanType, "cumflationHediff");
@@ -162,7 +165,7 @@ public static class CumpilationIntegration
         var hediff = hediffField.GetValue(driver) as Hediff;
         if (hediff == null)
             return null;
-        var compType = AccessTools.TypeByName("Cumpilation.Cumflation.HediffComp_SourceStorage");
+        var compType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Cumflation.HediffComp_SourceStorage");
         if (compType == null)
             return null;
         var tryGetComp = AccessTools.Method(typeof(Hediff), "TryGetComp");
@@ -177,7 +180,7 @@ public static class CumpilationIntegration
         var sources = sourcesField.GetValue(comp) as System.Collections.IList;
         if (sources == null || sources.Count == 0)
             return null;
-        var fluidSourceType = AccessTools.TypeByName("Cumpilation.Cumflation.FluidSource");
+        var fluidSourceType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Cumflation.FluidSource");
         if (fluidSourceType == null)
             return null;
         var pawnField = AccessTools.Field(fluidSourceType, "pawn");

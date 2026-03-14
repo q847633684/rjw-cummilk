@@ -1,6 +1,6 @@
 using Verse;
 
-namespace Cumpilation.Fluids.Cum
+namespace MilkCum.Fluids.Cum.Fluids.Cum
 {
 	public class SpecialThingFilterWorker_Cum : SpecialThingFilterWorker_CumBase
 	{

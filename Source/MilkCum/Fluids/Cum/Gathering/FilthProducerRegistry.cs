@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using Verse;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
     /// <summary>
-    /// 本 Mod 生成污物时登记产主；高级桶吸收时可按床主过滤，并给产出打产主。
-    /// 键为 (地图, 格, 污物Def)，同一格多次生成时后者覆盖（仅保留最后产主）。
+    /// 鏈?Mod 鐢熸垚姹＄墿鏃剁櫥璁颁骇涓伙紱楂樼骇妗跺惛鏀舵椂鍙寜搴婁富杩囨护锛屽苟缁欎骇鍑烘墦浜т富銆?
+    /// 閿负 (鍦板浘, 鏍? 姹＄墿Def)锛屽悓涓€鏍煎娆＄敓鎴愭椂鍚庤€呰鐩栵紙浠呬繚鐣欐渶鍚庝骇涓伙級銆?
     /// </summary>
     public static class FilthProducerRegistry
     {
@@ -21,7 +21,7 @@ namespace Cumpilation.Gathering
                 _registry.Remove(key);
         }
 
-        /// <summary>取出并移除该格该污物的产主记录；无记录则返回 null。</summary>
+        /// <summary>鍙栧嚭骞剁Щ闄よ鏍艰姹＄墿鐨勪骇涓昏褰曪紱鏃犺褰曞垯杩斿洖 null銆</summary>
         public static Pawn GetAndRemove(Map map, IntVec3 cell, ThingDef filthDef)
         {
             if (map == null || filthDef == null) return null;

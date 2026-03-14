@@ -1,4 +1,4 @@
-using Cumpilation.Cumflation;
+using MilkCum.Fluids.Cum.Cumflation;
 using HarmonyLib;
 using rjw;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cumpilation.Bukkake
+namespace MilkCum.Fluids.Cum.Bukkake
 {
     [HarmonyPatch(typeof(SexUtility), nameof(SexUtility.TransferFluids))]
     public static class Patch_TransferFluids_ApplyBukkake

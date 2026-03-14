@@ -1,10 +1,10 @@
 using RimWorld;
 using Verse;
-using Cumpilation.Leaking;
+using MilkCum.Fluids.Cum.Leaking;
 
 namespace MilkCum.UI;
 
-/// <summary>奶表格列：塞住（防止精液自然泄漏）。仅人形成人且有阴道时显示。</summary>
+/// <summary>濂惰〃鏍煎垪锛氬浣忥紙闃叉绮炬恫鑷劧娉勬紡锛夈€備粎浜哄舰鎴愪汉涓旀湁闃撮亾鏃舵樉绀恒€</summary>
 public class PawnColumnWorker_MilkSealCum : PawnColumnWorker_Checkbox
 {
     protected override bool HasCheckbox(Pawn pawn)

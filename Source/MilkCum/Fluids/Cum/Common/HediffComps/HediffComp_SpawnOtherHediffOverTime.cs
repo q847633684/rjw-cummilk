@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     public class HediffComp_SpawnOtherHediffOverTime : HediffComp
     {

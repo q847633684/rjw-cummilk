@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Reactions.Patches
+namespace MilkCum.Fluids.Cum.Reactions.Patches
 {
     /// <summary>
     /// I have one IngestionOutcomeDoer but it's not enough. The individual outcome-doers are not used in meals. 

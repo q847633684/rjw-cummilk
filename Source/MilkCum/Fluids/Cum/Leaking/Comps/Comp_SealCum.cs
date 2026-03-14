@@ -10,11 +10,11 @@ using RimWorld;
 using Verse.Noise;
 using RimWorld.QuestGen;
 using rjw;
-using Cumpilation.Cumflation;
-using Cumpilation;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Cumflation;
+using MilkCum.Fluids.Cum;
+using MilkCum.Fluids.Cum.Gathering;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
     public class Comp_SealCum : ThingComp
     {
@@ -38,7 +38,7 @@ namespace Cumpilation.Leaking
             {
                 yield return gizmo;
             }
-            // 塞住/允许泄精仅通过奶表格操作，不再在选中小人时的 Gizmo 栏显示
+            // 濉炰綇/鍏佽娉勭簿浠呴€氳繃濂惰〃鏍兼搷浣滐紝涓嶅啀鍦ㄩ€変腑灏忎汉鏃剁殑 Gizmo 鏍忔樉绀?
         }
 
         public bool CanDeflate()

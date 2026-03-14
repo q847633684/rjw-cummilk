@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using MilkCum.Core;
+using MilkCum.Fluids.Shared.Comps;
 using RimWorld;
 using Verse;
 

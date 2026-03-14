@@ -10,11 +10,11 @@ using RimWorld;
 using Verse.Noise;
 using RimWorld.QuestGen;
 using rjw;
-using Cumpilation.Cumflation;
-using Cumpilation;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Cumflation;
+using MilkCum.Fluids.Cum;
+using MilkCum.Fluids.Cum.Gathering;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
     [StaticConstructorOnStartup]
     public static class ThingDefsDeflate

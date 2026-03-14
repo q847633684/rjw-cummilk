@@ -1,6 +1,6 @@
 using Verse;
 
-namespace Cumpilation.Leaking
+namespace MilkCum.Fluids.Cum.Leaking
 {
 	public class CompProperties_SealCum : CompProperties
 	{

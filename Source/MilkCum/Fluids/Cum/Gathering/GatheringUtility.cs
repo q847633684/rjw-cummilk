@@ -7,11 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 using static HarmonyLib.Code;
-using Cumpilation.Common;
+using MilkCum.Fluids.Cum.Common;
 using rjw.Modules.Shared.Logs;
 using Verse.AI;
+using MilkCum.Fluids.Cum.Comps;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
     public class GatheringUtility
     {

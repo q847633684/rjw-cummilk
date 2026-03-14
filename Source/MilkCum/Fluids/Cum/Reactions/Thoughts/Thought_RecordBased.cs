@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Reactions
+namespace MilkCum.Fluids.Cum.Reactions
 {
     /// <summary>
     /// Thought class that uses record to select active stage 

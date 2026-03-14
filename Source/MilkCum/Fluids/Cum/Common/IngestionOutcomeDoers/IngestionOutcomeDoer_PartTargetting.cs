@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     public abstract class IngestionOutcomeDoer_PartTargetting : IngestionOutcomeDoer_PawnTargetting, IPartTargetter
     {

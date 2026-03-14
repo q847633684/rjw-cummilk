@@ -1,7 +1,7 @@
 using RimWorld;
 using Verse;
 
-namespace Cumpilation.Fluids.Cum
+namespace MilkCum.Fluids.Cum.Fluids.Cum
 {
     /// <summary>
     /// (Simple) Filters for Food to include or non-include cum. 

@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 using Verse.AI;
-using Cumpilation.Gathering;
+using MilkCum.Fluids.Cum.Gathering;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {
     /// <summary>
     /// - Stop the pawn flat / make it look like it

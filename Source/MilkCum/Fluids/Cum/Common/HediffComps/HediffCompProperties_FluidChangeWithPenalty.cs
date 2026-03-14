@@ -1,4 +1,4 @@
-using Cumpilation.Common;
+using MilkCum.Fluids.Cum.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     public class HediffCompProperties_FluidChangeWithPenalty : HediffCompProperties_FluidChange
     {

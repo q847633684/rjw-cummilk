@@ -1,4 +1,5 @@
-using Cumpilation.Common;
+using MilkCum.Fluids.Cum.Common;
+using MilkCum.Fluids.Cum.Comps;
 using MilkCum.Harmony;
 using RimWorld;
 using rjw;
@@ -9,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Gathering
+namespace MilkCum.Fluids.Cum.Gathering
 {
     /// <summary>
     /// Unlike `FluidGatheringBuilding` that works upon nearby sex, the PassiveFluidGatherer is trying to clean nearby floors from Filth.
@@ -37,7 +38,7 @@ namespace Cumpilation.Gathering
 
             if (parent.IsHashIntervalTick(Props.tickIntervall))
             {
-                // onlyFluidFilth: false 以便同时吸收 EM_HumanMilkFilth 等（由 FluidGatheringDef.filth 支持的污物），高级桶可收集母乳污物
+                // onlyFluidFilth: false 浠ヤ究鍚屾椂鍚告敹 EM_HumanMilkFilth 绛夛紙鐢?FluidGatheringDef.filth 鏀寔鐨勬薄鐗╋級锛岄珮绾ф《鍙敹闆嗘瘝涔虫薄鐗?
                 var sexFluidFilths = GatheringUtility.GetNearbyFilth(this.parent, false, Props.range);
                // ModLog.Message($"{parent.def}@{parent.PositionHeld}:Found {filths.Count()} filths and {sexFluidFilths.Count()} Fluid-Associated Filths in range {properties.range}");
                 CleanFilth(sexFluidFilths);

@@ -1,4 +1,4 @@
-using Cumpilation.Common;
+using MilkCum.Fluids.Cum.Common;
 using rjw;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {
     public class StuffingUtility
     {

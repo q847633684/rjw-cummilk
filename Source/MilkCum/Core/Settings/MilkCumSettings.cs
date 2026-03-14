@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using MilkCum.Fluids.Shared.Comps;
 using MilkCum.UI;
 using RimWorld;
 using UnityEngine;
@@ -7,7 +8,7 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
+/// <summary>涓撲笟绾?UI锛氭寜绯荤粺绫诲瀷鍒嗗眰銆傛牳蹇冩満鍒?/ 鍋ュ悍椋庨櫓 / 鏉冮檺瑙勫垯 / 鏁板€煎钩琛?/ 妯＄粍鑱斿姩 / 鏁版嵁绉嶆棌 / 璋冭瘯宸ュ叿锛堜粎 DevMode锛夈€</summary>
 public enum MainTabIndex
 {
 	CoreSystems = 0,
@@ -24,9 +25,9 @@ internal class MilkCumSettings : ModSettings
 {
 	private static Dictionary<string, RaceMilkType> namesToProducts = new();
 	private static Dictionary<string, MilkTag> productsToTags = new();
-	/// <summary>挤奶流速基准：baseFlowPerSecond = 60/本值（池单位/秒）。默认 60 → 满池约 1 瓶/秒（现实时间）；调大则变慢。</summary>
+	/// <summary>鎸ゅザ娴侀€熷熀鍑嗭細baseFlowPerSecond = 60/鏈€硷紙姹犲崟浣?绉掞級銆傞粯璁?60 鈫?婊℃睜绾?1 鐡?绉掞紙鐜板疄鏃堕棿锛夛紱璋冨ぇ鍒欏彉鎱€</summary>
 	public static float milkingWorkTotalBase = 60f;
-	/// <summary>按容量量化：吸奶有效时间随喂奶者 MilkAmount 的系数，effectiveTime *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2]。</summary>
+	/// <summary>鎸夊閲忛噺鍖栵細鍚稿ザ鏈夋晥鏃堕棿闅忓杺濂惰€?MilkAmount 鐨勭郴鏁帮紝effectiveTime *= (1 + 鏈€济?MilkAmount-1))锛岄檺鍒跺湪 [0.5, 2]銆</summary>
 	public static float breastfeedCapacityFactor = 0.1f;
 	public static bool femaleAnimalAdultAlwaysLactating = false;
 	public static bool showMechOptions = true;
@@ -36,27 +37,27 @@ internal class MilkCumSettings : ModSettings
 	public static bool showAnimalOptions = true;
 	public static bool showMiscOptions = true;
 	public static float nutritionToEnergyFactor = 100f;
-	/// <summary>泌乳灌满期间额外饥饿：滑块 0–300，150=1:1。饱食度每 150 tick 额外下降 = flowPerDay×(150/60000)×(本值/150)。</summary>
+	/// <summary>娉屼钩鐏屾弧鏈熼棿棰濆楗ラタ锛氭粦鍧?0鈥?00锛?50=1:1銆傞ケ椋熷害姣?150 tick 棰濆涓嬮檷 = flowPerDay脳(150/60000)脳(鏈€?150)銆</summary>
 	public static int lactationExtraNutritionBasis = 150;
-	/// <summary>回缩吸收：满池回缩时，未溢出部分视为被身体吸收，按比例补充饱食度；0=关闭，1=与产奶消耗 1:1 折算。</summary>
+	/// <summary>鍥炵缉鍚告敹锛氭弧姹犲洖缂╂椂锛屾湭婧㈠嚭閮ㄥ垎瑙嗕负琚韩浣撳惛鏀讹紝鎸夋瘮渚嬭ˉ鍏呴ケ椋熷害锛?=鍏抽棴锛?=涓庝骇濂舵秷鑰?1:1 鎶樼畻銆</summary>
 	public static bool reabsorbNutritionEnabled = true;
-	/// <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
+	/// <summary>鍥炵缉鍚告敹鏁堢巼锛?~1锛屽惛鏀剁殑姹犲崟浣嶆姌鎴愯惀鍏荤殑姣斾緥锛岄粯璁?0.5 閬垮厤婊℃睜鎸傛満杩囧己銆</summary>
 	public static float reabsorbNutritionEfficiency = 0.5f;
-	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/乳池/回缩/吸奶明细到日志。</summary>
+	/// <summary>DevMode 涓斿嬀閫夋椂锛屾瘡 60 tick 杈撳嚭娉屼钩灏忎汉鐨勮惀鍏?涔虫睜/鍥炵缉/鍚稿ザ鏄庣粏鍒版棩蹇椼€</summary>
 	public static bool lactationPoolTickLog = false;
-	/// <summary>DevMode 且勾选时，输出吸奶/挤奶/机器产奶入口汇总日志（每次操作一组），用于平衡与 AI 调试。</summary>
+	/// <summary>DevMode 涓斿嬀閫夋椂锛岃緭鍑哄惛濂?鎸ゅザ/鏈哄櫒浜уザ鍏ュ彛姹囨€绘棩蹇楋紙姣忔鎿嶄綔涓€缁勶級锛岀敤浜庡钩琛′笌 AI 璋冭瘯銆</summary>
 	public static bool milkingActionLog = false;
-	/// <summary>DevMode 时勾选则输出泌乳关键路径日志（分娩、进水、移除泌乳等）；关闭可减少刷屏，仅用 PoolTickLog 看明细。</summary>
+	/// <summary>DevMode 鏃跺嬀閫夊垯杈撳嚭娉屼钩鍏抽敭璺緞鏃ュ織锛堝垎濞┿€佽繘姘淬€佺Щ闄ゆ硨涔崇瓑锛夛紱鍏抽棴鍙噺灏戝埛灞忥紝浠呯敤 PoolTickLog 鐪嬫槑缁嗐€</summary>
 	public static bool lactationLog = true;
-	/// <summary>勾选时，每次吃药进水（AddFromDrug）时输出调试日志：Δs、进水ΔL、剩余时间变化。</summary>
+	/// <summary>鍕鹃€夋椂锛屾瘡娆″悆鑽繘姘达紙AddFromDrug锛夋椂杈撳嚭璋冭瘯鏃ュ織锛毼攕銆佽繘姘次擫銆佸墿浣欐椂闂村彉鍖栥€</summary>
 	public static bool lactationDrugIntakeLog = false;
-	/// <summary>DevMode 时输出泌乳关键路径日志，便于排查 L/池/药物/分娩 行为。受 lactationLog 开关控制。</summary>
+	/// <summary>DevMode 鏃惰緭鍑烘硨涔冲叧閿矾寰勬棩蹇楋紝渚夸簬鎺掓煡 L/姹?鑽墿/鍒嗗ī 琛屼负銆傚彈 lactationLog 寮€鍏虫帶鍒躲€</summary>
 	public static void LactationLog(string message)
 	{
 		if (Verse.Prefs.DevMode && lactationLog && !string.IsNullOrEmpty(message))
 			Verse.Log.Message("[MilkCum.Lactation] " + message);
 	}
-	/// <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/乳池/回缩/吸奶明细。</summary>
+	/// <summary>浠呭綋 DevMode 涓?lactationPoolTickLog 涓?true 鏃惰緭鍑猴紝鐢ㄤ簬姣忔钀ュ吇/涔虫睜/鍥炵缉/鍚稿ザ鏄庣粏銆</summary>
 	public static void PoolTickLog(string message)
 	{
 		if (Verse.Prefs.DevMode && lactationPoolTickLog && !string.IsNullOrEmpty(message))
@@ -65,26 +66,26 @@ internal class MilkCumSettings : ModSettings
 	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
 	public static AnimalBreastfeed animalBreastfeed = new();
 	public static MechanoidBreastfeed mechanoidBreastfeed = new();
-	// 泌乳期意识/操纵/移动增益：开关与百分比 (0~0.20 = 0%~20%)
+	// 娉屼钩鏈熸剰璇?鎿嶇旱/绉诲姩澧炵泭锛氬紑鍏充笌鐧惧垎姣?(0~0.20 = 0%~20%)
 	public static bool lactatingGainEnabled = true;
 	public static float lactatingGainCapModPercent = 0.10f;
-	// RJW 联动（仅当 rim.job.world 激活时生效）
+	// RJW 鑱斿姩锛堜粎褰?rim.job.world 婵€娲绘椂鐢熸晥锛?
 	public static bool rjwBreastSizeEnabled = true;
-	/// <summary>乳房容量系数：左右乳容量 = RJW Severity × 本系数，2=默认，与泌乳效率等可调项对应。</summary>
+	/// <summary>涔虫埧瀹归噺绯绘暟锛氬乏鍙充钩瀹归噺 = RJW Severity 脳 鏈郴鏁帮紝2=榛樿锛屼笌娉屼钩鏁堢巼绛夊彲璋冮」瀵瑰簲銆</summary>
 	public static float rjwBreastCapacityCoefficient = 2f;
 	public static bool rjwLustFromNursingEnabled = true;
 	public static bool rjwSexNeedLactatingBonusEnabled = true;
 	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
-	public static float rjwLactationFertilityFactor = 0.85f; // 泌乳期怀孕概率乘数 (0~1)
+	public static float rjwLactationFertilityFactor = 0.85f; // 娉屼钩鏈熸€€瀛曟鐜囦箻鏁?(0~1)
 	public static bool rjwLactatingInSexDescriptionEnabled = true;
-	/// <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
+	/// <summary>3.2锛氭€ц涓哄悗涓烘硨涔冲弬涓庤€呭鍔犲皯閲忔睜杩涙按锛埼擫锛夛紝鍙€夈€</summary>
 	public static bool rjwSexAddsLactationBoost = false;
 	public static float rjwSexLactationBoostDeltaS = 0.15f;
-	// 乳腺炎/堵塞：卫生触发是否与 Dubs Bad Hygiene 联动（有 DBH 时用 Hygiene 需求，否则用房间清洁度）
+	// 涔宠吅鐐?鍫靛锛氬崼鐢熻Е鍙戞槸鍚︿笌 Dubs Bad Hygiene 鑱斿姩锛堟湁 DBH 鏃剁敤 Hygiene 闇€姹傦紝鍚﹀垯鐢ㄦ埧闂存竻娲佸害锛?
 	public static bool useDubsBadHygieneForMastitis = true;
-	// 乳腺炎可配置：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数
-	// 耐受对泌乳效率的影响：关闭则 E_tol 恒为 1；指数控制曲线（1=线性）
-	// 建议 13：收拢为 MilkRiskSettings，便于序列化与 UI 分组；对外仍用静态属性，存档兼容旧 key
+	// 涔宠吅鐐庡彲閰嶇疆锛氭槸鍚﹀惎鐢ㄣ€佸熀鍑?MTB锛堝ぉ锛夈€佹弧姹犺繃涔呴闄╃郴鏁般€佸崼鐢熼闄╃郴鏁?
+	// 鑰愬彈瀵规硨涔虫晥鐜囩殑褰卞搷锛氬叧闂垯 E_tol 鎭掍负 1锛涙寚鏁版帶鍒舵洸绾匡紙1=绾挎€э級
+	// 寤鸿 13锛氭敹鎷负 MilkRiskSettings锛屼究浜庡簭鍒楀寲涓?UI 鍒嗙粍锛涘澶栦粛鐢ㄩ潤鎬佸睘鎬э紝瀛樻。鍏煎鏃?key
 	private static MilkRiskSettings _risk = new MilkRiskSettings();
 	private static MilkRiskSettings Risk => _risk ??= new MilkRiskSettings();
 	public static bool allowMastitis { get => Risk.allowMastitis; set => Risk.allowMastitis = value; }
@@ -93,24 +94,24 @@ internal class MilkCumSettings : ModSettings
 	public static float hygieneRiskMultiplier { get => Risk.hygieneRiskMultiplier; set => Risk.hygieneRiskMultiplier = value; }
 	public static bool allowToleranceAffectMilk { get => Risk.allowToleranceAffectMilk; set => Risk.allowToleranceAffectMilk = value; }
 	public static float toleranceFlowImpactExponent { get => Risk.toleranceFlowImpactExponent; set => Risk.toleranceFlowImpactExponent = value; }
-	// 耐受动态 dE/dt = μ·L − ν·E：启用时用 mod 维护的 E 计算 E_tol（流速/衰减），替代仅用游戏内耐受严重度 t。
+	// 鑰愬彈鍔ㄦ€?dE/dt = 渭路L 鈭?谓路E锛氬惎鐢ㄦ椂鐢?mod 缁存姢鐨?E 璁＄畻 E_tol锛堟祦閫?琛板噺锛夛紝鏇夸唬浠呯敤娓告垙鍐呰€愬彈涓ラ噸搴?t銆?
 	public static bool enableToleranceDynamic = true;
-	/// <summary>耐受累积率 μ（每游戏日）；L 高则 E 上升。</summary>
+	/// <summary>鑰愬彈绱Н鐜?渭锛堟瘡娓告垙鏃ワ級锛汱 楂樺垯 E 涓婂崌銆</summary>
 	public static float toleranceDynamicMu = 0.03f;
-	/// <summary>耐受衰减率 ν（每游戏日）；E 自然回落。</summary>
+	/// <summary>鑰愬彈琛板噺鐜?谓锛堟瘡娓告垙鏃ワ級锛汦 鑷劧鍥炶惤銆</summary>
 	public static float toleranceDynamicNu = 0.08f;
 	public static float mastitisMtbDaysMultiplierHumanlike { get => Risk.mastitisMtbDaysMultiplierHumanlike; set => Risk.mastitisMtbDaysMultiplierHumanlike = value; }
 	public static float mastitisMtbDaysMultiplierAnimal { get => Risk.mastitisMtbDaysMultiplierAnimal; set => Risk.mastitisMtbDaysMultiplierAnimal = value; }
-	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
+	// 婊℃睜婧㈠嚭鍦伴潰姹＄墿锛欴ef 鍚嶇О锛岀┖鎴栨棤鏁堟椂鍥為€€ Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
-	// 基准泌乳持续天数（药物）：仅用于无 SeverityPerDay 时的 RemainingDays 与 GetDailyLactationDecay 显示；主流程已由 LactatingPatch 的 severityPerDay 决定，不再暴露到 UI。
+	// 鍩哄噯娉屼钩鎸佺画澶╂暟锛堣嵂鐗╋級锛氫粎鐢ㄤ簬鏃?SeverityPerDay 鏃剁殑 RemainingDays 涓?GetDailyLactationDecay 鏄剧ず锛涗富娴佺▼宸茬敱 LactatingPatch 鐨?severityPerDay 鍐冲畾锛屼笉鍐嶆毚闇插埌 UI銆?
 	public static float baselineMilkDurationDays = 5f;
-	// 分娩诱发泌乳持续天数：仅用于无 SeverityPerDay 时的 RemainingDays 与 GetDailyLactationDecay；主流程同上，不再暴露到 UI。
+	// 鍒嗗ī璇卞彂娉屼钩鎸佺画澶╂暟锛氫粎鐢ㄤ簬鏃?SeverityPerDay 鏃剁殑 RemainingDays 涓?GetDailyLactationDecay锛涗富娴佺▼鍚屼笂锛屼笉鍐嶆毚闇插埌 UI銆?
 	public static float birthInducedMilkDurationDays = 30f;
-	/// <summary>催乳素单剂在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 同剂叠加一致，默认 0.044）；改 XML 时需同步。</summary>
+	/// <summary>鍌钩绱犲崟鍓傚湪 XML 涓鑰愬彈 Hediff 鐨?Severity 澧為噺锛堜笌 Lactating 鍚屽墏鍙犲姞涓€鑷达紝榛樿 0.044锛夛紱鏀?XML 鏃堕渶鍚屾銆</summary>
 	public static float ProlactinToleranceGainPerDose = 0.044f;
 
-	/// <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
+	/// <summary>鑽墿娉屼钩琛板噺鐢ㄦ湁鏁?B_T锛氱敱 baselineMilkDurationDays 鍙嶆帹锛屼娇鍗曟鍓傞噺锛圠鈮?.5銆丒=1锛夋椂鍓╀綑澶╂暟 鈮?鍩哄噯澶╂暟銆侱=0.5/baseline 鈬?B_T_eff=1/(0.5/baseline鈭択脳0.5)銆</summary>
 	public static float GetEffectiveBaseValueTForDecay()
 	{
 		float baseline = baselineMilkDurationDays;
@@ -119,7 +120,7 @@ internal class MilkCumSettings : ModSettings
 		if (denom <= 0.01f) return 100f;
 		return 1f / denom;
 	}
-	/// <summary>分娩泌乳衰减用有效 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
+	/// <summary>鍒嗗ī娉屼钩琛板噺鐢ㄦ湁鏁?B_T锛氱敱 birthInducedMilkDurationDays 鍙嶆帹锛屽叕寮忓悓鑽墿銆</summary>
 	public static float GetEffectiveBaseValueTForDecayBirth()
 	{
 		float baseline = birthInducedMilkDurationDays;
@@ -128,8 +129,8 @@ internal class MilkCumSettings : ModSettings
 		if (denom <= 0.01f) return 100f;
 		return 1f / denom;
 	}
-	/// <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.9、f_min=0.02，奶量达 90% 才开始往下压。</summary>
-	/// <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
+	/// <summary>甯︿笅闄?Logistic锛歠(P)=f_min+(1鈭抐_min)脳1/(1+exp(k脳(P鈭扨c)))锛孭 澶ф椂骞虫粦闄嶉€燂紝鏈€浣?f_min 姘镐笉褰掗浂銆傞粯璁?k=6銆丳c=0.9銆乫_min=0.02锛屽ザ閲忚揪 90% 鎵嶅紑濮嬪線涓嬪帇銆</summary>
+	/// <param name="P">璇ヤ晶婊″害/璇ヤ晶鎾戝ぇ瀹归噺锛?锝?锛堝彲鐣ュぇ浜?1 鏃朵粛鎸夊叕寮忕畻锛夈€</param>
 	public static float GetPressureFactor(float P)
 	{
 		if (!enablePressureFactor || P <= 0f)
@@ -139,11 +140,11 @@ internal class MilkCumSettings : ModSettings
 		float pc = Mathf.Clamp(pressureFactorPc, 0.3f, 1f);
 		float fMin = Mathf.Clamp01(pressureFactorMin);
 
-		// 带下限 Logistic：最低 f_min，P 越大越接近 f_min
+		// 甯︿笅闄?Logistic锛氭渶浣?f_min锛孭 瓒婂ぇ瓒婃帴杩?f_min
 		float logistic = 1f / (1f + Mathf.Exp(k * (P - pc)));
 		return fMin + (1f - fMin) * logistic;
 	}
-	/// <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
+	/// <summary>鍥涘眰妯″瀷锛堥樁娈?锛夛細鏈夋晥椹卞姩鍔?D_eff = L路H(L)銆侶(L)=1鈭抏xp(鈭抋路L)锛涜嫢 L_ref>0 鍒欑敤鍙傝€冨€煎綊涓€锛欴_eff = L路(1鈭抏^{-aL})/(1鈭抏^{-aL_ref})锛屽熬鏈熸洿骞虫粦銆</summary>
 	public static float GetEffectiveDrive(float L)
 	{
 		if (!enableHormoneSaturation || L <= 0f) return L;
@@ -158,90 +159,90 @@ internal class MilkCumSettings : ModSettings
 		}
 		return L * H;
 	}
-	// 挤奶工作：是否优先选择满度更高的目标（殖民者会先挤更满的）
+	// 鎸ゅザ宸ヤ綔锛氭槸鍚︿紭鍏堥€夋嫨婊″害鏇撮珮鐨勭洰鏍囷紙娈栨皯鑰呬細鍏堟尋鏇存弧鐨勶級
 	public static bool aiPreferHighFullnessTargets = true;
-	// 种族覆盖：白名单（defName 在此列表中视为可产奶）、黑名单（defName 在此列表中视为不可产奶）
+	// 绉嶆棌瑕嗙洊锛氱櫧鍚嶅崟锛坉efName 鍦ㄦ鍒楄〃涓涓哄彲浜уザ锛夈€侀粦鍚嶅崟锛坉efName 鍦ㄦ鍒楄〃涓涓轰笉鍙骇濂讹級
 	public static List<string> raceCanAlwaysLactate = new();
 	public static List<string> raceCannotLactate = new();
-	// 人形种族默认流速倍率（2 = 单次剂量约 1 日灌满；与 RJW/种族 mod 平衡时也可调）
+	// 浜哄舰绉嶆棌榛樿娴侀€熷€嶇巼锛? = 鍗曟鍓傞噺绾?1 鏃ョ亴婊★紱涓?RJW/绉嶆棌 mod 骞宠　鏃朵篃鍙皟锛?
 	public static float defaultFlowMultiplierForHumanlike = 2f;
-	// 四层模型（阶段1）：压力软抑制。启用时流速乘 PressureFactor(P)；带下限 Logistic，默认 Pc=0.9、k=6、f_min=0.02，奶量达 90% 才开始往下压。
+	// 鍥涘眰妯″瀷锛堥樁娈?锛夛細鍘嬪姏杞姂鍒躲€傚惎鐢ㄦ椂娴侀€熶箻 PressureFactor(P)锛涘甫涓嬮檺 Logistic锛岄粯璁?Pc=0.9銆乲=6銆乫_min=0.02锛屽ザ閲忚揪 90% 鎵嶅紑濮嬪線涓嬪帇銆?
 	public static bool enablePressureFactor = true;
 	public static float pressureFactorPc = 0.9f;
 	public static float pressureFactorB = 6f;
-	/// <summary>压力曲线下限 f_min：满池时生产倍率不低于此值，永不归零。推荐 0.02～0.15。</summary>
+	/// <summary>鍘嬪姏鏇茬嚎涓嬮檺 f_min锛氭弧姹犳椂鐢熶骇鍊嶇巼涓嶄綆浜庢鍊硷紝姘镐笉褰掗浂銆傛帹鑽?0.02锝?.15銆</summary>
 	public static float pressureFactorMin = 0.02f;
-	// 四层模型（阶段1）：喷乳反射 R。启用时流速乘 R；R 每 60 tick 指数衰减，挤奶/吸奶时升高。
+	// 鍥涘眰妯″瀷锛堥樁娈?锛夛細鍠蜂钩鍙嶅皠 R銆傚惎鐢ㄦ椂娴侀€熶箻 R锛汻 姣?60 tick 鎸囨暟琛板噺锛屾尋濂?鍚稿ザ鏃跺崌楂樸€?
 	public static bool enableLetdownReflex = true;
-	/// <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
+	/// <summary>鍠蜂钩鍙嶅皠琛板噺鐜?位锛堟瘡鍒嗛挓锛夛紱R_new = R 脳 exp(-位脳螖t)銆</summary>
 	public static float letdownReflexDecayLambda = 0.03f;
-	/// <summary>挤奶/吸奶时 R 的增量 ΔR，R 加上后 Clamp 至 1。设大一些（如 1）可一次刺激即满 R。</summary>
+	/// <summary>鎸ゅザ/鍚稿ザ鏃?R 鐨勫閲?螖R锛孯 鍔犱笂鍚?Clamp 鑷?1銆傝澶т竴浜涳紙濡?1锛夊彲涓€娆″埡婵€鍗虫弧 R銆</summary>
 	public static float letdownReflexStimulusDeltaR = 0.45f;
-	/// <summary>喷乳反射加成倍率：进水流速倍率 = 1 + R×(本值−1)，R=1 时为本值倍（建议 1.5~2.5），R=0 时为 1 倍；设为 1 即无加成。</summary>
+	/// <summary>鍠蜂钩鍙嶅皠鍔犳垚鍊嶇巼锛氳繘姘存祦閫熷€嶇巼 = 1 + R脳(鏈€尖垝1)锛孯=1 鏃朵负鏈€煎€嶏紙寤鸿 1.5~2.5锛夛紝R=0 鏃朵负 1 鍊嶏紱璁句负 1 鍗虫棤鍔犳垚銆</summary>
 	public static float letdownReflexBoostMultiplier = 2f;
-	// 四层模型（阶段2）：炎症 I(t)。启用时每 60 tick 更新 I；I>I_crit 触发乳腺炎；L 衰减加 η·I。
+	// 鍥涘眰妯″瀷锛堥樁娈?锛夛細鐐庣棁 I(t)銆傚惎鐢ㄦ椂姣?60 tick 鏇存柊 I锛汭>I_crit 瑙﹀彂涔宠吅鐐庯紱L 琛板噺鍔?畏路I銆?
 	public static bool enableInflammationModel = true;
 	public static float inflammationAlpha = 0.1f;
 	public static float inflammationBeta = 0.15f;
 	public static float inflammationGamma = 0.2f;
 	public static float inflammationRho = 0.05f;
 	public static float inflammationCrit = 1f;
-	/// <summary>炎症对 L 衰减的抑制因子 η：D += η·I。</summary>
+	/// <summary>鐐庣棁瀵?L 琛板噺鐨勬姂鍒跺洜瀛?畏锛欴 += 畏路I銆</summary>
 	public static float lactationDecayInflammationEta = 0.1f;
-	// 四层模型（阶段2）：挤奶/吸奶时 L 微幅刺激（带上限，防无限循环）。
+	// 鍥涘眰妯″瀷锛堥樁娈?锛夛細鎸ゅザ/鍚稿ザ鏃?L 寰箙鍒烘縺锛堝甫涓婇檺锛岄槻鏃犻檺寰幆锛夈€?
 	public static float milkingLStimulusPerEvent = 0.03f;
 	public static float milkingLStimulusCapPerEvent = 0.05f;
 	public static float milkingLStimulusCapPerDay = 0.2f;
-	// 四层模型（阶段2）：挤奶/吸奶时 L 微幅刺激（带上限），仅 enableInflammationModel 时生效。
-	// 四层模型（阶段2）：激素饱和 H(L)=1−exp(−a·L)，D_eff=L·H(L)。启用时流速由 D_eff 驱动，低 L 低产、高 L 饱和。
+	// 鍥涘眰妯″瀷锛堥樁娈?锛夛細鎸ゅザ/鍚稿ザ鏃?L 寰箙鍒烘縺锛堝甫涓婇檺锛夛紝浠?enableInflammationModel 鏃剁敓鏁堛€?
+	// 鍥涘眰妯″瀷锛堥樁娈?锛夛細婵€绱犻ケ鍜?H(L)=1鈭抏xp(鈭抋路L)锛孌_eff=L路H(L)銆傚惎鐢ㄦ椂娴侀€熺敱 D_eff 椹卞姩锛屼綆 L 浣庝骇銆侀珮 L 楗卞拰銆?
 	public static bool enableHormoneSaturation = true;
-	/// <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
+	/// <summary>H(L) 楗卞拰绯绘暟 a锛涘缓璁?0.5锝?.5銆</summary>
 	public static float hormoneSaturationA = 1f;
-	/// <summary>参考 L 归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，使尾期更平滑；≤0 时不归一。</summary>
+	/// <summary>鍙傝€?L 褰掍竴锛欴_eff = L路(1鈭抏^{-aL})/(1鈭抏^{-aL_ref})锛屼娇灏炬湡鏇村钩婊戯紱鈮? 鏃朵笉褰掍竴銆</summary>
 	public static float hormoneSaturationLRef = 1f;
-	// 四层模型（阶段3.2）：组织适应。长期高 P 扩容、长期低 P 回缩；dF_max/dt = θ·max(P−0.85,0) − ω·(1−P)，每 60 tick 更新，叠加到基础容量上。
+	// 鍥涘眰妯″瀷锛堥樁娈?.2锛夛細缁勭粐閫傚簲銆傞暱鏈熼珮 P 鎵╁銆侀暱鏈熶綆 P 鍥炵缉锛沝F_max/dt = 胃路max(P鈭?.85,0) 鈭?蠅路(1鈭扨)锛屾瘡 60 tick 鏇存柊锛屽彔鍔犲埌鍩虹瀹归噺涓娿€?
 	public static bool enableTissueAdaptation = true;
-	/// <summary>扩容率 θ（每游戏日）；P 大于 0.85 时容量增加。</summary>
+	/// <summary>鎵╁鐜?胃锛堟瘡娓告垙鏃ワ級锛汸 澶т簬 0.85 鏃跺閲忓鍔犮€</summary>
 	public static float adaptationTheta = 0.002f;
-	/// <summary>回缩率 ω（每游戏日）；P 小于 1 时容量减少。</summary>
+	/// <summary>鍥炵缉鐜?蠅锛堟瘡娓告垙鏃ワ級锛汸 灏忎簬 1 鏃跺閲忓噺灏戙€</summary>
 	public static float adaptationOmega = 0.001f;
-	/// <summary>适应容量上限：不超过基础容量的此比例（如 0.2=20%）。</summary>
+	/// <summary>閫傚簲瀹归噺涓婇檺锛氫笉瓒呰繃鍩虹瀹归噺鐨勬姣斾緥锛堝 0.2=20%锛夈€</summary>
 	public static float adaptationCapMaxRatio = 0.2f;
-	// 四层模型（阶段3.3）：乳汁质量 MilkQuality = f(Hunger, I)。启用时：质量高→乳腺炎阈值提高；可选在 UI 显示。默认关闭，待办：产出奶物品的 QualityCategory。
+	// 鍥涘眰妯″瀷锛堥樁娈?.3锛夛細涔虫眮璐ㄩ噺 MilkQuality = f(Hunger, I)銆傚惎鐢ㄦ椂锛氳川閲忛珮鈫掍钩鑵虹値闃堝€兼彁楂橈紱鍙€夊湪 UI 鏄剧ず銆傞粯璁ゅ叧闂紝寰呭姙锛氫骇鍑哄ザ鐗╁搧鐨?QualityCategory銆?
 	public static bool enableMilkQuality = false;
-	/// <summary>炎症对质量的抑制系数；质量 ∝ (1 − 本值×I)，I 大则质量降。</summary>
+	/// <summary>鐐庣棁瀵硅川閲忕殑鎶戝埗绯绘暟锛涜川閲?鈭?(1 鈭?鏈€济桰)锛孖 澶у垯璐ㄩ噺闄嶃€</summary>
 	public static float milkQualityInflammationWeight = 0.5f;
-	/// <summary>质量对乳腺炎阈值的保护系数；有效 I_crit = I_crit×(1 + 本值×MilkQuality)。</summary>
+	/// <summary>璐ㄩ噺瀵逛钩鑵虹値闃堝€肩殑淇濇姢绯绘暟锛涙湁鏁?I_crit = I_crit脳(1 + 鏈€济桵ilkQuality)銆</summary>
 	public static float milkQualityProtectionFactor = 0.5f;
-	// 3.3 满池事件：满池过久（约 1 天）时是否发信提醒
+	// 3.3 婊℃睜浜嬩欢锛氭弧姹犺繃涔咃紙绾?1 澶╋級鏃舵槸鍚﹀彂淇℃彁閱?
 	public static bool enableFullPoolLetter = true;
-	// 3.3 动物差异化：种族 defName 对应药物进水倍率（未列出的种族为 1）。与参数联动表一致。
+	// 3.3 鍔ㄧ墿宸紓鍖栵細绉嶆棌 defName 瀵瑰簲鑽墿杩涙按鍊嶇巼锛堟湭鍒楀嚭鐨勭鏃忎负 1锛夈€備笌鍙傛暟鑱斿姩琛ㄤ竴鑷淬€?
 	public static List<string> raceDrugDeltaSMultiplierDefNames = new();
 	public static List<float> raceDrugDeltaSMultiplierValues = new();
-	// Cumpilation（统一到本设置，不再使用单独 Mod 入口）
-	public static bool Cumpilation_EnableCumflation = true;
-	public static float Cumpilation_GlobalCumflationModifier = 1.0f;
-	public static bool Cumpilation_EnableStuffing = true;
-	public static float Cumpilation_GlobalStuffingModifier = 1.0f;
-	public static bool Cumpilation_EnableBukkake = true;
-	public static float Cumpilation_GlobalBukkakeModifier = 1.0f;
-	public static bool Cumpilation_EnableFluidGatheringWhileCleaning = true;
-	public static float Cumpilation_MaxGatheringCheckDistance = 15.0f;
-	public static bool Cumpilation_EnableProgressingConsumptionThoughts = true;
-	public static bool Cumpilation_EnableOscillationMechanics = true;
-	public static bool Cumpilation_EnableOscillationMechanicsForAnimals = false;
-	public static bool Cumpilation_EnableDebugLogging = false;
-	public static bool CumpilationLeak_EnableFilthGeneration = true;
-	public static bool CumpilationLeak_EnableAutoDeflateBucket = false;
-	public static bool CumpilationLeak_EnableAutoDeflateClean = false;
-	public static bool CumpilationLeak_EnableAutoDeflateDirty = false;
-	public static bool CumpilationLeak_EnablePrivacy = true;
-	public static float CumpilationLeak_AutoDeflateMinSeverity = 0.4f;
-	public static float CumpilationLeak_AutoDeflateMaxDistance = 100f;
-	public static float CumpilationLeak_LeakMult = 5.0f;
-	public static float CumpilationLeak_LeakRate = 1.0f;
-	public static float CumpilationLeak_DeflateMult = 5.0f;
-	public static float CumpilationLeak_DeflateRate = 1.0f;
+	// 精液/Leak 设置（统一到本 Mod）。存档键 EM.Cum.* / EM.Cum.Leak.*。
+	public static bool Cum_EnableCumflation = true;
+	public static float Cum_GlobalCumflationModifier = 1.0f;
+	public static bool Cum_EnableStuffing = true;
+	public static float Cum_GlobalStuffingModifier = 1.0f;
+	public static bool Cum_EnableBukkake = true;
+	public static float Cum_GlobalBukkakeModifier = 1.0f;
+	public static bool Cum_EnableFluidGatheringWhileCleaning = true;
+	public static float Cum_MaxGatheringCheckDistance = 15.0f;
+	public static bool Cum_EnableProgressingConsumptionThoughts = true;
+	public static bool Cum_EnableOscillationMechanics = true;
+	public static bool Cum_EnableOscillationMechanicsForAnimals = false;
+	public static bool Cum_EnableDebugLogging = false;
+	public static bool CumLeak_EnableFilthGeneration = true;
+	public static bool CumLeak_EnableAutoDeflateBucket = false;
+	public static bool CumLeak_EnableAutoDeflateClean = false;
+	public static bool CumLeak_EnableAutoDeflateDirty = false;
+	public static bool CumLeak_EnablePrivacy = true;
+	public static float CumLeak_AutoDeflateMinSeverity = 0.4f;
+	public static float CumLeak_AutoDeflateMaxDistance = 100f;
+	public static float CumLeak_LeakMult = 5.0f;
+	public static float CumLeak_LeakRate = 1.0f;
+	public static float CumLeak_DeflateMult = 5.0f;
+	public static float CumLeak_DeflateRate = 1.0f;
 	public static List<Gene_MilkTypeData> genes = new();
 	public static MilkSettings colonistSetting = new();
 	public static MilkSettings slaveSetting = new();
@@ -279,7 +280,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref nutritionToEnergyFactor, "EM.NutritionToEnergyFactor", 100f);
 		Scribe_Values.Look(ref lactationExtraNutritionBasis, "EM.LactationExtraNutritionFactor", 150);
 		if (Scribe.mode == LoadSaveMode.LoadingVars && lactationExtraNutritionBasis is >= 1 and < 150)
-			lactationExtraNutritionBasis = 150; // 旧存档 float 1f 被读成 1，视为 150
+			lactationExtraNutritionBasis = 150; // 鏃у瓨妗?float 1f 琚鎴?1锛岃涓?150
 		Scribe_Values.Look(ref reabsorbNutritionEnabled, "EM.ReabsorbNutritionEnabled", true);
 		Scribe_Values.Look(ref reabsorbNutritionEfficiency, "EM.ReabsorbNutritionEfficiency", 0.5f);
 		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
@@ -350,32 +351,32 @@ internal class MilkCumSettings : ModSettings
 			raceDrugDeltaSMultiplierDefNames ??= new List<string>();
 			raceDrugDeltaSMultiplierValues ??= new List<float>();
 		}
-		Scribe_Values.Look(ref Cumpilation_EnableCumflation, "Cumpilation.EnableCumflation", true);
-		Scribe_Values.Look(ref Cumpilation_GlobalCumflationModifier, "Cumpilation.GlobalCumflationModifier", 1.0f);
-		Scribe_Values.Look(ref Cumpilation_EnableStuffing, "Cumpilation.EnableStuffing", true);
-		Scribe_Values.Look(ref Cumpilation_GlobalStuffingModifier, "Cumpilation.GlobalStuffingModifier", 1.0f);
-		Scribe_Values.Look(ref Cumpilation_EnableBukkake, "Cumpilation.EnableBukkake", true);
-		Scribe_Values.Look(ref Cumpilation_GlobalBukkakeModifier, "Cumpilation.GlobalBukkakeModifier", 1.0f);
-		Scribe_Values.Look(ref Cumpilation_EnableFluidGatheringWhileCleaning, "Cumpilation.EnableFluidGatheringWhileCleaning", true);
-		Scribe_Values.Look(ref Cumpilation_MaxGatheringCheckDistance, "Cumpilation.MaxGatheringCheckDistance", 15.0f);
-		Scribe_Values.Look(ref Cumpilation_EnableProgressingConsumptionThoughts, "Cumpilation.EnableProgressingConsumptionThoughts", true);
-		Scribe_Values.Look(ref Cumpilation_EnableOscillationMechanics, "Cumpilation.EnableOscillationMechanics", true);
-		Scribe_Values.Look(ref Cumpilation_EnableOscillationMechanicsForAnimals, "Cumpilation.EnableOscillationMechanicsForAnimals", false);
-		Scribe_Values.Look(ref Cumpilation_EnableDebugLogging, "Cumpilation.EnableDebugLogging", false);
+		Scribe_Values.Look(ref Cum_EnableCumflation, "EM.Cum.EnableCumflation", true);
+		Scribe_Values.Look(ref Cum_GlobalCumflationModifier, "EM.Cum.GlobalCumflationModifier", 1.0f);
+		Scribe_Values.Look(ref Cum_EnableStuffing, "EM.Cum.EnableStuffing", true);
+		Scribe_Values.Look(ref Cum_GlobalStuffingModifier, "EM.Cum.GlobalStuffingModifier", 1.0f);
+		Scribe_Values.Look(ref Cum_EnableBukkake, "EM.Cum.EnableBukkake", true);
+		Scribe_Values.Look(ref Cum_GlobalBukkakeModifier, "EM.Cum.GlobalBukkakeModifier", 1.0f);
+		Scribe_Values.Look(ref Cum_EnableFluidGatheringWhileCleaning, "EM.Cum.EnableFluidGatheringWhileCleaning", true);
+		Scribe_Values.Look(ref Cum_MaxGatheringCheckDistance, "EM.Cum.MaxGatheringCheckDistance", 15.0f);
+		Scribe_Values.Look(ref Cum_EnableProgressingConsumptionThoughts, "EM.Cum.EnableProgressingConsumptionThoughts", true);
+		Scribe_Values.Look(ref Cum_EnableOscillationMechanics, "EM.Cum.EnableOscillationMechanics", true);
+		Scribe_Values.Look(ref Cum_EnableOscillationMechanicsForAnimals, "EM.Cum.EnableOscillationMechanicsForAnimals", false);
+		Scribe_Values.Look(ref Cum_EnableDebugLogging, "EM.Cum.EnableDebugLogging", false);
 		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
 		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);
 		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
-		Scribe_Values.Look(ref CumpilationLeak_EnableFilthGeneration, "CumpilationLeak.EnableFilthGeneration", true);
-		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateBucket, "CumpilationLeak.EnableAutoDeflateBucket", false);
-		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateClean, "CumpilationLeak.EnableAutoDeflateClean", false);
-		Scribe_Values.Look(ref CumpilationLeak_EnableAutoDeflateDirty, "CumpilationLeak.EnableAutoDeflateDirty", false);
-		Scribe_Values.Look(ref CumpilationLeak_EnablePrivacy, "CumpilationLeak.EnablePrivacy", true);
-		Scribe_Values.Look(ref CumpilationLeak_AutoDeflateMinSeverity, "CumpilationLeak.AutoDeflateMinSeverity", 0.4f);
-		Scribe_Values.Look(ref CumpilationLeak_AutoDeflateMaxDistance, "CumpilationLeak.AutoDeflateMaxDistance", 100f);
-		Scribe_Values.Look(ref CumpilationLeak_LeakMult, "CumpilationLeak.LeakMult", 5.0f);
-		Scribe_Values.Look(ref CumpilationLeak_LeakRate, "CumpilationLeak.LeakRate", 1.0f);
-		Scribe_Values.Look(ref CumpilationLeak_DeflateMult, "CumpilationLeak.DeflateMult", 5.0f);
-		Scribe_Values.Look(ref CumpilationLeak_DeflateRate, "CumpilationLeak.DeflateRate", 1.0f);
+		Scribe_Values.Look(ref CumLeak_EnableFilthGeneration, "EM.Cum.Leak.EnableFilthGeneration", true);
+		Scribe_Values.Look(ref CumLeak_EnableAutoDeflateBucket, "EM.Cum.Leak.EnableAutoDeflateBucket", false);
+		Scribe_Values.Look(ref CumLeak_EnableAutoDeflateClean, "EM.Cum.Leak.EnableAutoDeflateClean", false);
+		Scribe_Values.Look(ref CumLeak_EnableAutoDeflateDirty, "EM.Cum.Leak.EnableAutoDeflateDirty", false);
+		Scribe_Values.Look(ref CumLeak_EnablePrivacy, "EM.Cum.Leak.EnablePrivacy", true);
+		Scribe_Values.Look(ref CumLeak_AutoDeflateMinSeverity, "EM.Cum.Leak.AutoDeflateMinSeverity", 0.4f);
+		Scribe_Values.Look(ref CumLeak_AutoDeflateMaxDistance, "EM.Cum.Leak.AutoDeflateMaxDistance", 100f);
+		Scribe_Values.Look(ref CumLeak_LeakMult, "EM.Cum.Leak.LeakMult", 5.0f);
+		Scribe_Values.Look(ref CumLeak_LeakRate, "EM.Cum.Leak.LeakRate", 1.0f);
+		Scribe_Values.Look(ref CumLeak_DeflateMult, "EM.Cum.Leak.DeflateMult", 5.0f);
+		Scribe_Values.Look(ref CumLeak_DeflateRate, "EM.Cum.Leak.DeflateRate", 1.0f);
 		Scribe_Deep.Look(ref humanlikeBreastfeed, "EM.HumanlikeBreastfeed");
 		Scribe_Deep.Look(ref animalBreastfeed, "EM.AnimalBreastfeed");
 		Scribe_Deep.Look(ref mechanoidBreastfeed, "EM.MechanoidBreastfeed");
@@ -414,7 +415,7 @@ internal class MilkCumSettings : ModSettings
 		}
 	}
 
-	/// <summary>确保 Scribe_Deep 反序列化的对象类型正确，避免旧存档或类型变更导致 InvalidCastException。</summary>
+	/// <summary>纭繚 Scribe_Deep 鍙嶅簭鍒楀寲鐨勫璞＄被鍨嬫纭紝閬垮厤鏃у瓨妗ｆ垨绫诲瀷鍙樻洿瀵艰嚧 InvalidCastException銆</summary>
 	private static void EnsureScribeDeepTypes()
 	{
 		if (_risk == null || _risk.GetType() != typeof(MilkRiskSettings))
@@ -442,10 +443,10 @@ internal class MilkCumSettings : ModSettings
 
 	public void DoWindowContents(Rect inRect)
 	{
-		// 防止旧存档/错误反序列化导致类型不一致引发 InvalidCastException
+		// 闃叉鏃у瓨妗?閿欒鍙嶅簭鍒楀寲瀵艰嚧绫诲瀷涓嶄竴鑷村紩鍙?InvalidCastException
 		EnsureScribeDeepTypes();
 		inRect.yMin += unitSize;
-		// 从主菜单打开设置时 PostLoadInit 未执行，需惰性初始化以免 NRE
+		// 浠庝富鑿滃崟鎵撳紑璁剧疆鏃?PostLoadInit 鏈墽琛岋紝闇€鎯版€у垵濮嬪寲浠ュ厤 NRE
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
 		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
@@ -458,7 +459,7 @@ internal class MilkCumSettings : ModSettings
 		mechSetting ??= new MilkSettings();
 		entitySetting ??= new MilkSettings();
 
-		// 主 Tab 栏（专业级：6 个常驻 + 1 个仅 DevMode）
+		// 涓?Tab 鏍忥紙涓撲笟绾э細6 涓父椹?+ 1 涓粎 DevMode锛?
 		List<TabRecord> mainTabs = new()
 		{
 			new("EM.Tab.CoreSystems".Translate(), () => { mainTabIndex = (int)MainTabIndex.CoreSystems; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.CoreSystems),
@@ -475,7 +476,7 @@ internal class MilkCumSettings : ModSettings
 		TabDrawer.DrawTabs(inRect, mainTabs);
 		inRect.yMin += unitSize;
 
-		// 子 Tab 栏（随主 Tab 变化）
+		// 瀛?Tab 鏍忥紙闅忎富 Tab 鍙樺寲锛?
 		List<TabRecord> subTabs = GetSubTabs();
 		if (subTabIndex >= subTabs.Count)
 			subTabIndex = 0;
@@ -488,7 +489,7 @@ internal class MilkCumSettings : ModSettings
 		Widgets.DrawMenuSection(inRect);
 		Rect contentRect = inRect.ContractedBy(unitSize / 2);
 
-		// 专业级 7 主 Tab 内容分发
+		// 涓撲笟绾?7 涓?Tab 鍐呭鍒嗗彂
 		switch (mainTabIndex)
 		{
 			case (int)MainTabIndex.CoreSystems:
@@ -646,7 +647,7 @@ internal class MilkCumSettings : ModSettings
 		EventHelper.TriggerSettingsChanged();
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
-		HediffDefOf.Lactating.maxSeverity = 100f; // 允许 severity 自由叠加
+		HediffDefOf.Lactating.maxSeverity = 100f; // 鍏佽 severity 鑷敱鍙犲姞
 		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
 		animalBreastfeed ??= new AnimalBreastfeed();
 		mechanoidBreastfeed ??= new MechanoidBreastfeed();
@@ -667,14 +668,14 @@ internal class MilkCumSettings : ModSettings
 			if (!productsToTags.ContainsKey("Milk"))
 				productsToTags.Add("Milk", new MilkTag("Milk", true, false));
 		}
-		// 人奶：默认开启显示动物名，产主限制「谁可以吃」才生效
+		// 浜哄ザ锛氶粯璁ゅ紑鍚樉绀哄姩鐗╁悕锛屼骇涓婚檺鍒躲€岃皝鍙互鍚冦€嶆墠鐢熸晥
 		ThingDef humanMilkDef = DefDatabase<ThingDef>.GetNamedSilentFail("EM_HumanMilk");
 		if (humanMilkDef != null && !productsToTags.ContainsKey("EM_HumanMilk"))
 			productsToTags.Add("EM_HumanMilk", new MilkTag("EM_HumanMilk", true, false));
-		// 7.10: rjw-genes cum milk etc. — ensure breast-sourced cum gets producer so allowedConsumers apply
-		ThingDef cumDef = DefDatabase<ThingDef>.GetNamedSilentFail("Cumpilation_Cum");
-		if (cumDef != null && !productsToTags.ContainsKey("Cumpilation_Cum"))
-			productsToTags.Add("Cumpilation_Cum", new MilkTag("Cumpilation_Cum", true, false));
+		// 7.10: rjw-genes cum milk etc. 鈥?ensure breast-sourced cum gets producer so allowedConsumers apply
+		ThingDef cumDef = DefDatabase<ThingDef>.GetNamedSilentFail("Cum_Cum");
+		if (cumDef != null && !productsToTags.ContainsKey("Cum_Cum"))
+			productsToTags.Add("Cum_Cum", new MilkTag("Cum_Cum", true, false));
 		foreach (Pawn pawn in PawnsFinder.AllMaps)
 		{
 			pawn.LactatingHediffWithComps()?.SetDirty();
@@ -682,7 +683,7 @@ internal class MilkCumSettings : ModSettings
 	}
 	private void UpdateEqualMilkableComp(ThingDef pawnDef)
 	{
-		// 设计原则 3：不重复定义「种族是否产奶」底层规则；仅用 namesToProducts 与设置做开关，默认值来自 GetDefaultMilkProduct(Def)。
+		// 璁捐鍘熷垯 3锛氫笉閲嶅瀹氫箟銆岀鏃忔槸鍚︿骇濂躲€嶅簳灞傝鍒欙紱浠呯敤 namesToProducts 涓庤缃仛寮€鍏筹紝榛樿鍊兼潵鑷?GetDefaultMilkProduct(Def)銆?
 		CompProperties_Milkable compProperties = pawnDef.GetCompProperties<CompProperties_Milkable>();
 		if (compProperties == null)
 		{
@@ -696,7 +697,7 @@ internal class MilkCumSettings : ModSettings
 		compProperties.Set(namesToProducts[pawnDef.defName]);
 	}
 
-	/// <summary>设计原则 3/4：默认产奶开关与奶量来自 Def（Humanlike/体型），不手写底层规则；实际开关由 namesToProducts + 设置决定。</summary>
+	/// <summary>璁捐鍘熷垯 3/4锛氶粯璁や骇濂跺紑鍏充笌濂堕噺鏉ヨ嚜 Def锛圚umanlike/浣撳瀷锛夛紝涓嶆墜鍐欏簳灞傝鍒欙紱瀹為檯寮€鍏崇敱 namesToProducts + 璁剧疆鍐冲畾銆</summary>
 	internal static RaceMilkType GetDefaultMilkProduct(ThingDef def)
 	{
 		RaceMilkType milkProduct = new();
@@ -775,7 +776,7 @@ internal class MilkCumSettings : ModSettings
 		return false;
 	}
 
-	/// <summary>奶标签联动：产主限制「谁可以吃我的奶制品」仅当奶标签里对应物品种类开启「显示动物名」时生效。本方法为 true 时，产主限制窗口显示该区块。</summary>
+	/// <summary>濂舵爣绛捐仈鍔細浜т富闄愬埗銆岃皝鍙互鍚冩垜鐨勫ザ鍒跺搧銆嶄粎褰撳ザ鏍囩閲屽搴旂墿鍝佺绫诲紑鍚€屾樉绀哄姩鐗╁悕銆嶆椂鐢熸晥銆傛湰鏂规硶涓?true 鏃讹紝浜т富闄愬埗绐楀彛鏄剧ず璇ュ尯鍧椼€</summary>
 	internal static bool IsProducerRestrictionConsumersEffectiveForMilkProducts()
 	{
 		if (productsToTags.TryGetValue("EM_HumanMilk", out MilkTag t) && t.TagPawn) return true;
@@ -783,10 +784,10 @@ internal class MilkCumSettings : ModSettings
 		return false;
 	}
 
-	/// <summary>奶标签联动：产主限制「谁可以吃我的精液制品」仅当奶标签里精液开启「显示动物名」时生效。本方法为 true 时，产主限制窗口显示该区块。</summary>
+	/// <summary>濂舵爣绛捐仈鍔細浜т富闄愬埗銆岃皝鍙互鍚冩垜鐨勭簿娑插埗鍝併€嶄粎褰撳ザ鏍囩閲岀簿娑插紑鍚€屾樉绀哄姩鐗╁悕銆嶆椂鐢熸晥銆傛湰鏂规硶涓?true 鏃讹紝浜т富闄愬埗绐楀彛鏄剧ず璇ュ尯鍧椼€</summary>
 	internal static bool IsProducerRestrictionConsumersEffectiveForCumProducts()
 	{
-		return productsToTags.TryGetValue("Cumpilation_Cum", out MilkTag t) && t.TagPawn;
+		return productsToTags.TryGetValue("Cum_Cum", out MilkTag t) && t.TagPawn;
 	}
 
 	internal static bool MilkTypeCanBreastfeed(Pawn mom)
@@ -872,8 +873,8 @@ internal class MilkCumSettings : ModSettings
 	{
 		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount;
 	}
-	/// <summary>当前催乳素耐受严重度 t ∈ [0,1]；完全由游戏内 Hediff/Comp 决定。</summary>
-	/// <summary>3.3 动物差异化：种族对催乳药物进水倍率，未配置则 1。</summary>
+	/// <summary>褰撳墠鍌钩绱犺€愬彈涓ラ噸搴?t 鈭?[0,1]锛涘畬鍏ㄧ敱娓告垙鍐?Hediff/Comp 鍐冲畾銆</summary>
+	/// <summary>3.3 鍔ㄧ墿宸紓鍖栵細绉嶆棌瀵瑰偓涔宠嵂鐗╄繘姘村€嶇巼锛屾湭閰嶇疆鍒?1銆</summary>
 	internal static float GetRaceDrugDeltaSMultiplier(Pawn pawn)
 	{
 		if (pawn?.def?.defName == null || raceDrugDeltaSMultiplierDefNames == null || raceDrugDeltaSMultiplierValues == null) return 1f;
@@ -885,7 +886,7 @@ internal class MilkCumSettings : ModSettings
 	internal static float GetProlactinTolerance(Pawn pawn)
 		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
 
-	/// <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。启用耐受动态时由 comp 的 E 计算。</summary>
+	/// <summary>缁熶竴鑰愬彈绯绘暟锛欵_tol(t) = max(1 鈭?t, 0.05)銆傚惎鐢ㄨ€愬彈鍔ㄦ€佹椂鐢?comp 鐨?E 璁＄畻銆</summary>
 	internal static float GetProlactinToleranceFactor(Pawn pawn)
 	{
 		if (!allowToleranceAffectMilk) return 1f;
@@ -900,7 +901,7 @@ internal class MilkCumSettings : ModSettings
 		return GetProlactinToleranceFactor(t);
 	}
 
-	/// <summary>耐受动态：由 mod 维护的 E 得到 E_tol = [max(1−E, 0.05)]^exponent。</summary>
+	/// <summary>鑰愬彈鍔ㄦ€侊細鐢?mod 缁存姢鐨?E 寰楀埌 E_tol = [max(1鈭扙, 0.05)]^exponent銆</summary>
 	internal static float GetProlactinToleranceFactorFromE(float E)
 	{
 		if (!allowToleranceAffectMilk) return 1f;
@@ -908,7 +909,7 @@ internal class MilkCumSettings : ModSettings
 		return Mathf.Pow(e, Mathf.Clamp(toleranceFlowImpactExponent, 0.1f, 3f));
 	}
 
-	/// <summary>统一耐受系数（按严重度 t）：E_tol(t) = [max(1 − t, 0.05)]^exponent；allowToleranceAffectMilk 关闭时恒为 1。</summary>
+	/// <summary>缁熶竴鑰愬彈绯绘暟锛堟寜涓ラ噸搴?t锛夛細E_tol(t) = [max(1 鈭?t, 0.05)]^exponent锛沘llowToleranceAffectMilk 鍏抽棴鏃舵亽涓?1銆</summary>
 	internal static float GetProlactinToleranceFactor(float toleranceSeverity)
 	{
 		if (!allowToleranceAffectMilk) return 1f;
@@ -919,7 +920,7 @@ internal class MilkCumSettings : ModSettings
 	#endregion
 }
 
-/// <summary>建议 13：乳腺炎/风险与耐受相关设置分组，便于序列化与 UI；ExposeData 仍写旧 key 以兼容存档。</summary>
+/// <summary>寤鸿 13锛氫钩鑵虹値/椋庨櫓涓庤€愬彈鐩稿叧璁剧疆鍒嗙粍锛屼究浜庡簭鍒楀寲涓?UI锛汦xposeData 浠嶅啓鏃?key 浠ュ吋瀹瑰瓨妗ｃ€</summary>
 public class MilkRiskSettings : IExposable
 {
 	public bool allowMastitis = true;
@@ -928,7 +929,7 @@ public class MilkRiskSettings : IExposable
 	public float hygieneRiskMultiplier = 1f;
 	public bool allowToleranceAffectMilk = true;
 	public float toleranceFlowImpactExponent = 1f;
-	/// <summary>建议 8：人形/动物乳腺炎 MTB 乘数，便于区分平衡。</summary>
+	/// <summary>寤鸿 8锛氫汉褰?鍔ㄧ墿涔宠吅鐐?MTB 涔樻暟锛屼究浜庡尯鍒嗗钩琛°€</summary>
 	public float mastitisMtbDaysMultiplierHumanlike = 1f;
 	public float mastitisMtbDaysMultiplierAnimal = 1f;
 

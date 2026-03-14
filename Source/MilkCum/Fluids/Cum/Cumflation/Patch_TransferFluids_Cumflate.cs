@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {
     [HarmonyPatch(typeof(SexUtility), nameof(SexUtility.TransferFluids))]
     public static class Patch_TransferFluids_Cumflate

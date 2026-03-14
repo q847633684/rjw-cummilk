@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Verse;
 using Verse.Noise;
 
-namespace Cumpilation.Fluids.Slug
+namespace MilkCum.Fluids.Cum.Fluids.Slug
 {
     /// <summary>
     /// Adds up to MAX_SEVERITY (Default=0.2f) Toxic Buildup to the receiver upon consuming Slug. 

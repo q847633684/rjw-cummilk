@@ -1,4 +1,4 @@
-using Cumpilation.Cumflation;
+using MilkCum.Fluids.Cum.Cumflation;
 using rjw;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Common
+namespace MilkCum.Fluids.Cum.Common
 {
     public class HediffCompProperties_FluidChange : HediffCompProperties_PartTargetting
     {

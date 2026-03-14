@@ -1,4 +1,4 @@
-using Cumpilation.Common;
+using MilkCum.Fluids.Cum.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace Cumpilation.Fluids.Slug
+namespace MilkCum.Fluids.Cum.Fluids.Slug
 {
     public class HediffCompProperties_SlugExplosionOnDeath : HediffCompProperties
     {

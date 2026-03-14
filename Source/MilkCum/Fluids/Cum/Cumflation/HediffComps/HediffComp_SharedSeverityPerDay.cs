@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
-namespace Cumpilation.Cumflation
+namespace MilkCum.Fluids.Cum.Cumflation
 {   
     /// <summary>
     /// Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
