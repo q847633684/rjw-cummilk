@@ -9,13 +9,13 @@
     <isBad>false</isBad>
     <tendable>false</tendable>
     <comps>
-      <li Class="Cumpilation.Cumflation.HediffCompProperties_SharedSeverityPerDay">
+      <li Class="MilkCum.Fluids.Cum.Cumflation.HediffCompProperties_SharedSeverityPerDay">
         <severityPerDay>-0.85</severityPerDay>
       </li>
-      <li Class="Cumpilation.Cumflation.HediffCompProperties_SourceStorage" />
+      <li Class="MilkCum.Fluids.Cum.Cumflation.HediffCompProperties_SourceStorage" />
       <!-- For mtb in VomitFluidMtb keep in mind that this chance triggers for every potential
       stuffing. -->
-      <li Class="Cumpilation.Cumflation.HediffCompProperties_VomitFluidMtb">
+      <li Class="MilkCum.Fluids.Cum.Cumflation.HediffCompProperties_VomitFluidMtb">
         <mtbDays>1.0</mtbDays>
         <scaleWithSeverity>true</scaleWithSeverity>
       </li>

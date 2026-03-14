@@ -60,7 +60,7 @@
         </costList>
         <comps>
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket" />
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket" />
             <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
@@ -87,7 +87,7 @@
             </li>
             <li Class="CompProperties_Flickable" />
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket），电泵效率稍高 -->
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket">
                 <deflateMult>1.5</deflateMult>
                 <deflateRate>1</deflateRate>
             </li>

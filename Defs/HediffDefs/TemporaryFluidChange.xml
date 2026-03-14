@@ -14,7 +14,7 @@
             </li>
             <!-- Example how to use: -->
             <!-- 
-            <li Class="Cumpilation.Common.HediffCompProperties_FluidChange">
+            <li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_FluidChange">
                 <fluid>Milk</fluid>
                 <allowMen>true</allowMen>
                 <allowWomen>true</allowWomen>

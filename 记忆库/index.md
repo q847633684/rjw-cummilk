@@ -60,6 +60,8 @@
 | 模组设置窗口完整UI结构 | [design/模组设置窗口完整UI结构](design/模组设置窗口完整UI结构.md) | #UI #模组设置 #完整结构 #模拟显示 |
 | 模组设置UI专业级重构方案 | [design/模组设置UI专业级重构方案](design/模组设置UI专业级重构方案.md) | #UI #模组设置 #专业级 #7主Tab #按系统类型分层 |
 | 列表滚动与固定 contentHeight | [design/列表滚动与固定contentHeight](design/列表滚动与固定contentHeight.md) | #UI #滚动 #BeginScrollView #contentHeight |
+| 代码审阅：泌乳系统核心逻辑 | [design/代码审阅-泌乳系统核心逻辑](design/代码审阅-泌乳系统核心逻辑.md) | #审阅 #泌乳 #双池 #UpdateMilkPools #CompEquallyMilkable |
+| 代码审阅：药物系统实现确认 | [design/代码审阅-药物系统实现确认](design/代码审阅-药物系统实现确认.md) | #审阅 #药物 #吸收延迟 #耐受公式 #WorldComponent_MilkCumAbsorptionDelay |
 
 ---
 
@@ -129,9 +131,12 @@
 | #参数 | 设置参数与行为联动 | domain/快速参考、[docs/参数联动表](docs/参数联动表.md) |
 | #兼容 | 原版/RJW/其它 mod、只读只挂接 | domain/快速参考、[docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) |
 | #坑点 | 已知注意、存档、Def 顺序等 | domain/快速参考 |
+| #审阅 | 代码审阅、逻辑验证、实现确认 | design/代码审阅-泌乳系统核心逻辑、design/代码审阅-药物系统实现确认 |
+| #泌乳 | 泌乳系统、双池、进水算法 | design/代码审阅-泌乳系统核心逻辑、docs/泌乳系统逻辑图 |
+| #药物 | 药物系统、吸收延迟、耐受公式 | design/代码审阅-药物系统实现确认、decisions/ADR-002-吸收延迟基准 |
 
 （随条目增加可在此补充更多标签与链接）
 
 ---
 
-**最后整理**：2026-03
+**最后整理**：2026-03-14（新增代码审阅文档）

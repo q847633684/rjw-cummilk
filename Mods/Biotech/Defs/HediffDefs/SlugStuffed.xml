@@ -7,14 +7,14 @@
     <description>You came too close to someone currently slugging.</description>
     <comps>
       <!-- DevNote: The "normal" comps are inherited, apparently. -->
-      <li Class="Cumpilation.Fluids.Slug.HediffCompProperties_SlugExplosionOnDeath">
+      <li Class="MilkCum.Fluids.Cum.Fluids.Slug.HediffCompProperties_SlugExplosionOnDeath">
         <baseRadius>4</baseRadius>
         <radiusMultipliedByBodySize>true</radiusMultipliedByBodySize>
         <radiusMultipliedBySeverity>true</radiusMultipliedBySeverity>
         <doToxicCloud>true</doToxicCloud>
         <doFireExplosion>true</doFireExplosion>
       </li>
-      <li Class="Cumpilation.Common.HediffCompProperties_SpawnOtherHediffOverTime">
+      <li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_SpawnOtherHediffOverTime">
         <tickInterval>3000</tickInterval>
         <hediff>ToxicBuildup</hediff>
         <severityIncrease>0.03</severityIncrease>
@@ -97,12 +97,12 @@
 
   </HediffDef>
 
-  <Cumpilation.Cumflation.StuffingDef>
+  <MilkCum.Fluids.Cum.Cumflation.StuffingDef>
     <defName>Cumpilation_Slug_Stuffing</defName>
     <fluid>Cumpilation_Slug</fluid>
     <resultingStuffedHediff>Cumpilation_SlugStuffed</resultingStuffedHediff>
     <canStuffAnimals>true</canStuffAnimals>
     <amountOfFluidForFullStuffing>25</amountOfFluidForFullStuffing>
-  </Cumpilation.Cumflation.StuffingDef>
+  </MilkCum.Fluids.Cum.Cumflation.StuffingDef>
 
 </Defs>
