@@ -232,6 +232,16 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
     public float CurrentLactationAmount => currentLactationAmount;
 
+    /// <summary>用于流速/驱动力计算的 L：当 lactationLevelCap&gt;0 时取 min(L, cap)，避免超上限时流速过高。</summary>
+    public float EffectiveLactationAmountForFlow
+    {
+        get
+        {
+            float cap = MilkCumSettings.lactationLevelCap;
+            return cap > 0f ? Mathf.Min(currentLactationAmount, cap) : currentLactationAmount;
+        }
+    }
+
     /// <summary>是否为永久泌乳（基因或动物设置）：L 不衰减；括号阶段名与悬停「剩余时间」均据此显示「永久」</summary>
     public bool IsPermanentLactation =>
         Pawn.genes?.HasActiveGene(MilkCumDefOf.EM_Permanent_Lactation) == true
@@ -488,21 +498,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>当前 L 下的每日衰减（仅用于显示/调试；实际衰减由原版 SeverityPerDay 驱动）。</summary>
     public float GetDailyLactationDecay() => GetDailyLactationDecayWithBT(lactationAmountFromDrug, MilkCumSettings.GetEffectiveBaseValueTForDecay()) + GetDailyLactationDecayWithBT(lactationAmountFromBirth, MilkCumSettings.GetEffectiveBaseValueTForDecayBirth());
 
-    /// <summary>L 与 Severity 同时增加并封顶到 def.maxSeverity（原版逻辑下两者同步）。</summary>
-    private void AddToLAndSeverity(float deltaL)
-    {
-        lactationAmountFromDrug += deltaL;
-        if (Parent != null)
-            Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaL);
-    }
-
-    /// <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。</summary>
+    /// <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。
+    /// 封顶+倍数逻辑与 AddRemainingDays 共用 ApplyDeltaLToLAndSeverity。</summary>
     public void AddFromDrug(float deltaSeverity, bool syncSeverity = true)
     {
         float remainingBefore = RemainingDays;
         float deltaL = deltaSeverity * PoolModelConstants.DoseToLFactor;
         if (syncSeverity)
-            AddToLAndSeverity(deltaL);
+            ApplyDeltaLToLAndSeverity(deltaL);
         else
             lactationAmountFromDrug += deltaL;
         if (MilkCumSettings.lactationDrugIntakeLog && !SuppressDrugIntakeLog)
@@ -529,7 +532,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + baseVal);
     }
 
-    /// <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。</summary>
+    /// <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。启用 lactationLevelCap 时与 AddFromDrug 一致：L 封顶，超出部分按倍数转为 Severity。</summary>
     public void AddRemainingDays(float days)
     {
         if (days <= 0f || IsPermanentLactation) return;
@@ -541,9 +544,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 if (c is HediffCompProperties_SeverityPerDay sp && sp.severityPerDay < 0f)
                 {
                     deltaL = days * (-sp.severityPerDay);
-                    lactationAmountFromDrug += deltaL;
-                    if (Parent != null)
-                        Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaL);
+                    ApplyDeltaLToLAndSeverity(deltaL);
                     return;
                 }
             }
@@ -551,9 +552,27 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float dailyDecay = GetDailyLactationDecay();
         if (dailyDecay <= 0f) return;
         deltaL = dailyDecay * days;
-        lactationAmountFromDrug += deltaL;
+        ApplyDeltaLToLAndSeverity(deltaL);
+    }
+
+    /// <summary>将 ΔL 应用到 L 与 Severity；启用 lactationLevelCap 时 L 封顶，超出部分按 lactationLevelCapDurationMultiplier 转为 Severity（与 AddFromDrug 一致）。</summary>
+    private void ApplyDeltaLToLAndSeverity(float deltaL)
+    {
+        float cap = MilkCumSettings.lactationLevelCap;
+        if (cap <= 0f)
+        {
+            lactationAmountFromDrug += deltaL;
+            if (Parent != null)
+                Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaL);
+            return;
+        }
+        float deltaLToL = Mathf.Max(0f, cap - currentLactationAmount);
+        deltaLToL = Mathf.Min(deltaLToL, deltaL);
+        lactationAmountFromDrug += deltaLToL;
+        float overflow = deltaL - deltaLToL;
+        float overflowSeverity = overflow * Mathf.Max(0.1f, MilkCumSettings.lactationLevelCapDurationMultiplier);
         if (Parent != null)
-            Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaL);
+            Parent.Severity = Mathf.Min(Parent.def.maxSeverity, Parent.Severity + deltaLToL + overflowSeverity);
     }
 
     public override void CompPostTick(ref float severityAdjustment)
@@ -585,8 +604,9 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             else
             {
                 cachedWasPermanentLactation = false;
-                // 原版逻辑：L 跟随 parent.Severity（由 SeverityPerDay 衰减）
-                lactationAmountFromDrug = Parent.Severity;
+                // 原版逻辑：L 跟随 parent.Severity（由 SeverityPerDay 衰减）；启用泌乳水平上限时 L = min(Severity, cap)，超出 cap 的部分仅作持续时间缓冲
+                float cap = MilkCumSettings.lactationLevelCap;
+                lactationAmountFromDrug = cap > 0f ? Mathf.Min(Parent.Severity, cap) : Parent.Severity;
                 lactationAmountFromBirth = 0f;
                 if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
                 {
@@ -636,7 +656,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float fullness = CompEquallyMilkable.Fullness;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactationAmount <= 0f || hungerFactor <= 0f) return r;
-        r.Drive = MilkCumSettings.GetEffectiveDrive(currentLactationAmount);
+        r.Drive = MilkCumSettings.GetEffectiveDrive(EffectiveLactationAmountForFlow);
         r.Hunger = hungerFactor;
         r.Conditions = Pawn.GetMilkFlowMultiplierFromConditions();
         r.Genes = Pawn.GetMilkFlowMultiplierFromGenes();

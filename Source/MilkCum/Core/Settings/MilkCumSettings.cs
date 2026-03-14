@@ -108,6 +108,10 @@ internal class MilkCumSettings : ModSettings
 	public static float baselineMilkDurationDays = 5f;
 	// 鍒嗗ī璇卞彂娉屼钩鎸佺画澶╂暟锛氫粎鐢ㄤ簬鏃?SeverityPerDay 鏃剁殑 RemainingDays 涓?GetDailyLactationDecay锛涗富娴佺▼鍚屼笂锛屼笉鍐嶆毚闇插埌 UI銆?
 	public static float birthInducedMilkDurationDays = 30f;
+	/// <summary>泌乳水平上限（L_cap）：&gt;0 时，吃药超过此值的部分不再增加进水量 L，只增加 Severity（延长泌乳时间），流速由 min(L, cap) 决定，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</summary>
+	public static float lactationLevelCap = 0f;
+	/// <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
+	public static float lactationLevelCapDurationMultiplier = 1.5f;
 	/// <summary>鍌钩绱犲崟鍓傚湪 XML 涓鑰愬彈 Hediff 鐨?Severity 澧為噺锛堜笌 Lactating 鍚屽墏鍙犲姞涓€鑷达紝榛樿 0.044锛夛紱鏀?XML 鏃堕渶鍚屾銆</summary>
 	public static float ProlactinToleranceGainPerDose = 0.044f;
 
@@ -310,6 +314,13 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
 		Scribe_Values.Look(ref baselineMilkDurationDays, "EM.BaselineMilkDurationDays", 5f);
+		Scribe_Values.Look(ref lactationLevelCap, "EM.LactationLevelCap", 0f);
+		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "EM.LactationLevelCapDurationMultiplier", 1.5f);
+		if (Scribe.mode == LoadSaveMode.LoadingVars)
+		{
+			lactationLevelCap = Mathf.Clamp(lactationLevelCap, 0f, 100f);
+			lactationLevelCapDurationMultiplier = Mathf.Clamp(lactationLevelCapDurationMultiplier, 0.1f, 10f);
+		}
 		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 30f);
 		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);

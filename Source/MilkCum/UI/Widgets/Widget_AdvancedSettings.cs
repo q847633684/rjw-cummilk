@@ -348,6 +348,20 @@ public class Widget_AdvancedSettings
 		MilkCumSettings.defaultFlowMultiplierForHumanlike = defaultFlowMultiplierForHumanlike;
 		TooltipHandler.TipRegion(rFlowMult, "EM.DefaultFlowMultiplierForHumanlikeDescLong".Translate());
 		list.Gap(6f);
+		// 泌乳水平上限：超过后吃药只延长时间、不提高流速
+		Rect rLactationCap = list.GetRect(UNIT_SIZE);
+		float lactationLevelCap = MilkCumSettings.lactationLevelCap;
+		string capLabel = lactationLevelCap <= 0f ? "0 (off)" : lactationLevelCap.ToString("F1");
+		Widgets.HorizontalSlider(rLactationCap, ref lactationLevelCap, new FloatRange(0f, 10f), "EM.LactationLevelCap".Translate(capLabel), 0.5f);
+		MilkCumSettings.lactationLevelCap = lactationLevelCap;
+		TooltipHandler.TipRegion(rLactationCap, "EM.LactationLevelCapDesc".Translate());
+		list.Gap(4f);
+		Rect rCapDurationMult = list.GetRect(UNIT_SIZE);
+		float capDurationMult = MilkCumSettings.lactationLevelCapDurationMultiplier;
+		Widgets.HorizontalSlider(rCapDurationMult, ref capDurationMult, new FloatRange(0.5f, 3f), "EM.LactationLevelCapDurationMultiplier".Translate(capDurationMult.ToString("F1")), 0.1f);
+		MilkCumSettings.lactationLevelCapDurationMultiplier = capDurationMult;
+		TooltipHandler.TipRegion(rCapDurationMult, "EM.LactationLevelCapDurationMultiplierDesc".Translate());
+		list.Gap(6f);
 		// Lactating gain
 		Rect rLactatingGain = list.GetRect(UNIT_SIZE);
 		Widgets.CheckboxLabeled(rLactatingGain, "EM.LactatingGain".Translate(), ref MilkCumSettings.lactatingGainEnabled, false);

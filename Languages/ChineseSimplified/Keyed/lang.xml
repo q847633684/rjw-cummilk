@@ -153,8 +153,12 @@
     <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>视为可产奶的种族（defName，逗号分隔）</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>视为不可产奶的种族（defName，逗号分隔）</EM.RaceCannotLactate>
-    <EM.DefaultFlowMultiplierForHumanlike>流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>
-    <EM.DefaultFlowMultiplierForHumanlikeDesc>所有单位奶池流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
+<EM.DefaultFlowMultiplierForHumanlike>流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>
+	<EM.DefaultFlowMultiplierForHumanlikeDesc>所有单位奶池流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
+	<EM.LactationLevelCap>泌乳水平上限：{0}</EM.LactationLevelCap>
+	<EM.LactationLevelCapDesc>大于 0 时，吃药超过此 L 值的部分不再提高流速，只延长泌乳时间，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</EM.LactationLevelCapDesc>
+	<EM.LactationLevelCapDurationMultiplier>上限溢出→时间倍数：{0}</EM.LactationLevelCapDurationMultiplier>
+	<EM.LactationLevelCapDurationMultiplierDesc>达到上限时，超出部分转为「持续时间」时乘以该倍数。&gt;1 则延长更多天，补偿不提高流速。默认 1.5。</EM.LactationLevelCapDurationMultiplierDesc>
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} 未处于泌乳期（无泌乳 hediff）。</EM.DevModeNotLactating>

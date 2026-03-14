@@ -154,8 +154,12 @@
     <EM.RaceOverridesSection>Race overrides (whitelist / blacklist)</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>Races that can always lactate (defName, comma-separated)</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>Races that cannot lactate (defName, comma-separated)</EM.RaceCannotLactate>
-    <EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
-    <EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+<EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
+	<EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+	<EM.LactationLevelCap>Lactation level cap: {0}</EM.LactationLevelCap>
+	<EM.LactationLevelCapDesc>When &gt; 0, drug intake above this L value no longer increases flow rate; the excess only extends lactation duration. More realistic: body needs time to use the drug. 0 = disabled.</EM.LactationLevelCapDesc>
+	<EM.LactationLevelCapDurationMultiplier>Cap overflow → duration multiplier: {0}</EM.LactationLevelCapDurationMultiplier>
+	<EM.LactationLevelCapDurationMultiplierDesc>When L is capped, the overflow is converted to Severity (duration) times this factor. &gt;1 = longer duration to compensate for no flow increase. Default 1.5.</EM.LactationLevelCapDurationMultiplierDesc>
     <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>

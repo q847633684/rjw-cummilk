@@ -95,12 +95,12 @@
                 <existingAddictionSeverityOffset>0.2</existingAddictionSeverityOffset>
                 <needLevelOffset>1</needLevelOffset>
                 <listOrder>30</listOrder>
-                <!-- 降低单针过量严重度，避免连打多针即触发过量倒地；更宽松 -->
+                <!-- 与 RJW 避孕药/促孕药一致：0.08–0.14/针，连续多针会触发过量（原版 Yayo 约 0.18–0.35） -->
                 <overdoseSeverityOffset>
-                    <min>0.03</min>
-                    <max>0.06</max>
+                    <min>0.08</min>
+                    <max>0.14</max>
                 </overdoseSeverityOffset>
-                <largeOverdoseChance>0.01</largeOverdoseChance>
+                <largeOverdoseChance>0.02</largeOverdoseChance>
             </li>
         </comps>
     </ThingDef>
@@ -157,11 +157,12 @@
                 <needLevelOffset>1</needLevelOffset>
                 <listOrder>30</listOrder>
                 <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
+                <!-- 与 RJW 一致，过量惩罚明显 -->
                 <overdoseSeverityOffset>
-                    <min>0.03</min>
-                    <max>0.06</max>
+                    <min>0.08</min>
+                    <max>0.14</max>
                 </overdoseSeverityOffset>
-                <largeOverdoseChance>0.01</largeOverdoseChance>
+                <largeOverdoseChance>0.02</largeOverdoseChance>
             </li>
         </comps>
     </ThingDef>

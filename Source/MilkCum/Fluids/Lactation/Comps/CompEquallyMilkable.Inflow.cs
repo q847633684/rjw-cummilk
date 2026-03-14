@@ -28,9 +28,10 @@ public partial class CompEquallyMilkable
         var lactatingComp = Pawn?.LactatingHediffComp();
         if (lactatingComp == null || lactatingComp.RemainingDays <= 0f) { return; }
         float currentLactation = lactatingComp.CurrentLactationAmount;
+        float effectiveLForFlow = lactatingComp.EffectiveLactationAmountForFlow;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
-        float drive = MilkCumSettings.GetEffectiveDrive(currentLactation);
+        float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
         float condFactor = Pawn.GetMilkFlowMultiplierFromConditions();
         float geneFactor = Pawn.GetMilkFlowMultiplierFromGenes();
         float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
