@@ -5,7 +5,7 @@
 	smaller Cum splatches-->
 	<HediffDef>
 		<defName>Cumpilation_Hediff_BukkakeController</defName>
-		<hediffClass>Cumpilation.Bukkake.Hediff_CoverageController</hediffClass>
+		<hediffClass>MilkCum.Fluids.Cum.Bukkake.Hediff_CoverageController</hediffClass>
 		<label>Bukkake</label>
 		<description>Covered in cum.</description>
 		<makesSickThought>false</makesSickThought>
@@ -50,7 +50,7 @@
 
 	<HediffDef>
 		<defName>Cumpilation_Hediff_SpunkkakeController</defName>
-		<hediffClass>Cumpilation.Bukkake.Hediff_CoverageController</hediffClass>
+		<hediffClass>MilkCum.Fluids.Cum.Bukkake.Hediff_CoverageController</hediffClass>
 		<label>Spunkkake</label>
 		<description>Covered in Insectspunk.</description>
 		<makesSickThought>false</makesSickThought>
@@ -104,7 +104,7 @@
 
 	<HediffDef>
 		<defName>Cumpilation_Hediff_GirlcumkakeController</defName>
-		<hediffClass>Cumpilation.Bukkake.Hediff_CoverageController</hediffClass>
+		<hediffClass>MilkCum.Fluids.Cum.Bukkake.Hediff_CoverageController</hediffClass>
 		<label>Squirtcoated</label>
 		<defaultLabelColor>(0.4,0.6,0.85)</defaultLabelColor>
 		<description>Covered in girl-cum.</description>
@@ -205,13 +205,13 @@
 		<labelNounPretty>cum on {1}</labelNounPretty>
 		<defaultLabelColor>(0.95,0.95,0.95)</defaultLabelColor>
 		<comps>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
 				<sexFluidDefs>
 					<li>Cum</li>
 				</sexFluidDefs>
 				<fluidRequiredForSeverityOne>10</fluidRequiredForSeverityOne>
 			</li>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
 				<controller>Cumpilation_Hediff_BukkakeController</controller>
 				<summedSeverityRequiredForFullController>4.5</summedSeverityRequiredForFullController>
 			</li>
@@ -226,13 +226,13 @@
 		<labelNounPretty>insect spunk on {1}</labelNounPretty>
 		<defaultLabelColor>(0.6,0.83,0.35)</defaultLabelColor>
 		<comps>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
 				<sexFluidDefs>
 					<li>InsectSpunk</li>
 				</sexFluidDefs>
 				<fluidRequiredForSeverityOne>15</fluidRequiredForSeverityOne>
 			</li>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
 				<controller>Cumpilation_Hediff_SpunkkakeController</controller>
 				<summedSeverityRequiredForFullController>5.5</summedSeverityRequiredForFullController>
 			</li>
@@ -247,13 +247,13 @@
 		<labelNounPretty>squirted on {1}</labelNounPretty>
 		<defaultLabelColor>(0.4,0.6,0.85)</defaultLabelColor>
 		<comps>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
 				<sexFluidDefs>
 					<li>GirlCum</li>
 				</sexFluidDefs>
 				<fluidRequiredForSeverityOne>6</fluidRequiredForSeverityOne>
 			</li>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
 				<controller>Cumpilation_Hediff_GirlcumkakeController</controller>
 				<summedSeverityRequiredForFullController>3.5</summedSeverityRequiredForFullController>
 			</li>

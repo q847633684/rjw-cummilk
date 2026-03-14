@@ -37,9 +37,9 @@
 
 | 项目 | 当前做法 | 冲突风险 |
 |------|----------|----------|
-| **HediffDefOf.Lactating** | 运行时 `hediffClass = HediffWithComps_EqualMilkingLactating`；XML Patch 替换 comp、移除 stages/SeverityPerDay；`maxSeverity = 100f` 在 `UpdateEqualMilkingSettings` 中设置。 | 若其他 mod 在 Def 加载后再次修改 Lactating（如改 hediffClass、maxSeverity），加载顺序会导致一方被覆盖。本 mod 在 LongEvent/PostLoad 里写 Def，应尽量晚执行。 |
-| **JobDefOf.Milk** | `driverClass = JobDriver_EquallyMilk`（在 `EqualMilking.Init()`）。 | 仅本 mod 替换 driver；若另有 mod 也改同一 JobDef，后执行者生效。 |
-| **WorkGiverDef "Milk"** | `giverClass = WorkGiver_EquallyMilk`。 | 同上。 |
+| **HediffDefOf.Lactating** | 运行时 `hediffClass = HediffWithComps_MilkCumLactating`（ModInit.Init）；XML Patch 替换 comp、移除 stages/SeverityPerDay；`maxSeverity = 100f` 在 `UpdateMilkCumSettings` 中设置。 | 若其他 mod 在 Def 加载后再次修改 Lactating（如改 hediffClass、maxSeverity），加载顺序会导致一方被覆盖。本 mod 在 LongEvent/PostLoad 里写 Def，应尽量晚执行。 |
+| **JobDefOf.Milk** | `driverClass = JobDriver_MilkCumMilk`（在 ModInit.Init）。 | 仅本 mod 替换 driver；若另有 mod 也改同一 JobDef，后执行者生效。 |
+| **WorkGiverDef "Milk"** | `giverClass = WorkGiver_MilkCumMilk`。 | 同上。 |
 | **CompProperties_Milkable** | Harmony Postfix 构造时 `compClass = CompEquallyMilkable`。 | 对所有带 CompProperties_Milkable 的种族生效；若某 mod 依赖「原版 CompMilkable 行为」会失效（本 mod 已用 Prefix 将 `CompMilkable.Active` 恒返 false，避免原版逻辑跑）。 |
 
 **建议**：保持现有「仅替换 class、不新增 Def」的策略；若出现与其它 mod 冲突，可考虑用 HarmonyPriority 或条件 patch（如仅当无其它 lactation mod 时再替换）。
@@ -68,7 +68,7 @@
 
 | 项目 | 说明 |
 |------|------|
-| **RJW 程序集** | `Source/RJW/RJW.cs` 中 `ApplyPatches` 依赖 `AccessTools.TypeByName("SexFluidDef")`，若 RJW 版本过旧则中止 patch，避免崩溃。 |
+| **RJW 程序集** | `Source/Integrations/RJW/RJW.cs` 中 `ApplyPatches` 依赖 `AccessTools.TypeByName("SexFluidDef")`，若 RJW 版本过旧则中止 patch，避免崩溃。 |
 | **RJW 分娩路径** | 原版 Biotech 走 `Hediff_Pregnant.DoBirthSpawn`；RJW 人形怀孕走 `Hediff_BasePregnancy` → `PostBirth(mother, father, baby)`。本 mod 已 patch **原版** `DoBirthSpawn`，并**单独** patch **RJW** `Hediff_BasePregnancy.PostBirth`（Prefix），在 PostBirth 内为母亲加 Lactating/刷新 Severity 并调用水池逻辑。两路径并存，无重复添加。 |
 | **RJW Genital_Helper** | `ExtensionHelper.GetGenitalsBPR` 使用 `rjw.Genital_Helper.get_genitalsBPR(pawn)`，RJW 未加载或 API 变化会异常，当前用 try 或条件调用可降低风险。 |
 

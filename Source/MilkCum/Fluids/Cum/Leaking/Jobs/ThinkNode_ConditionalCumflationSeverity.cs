@@ -1,0 +1,34 @@
+using Verse;
+using Verse.AI;
+using MilkCum.Fluids.Cum.Cumflation;
+
+namespace MilkCum.Fluids.Cum.Leaking
+{
+    public class ThinkNode_ConditionalCumflationSeverity : ThinkNode_Conditional
+    {
+        public Hediff cumflationHediff;
+
+        protected override bool Satisfied(Pawn pawn)
+        {
+            cumflationHediff = CumflationUtility.GetOrCreateCumflationHediff(pawn);
+            if (cumflationHediff == null)
+            {
+                return false;
+            }
+            // 鑻ュザ闈炲父婊¤€?Cumflation 鍙槸鐣ラ珮浜庨槇鍊硷紝鍒欎紭鍏堣鎸ゅザ Job 鎶汉锛屾殏缂撹嚜鍔ㄦ硠绮?
+            var comp = pawn.CompEquallyMilkable();
+            if (comp != null && comp.Fullness >= comp.maxFullness * 0.9f && cumflationHediff.Severity < 1.0f)
+            {
+                return false;
+            }
+            return cumflationHediff.Severity > Settings.AutoDeflateMinSeverity;
+        }
+
+        public override ThinkNode DeepCopy(bool resolve = true)
+        {
+            ThinkNode_ConditionalCumflationSeverity obj = (ThinkNode_ConditionalCumflationSeverity)base.DeepCopy(resolve);
+            obj.cumflationHediff = cumflationHediff;
+            return obj;
+        }
+    }
+}

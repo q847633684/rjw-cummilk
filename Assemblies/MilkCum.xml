@@ -4,428 +4,1369 @@
         <name>MilkCum</name>
     </assembly>
     <members>
-        <member name="F:MilkCum.Core.EMDefOf.EM_FirstLactationDrug">
+        <member name="T:MilkCum.Core.Constants.PoolModelConstants">
+            <summary>水池模型常量：规格第七节、第一节、十四节已定。详见 记忆库/domain/代码常量与公式对应。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.BaseValueT">
+            <summary>基础值_T（B_T）：每日基础衰减 = 1/(B_T×有效药效系数)。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.BaseValueTBirth">
+            <summary>分娩时 L 增量（不乘有效药效系数），单位与 L 一致（归一化容量）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.EffectiveDrugFactorMin">
+            <summary>有效药效系数下限：max(1−耐受, 0.05)。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.NegativeFeedbackK">
+            <summary>负反馈系数 k：每日衰减 = 1/(B_T×E) + k×L。τ≈1/k 游戏日。建议 [0.002, 0.05]。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.LactationEndEpsilon">
+            <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.BaseAbsorptionDelayTicks">
+            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。见 记忆库/decisions/ADR-002-吸收延迟基准。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.StretchCapFactor">
+            <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.OverflowFilthThreshold">
+            <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。改小则更容易出污物。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.ShrinkPerStep">
+            <summary>排水后回缩：每 60 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 1 游戏日回缩到基础容量。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.DoseToLFactor">
+            <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.NutritionPerPoolUnit">
+            <summary>1 池单位 = 1 营养（设计对等）：产奶花 1 营养得 1 池、喝奶花 1 池得 1 营养。ExtraNutritionPerDay = flow×本值；Need_Food 补丁按此扣饱食度，CompPartialMilk 食用时 fillAmount 直接作营养。原版饱食条 0..MaxLevel(≈1)，泌乳时额外掉条属设计。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.FloatDustEpsilon">
+            <summary>浮点余量：扣量时 &lt; 此值视为 0，避免残留；Drain 与 DrainForConsumeByRates 共用。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.Epsilon">
+            <summary>浮点近似零：&lt; 此值视为 0，用于比例与判空。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Constants.PoolModelConstants.Interval60PerDay">
+            <summary>每 60 tick 对应游戏日比例（60/60000）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_ProlactinAddictionThought">
+            <summary>成瘾心情：ThoughtWorker_Hediff(hediff=EM_Prolactin_Addiction)，阶段 0=满足 +1、阶段 1=戒断 -12。</summary>
+        </member>
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_FirstLactationDrug">
             <summary>首次药物诱发泌乳成就类记忆。</summary>
         </member>
-        <member name="F:MilkCum.Core.EMDefOf.EM_FirstLactationBirth">
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_FirstLactationBirth">
             <summary>首次分娩泌乳成就类记忆。</summary>
         </member>
-        <member name="F:MilkCum.Core.EMDefOf.EM_LongTermDrugLactation">
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_LongTermDrugLactation">
             <summary>长期药物泌乳情境心情（药物诱发且持续约 15 天以上）。</summary>
         </member>
-        <member name="F:MilkCum.Core.EMDefOf.EM_NursedBy">
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_NursedBy">
             <summary>3.1：被哺乳者获得「被某人哺乳」记忆，用于社交/关系。</summary>
         </member>
-        <member name="F:MilkCum.Core.EMDefOf.EM_NursedSomeone">
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_NursedSomeone">
             <summary>3.1：哺乳者获得「哺乳了某人」记忆，用于社交/关系。</summary>
         </member>
-        <member name="T:MilkCum.Core.EqualMilkingDefaultsDef">
-            <summary>建议 22：关键默认值 Def，供「从 Def 加载默认」使用；若 XML 未加载则用 GetBuiltinDefaults()。其他 mod 可 patch GetBuiltinDefaults 改内置值。</summary>
+        <member name="T:MilkCum.Core.Settings.MainTabIndex">
+            <summary>涓撲笟绾?UI锛氭寜绯荤粺绫诲瀷鍒嗗眰銆傛牳蹇冩満鍒?/ 鍋ュ悍椋庨櫓 / 鏉冮檺瑙勫垯 / 鏁板€煎钩琛?/ 妯＄粍鑱斿姩 / 鏁版嵁绉嶆棌 / 璋冭瘯宸ュ叿锛堜粎 DevMode锛夈€</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingDefaultsDef.defaultFlowMultiplierForHumanlike">
-            <summary>流速倍率；默认 2 = 单次剂量约 1 日灌满。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingWorkTotalBase">
+            <summary>鎸ゅザ娴侀€熷熀鍑嗭細baseFlowPerSecond = 60/鏈€硷紙姹犲崟浣?绉掞級銆傞粯璁?60 鈫?婊℃睜绾?1 鐡?绉掞紙鐜板疄鏃堕棿锛夛紱璋冨ぇ鍒欏彉鎱€</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingDefaultsDef.GetBuiltinDefaults">
-            <summary>内置默认值（当 XML 未加载时使用；其他 mod 可 patch 此方法修改）。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.breastfeedCapacityFactor">
+            <summary>鎸夊閲忛噺鍖栵細鍚稿ザ鏈夋晥鏃堕棿闅忓杺濂惰€?MilkAmount 鐨勭郴鏁帮紝effectiveTime *= (1 + 鏈€济?MilkAmount-1))锛岄檺鍒跺湪 [0.5, 2]銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.milkingWorkTotalBase">
-            <summary>按容量量化：挤奶工作量基准（原版 400），实际工作量 = 基准 × 容量系数。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationExtraNutritionBasis">
+            <summary>娉屼钩鐏屾弧鏈熼棿棰濆楗ラタ锛氭粦鍧?0鈥?00锛?50=1:1銆傞ケ椋熷害姣?150 tick 棰濆涓嬮檷 = flowPerDay脳(150/60000)脳(鏈€?150)銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.milkingCapacityFactor">
-            <summary>按容量量化：挤奶工作量随 MilkAmount 的系数，work *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2.5]。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.reabsorbNutritionEnabled">
+            <summary>鍥炵缉鍚告敹锛氭弧姹犲洖缂╂椂锛屾湭婧㈠嚭閮ㄥ垎瑙嗕负琚韩浣撳惛鏀讹紝鎸夋瘮渚嬭ˉ鍏呴ケ椋熷害锛?=鍏抽棴锛?=涓庝骇濂舵秷鑰?1:1 鎶樼畻銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.breastfeedCapacityFactor">
-            <summary>按容量量化：吸奶有效时间随喂奶者 MilkAmount 的系数，effectiveTime *= (1 + 本值×(MilkAmount-1))，限制在 [0.5, 2]。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.reabsorbNutritionEfficiency">
+            <summary>鍥炵缉鍚告敹鏁堢巼锛?~1锛屽惛鏀剁殑姹犲崟浣嶆姌鎴愯惀鍏荤殑姣斾緥锛岄粯璁?0.5 閬垮厤婊℃睜鎸傛満杩囧己銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.lactationExtraNutritionBasis">
-            <summary>泌乳灌满期间额外饥饿：滑块 0–300，150=1:1。饱食度每 150 tick 额外下降 = flowPerDay×(150/60000)×(本值/150)。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationPoolTickLog">
+            <summary>DevMode 涓斿嬀閫夋椂锛屾瘡 60 tick 杈撳嚭娉屼钩灏忎汉鐨勮惀鍏?涔虫睜/鍥炵缉/鍚稿ザ鏄庣粏鍒版棩蹇椼€</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.reabsorbNutritionEnabled">
-            <summary>回缩吸收：满池回缩时，未溢出部分视为被身体吸收，按比例补充饱食度；0=关闭，1=与产奶消耗 1:1 折算。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingActionLog">
+            <summary>DevMode 涓斿嬀閫夋椂锛岃緭鍑哄惛濂?鎸ゅザ/鏈哄櫒浜уザ鍏ュ彛姹囨€绘棩蹇楋紙姣忔鎿嶄綔涓€缁勶級锛岀敤浜庡钩琛′笌 AI 璋冭瘯銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.reabsorbNutritionEfficiency">
-            <summary>回缩吸收效率：0~1，吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLog">
+            <summary>DevMode 鏃跺嬀閫夊垯杈撳嚭娉屼钩鍏抽敭璺緞鏃ュ織锛堝垎濞┿€佽繘姘淬€佺Щ闄ゆ硨涔崇瓑锛夛紱鍏抽棴鍙噺灏戝埛灞忥紝浠呯敤 PoolTickLog 鐪嬫槑缁嗐€</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.rjwBreastCapacityCoefficient">
-            <summary>乳房容量系数：左右乳容量 = RJW Severity × 本系数，2=默认，与泌乳效率等可调项对应。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationDrugIntakeLog">
+            <summary>鍕鹃€夋椂锛屾瘡娆″悆鑽繘姘达紙AddFromDrug锛夋椂杈撳嚭璋冭瘯鏃ュ織锛毼攕銆佽繘姘次擫銆佸墿浣欐椂闂村彉鍖栥€</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.rjwSexAddsLactationBoost">
-            <summary>3.2：性行为后为泌乳参与者增加少量池进水（ΔL），可选。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.LactationLog(System.String)">
+            <summary>DevMode 鏃惰緭鍑烘硨涔冲叧閿矾寰勬棩蹇楋紝渚夸簬鎺掓煡 L/姹?鑽墿/鍒嗗ī 琛屼负銆傚彈 lactationLog 寮€鍏虫帶鍒躲€</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.toleranceDynamicMu">
-            <summary>耐受累积率 μ（每游戏日）；L 高则 E 上升。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.PoolTickLog(System.String)">
+            <summary>浠呭綋 DevMode 涓?lactationPoolTickLog 涓?true 鏃惰緭鍑猴紝鐢ㄤ簬姣忔钀ュ吇/涔虫睜/鍥炵缉/鍚稿ザ鏄庣粏銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.toleranceDynamicNu">
-            <summary>耐受衰减率 ν（每游戏日）；E 自然回落。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient">
+            <summary>涔虫埧瀹归噺绯绘暟锛氬乏鍙充钩瀹归噺 = RJW Severity 脳 鏈郴鏁帮紝2=榛樿锛屼笌娉屼钩鏁堢巼绛夊彲璋冮」瀵瑰簲銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.ProlactinToleranceGainPerDose">
-            <summary>催乳素单剂在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 同剂叠加一致，默认 0.044）；改 XML 时需同步。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwSexAddsLactationBoost">
+            <summary>3.2锛氭€ц涓哄悗涓烘硨涔冲弬涓庤€呭鍔犲皯閲忔睜杩涙按锛埼擫锛夛紝鍙€夈€</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetEffectiveBaseValueTForDecay">
-            <summary>药物泌乳衰减用有效 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≈0.5、E=1）时剩余天数 ≈ 基准天数。D=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.toleranceDynamicMu">
+            <summary>鑰愬彈绱Н鐜?渭锛堟瘡娓告垙鏃ワ級锛汱 楂樺垯 E 涓婂崌銆</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetPressureFactor(System.Single)">
-            <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降速，最低 f_min 永不归零。默认 k=6、Pc=0.85、f_min=0.02，抑制约在膨胀阶段（P≈基础满/撑大≈0.83～1）开始。</summary>
-            <param name="P">该侧满度/该侧撑大容量，0～1（可略大于 1 时仍按公式算）。</param>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.toleranceDynamicNu">
+            <summary>鑰愬彈琛板噺鐜?谓锛堟瘡娓告垙鏃ワ級锛汦 鑷劧鍥炶惤銆</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetEffectiveDrive(System.Single)">
-            <summary>四层模型（阶段3）：有效驱动力 D_eff = L·H(L)。H(L)=1−exp(−a·L)；若 L_ref>0 则用参考值归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，尾期更平滑。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ProlactinToleranceGainPerDose">
+            <summary>鍌钩绱犲崟鍓傚湪 XML 涓鑰愬彈 Hediff 鐨?Severity 澧為噺锛堜笌 Lactating 鍚屽墏鍙犲姞涓€鑷达紝榛樿 0.044锛夛紱鏀?XML 鏃堕渶鍚屾銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.pressureFactorMin">
-            <summary>压力曲线下限 f_min：满池时生产倍率不低于此值，永不归零。推荐 0.02～0.15。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecay">
+            <summary>鑽墿娉屼钩琛板噺鐢ㄦ湁鏁?B_T锛氱敱 baselineMilkDurationDays 鍙嶆帹锛屼娇鍗曟鍓傞噺锛圠鈮?.5銆丒=1锛夋椂鍓╀綑澶╂暟 鈮?鍩哄噯澶╂暟銆侱=0.5/baseline 鈬?B_T_eff=1/(0.5/baseline鈭択脳0.5)銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexDecayLambda">
-            <summary>喷乳反射衰减率 λ（每分钟）；R_new = R × exp(-λ×Δt)。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecayBirth">
+            <summary>鍒嗗ī娉屼钩琛板噺鐢ㄦ湁鏁?B_T锛氱敱 birthInducedMilkDurationDays 鍙嶆帹锛屽叕寮忓悓鑽墿銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexStimulusDeltaR">
-            <summary>挤奶/吸奶时 R 的增量 ΔR，Clamp 后 R≤1。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetPressureFactor(System.Single)">
+            <summary>甯︿笅闄?Logistic锛歠(P)=f_min+(1鈭抐_min)脳1/(1+exp(k脳(P鈭扨c)))锛孭 澶ф椂骞虫粦闄嶉€燂紝鏈€浣?f_min 姘镐笉褰掗浂銆傞粯璁?k=6銆丳c=0.9銆乫_min=0.02锛屽ザ閲忚揪 90% 鎵嶅紑濮嬪線涓嬪帇銆</summary>
+            <param name="P">璇ヤ晶婊″害/璇ヤ晶鎾戝ぇ瀹归噺锛?锝?锛堝彲鐣ュぇ浜?1 鏃朵粛鎸夊叕寮忕畻锛夈€</param>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexMin">
-            <summary>喷乳反射 R 的下限：R 衰减不低于此值，避免「不挤奶则产奶效率归零」；0=允许归零。当启用加成倍率时 R 可衰减到 0。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveDrive(System.Single)">
+            <summary>鍥涘眰妯″瀷锛堥樁娈?锛夛細鏈夋晥椹卞姩鍔?D_eff = L路H(L)銆侶(L)=1鈭抏xp(鈭抋路L)锛涜嫢 L_ref>0 鍒欑敤鍙傝€冨€煎綊涓€锛欴_eff = L路(1鈭抏^{-aL})/(1鈭抏^{-aL_ref})锛屽熬鏈熸洿骞虫粦銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.letdownReflexBoostMultiplier">
-            <summary>喷乳反射加成倍率：吸奶/挤奶后进水量 = 基础 × (1 + R×(本值-1))，R=1 时为本值倍（1.5~2.5），R=0 时为 1 倍；维持时间由 R 衰减速度决定。≤1 时按旧逻辑（流速×R，且受 R 下限约束）。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.pressureFactorMin">
+            <summary>鍘嬪姏鏇茬嚎涓嬮檺 f_min锛氭弧姹犳椂鐢熶骇鍊嶇巼涓嶄綆浜庢鍊硷紝姘镐笉褰掗浂銆傛帹鑽?0.02锝?.15銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.lactationDecayInflammationEta">
-            <summary>炎症对 L 衰减的抑制因子 η：D += η·I。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexDecayLambda">
+            <summary>鍠蜂钩鍙嶅皠琛板噺鐜?位锛堟瘡鍒嗛挓锛夛紱R_new = R 脳 exp(-位脳螖t)銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.hormoneSaturationA">
-            <summary>H(L) 饱和系数 a；建议 0.5～1.5。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexStimulusDeltaR">
+            <summary>鎸ゅザ/鍚稿ザ鏃?R 鐨勫閲?螖R锛孯 鍔犱笂鍚?Clamp 鑷?1銆傝澶т竴浜涳紙濡?1锛夊彲涓€娆″埡婵€鍗虫弧 R銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.hormoneSaturationLRef">
-            <summary>参考 L 归一：D_eff = L·(1−e^{-aL})/(1−e^{-aL_ref})，使尾期更平滑；≤0 时不归一。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexBoostMultiplier">
+            <summary>鍠蜂钩鍙嶅皠鍔犳垚鍊嶇巼锛氳繘姘存祦閫熷€嶇巼 = 1 + R脳(鏈€尖垝1)锛孯=1 鏃朵负鏈€煎€嶏紙寤鸿 1.5~2.5锛夛紝R=0 鏃朵负 1 鍊嶏紱璁句负 1 鍗虫棤鍔犳垚銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.adaptationTheta">
-            <summary>扩容率 θ（每游戏日）；P 大于 0.85 时容量增加。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationDecayInflammationEta">
+            <summary>鐐庣棁瀵?L 琛板噺鐨勬姂鍒跺洜瀛?畏锛欴 += 畏路I銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.adaptationOmega">
-            <summary>回缩率 ω（每游戏日）；P 小于 1 时容量减少。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.hormoneSaturationA">
+            <summary>H(L) 楗卞拰绯绘暟 a锛涘缓璁?0.5锝?.5銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.adaptationCapMaxRatio">
-            <summary>适应容量上限：不超过基础容量的此比例（如 0.2=20%）。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.hormoneSaturationLRef">
+            <summary>鍙傝€?L 褰掍竴锛欴_eff = L路(1鈭抏^{-aL})/(1鈭抏^{-aL_ref})锛屼娇灏炬湡鏇村钩婊戯紱鈮? 鏃朵笉褰掍竴銆</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.milkQualityInflammationWeight">
-            <summary>炎症对质量的抑制系数；质量 ∝ (1 − 本值×I)，I 大则质量降。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationTheta">
+            <summary>鎵╁鐜?胃锛堟瘡娓告垙鏃ワ級锛汸 澶т簬 0.85 鏃跺閲忓鍔犮€</summary>
         </member>
-        <member name="F:MilkCum.Core.EqualMilkingSettings.milkQualityProtectionFactor">
-            <summary>质量对乳腺炎阈值的保护系数；有效 I_crit = I_crit×(1 + 本值×MilkQuality)。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationOmega">
+            <summary>鍥炵缉鐜?蠅锛堟瘡娓告垙鏃ワ級锛汸 灏忎簬 1 鏃跺閲忓噺灏戙€</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.EnsureScribeDeepTypes">
-            <summary>确保 Scribe_Deep 反序列化的对象类型正确，避免旧存档或类型变更导致 InvalidCastException。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationCapMaxRatio">
+            <summary>閫傚簲瀹归噺涓婇檺锛氫笉瓒呰繃鍩虹瀹归噺鐨勬姣斾緥锛堝 0.2=20%锛夈€</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetDefaultMilkProduct(Verse.ThingDef)">
-            <summary>设计原则 3/4：默认产奶开关与奶量来自 Def（Humanlike/体型），不手写底层规则；实际开关由 namesToProducts + 设置决定。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkQualityInflammationWeight">
+            <summary>鐐庣棁瀵硅川閲忕殑鎶戝埗绯绘暟锛涜川閲?鈭?(1 鈭?鏈€济桰)锛孖 澶у垯璐ㄩ噺闄嶃€</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.ApplyDefaultsFromDef">
-            <summary>建议 22：从 EqualMilkingDefaultsDef 加载关键默认值到当前设置；若 XML 未加载则使用内置默认值（其他 mod 可 patch GetBuiltinDefaults）。</summary>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkQualityProtectionFactor">
+            <summary>璐ㄩ噺瀵逛钩鑵虹値闃堝€肩殑淇濇姢绯绘暟锛涙湁鏁?I_crit = I_crit脳(1 + 鏈€济桵ilkQuality)銆</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetRaceDrugDeltaSMultiplier(Verse.Pawn)">
-            <summary>当前催乳素耐受严重度 t ∈ [0,1]；完全由游戏内 Hediff/Comp 决定。</summary>
-            <summary>3.3 动物差异化：种族对催乳药物进水倍率，未配置则 1。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.EnsureScribeDeepTypes">
+            <summary>纭繚 Scribe_Deep 鍙嶅簭鍒楀寲鐨勫璞＄被鍨嬫纭紝閬垮厤鏃у瓨妗ｆ垨绫诲瀷鍙樻洿瀵艰嚧 InvalidCastException銆</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetProlactinToleranceFactor(Verse.Pawn)">
-            <summary>统一耐受系数：E_tol(t) = max(1 − t, 0.05)。启用耐受动态时由 comp 的 E 计算。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetDefaultMilkProduct(Verse.ThingDef)">
+            <summary>璁捐鍘熷垯 3/4锛氶粯璁や骇濂跺紑鍏充笌濂堕噺鏉ヨ嚜 Def锛圚umanlike/浣撳瀷锛夛紝涓嶆墜鍐欏簳灞傝鍒欙紱瀹為檯寮€鍏崇敱 namesToProducts + 璁剧疆鍐冲畾銆</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetProlactinToleranceFactorFromE(System.Single)">
-            <summary>耐受动态：由 mod 维护的 E 得到 E_tol = [max(1−E, 0.05)]^exponent。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.IsProducerRestrictionConsumersEffectiveForMilkProducts">
+            <summary>濂舵爣绛捐仈鍔細浜т富闄愬埗銆岃皝鍙互鍚冩垜鐨勫ザ鍒跺搧銆嶄粎褰撳ザ鏍囩閲屽搴旂墿鍝佺绫诲紑鍚€屾樉绀哄姩鐗╁悕銆嶆椂鐢熸晥銆傛湰鏂规硶涓?true 鏃讹紝浜т富闄愬埗绐楀彛鏄剧ず璇ュ尯鍧椼€</summary>
         </member>
-        <member name="M:MilkCum.Core.EqualMilkingSettings.GetProlactinToleranceFactor(System.Single)">
-            <summary>统一耐受系数（按严重度 t）：E_tol(t) = [max(1 − t, 0.05)]^exponent；allowToleranceAffectMilk 关闭时恒为 1。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.IsProducerRestrictionConsumersEffectiveForCumProducts">
+            <summary>濂舵爣绛捐仈鍔細浜т富闄愬埗銆岃皝鍙互鍚冩垜鐨勭簿娑插埗鍝併€嶄粎褰撳ザ鏍囩閲岀簿娑插紑鍚€屾樉绀哄姩鐗╁悕銆嶆椂鐢熸晥銆傛湰鏂规硶涓?true 鏃讹紝浜т富闄愬埗绐楀彛鏄剧ず璇ュ尯鍧椼€</summary>
         </member>
-        <member name="T:MilkCum.Core.MilkRiskSettings">
-            <summary>建议 13：乳腺炎/风险与耐受相关设置分组，便于序列化与 UI；ExposeData 仍写旧 key 以兼容存档。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetRaceDrugDeltaSMultiplier(Verse.Pawn)">
+            <summary>褰撳墠鍌钩绱犺€愬彈涓ラ噸搴?t 鈭?[0,1]锛涘畬鍏ㄧ敱娓告垙鍐?Hediff/Comp 鍐冲畾銆</summary>
+            <summary>3.3 鍔ㄧ墿宸紓鍖栵細绉嶆棌瀵瑰偓涔宠嵂鐗╄繘姘村€嶇巼锛屾湭閰嶇疆鍒?1銆</summary>
         </member>
-        <member name="F:MilkCum.Core.MilkRiskSettings.mastitisMtbDaysMultiplierHumanlike">
-            <summary>建议 8：人形/动物乳腺炎 MTB 乘数，便于区分平衡。</summary>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactor(Verse.Pawn)">
+            <summary>缁熶竴鑰愬彈绯绘暟锛欵_tol(t) = max(1 鈭?t, 0.05)銆傚惎鐢ㄨ€愬彈鍔ㄦ€佹椂鐢?comp 鐨?E 璁＄畻銆</summary>
         </member>
-        <member name="T:MilkCum.Core.StatWorker_PawnOnlySafe">
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactorFromE(System.Single)">
+            <summary>鑰愬彈鍔ㄦ€侊細鐢?mod 缁存姢鐨?E 寰楀埌 E_tol = [max(1鈭扙, 0.05)]^exponent銆</summary>
+        </member>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactor(System.Single)">
+            <summary>缁熶竴鑰愬彈绯绘暟锛堟寜涓ラ噸搴?t锛夛細E_tol(t) = [max(1 鈭?t, 0.05)]^exponent锛沘llowToleranceAffectMilk 鍏抽棴鏃舵亽涓?1銆</summary>
+        </member>
+        <member name="T:MilkCum.Core.Settings.MilkRiskSettings">
+            <summary>寤鸿 13锛氫钩鑵虹値/椋庨櫓涓庤€愬彈鐩稿叧璁剧疆鍒嗙粍锛屼究浜庡簭鍒楀寲涓?UI锛汦xposeData 浠嶅啓鏃?key 浠ュ吋瀹瑰瓨妗ｃ€</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkRiskSettings.mastitisMtbDaysMultiplierHumanlike">
+            <summary>寤鸿 8锛氫汉褰?鍔ㄧ墿涔宠吅鐐?MTB 涔樻暟锛屼究浜庡尯鍒嗗钩琛°€</summary>
+        </member>
+        <member name="T:MilkCum.Core.Stats.StatWorker_PawnOnlySafe">
             <summary>
             仅在有 Pawn 的 StatRequest 下显示，避免信息卡在 StatsReportUtility.StatsToDraw 中枚举 StatDef 时
             对物品/Def 请求调用默认 StatWorker.ShouldShowFor(req) 导致 NRE / 列表错位（见 ADR-004、报错修复记录）。
             用于 DrugDurationMultiplier 等仅需在小人信息卡显示的统计。
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.Comps.CompCumBucketLink">
+        <member name="T:MilkCum.Fluids.Cum.Bukkake.BukkakeUtility">
             <summary>
-            精液桶/椅/泵关联床：可链接到一张床。
-            链接后仅床主可使用，产主精液 = 床主（即收集的精液一律记为床主产生）。
-            未链接时多人可使用，多人用过则为混合精液（无产主）。
-            若罐内已有精液且产主不是该床的床主，则无法链接到该床（CanLinkToBed 为 false，弹窗提示）。
+            Initializes and Manages both the "Per Body-Part" Splashes on Bukkake as well as their controllers. 
+            
+            DevNote: 
+            Initially, the Bukkake implementation from Ed86-Cum had two mechanics that got removed. 
+            1) The body-parts had a "Overspill" logic which means that if your chest was full, 
+               you'd get splashes on the arms and legs. 
+            2) The Controller would calculate itself regularly. 
+               This is now done upon spawning parts and the controller just ticks down.  
+            
+            Also, all drawing got removed. The drawing framework people should take care of that (#Innocent)
             </summary>
         </member>
-        <member name="P:MilkCum.Milk.Comps.CompCumBucketLink.Owner">
-            <summary>床主（通过 CompAssignableToPawn 获取，兼容各版本）。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompCumBucketLink.IsSharedRoom">
-            <summary>共享卧室：房间内多张床，或链接的床无主。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompCumBucketLink.HasContent">
-            <summary>桶格上有精液物品即视为有占用。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompCumBucketLink.CanLinkToBed(RimWorld.Building_Bed)">
-            <summary>桶内有精液时，仅当所有精液均属于该床主（或无产主）时才允许关联；否则返回 false 并应由调用方提示无法链接。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompCumBucketLink.CanPawnUse(Verse.Pawn)">
-            <summary>该小人是否被允许使用此桶（做 DeflateBucket 等）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompCumBucketLink.ShouldWarnNotYourBucket(Verse.Pawn)">
-            <summary>是否应提示“不属于他的精液桶”（有占用且不是他的桶）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompCumBucketLink.NotifyPawnUsed(Verse.Pawn)">
-            <summary>记录该小人向此桶排放了一次；若多人用过则后续产出为混合精液。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompCumBucketLink.IsMixed">
-            <summary>是否已有多人使用过（产出应为混合精液）。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.GatherResourcesIntervalDays">
-            <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.leftFullness">
-            <summary>水池模型：左乳水位（0～左乳容量），与右乳合计 0～maxFullness；总容量 = 左+右（正常人 1+1=2）。由 SyncLeftRightFromBreastFullness 从 breastFullness 汇总。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.rightFullness">
-            <summary>水池模型：右乳水位（0～右乳基础容量），与左乳合计 0～maxFullness。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.breastFullness">
-            <summary>按单乳 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则从 left/right 反推。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.Fullness">
-            <summary>当前总奶量（0~maxFullness），双池时 = leftFullness + rightFullness；对外只读。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.allowedSucklers">
-            <summary>谁可以使用我的奶。名单为空时会预填子女+伴侣；仅名单内的人可吸奶/挤奶。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.allowedConsumers">
-            <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.overflowAccumulator">
-            <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.lastGatheredTick">
-            <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.ticksFullPool">
-            <summary>规格：连续满池（Fullness≥95% maxFullness）的 tick 数，用于乳腺炎/堵塞触发。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.lastFullPoolLetterTick">
-            <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.capacityAdaptation">
-            <summary>四层模型（阶段3.2）：组织适应导致的容量增量 ≥0，maxFullness = 基础容量 + 本值。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Comps.CompEquallyMilkable.cachedWasLactatingWithDrugInduced">
-            <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.OverflowAccumulator">
-            <summary>满池溢出累计量（仅 Debug 显示用）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
-            <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
-            <summary>回缩吸收：当前若有任一侧水位超过基础容量，每 60 tick 会回缩一部分（不溢出）；本方法将该回缩量折算为「每日补充营养」，供 Need_Food 补丁增加饱食度。仅当设置开启且存在回缩时返回 &gt; 0。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.LastGatheredTick">
-            <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.SyncBaseFullness">
-            <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.SyncLeftRightFromBreastFullness">
-            <summary>从 per-breast 字典汇总到 leftFullness / rightFullness（按 GetBreastPoolEntries 的 IsLeft）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.ClearPools">
-            <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
-            <summary>确保列表非 null、移除无效引用；名单为空时预填子女+伴侣（默认勾选）。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.CompEquallyMilkable.Active">
-            <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库/design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.EnsureLactatingHediffFromConditions">
-            <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避免 Active getter 产生副作用。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.ApplyDrugInducedLactationEffects">
-            <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.UpdateMilkPools">
-            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）；回缩仍执行（超出基础容量部分每 60 tick 乘 ShrinkPerStep 向基础容量收敛），回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度，与溢出不冲突。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.TrySendFullPoolLetter">
-            <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.HandleOverflow(System.Single)">
-            <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.UpdateHealthHediffs">
-            <summary>满池时添加「乳房胀满」hediff；低于 90% maxFullness 时移除（滞后避免抖动）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.SetFullness(System.Single,System.Nullable{System.Single})">
+        <member name="M:MilkCum.Fluids.Cum.Bukkake.BukkakeUtility.CanBeCovered(Verse.Pawn)">
             <summary>
-            设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
+            Simple check if the pawn can be covered with fluids.
+            Only some sanity checks and ruling animals out.
             </summary>
-            <param name="value">目标总水量。</param>
-            <param name="cap">可选；不传时用 maxFullness 为上限；传时用于 clamp（如关压力因子时用撑大总容量）。</param>
+            <param name="pawn">The pawn that might be covered.</param>
+            <returns>True if the pawn can be covered by fluid, false otherwise.</returns>
         </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.DrainForConsume(System.Single,System.Collections.Generic.List{System.String})">
+        <member name="M:MilkCum.Fluids.Cum.Bukkake.BukkakeUtility.PartitionSeverity(System.Single,System.Int32,System.Single)">
             <summary>
-            吸奶/挤奶时从池中扣量：按「哪对最满」优先（总满度高的对先扣），同对内先扣较满的一侧，相同时先左（与性别无关）。见 Docs/泌乳系统逻辑图；记忆库/design/双池与PairIndex、记忆库/decisions/ADR-003-选侧先左。
+            Partitions a float into a sub-list of smaller floats whose sum is the initialSeverity. 
+            There will be atmost 3 * initialseverity parts, or max_parts, whatever is smaller. 
+            The size of each partition is capped at 1.0 (default).
+            </summary>
+            <param name="initialSeverity"></param>
+            <param name="max_parts">Max number of partitions to create, default capped at 10</param>
+            <param name="max_severity_on_part">Max value for each entry, default capped at 1.0</param>
+            <returns>A list of floats whose sum is the original severity.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Bukkake.BukkakeUtility.TicksToCleanSplashFromSelf(Verse.Hediff,System.Single)">
+            <summary>
+            Looks up the ticks (time) required to clean a splash from a body-part. 
+            In case of any error, null value or other issues, 240 (2s) is returned, which was the original cleanup time from frameworks.
+            If the severity is lower (or higher) than 1, it is considerd as a linear co-efficient. 
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff.summedSeverityRequiredForFullController">
+            <summary>
+            How many of the sub-hediffs severity are required to have a 1.0 Severity of the corresponding Controller.
+            Default 4.5 "full" (=Severity 1.0) parts to reach the full bukkake.
+            For a normal pawn, there should be 6 or 7 bodyparts, so 4.5 is already quite a lot. 
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Common.DefModExtension_PawnTargetting.blockingHediffs">
+            <summary>
+            A list of hediffs that block spawning of this Hediff.
+            If any is present, at any severity other than 0, `CanTargetPawn` will return false.
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Common.FluidUtility.StoreFluidSource(Verse.Hediff,Verse.Pawn,rjw.SexFluidDef,System.Single)">
+            <summary>
+            Tries to store a record of `FluidSource` in a given Hediff.
+            In case the Hediff does not have a `HediffComp_SourceStorage` nothing will happen. 
+            If there already exists a Storage Entry for this Pawn and this fluid, it will be increased by the incoming amount.
+            </summary>
+            <param name="cumflationHediff">The hediff to store a record in</param>
+            <param name="origin">The pawn that originated the Fluid</param>
+            <param name="fluid">The type of fluid</param>
+            <param name="amount">The amount of fluid</param>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Common.FluidUtility.LikesCumflation(Verse.Pawn)">
+            <summary>
+            Returns true if the pawn likes cumflation / cumstuffing for one or the other reason. 
+            Important: This is a separate method intentionally, so it can be patched. 
+            </summary>
+            <param name="inflated">The pawn that maybe likes cumflation</param>
+            <returns>True, if the pawn likes cumflation from traits, quirks or zoophile.</returns>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Common.HediffCompProperties_RandomlySpawnFilth.chanceBasedOnSeverity">
+            <summary>
+            Scale the chance based on severity. If Chance is 50% and Severity is 50%, then there is a 25% final chance.
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Common.HediffCompProperties_RandomlySpawnFilth.onlyAtStagesHigherThan">
+            <summary>
+            Only try to spawn filth if the current stage is higher than the specified number.
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Common.HediffComp_ChangeFluidfactorBasedOnSeverity">
+            <summary>
+            Adjusts the targetted SexParts fluid-amount based on a linear factor between a configured Max and Min value. 
+            
+            Example: Max 5, Min 2
+            Severity 100% -> 5.0
+            Severity 50%  -> 3.5
+            Severity 0%   -> 2.0
+            Severity 33%  -> 3.0
+            Severity 66%  -> 4.0
+            Severity 250% -> 5.0
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Common.IngestionOutcomeDoer_PawnTargetting.blockingHediffs">
+            <summary>
+            A list of hediffs that block spawning of this Hediff.
+            If any is present, at any severity other than 0, `CanTargetPawn` will return false.
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Common.MapUtility.PawnIsOnHomeMap(Verse.Pawn)">
+            <summary>
+            Checks if the pawn is on the players home map. 
+            
+            Reason is that drones should only be punished for absence of queen if they are on the map and there is no queen.
+            If they are on a mission, transport-pod etc. they should not get boni or mali. 
+            </summary>
+            <param name="pawn">The pawn for which to check map-presence.</param>
+            <returns>True if the pawn is on the home-map, False otherwise.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Common.PartUtility.FindFittingSexParts(Verse.Pawn,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            This method finds all relevant, targetted parts as specified. 
+            
+            A sanity check, if the pawn is valid / healthy and matches the configuration, is done earlier in `IsValidPawn`. 
+            </summary>
+            <param name="pawn">The pawn for which to find SexParts.</param>
+            <param name="targetPenis">Consider Penises (using `RJW.PartHelper.Is_Penis`)</param>
+            <param name="targetVagina">Consider Vaginas (using `RJW.PartHelper.Is_Vagina`)</param>
+            <param name="targetBreast">Consider Breasts (using HomeBrew helper)</param>
+            <param name="targetAnus">Consider Anus (using `RJW.PartHelper.Is_Anus`)</param>
+            <param name="targetOther">Consider SexParts that are not in any other category</param>
+            <param name="onlyFirst">only return the first (fitting) part.</param>
+            <param name="needsFluid">only return parts that have fluid.</param>
+            <returns>All targetted SexParts of the pawn, or an empty List on Errors.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Common.PartUtility.IsValidPawn(Verse.Pawn,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.IEnumerable{Verse.HediffDef},System.Collections.Generic.IEnumerable{RimWorld.TraitDef},System.Boolean)">
+            <summary>
+            Does a bunch of checks on a pawn, if it is a valid target.
+            </summary>
+            <param name="pawn">The pawn to check</param>
+            <param name="allowMen">Men are valid targets (Using RW.Gender)</param>
+            <param name="allowWomen">Women are valid targets (using RW.Gender)</param>
+            <param name="allowFutas">Futas are valid targets (using RJW.GenderUtility.IsFuta); Futa is checked before men and women.</param>
+            <param name="allowAnimals">Animals are valid targets.</param>
+            <param name="blockingHediffs">Return an empty list if any of the HediffDefs is present at a severity other than 0.</param>
+            <param name="blockingTraits"></param>
+            <returns>True if the pawn is a valid target, false if it cannot be targeted</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.ModLog.Error(System.String)">
+            <summary>
+            Logs the given message with [SaveStorage.ModId] appended.
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.ModLog.Message(System.String)">
+            <summary>
+            Logs the given message with [SaveStorage.ModId] appended.
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.ModLog.Warning(System.String)">
+            <summary>
+            Logs the given message with [SaveStorage.ModId] appended.
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Comps.CompCumBucketLink">
+            <summary>
+            绮炬恫妗跺叧鑱斿簥锛氬彲閾炬帴鍒颁竴寮犲簥銆?
+            閾炬帴鍚庝粎搴婁富鍙娇鐢紝浜т富绮炬恫 = 搴婁富锛堝嵆鏀堕泦鐨勭簿娑蹭竴寰嬭涓哄簥涓讳骇鐢燂級銆?
+            鏈摼鎺ユ椂澶氫汉鍙娇鐢紝澶氫汉鐢ㄨ繃鍒欎负娣峰悎绮炬恫锛堟棤浜т富锛夈€?
+            鑻ョ綈鍐呭凡鏈夌簿娑蹭笖浜т富涓嶆槸璇ュ簥鐨勫簥涓伙紝鍒欐棤娉曢摼鎺ュ埌璇ュ簥锛圕anLinkToBed 杩斿洖 false锛屽脊绐楁彁绀猴級銆?
+            </summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.Owner">
+            <summary>搴婁富锛堥€氳繃 CompAssignableToPawn 鑾峰彇锛屽吋瀹瑰悇鐗堟湰锛</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.IsSharedRoom">
+            <summary>鍏变韩鍗у锛氭埧闂村唴澶氬紶搴婏紝鎴栭摼鎺ョ殑搴婃棤涓</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.HasContent">
+            <summary>妗舵牸涓婃湁绮炬恫鐗╁搧鍗宠涓烘湁鍗犵敤</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.CanLinkToBed(RimWorld.Building_Bed)">
+            <summary>妗跺唴鏈夌簿娑叉椂锛屼粎褰撴墍鏈夌簿娑插潎灞炰簬璇ュ簥涓伙紙鎴栨棤浜т富锛夋椂鎵嶅厑璁稿叧鑱旓紱鍚﹀垯杩斿洖 false 骞跺簲鐢辫皟鐢ㄦ柟鎻愮ず鏃犳硶閾炬帴</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.CanPawnUse(Verse.Pawn)">
+            <summary>璇ュ皬浜烘槸鍚﹁鍏佽浣跨敤姝ゆ《锛堝仛 DeflateBucket 绛夛級</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.ShouldWarnNotYourBucket(Verse.Pawn)">
+            <summary>鏄惁搴旀彁绀衡€滀笉灞炰簬浠栫殑绮炬恫妗垛€濓紙鏈夊崰鐢ㄤ笖涓嶆槸浠栫殑妗讹級</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.NotifyPawnUsed(Verse.Pawn)">
+            <summary>璁板綍璇ュ皬浜哄悜姝ゆ《鎺掓斁浜嗕竴娆★紱鑻ュ浜虹敤杩囧垯鍚庣画浜у嚭涓烘贩鍚堢簿娑</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.IsMixed">
+            <summary>鏄惁宸叉湁澶氫汉浣跨敤杩囷紙浜у嚭搴斾负娣峰悎绮炬恫锛</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.CumflatePawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
+            <summary>
+            Manages Cumflation by adding and increasing the relevant Hediff, checked for each Genital.
+            
+            Also does the check IF a pawn should be cumflated.
+            </summary>
+            <param name="inflator">Donor of the fluid</param>
+            <param name="inflated">Receiver of the fluid</param>
+            <param name="props">Sexprops, always useful.</param>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.TryQueueOverflowingCumflation(Verse.Pawn)">
+            <summary>
+            If the pawn is "overflowing", i.E. the severity is over 1, 
+            it will try to start a Job to spray cum around.
+            The Job will run until the Severity is below 1. 
+            </summary>
+            <param name="inflated">The pawn that might gets the Job.</param>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.GetOrCreateCumflationHediff(Verse.Pawn)">
+            <summary>
+            Gets (or creates) a Cumflation Hediff for the `inflated`-pawn, 
+            located in the Genitals BodyPart. 
+            The severity is set later in case of a new creation.
+            </summary>
+            <param name="inflated"></param>
+            <returns>A Cumflation Hediff of the inflated pawn.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.CanBeCumflated(Verse.Pawn)">
+            <summary>
+            Modding - Hook. 
+            Default: All Pawns can be cumflated. Animals cannot be cumflated.
+            </summary>
+            <param name="pawn">The pawn that might be cumflated.</param>
+            <returns>True, unless patched.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.DetermineCumflationSeverity(Verse.Pawn,System.Single,rjw.SexFluidDef)">
+            <summary>
+            Calculates the resulting Cumflation-Severity relative to the fluid-amount and pawns body size. 
+            Also used to determine "overflow". 
+            
+            This method is also used to determine "cumstuffed" despite the name. 
+            </summary>
+            <param name="pawn">The pawn that might be cumflated</param>
+            <param name="fluidAmount">The amount of fluid coming in.</param>
+            <param name="def">FluidDef, optional for patching.</param>
+            <returns>The severity of the resulting cumflation</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.FluidAmountRequiredToCumflatePawn(Verse.Pawn,rjw.SexFluidDef)">
+            <summary>
+            We assume a simple relation: 100 fluid per 1 Bodysize. 
+            The returning value will determine how much of the fluid is necessary for 1.0 cumflation severity.
+            
+            This might be altered with Patches etc. or extra behaviour, which is why this is a separate method despite very simple logic. 
+            </summary>
+            <param name="pawn">The pawn for which </param>
+            <param name="fluid">Optional for patches: For which fluid to check.</param>
+            <returns>A number how much fluid amount is necessary for a "full" cumflation, i.E. a cumflation result resulting in 1.0 cumflation severity. </returns>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Cumflation.StuffingDef.resultingStuffedHediff">
+            <summary>
+            Note: The Cumstuffed Hediff MUST have a `HediffComp_SharedSeverityPerDay` otherwise there will be issues. 
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Cumflation.StuffingDef.amountOfFluidForFullStuffing">
+            <summary>
+            The amount of Fluid required for making a 1.0 Severity Hediff of the relative xxx-stuffing.
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Cumflation.StuffingDef.thoughtThreshold">
+            <summary>
+            How much severity does the resulting stuffing must have to give a thought?
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Cumflation.HediffCompProperties_SharedSeverityPerDay">
+            <summary>
+            Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
+            Hediffs with this Comp are present. 
+            
+            Example: You have 1 hediff with `-0.10` SeverityPerDay. It will behave as normal. 
+            Example 2: You have 3 hediffs with `-0.15` SeverityPerDay each. 
+            Because you have three, they will effectively reduce by `-0.05` each day, resulting in a "global" reduction of 0.15 amongst all. 
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Cumflation.HediffCompProperties_VomitFluidMtb.mtbDays">
+            <summary>
+            "mean time between" measured in days. 
+            If set to 1, there will be 1 vomiting per days (in random occurrence).
+            If set to 2, there will be 0.5 vomiting per days, etc. 
+            If set to 0.1, there will be 10 vomitings per days
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Cumflation.HediffCompProperties_VomitFluidMtb.scaleWithSeverity">
+            <summary>
+            If true, the "chance" of application is scaled with the Severity of the Stuffing. 
+            So if your stuffing is 1.0, it will have a "full mtbDays". 
+            Otherwise, if your stuffing is 0.5, it will will result in half as much Vomiting.
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Cumflation.HediffComp_SharedSeverityPerDay">
+            <summary>
+            Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
+            Hediffs with this Comp are present. 
+            
+            Example: You have 1 hediff with `-0.10` SeverityPerDay. It will behave as normal. 
+            Example 2: You have 3 hediffs with `-0.15` SeverityPerDay each. 
+            Because you have three, they will effectively reduce by `-0.05` each day, resulting in a "global" reduction of 0.15 amongst all. 
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Cumflation.JobDriver_OverflowingCumflation">
+            <summary>
+            - Stop the pawn flat / make it look like it
+            - Spray correct outside of it
+            - Spray until the cumflation is at &lt;1.0
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.JobDriver_VomitFluid.LookupRandomFilthDef(Verse.Pawn)">
+            <summary>
+            Checks the pawns "Stuffed" Hediffs and returns a fitting FilthDef. 
+            If there is none, it'll return the normal Filth_Vomit.
+            </summary>
+            <param name="pawn">The Pawn which has stuffing-hediffs</param>
+            <returns>A filth fitting for the existing stuffing-hediffs, or a Filth_Vomit as fallback.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.Patch_TransferFluids_Stuff.PrintDebugInfoForSexRoles(rjw.SexProps)">
+            Tim -> Anal Rape -> Joe             := Joe=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
+            Tim -> Anal Riding (Reverse) -> Joe := Joe=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
+            Tim -> Anal Rape -> Eva             := Eva=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
+            Tim -> Cunnilingus (Reverse) -> Eva := Eva=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.StuffingUtility.StuffPawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
+            <summary>
+            Manages Stuffing by adding and increasing the relevant Hediff, checked for each Genital.
+            If the pawn is already "fully stuffed", old liquids get pushed out by reducing their severity.
+            See the bottom of `StuffingUtility` for examples on the Behaviour.
+            
+            Also does the check IF a pawn should be stuffed.
+            </summary>
+            <param name="inflator">Donor of the fluid</param>
+            <param name="inflated">Receiver of the fluid</param>
+            <param name="props">Sexprops, always useful.</param>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.StuffingUtility.CanBeStuffed(Verse.Pawn)">
+            <summary>
+            Modding - Hook. 
+            Default: All Pawns can be Stuffed.
+            </summary>
+            <param name="pawn">The pawn that might be stuffed.</param>
+            <returns>True, unless patched.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.StuffingUtility.GetMaximumCombinedStuffingSeverity(Verse.Pawn)">
+            <summary>
+            Mod-Hook, no initial behaviour planned. 
+            Default: All pawns can have 1 total stuffing severity. 
+            </summary>
+            <param name="pawn">The pawn that might be stuffed</param>
+            <returns>1.0 as default</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.StuffingUtility.GetOrCreateStuffHediff(Verse.Pawn,rjw.SexFluidDef)">
+            <summary>
+            Gets (or creates) a Stuffing Hediff for the `inflated`-pawn, 
+            located in the Genitals BodyPart. 
+            The severity is set later in case of a new creation.
+            </summary>
+            <param name="inflated"></param>
+            <returns>A Stuffed Hediff of the inflated pawn.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Cumflation.StuffingUtility.DetermineStuffingSeverity(Verse.Pawn,System.Single,rjw.SexFluidDef)">
+            <summary>
+            Calculates the resulting severity for a given pawn.
+            Will return a float bigger than 0.0, potentially bigger than 1.0;
+            There is no limit at 1 because this method is also used for the overflow. 
+            </summary>
+            <param name="pawn">The pawn that will be checked for - bodysize is important.</param>
+            <param name="fluidAmount">The amount of incoming fluid</param>
+            <param name="def">The incoming fluid</param>
+            <returns>The severity of a stuffing-hediff given bodysize and fluid-amount.</returns>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Fluids.Cum.SpecialThingFilterWorker_CumBase">
+            <summary>
+            (Simple) Filters for Food to include or non-include cum. 
+            
+            DevNote: Gently taken from Amevarashi-Sexperience
+            https://gitgud.io/amevarashi/rjw-sexperience/-/tree/master/Source/RJWSexperience/Cum/FilterWorkers?ref_type=heads
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Fluids.Slug.SexFluidIngestionDoer_ConsumeSlug">
+            <summary>
+            Adds up to MAX_SEVERITY (Default=0.2f) Toxic Buildup to the receiver upon consuming Slug. 
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Gathering.MechPassiveFluidGathererComp">
+            <summary>
+            Does basically the same as the Passive-Fluid Gatherer but checks that it's only for mechs that have power. 
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Gathering.PassiveFluidGathererComp">
+            <summary>
+            Unlike `FluidGatheringBuilding` that works upon nearby sex, the PassiveFluidGatherer is trying to clean nearby floors from Filth.
+            Due to logic, they must be in the same room. 
+            
+            Important: For this to work properly, the ThingWithComp needs to have a `<tickerType>Normal</tickerType>` to run CompTick
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Gathering.PassiveFluidGathererComp.GatheredFilth">
+            <summary>
+            Stores the currently running information on how much of which filth was soaked in (by filth def and producer for bed-linked filtering).
+            Resets on load.
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.PassiveFluidGathererComp.FilthToItem">
+            <summary>
+            Checks the current `GatheredFilth` and spawns any item inside me if there is enough Filth gathered of the right kind.
+            The logic for how much and what you need is done by `FluidGatheringDef`s. 
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.PassiveFluidGathererComp.CleanFilth(System.Collections.Generic.IEnumerable{RimWorld.Filth})">
+            <summary>
+            Sucks up supported Filths. If bucket is linked to a bed with an owner, only absorbs filth recorded as that owner's; otherwise absorbs all (mixed).
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Gathering.FluidGatheringBuilding">
+            <summary>
+            Extension that can be added to (storage) buildings, to gather fluids on orgasm. 
+            This is meant to manage things at `Patch_SatisfyPersonal_FillFluidGatherers`. 
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Gathering.FluidGatheringBuilding.range">
+            <summary>
+            The range in which fluids are gathered on Orgasm
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Gathering.FluidGatheringBuilding.supportedFluids">
+            <summary>
+            All supported fluids, so that a cumbucket cannot collect girl-cum.
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Cum.Gathering.FluidGatheringBuilding.collectsFromInternal">
+            <summary>
+            "true" will work for all Sextypes, "false" will only work for Handjob, Footjob, etc. things on the outside. 
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Gathering.FilthProducerRegistry">
+            <summary>
+            鏈?Mod 鐢熸垚姹＄墿鏃剁櫥璁颁骇涓伙紱楂樼骇妗跺惛鏀舵椂鍙寜搴婁富杩囨护锛屽苟缁欎骇鍑烘墦浜т富銆?
+            閿负 (鍦板浘, 鏍? 姹＄墿Def)锛屽悓涓€鏍煎娆＄敓鎴愭椂鍚庤€呰鐩栵紙浠呬繚鐣欐渶鍚庝骇涓伙級銆?
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.FilthProducerRegistry.GetAndRemove(Verse.Map,Verse.IntVec3,Verse.ThingDef)">
+            <summary>鍙栧嚭骞剁Щ闄よ鏍艰姹＄墿鐨勪骇涓昏褰曪紱鏃犺褰曞垯杩斿洖 null銆</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.GatheringUtility.GetNearbyFilth(Verse.Thing,System.Boolean,System.Int32)">
+            <summary>
+            Returns a list of all Filths that are within a given range, and within the same room of this Comps parent.
+            When `onlyFluidFilth` is true, only filth that is specified in a rjw.SexFluidDef will be considered. 
+            </summary>
+            <param name="onlyFluidFilth">If true, only Filth that is mentioned in rjw.SexFluidDefs are returned</param>
+            <param name="range">Filter for the horicontal distance to the parent.</param>
+            <returns>A list of Fitlhs in the same room of the parent, filtered for SexFluids and/or range.</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.GatheringUtility.IsSupportedFilthType(RimWorld.Filth,System.Collections.Generic.IEnumerable{rjw.SexFluidDef})">
+            <summary>
+            Small helper that checks for a filth if the Gatherer can handle is. 
+            This consist of checking if the filth is in a (supported) fluidDef, 
+            or if there is a filth specified in a gatheringDef. 
+            </summary>
+            <param name="filth"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.GatheringUtility.AddFluidToSink(rjw.SexFluidDef,System.Single,Verse.Building)">
+            <summary>
+            Other big method, used when there are other sources of fluid coming into the Sinks. 
+            This happens for example on JobDrivers that Clean Bukkake.
+            
+            If everything works out, the correct item is spawned, following the FluidGatheringDef.
+            </summary>
+            <param name="fluid">The fluid coming in, can be unsupported and nothing will happen.</param>
+            <param name="fluidAmount">The amount of fluid coming in.</param>
+            <param name="sink">The potential sink that the building </param>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Gathering.Patch_CasualSexHelper_FindNearbyBucketToMasturbate">
+            <summary>
+            Changes the Position that (Player) Pawns want to Masturbate at. 
+            If there is a supported and free Fluid-Gatherer (Sink), a position next to it will be chosen. 
+            
+            Extracted and Extended behaviour from Amevarashi Sexperience:
+            https://gitgud.io/amevarashi/rjw-sexperience/-/blob/master/Source/RJWSexperience/Patches/RJW_Patch.cs#L123
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Gathering.Patch_CasualSexHelper_FindNearbyBucketToMasturbate.Prefix(Verse.Pawn,Verse.Pawn,Verse.IntVec3@)">
+            <summary>
+            If masturbation and current map has a bucket, return location near the bucket
+            </summary>
+            <param name="__result">The place to stand near a bucket</param>
+            <returns>Run original method</returns>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.HarmonyInit">
+            <summary>
+            宸插悎骞惰繘 MilkCum锛氫笉鍐嶅湪姝ゅ垱寤?Harmony锛岀敱 MilkCum 涓诲叆鍙ｇ粺涓€ PatchAll() 鏈▼搴忛泦锛堝惈 Cumpilation 鐨?[HarmonyPatch]锛夈€?
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Leaking.Settings">
+            <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Oscillation.OscillationHelper.GetOrCreateBlueBallsHediff(Verse.Pawn)">
+            <summary>
+            Gets (or creates) a BlueBall Hediff for the pawn, 
+            located in the Genitals BodyPart. 
+            The severity is set later in case of a new creation.
+            </summary>
+            <param name="pawn"></param>
+            <returns>A Blueball Hediff with Severity 0 of the pawn.</returns>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Reactions.ThoughtDefExtension_StageFromConsumption">
+            <summary>
+            
+            
+            Initially taken from Ameravashis Sexperience, extended to cover multiple fluids, optional quirks and traits that hardwire results.
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
+            <summary>
+            Handles the updating (and thought-giving) when pawns consume meals with fluid based ingredients. 
+            
+            To work, there need to be two defs: 
+            - A RecordFluidMappingDef
+            - The IngestionOutComeDoer
+            
+            Originally, this was from Amaverashi-Sexperience but extended for multiple fluids. 
+            https://gitgud.io/amevarashi/rjw-sexperience/-/blob/master/Source/RJWSexperience/Cum/IngestionOutcomeDoer_RecordEatenCum.cs?ref_type=heads
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Reactions.Patches.Patch_IngestMeal_UpdateRecordAndGiveThoughts">
+            <summary>
+            I have one IngestionOutcomeDoer but it's not enough. The individual outcome-doers are not used in meals. 
+            This triggers all (relevant) ingredients to give their thoughts. 
+            This also means that if a meal is made of cum and insect jelly, the eater will get two thoughts. 
+            
+            TODO: Right now, the "NumEaten" is updated, but the "AmountEaten" is buggy. 
+            But as it gives the right thoughts, I am decently happy for now. 
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Reactions.Thought_Recordbased">
+            <summary>
+            Thought class that uses record to select active stage 
+            Initially taken from Ameravashis Sexperience, extended to cover multiple fluids, optional quirks and traits that hardwire results.
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Reactions.Thought_Recordbased.TryMergeWithExistingMemory(System.Boolean@)">
+            <summary>
+            This method is called for every thought right after the pawn is assigned
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Cum.Settings">
+            <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable">
+            <summary>平等挤奶 Comp：池存储与同步见 PoolStorage；进水/溢出/回缩见 Inflow；扣量见 Drain；流速与产奶见 Milking。见 Docs/泌乳系统逻辑图。</summary>
+            <summary>池扣量：手挤/吸奶/机器挤的 Drain 与按比例缩减。见 Docs/泌乳系统逻辑图、ADR-003-选侧先左。</summary>
+            <summary>池进水、溢出、回缩、满池信件。见 Docs/泌乳系统逻辑图。</summary>
+            <summary>挤奶流速与产奶：单侧/总流速、SpawnBottles、PlaceMilkThingOnce。见 Docs/泌乳系统逻辑图。</summary>
+            <summary>池存储与同步：缓存条目、按 key/左右汇总、选侧分组、清空/设置总水量。见 Docs/双池与PairIndex、ADR-003-选侧先左。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GatherResourcesIntervalDays">
+            <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.breastfedAmount">
+            <summary>吸奶 session 累计量（池单位，1 池 = 1 瓶）。吸奶统一到 Drain 后由 ChildcareHelper 累加，结束时用于 amountFed/心情/outcomeDoers。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.leftFullness">
+            <summary>水池模型：左乳水位（0～左乳容量），与右乳合计 0～maxFullness；总容量 = 左+右（正常为 1+1=2）。由 SyncLeftRightFromBreastFullness 从 breastFullness 汇总</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.rightFullness">
+            <summary>水池模型：右乳水位（0～右乳基础容量），与左乳合计 0～maxFullness</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.breastFullness">
+            <summary>按单个 key（Part.def.defName 或 defName_L/R）的水位，用于左1/右1/左2/右2 独立进水与展示。有则优先；无则由 left/right 反推</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Fullness">
+            <summary>当前总奶量（0~maxFullness），双池和 = leftFullness + rightFullness；对外只读</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedSucklers">
+            <summary>谁可以使用我的奶。名单为空时会预填子女/伴侣；仅名单内的人可吸奶/挤奶</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedConsumers">
+            <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.overflowAccumulator">
+            <summary>满池溢出：累计溢出量，达到阈值时生成地面污物（不扣水位）</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastGatheredTick">
+            <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ticksFullPool">
+            <summary>规格：连续满池（Fullness ≥ 5% maxFullness）的 tick 数，用于乳腺炎堵塞触发</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastFullPoolLetterTick">
+            <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.capacityAdaptation">
+            <summary>四层模型（阶段 0.2）：组织适应导致的容量增量，maxFullness = 基础容量 + 本值</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedWasLactatingWithDrugInduced">
+            <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.OverflowAccumulator">
+            <summary>满池溢出累计量（仅 Debug 显示用）</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.hadShrinkLastStep">
+            <summary>上一轮 UpdateMilkPools 是否执行过向基础容量的回缩；界面仅在有回缩时显示回缩吸收。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedReabsorbedNutritionPerDay">
+            <summary>上一轮回缩时折算的「每日回缩吸收营养」，供 GetReabsorbedNutritionPerDay 直接返回，避免 UI/Needs 读取时再次遍历 entries。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.overflowTriggeredByKey">
+            <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.LastGatheredTick">
+            <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
+            <summary>读档时调用（PostLoadInit）：确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图）。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Active">
+            <summary>仅做纯判断，不修改健康系统。无乳房（无乳池）时不执行泌乳逻辑，见 记忆库 design/泌乳前提-仅在有乳房时。Hediff 的增删在 CompTick 的 EnsureLactatingHediffFromConditions 中执行</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureLactatingHediffFromConditions">
+            <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避免 Active getter 产生副作用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ApplyDrugInducedLactationEffects">
+            <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.HasTorsoOrBreastInjury(Verse.Pawn)">
+            <summary>是否有躯干/乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
+            <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsume(System.Single,System.Collections.Generic.List{System.String},System.Boolean)">
+            <summary>
+            吸奶/挤奶时从池中扣量。
+            singleSideOnly=false（默认）：按「哪对最满」优先，同对内先扣较满的一侧，相同时先左，直到扣满 amount；含浮点余量吸收。用于手挤奶。
+            singleSideOnly=true：只从「当前最满的一侧」扣，最多扣 amount。用于吸奶（一口只吸一侧）。见 Docs/泌乳系统逻辑图；ADR-003-选侧先左。
             </summary>
             <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
             <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激）</param>
+            <param name="singleSideOnly">true=只从当前最满的一侧扣（吸奶）；false=按顺序多侧扣至 amount（手挤奶）</param>
             <returns>实际扣掉的量</returns>
         </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.Gathered(Verse.Pawn)">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeByRates(System.Collections.Generic.IList{System.Single},System.Single,System.Collections.Generic.List{System.String},System.String,System.Nullable{System.Int32})">
             <summary>
-            挤奶：从所有乳房对按顺序扣量（与 DrainForConsume 一致），再按实际扣量产出奶。
+            统一扣量逻辑：每侧有「本侧最多扣」上限 maxTakePerSide，总扣量不超过 remainingCap；若各侧拟扣之和超过 cap 则按比例缩减。吸奶=单侧有上限，机器挤=多侧并行。调用前需确保 entries 已取、非空。
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.TryTriggerMastitis">
-            <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次；参数由 EqualMilkingSettings 可调；营养好则 MTB 延长（风险降低）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompEquallyMilkable.AllowedToBeAutoFedBy(Verse.Pawn)">
-            <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.CompShowProducer.CompInspectStringExtra">
-            <summary>物品悬浮/检查面板：显示产主与允许使用名单（只读现有 Comp 数据），减少重复点进设置。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip">
-            <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 Docs/泌乳系统逻辑图。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Comps.HediffComp_AbsorptionDelayTip.TicksToTimeString(System.Int32)">
-            <summary>游戏内 2500 tick = 1 小时。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Comps.Hediff_LactatingGain">
-            <summary>药物诱发泌乳时的能力增益。capMods 由设置与驱动(Drive)动态计算，对意识/操纵/移动均加 offset，与流速、剩余时间同源。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Comps.Hediff_ProlactinTolerance">
-            <summary>Provides safe tooltip for 催乳素耐受; avoids "Error getting tip text" from vanilla DrugEffectFactor comp.</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Comps.Hediff_ProlactinTolerance.TipString">
-            <summary>RimWorld 部分版本中 Hediff.TipString 非 virtual，用 new 隐藏基类成员以避免编译错误；悬停时仍会显示安全文案。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Data.BreastPoolEntry">
-            <summary>单乳池条目：稳定 key（Part.def.defName 或 defName_index）、容量、流速倍率（× basePerDay 得每日流速）、是否左侧（用于左/右汇总）、对序号（同一对左右共享同一 PairIndex，用于按对撑大与挤奶顺序）。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Data.BreastPoolEntry.FlowMultiplier">
-            <summary>该乳的流速倍率，与 GetMilkFlowMultipliersFromRJW 同源；调用方 × basePerDay 得每日流速。</summary>
-        </member>
-        <member name="P:MilkCum.Milk.Data.BreastPoolEntry.PairIndex">
-            <summary>第几对乳房（0=第一对）；同一对的左乳与右乳共享同一值，用于按对撑大与挤奶从第一对开始选侧。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Data.LactationPoolState">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeParallel(System.Collections.Generic.IList{System.Single},System.Single,System.Collections.Generic.List{System.String})">
             <summary>
-            水池模型：双池状态与推进逻辑。不持有 Pawn，容量/流速由调用方传入；便于测试与 Comp 职责分离。
+            机器挤奶专用：每侧按「该侧流速」独立并行扣量；总扣量不超过 remainingCap。每侧本 tick 最多扣 ratePerSidePerTick[i]（与 GetCachedEntries 顺序一致），若各侧拟扣量之和超过 remainingCap 则按比例缩减。用于左 2.5 秒、右 1 秒同步进行，总耗时由最慢的一侧决定。
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.Data.LactationPoolState.TickGrowth(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetReabsorbedNutritionPerDay">
+            <summary>回缩吸收：仅当本步有回缩时返回 UpdateMilkPools 中缓存的「每日补充营养」；无回缩或未开启时返回 0。避免 UI/Needs 每次读取时遍历 entries。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.UpdateMilkPools">
+            <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）。仅当本步发生溢出时才执行池水位回缩与回缩吸收；回缩后满度降低、下一轮压力减小流速恢复，效果上从满池微量进水转为明显泌乳，形成逻辑闭环。回缩时超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TrySendFullPoolLetter">
+            <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.HandleOverflow(System.Single)">
+            <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRateForSideIndex(System.Int32,System.Boolean,MilkCum.Core.Building_Milking)">
+            <summary>单侧流速（池单位/秒），index 为 GetCachedEntries() 下标。吸奶只关心一侧时用此方法避免分配全表。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRate(System.Boolean,MilkCum.Core.Building_Milking)">
+            <summary>挤奶时的挤出流速（池单位/秒）：各侧按「该侧满度/该侧容量」算挤出乳压 f² 与该侧 letdown，求和后×基准×种族×机器倍率。手挤用总流速；机器挤用 GetMilkingFlowRatesPerSide 每侧独立、并行。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRatesPerSide(System.Boolean,MilkCum.Core.Building_Milking)">
+            <summary>各侧的挤出流速（池单位/秒），与 GetCachedEntries() 顺序一致。手挤用其和；机器挤用每侧独立排空、并行，总耗时由最慢一侧决定。无分侧时返回单元素列表。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkingFlowRateForSingleSide">
+            <summary>吸奶专用：按「即将被吸的那一侧」的流速，选侧规则与 DrainForConsume(..., singleSideOnly: true) 一致；只算单侧不分配全表。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.PlaceMilkThingOnce(Verse.Thing,Verse.Pawn,MilkCum.Core.Building_Milking,Verse.Pawn)">
+            <summary>放置一个奶物品并设置产主信息；整瓶与未满瓶共用，减少重复。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SpawnBottlesForDrainedAmount(System.Single,Verse.Pawn,MilkCum.Core.Building_Milking)">
+            <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedEntries">
+            <summary>缓存 GetBreastPoolEntries()，每 60 tick 失效，减少每 tick 分配与 GC。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedPairGroups">
+            <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效，避免每 60 tick 重建 Dictionary+List。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.PreferLeftWhenEqual">
+            <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsOverflowState(System.String,System.Single,System.Single)">
+            <summary>该侧是否处于溢出状态（已触发溢出且当前高于基础容量），用于停泌乳与回缩判定。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
+            <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedPairGroups">
+            <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BreastSideCount">
+            <summary>池侧数量（左+右等），用于机器挤奶并行扣量时算每侧速率。使用缓存，避免每 tick 分配。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildPairGroupsByPairIndex(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>按 PairIndex 分组并按 PairIndex 顺序排列，用于 UpdateMilkPools。无 LINQ，减少 GC。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildPairGroupsByFullnessDescending(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>按 PairIndex 分组并按该对总满度降序排列，用于 Drain 选侧（最满的对先扣）。无 LINQ，减少 GC。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFirstDrainSideIndex">
+            <summary>吸奶/单侧扣量时「第一个会被扣」的侧在 GetCachedEntries() 中的下标；与 DrainForConsume(..., singleSideOnly: true) 选侧一致。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SyncBaseFullness">
+            <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SyncLeftRightFromBreastFullness">
+            <summary>从 per-breast 字典汇总到 leftFullness / rightFullness（按 GetBreastPoolEntries 的 IsLeft）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ClearPools">
+            <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SetFullness(System.Single,System.Nullable{System.Single})">
             <summary>
-            双池进水：先填满两侧基础容量；仅当两侧都满（≥基础容量）后才允许撑大（至 stretchCap），超出部分溢出。返回本 tick 溢出量。
+            设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
             </summary>
+            <param name="value">目标总水量</param>
+            <param name="cap">可选；不传时用 maxFullness 为上限；传时用于 clamp（如关压力因子时用撑大总容量）</param>
         </member>
-        <member name="M:MilkCum.Milk.Data.LactationPoolState.TickShrink(System.Single,System.Single,System.Single)">
-            <summary>
-            排水后回缩：超出基础容量部分乘以 shrinkFactor（0~1），shrinkFactor 越小回缩越快；可含健康度系数。
-            </summary>
+        <member name="T:MilkCum.Fluids.Lactation.Comps.CompProperties_PartialMilk">
+            <summary>未满一瓶的人奶：存储实际取量（0~1 池单位），食用时营养按此值计算。</summary>
         </member>
-        <member name="M:MilkCum.Milk.Data.LactationPoolState.UpdateFullPoolCounter(System.Single,System.Int32)">
-            <summary>
-            更新连续满池 tick 计数：总水位 >= 阈值则累加 deltaTicks，否则置 0。
-            </summary>
+        <member name="T:MilkCum.Fluids.Lactation.Comps.CompPartialMilk">
+            <summary>未满一瓶的人奶 Comp：fillAmount 为已取池单位（&lt;1），用于营养计算与存档。</summary>
         </member>
-        <member name="M:MilkCum.Milk.Data.LactationPoolState.SingleBreastTickGrowth(System.Single,System.Single,System.Single,System.Single)">
-            <summary>单乳池进水：当前水位 + 本 tick 流速，先填至 baseCap 再允许撑大至 stretchCap，超出部分溢出。返回 (新水位, 本 tick 溢出量)。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Givers.JobGiver_ActiveSuckle">
+        <member name="T:MilkCum.Fluids.Lactation.Givers.JobGiver_ActiveSuckle">
             <summary>
             Allow non-humanlike to breastfeed
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.Givers.JobGiver_BreastFeedAdult">
+        <member name="T:MilkCum.Fluids.Lactation.Givers.JobGiver_BreastFeedAdult">
             <summary>
             Allow non-humanlike to breastfeed
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.Givers.JobGiver_EqualBreastfeed">
+        <member name="T:MilkCum.Fluids.Lactation.Givers.JobGiver_MilkCumBreastfeed">
             <summary>
             Allow non-humanlike to breastfeed
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.Givers.JobGiver_MilkSelf">
+        <member name="T:MilkCum.Fluids.Lactation.Givers.JobGiver_MilkSelf">
             <summary>
             Allow non-humanlike to breastfeed
             </summary>
         </member>
-        <member name="P:MilkCum.Milk.Givers.WorkGiver_EquallyMilkEntity.PotentialWorkThingRequest">
+        <member name="P:MilkCum.Fluids.Lactation.Givers.WorkGiver_MilkCumMilkEntity.PotentialWorkThingRequest">
             <summary>
             Somehow potential work thing global just doesn't process entities, Must use potential work thing request
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.FillTab_Delegate">
-            <summary>无静态状态：baby 通过参数传入，避免多窗口/多线程下串值。</summary>
+        <member name="T:MilkCum.Fluids.Lactation.Hediffs.HediffComp_AbsorptionDelayTip">
+            <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 Docs/泌乳系统逻辑图</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.FillTab_Delegate.ShouldHideInAutoFeed(Verse.Pawn,Verse.Pawn)">
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_AbsorptionDelayTip.TicksToTimeString(System.Int32)">
+            <summary>游戏�?2500 tick = 1 小时</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.SeverityStepsPerUnit">
+            <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage. maxSteps=81, count=162; if future allows severity>20 (e.g. large dose), display stays at last stage—not a bug, just a note.</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.OnGatheredLetdownByKeys(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>挤奶/吸奶后按被扣量的池侧添加喷乳反射刺激（仅被操作的该侧 R 升高）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.GenStages">
+            <summary>设计原则 5：stages �?XML 移除，此�?C# 动态生成；capMods �?GenStage 内设置（当前 Clear �?EM_LactatingGain 等独�?Hediff 提供能力），避免�?Def 静态阶段冲突</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean,System.Boolean)">
+            <summary>Stage 名（括号内）：仅当真正不衰减时显示「永久」，否则留空；具体「天数：X」在 CompLabelInBracketsExtra 动态显示</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lactationAmountFromDrug">
+            <summary>水池模型（L 驱动）：药物诱发的 L 分量；衰减用药物基准 B_T。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lactationAmountFromBirth">
+            <summary>水池模型：分娩诱发的 L 分量；衰减用分娩基准 B_T。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.currentLactationAmount">
+            <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.letdownReflexByKey">
+            <summary>四层模型：喷乳反�?R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key �?breastFullness 一致，�?HumanBreast_L）。挤�?吸奶某侧仅提升该�?R</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.currentInflammation">
+            <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.milkingLStimulusAccumulatedThisDay">
+            <summary>挤奶 L 刺激：当日已累计量，每游戏日重置</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.effectiveToleranceE">
+            <summary>耐受动态：有效耐受 E∈[0,1]，dE/dt = μ·L − ν·E；用于 E_tol 计算</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.cachedWasPermanentLactation">
+            <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.MergedFromIngestionThisTick">
+            <summary>本 tick 内 TryMergeWith 是否已把 other.Severity 同步到 L（仅本次 ingestion 有效，不存档）。已合并时原版已乘耐受，postfix 不再加量；未合并时 postfix 加 deltaS。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.LastMergedOtherSeverity">
+            <summary>本 tick 合并时传入的 other.Severity，供验证「原版是否已按耐受修正给药 severity」时打日志；仅本次 ingestion 有效，不存档。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.SuppressDrugIntakeLog">
+            <summary>抑制本 tick 内 AddFromDrug 的「吃药进水」调试日志，用于在上层聚合为「每次吃药一条」。不存档。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.RemainingDays">
+            <summary>剩余天数（游戏日）。有 SeverityPerDay 时用 Parent.Severity÷|severityPerDay| 与信息面板一致；否则用 L÷每日衰减。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveBaseValueTForRemaining">
+            <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CurrentLactationAmount">
+            <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.IsPermanentLactation">
+            <summary>是否为永久泌乳（基因或动物设置）：L 不衰减；括号阶段名与悬停「剩余时间」均据此显示「永久」</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.UpdateToleranceDynamic(System.Single,System.Single)">
+            <summary>耐受动态：dE/dt = μ·L �?ν·E。Δt 单位：游戏日</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveToleranceE">
+            <summary>耐受动态：当前 E，供 GetProlactinToleranceFactor 使用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.UpdateInflammation(System.Single,System.Single)">
+            <summary>四层模型：炎�?I 离散更新。dI/dt = α·P² + β·Injury + γ·BadHygiene �?ρ·I；Δt 单位：小时</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.TryTriggerMastitisFromInflammation">
+            <summary>四层模型：若 I>I_crit 且允许乳腺炎，则�?EM_Mastitis（与现有 MTB 判定并存）。启用质量时有效 I_crit �?MilkQuality 提高</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetMilkQuality">
+            <summary>四层模型（阶�?.3）：MilkQuality = f(Hunger, I) �?[0,1]。饱食度高、炎症低则质量高；未启用质量时返�?1</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddMilkingLStimulus">
+            <summary>四层模型：挤奶/吸奶时 L 微幅刺激，单次与每日带上限；仅 enableInflammationModel 时生效。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflex">
+            <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的算术平均，无数据时返回 0。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexRaw(System.String)">
+            <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会�?min 合并）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexForSide(System.String)">
+            <summary>指定侧的 R，无记录时为 0（用于显�?平均）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier(System.String)">
+            <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时倍率 = 1+R×(boost−1)，R 可衰减到 0 时倍率回 1。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier">
+            <summary>进水流速的 R 倍率（全侧平均，用于总产奶效率一行显示）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.DecayLetdownReflex(System.Single)">
+            <summary>四层模型：各侧 R 指数衰减，可衰减到 0；仅保留当前池中存在的 key，避免字典无限增长。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddLetdownReflexStimulus(System.String)">
+            <summary>四层模型：挤�?吸奶刺激该侧，R += ΔR，Clamp �?1。仅被刺激的那一侧（如第一对的左乳）提升喷乳反射</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetBaseValueNormalized(Verse.Pawn)">
+            <summary>归一化基础�?= 总容量（规格：基础�?= 总容量），当前实现为 1</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveDrugFactor">
+            <summary>有效药效系数：统一使用 MilkCumSettings.GetProlactinToleranceFactor</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FormatFlowFactor(System.Single)">
+            <summary>流速因子显示用：整数显示为 "1"，否则保�?1�? 位小数</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecayWithBT(System.Single,System.Single)">
+            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由参数传入（药物/分娩分别用各自基准）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
+            <summary>每日衰减（药物分量用药物 B_T）；用于显示总衰减量。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
+            <summary>当前 L 下的每日衰减（仅用于显示/调试；实际衰减由原版 SeverityPerDay 驱动）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddToLAndSeverity(System.Single)">
+            <summary>L 与 Severity 同时增加并封顶到 def.maxSeverity（原版逻辑下两者同步）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromDrug(System.Single,System.Boolean)">
+            <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromBirth">
+            <summary>分娩时累加：L 与 Severity 均加上基础值（不乘有效药效系数），原版 SeverityPerDay 对总 severity 生效。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
+            <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
+            <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ExtraNutritionPerDay">
+            <summary>灌满期间额外营养/天：与产奶流速平衡，flow（池单位/天）× NutritionPerPoolUnit；满池后不额外消耗</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ExtraEnergyPerDay">
+            <summary>机械体灌满期间额外能�?天：与产奶流�?1:1 平衡，flowPerDay（池单位/天）× nutritionToEnergyFactor；满池后不额外消耗</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetFlowPerDay">
+            <summary>当前产奶流速（池单�?天）= 左池流�?+ 右池流速；�?CompEquallyMilkable 一致。启用四层时：驱动可�?D_eff=L·H(L)，再�?PressureFactor(P)×R（见 Docs 第十二节）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetFlowPerDayBreakdown">
+            <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示「产奶效率：1(300%)/天」及「驱动�? 饥饿×1 状态�? …」</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown">
+            <summary>产奶流速拆解：总流速与各乘数因子（�?GetFlowPerDay 一致），用�?UI 显示</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
+            <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
+            <summary>健康页乳房悬�?DevMode：返回「生产机制」顺序的因子行（乳房体积、基因、设置、状态、驱动、饥饿、压力、喷乳反射）</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
+            <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开见下方详情。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.SyncChargeFromPool">
+            <summary>吸奶/消费后：仅将 Charge 同步为当前池总满度，并触�?OnGathered（不按比例缩放池，因已由 DrainForConsume 按对按侧扣过）</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Hediffs.Hediff_LactatingGain">
+            <summary>药物诱发泌乳时的能力增益。capMods 由设置与驱动(Drive)动态计算，对意�?操纵/移动均加 offset，与流速、剩余时间同源</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Hediffs.Hediff_ProlactinTolerance">
+            <summary>Provides safe tooltip for 催乳素耐受; avoids "Error getting tip text" from vanilla DrugEffectFactor comp.</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.Hediff_ProlactinTolerance.DefaultSeverityChangePerDay">
+            <summary>无 HediffComp_SeverityPerDay 时的默认每日变化（与常见 SeverityPerDay 一致）；XML 中应挂该 comp。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.Hediff_ProlactinTolerance.TipString">
+            <summary>RimWorld 部分版本中 Hediff.TipString 为 virtual，用 new 隐藏基类成员以避免编译错误；悬停时仍会显示安全文案。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.Hediff_ProlactinTolerance.SeverityChangePerDay">
+            <summary>耐受每日变化：优先从 XML 的 HediffComp_SeverityPerDay 读取；无 comp 时用 DefaultSeverityChangePerDay。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Helpers.ExtensionHelper">
             <summary>
-            Controls what to hide in auto feed ITab menu.
+            仅保留非 Pawn 的扩展入口：CompEquallyMilkable（ThingWithComps）、Set（CompProperties_Milkable）�?/// �?Pawn 相关扩展已拆�?PawnMilkStateExtensions、MilkPermissionExtensions、PawnMilkPoolExtensions，见 记忆�?design/架构原则与重组建议�?/// </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions">
+            <summary>
+            挤奶/吸奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedSucklers/allowedConsumers）、床主、首次泌乳记忆、成�?育儿文案�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.AllowedToBreastFeed(Verse.Pawn,Verse.Pawn)">
+            <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.GetDefaultSucklers(Verse.Pawn)">
+            <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（Lover/Spouse，用于名单为空时预填，不再用“空=默认”判断）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsAllowedSuckler(Verse.Pawn,Verse.Pawn)">
+            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣」；名单非空时仅名单内的人可吸奶/挤奶。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.CanConsumeMilkProduct(Verse.Pawn,Verse.Thing)">
+            <summary>指定谁可以使用产出的�?精液制品：无 producer 允许；自己始终允许；否则看产�?allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，�?7.4）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.GetBedOwner(RimWorld.Building_Bed)">
+            <summary>床的分配对象（床主）。兼容无 AssigningPawn �?RimWorld 版本，通过 CompAssignableToPawn 获取</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.TryGiveFirstLactationBirthMemory(Verse.Pawn)">
+            <summary>分娩后首次泌乳成就类记忆；仅当尚未拥有该记忆时发放，供原�?RJW 分娩入口统一调用</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper">
+            <summary>
+            泌乳相关健康状态更新：胀满、炎症、乳腺炎（炎症触发与 MTB 触发）�?
+            主流程只调本 Helper 的入口，逻辑集中在此，避�?CompEquallyMilkable 膨胀。见 记忆�?docs/待办清单 二、代码位置与主流程�?
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.DrawRow_Delegate">
-            <summary>无静态状态：baby/feeder 通过参数传入，避免多窗口/多线程下串值。</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateBreastsEngorged(Verse.Pawn,System.Single,System.Single)">
+            <summary>满池时添加「乳房胀满」hediff；低�?90% maxFullness 时移除（滞后避免抖动）。由 CompTick �?tick 调用</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.ITab_Pawn_Feeding_Patch.GenerateFloatMenuOption_Postfix(Verse.FloatMenuOption@,Verse.AutofeedMode,RimWorld.ITab_Pawn_Feeding.BabyFeederPair)">
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating,System.Single,System.Single)">
+            <summary>四层模型：更新炎�?I 并尝试按 I&gt;I_crit 触发乳腺炎。由 UpdateMilkPools �?60 tick 调用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Verse.Pawn,System.Single,System.Int32)">
+            <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次；参数�?MilkCumSettings 可调</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.HasTorsoOrBreastInjury(Verse.Pawn)">
+            <summary>是否有躯�?乳房损伤，用于乳腺炎 MTB 风险判定</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions">
             <summary>
-            Change label from Childcare to Breastfeed for appropriate feeder
-            Should change labels for pawns that cannot do childcare but can breastfeed
+            乳池与流速：池条目、容量、MilkDef、泌�?Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压�?满度、身体部位、距离等�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetVirtualBreastPools(Verse.Pawn)">
+            <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每�?hediff 表示一对乳房：�?右各为该 hediff �?Severity×系数；多 hediff 时左右均为所�?hediff 容量之和（总容�?2×和）。容量允�?0（乳退化）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetLeftBreastCapacityFactor(Verse.Pawn)">
+            <summary>左池容量：虚拟左池，不修�?Hediff</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetRightBreastCapacityFactor(Verse.Pawn)">
+            <summary>右池容量：虚拟右池，不修�?Hediff</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastCapacityFactors(Verse.Pawn,System.Single@,System.Single@)">
+            <summary>左池/右池容量。仅计算层虚拟左右池：无 RJW 乳房 hediff 时不创建乳池，返�?0；否则每�?hediff 表示一对乳房，左右均为所�?hediff 容量之和。不调用 AddHediff/RemoveHediff</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastPoolEntries(Verse.Pawn)">
+            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。设计前提：泌乳逻辑仅在「胸部部位有乳房」时进行，即只有存在乳房 hediff（GetBreastList 非空）时才建乳池、进水、挤奶等；无乳房则返回空、不创建默认池。每�?hediff 表示一对，产生 _L/_R 两键，同一对共�?PairIndex。约定：永不返回 null，无乳房时返回空列表。见 记忆�?design/泌乳前提-仅在有乳房时、双池与PairIndex</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetMilkFlowMultiplierFromConditions(Verse.Pawn,Verse.BodyPartRecord)">
+            <summary>规格：乳腺炎/堵塞等健康影响进水流速。返�?1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最�?0.5。part �?null 时按全身（任一乳腺炎即生效）；part 非空时仅当该部位的乳腺炎生效，对应「哪对乳房的哪一侧」</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolKeyFromSideKey(System.String)">
+            <summary>从侧 key（如 HumanBreast_L）得到池 key（HumanBreast）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPartForPoolKey(Verse.Pawn,System.String)">
+            <summary>该对乳房（poolKey）对应的身体部位，用于按部位的状态（如乳腺炎）判定。无对应 hediff 时返�?null</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetConditionsForSide(Verse.Pawn,System.String)">
+            <summary>指定侧（sideKey，如 poolKey_L）的状态系数，用于流速与 UI 按「该乳房该侧」显示</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetMilkFlowMultiplierFromGenes(Verse.Pawn)">
+            <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返�?1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetMilkFlowMultiplierFromRJW_Left(Verse.Pawn)">
+            <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所�?hediff �?fluidMultiplier 之和计入左。无乳房 hediff �?0</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetMilkFlowMultiplierFromRJW_Right(Verse.Pawn)">
+            <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所�?hediff �?fluidMultiplier 之和计入右。无乳房 hediff �?0</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetMilkFlowMultipliersFromRJW(Verse.Pawn,System.Single@,System.Single@)">
+            <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，�?右均为所�?hediff �?fluidMultiplier 之和）。无 RJW 乳房 hediff �?0/0</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolKeyForBreastHediff(Verse.Pawn,Verse.Hediff)">
+            <summary>健康页悬停：给定乳房 hediff（须�?GetBreastList 中或与列表中某项 def+Part 一致），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一�?baseKey_i，每对唯一</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetFlowPerDayForBreastPair(Verse.Pawn,System.String)">
+            <summary>该对乳房的左右乳产奶流速（池单�?天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPressureFactorForSide(Verse.Pawn,System.String)">
+            <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolEntriesForBreastHediff(Verse.Pawn,Verse.Hediff)">
+            <summary>健康页悬停（多乳）：返回�?hediff 对应的所有池条目�? 条为单侧乳，2 条为拆成 _L/_R 的一对），用于显示「左乳：奶量/容量, 右乳：奶�?容量」</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolEntriesForPoolKey(Verse.Pawn,System.String)">
+            <summary>健康页悬停（身体部位）：�?poolKey（如 part.def.defName）直接取该对乳房的池条目，不依赖 GetBreastList 中的 hediff。用于悬停「人类乳房」部位时显示�?右乳奶量</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolEntriesForBreastPart(Verse.Pawn,Verse.BodyPartRecord)">
+            <summary>健康页悬停（身体部位）：�?BodyPartRecord 取该部位对应的池条目，用 part.def.defName �?poolKey。无 RJW 乳房 hediff 时人类无对应池，返回空</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastOrChestPart(Verse.Pawn)">
+            <summary>获取“乳�?胸部”身体部位，用于�?hediff 挂在健康页的乳房行。优�?Breast，否�?Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetGenitalsPart(Verse.Pawn)">
+            <summary>获取“生殖器”身体部位，用于将精液相�?hediff 挂在健康页的生殖器行。优先使�?RJW Genital_Helper.get_genitalsBPR，否则从身体中找 Genitals �?Anus。无合适部位时返回 null</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions">
+            <summary>
+            泌乳状态与分类：是否可产奶、是否泌乳、泌乳状态缓存、默认奶设置。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
             </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.Pawn_MindState_Patch">
-            <summary>DrawRow 在 1.6 为 6 参数，不再 patch；若保留 TargetMethod 返回 null 会导致 Harmony 报 unexpected result，故整类移除。</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions.HasDrugInducedLactation(Verse.Pawn)">
+            <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于 UI 显示与添加「药物泌乳负担」等。</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.Pawn_MindState_Patch.AutofeedSetting_Prefix(Verse.AI.Pawn_MindState,Verse.AutofeedMode@,Verse.Pawn)">
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions.IsInLactatingState(Verse.Pawn)">
+            <summary>统一泌乳判断：本 mod Lactating、或 RJW 的 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions.ClearLactatingStateCache(Verse.Pawn)">
+            <summary>清除泌乳缓存（如 hediff 变更时可调，非必须）</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.amountToTake">
+            <summary>本场次目标取量（整瓶数，池单位）</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.totalDrained">
+            <summary>已取量累计（池单位）</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.InitMilkingSession">
+            <summary>初始化本场次目标取量（整瓶数）；不足 1 瓶时 amountToTake=0，由 initAction 结束为 Incompletable。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_HighToleranceLowMilk">
+            <summary>建议 9：高耐受且当前泌乳量(L)偏低时，产生轻微挫败感心情</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_LongTermDrugLactation">
+            <summary>长期药物泌乳：药物诱发泌乳且持续超过�?15 天时显示情境心情</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_LongTimeNotMilked">
+            <summary>10.8-6：人类泌乳且奶量较多但超�?2 游戏日未被挤奶时显示不适心情</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_MilkPoolFull">
+            <summary>10.8-6：满池时（人类）显示轻微不适心情</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.World.PendingLactatingEntry">
+            <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(effectiveSeverity)。使用游戏按耐受削弱后的 effectiveSeverity 作为 Δs。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay">
+            <summary>水池模型吸收延迟：吃药后延迟一段时间再�?Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.RemoveInvalidPendingEntries">
+            <summary>加载后移�?pawn �?null 或已销毁的条目，避免跨存档/地图引用。见 Docs/泌乳系统逻辑图</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.ApplyProlactinMoodEffects(Verse.Pawn,System.Single)">
+            <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴�?hediff），供延迟生效与�?World 立即生效共用</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.TryRecordProlactinIngestion(Verse.Pawn)">
+            <summary>挂接原版历史事件：若存在服药/成瘾相关 HistoryEventDef 则记录。原版事件名因版本可能不同，尝试常见名称；RecordEvent 通过 Reflection 调用以兼容不同 RimWorld 版本。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
+            <summary>根据代谢率计算吸收延�?tick。用 Lerp 映射 rate→倍率(0.5~1.5)，不做除法，避免 rate 极小或负值时爆炸。原�?MetabolicRate 可为 0.01、负数等</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.GetRemainingTicksForPawn(Verse.Pawn)">
+            <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.GetRemainingTicksForPawnCore(Verse.Pawn)">
+            <summary>实例方法：该小人在本组件待生效队列中最早一批的剩余 tick</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.GetMetabolicRate(Verse.Pawn)">
+            <summary>�?pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返�?1f。见 Docs/泌乳系统逻辑图</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Comps.CompProperties_ShowProducer">
+            <summary>濂?绮炬恫绛夋祦浣撲骇鐗╃殑浜т富鏍囪 Comp锛堝ザ涓庣簿娑插叡鐢級銆傝 CumpilationIntegration銆丆ompEquallyMilkable.Milking銆</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Comps.CompShowProducer">
+            <summary>鐗╁搧涓婅褰曚骇涓?producer/producerKind)锛岀敤浜?label銆佸爢鍙犮€佹鏌ラ潰鏉裤€侀鐢ㄥ厑璁稿悕鍗曘€傚ザ鍒跺搧涓庣簿娑插埗鍝佸叡鐢ㄣ€</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Shared.Comps.CompShowProducer.CompInspectStringExtra">
+            <summary>鐗╁搧鎮诞/妫€鏌ラ潰鏉匡細鏄剧ず浜т富涓庡厑璁镐娇鐢ㄥ悕鍗曪紙濂朵骇涓荤敤 CompEquallyMilkable.allowedConsumers锛涚簿娑茬瓑鏃?Comp 鏃朵粎鏄剧ず浜т富锛夈€</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry">
+            <summary>单侧池条目：稳定 key、容量、流速倍率、是否左侧、对序号（乳汁/精液共享）。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.FlowMultiplier">
+            <summary>该乳的流速倍率，与 GetMilkFlowMultipliersFromRJW 同源；调用方 × basePerDay 得每日流速。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.PairIndex">
+            <summary>第几对乳房（0=第一对）；同一对的左乳与右乳共享同一值，用于按对撑大与挤奶从第一对开始选侧。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolState">
             <summary>
-            Allow childcare for Pawns that doesn't have Developmental stage baby
+            体液池状态（乳汁/精液共享）：双池状态与推进逻辑。不持有 Pawn，容量/流速由调用方传入。
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.Pawn_MindState_Patch.SetAutofeeder_Prefix(Verse.AI.Pawn_MindState,Verse.Pawn,Verse.AutofeedMode)">
+        <member name="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
-            Allow assigning childcare to Pawns that can't do childcare
-            TODO Clean up logic
+            双池进水：先填满两侧基础容量；仅当两侧都满（≥基础容量）后才允许撑大（至 stretchCap），超出部分溢出。返回本 tick 溢出量。
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.ChildcareUtility_Patch.CanSuckle_PostFix(System.Boolean@,Verse.Pawn,System.Nullable{RimWorld.ChildcareUtility.BreastfeedFailReason}@)">
+        <member name="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickShrink(System.Single,System.Single,System.Single)">
             <summary>
-            This function is also used to determine who is a baby by vanilla. Don't bypass age check
+            排水后回缩：超出基础容量部分乘以 shrinkFactor（0~1），shrinkFactor 越小回缩越快；可含健康度系数。
             </summary>
-            <param name="__result"></param>
-            <param name="baby"></param>
-            <param name="reason"></param>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.ChildcareUtility_Patch.SuckleFromLactatingPawn_Prefix(System.Boolean@,Verse.Pawn,Verse.Pawn,System.Int32)">
+        <member name="M:MilkCum.Fluids.Shared.Data.FluidPoolState.UpdateFullPoolCounter(System.Single,System.Int32)">
             <summary>
-            Allow suckle to gain energy instead of nutrition, bypass vanilla suckle
+            更新连续满池 tick 计数：总水位 >= 阈值则累加 deltaTicks，否则置 0。
             </summary>
-            <param name="__result"></param>
-            <param name="baby"></param>
-            <param name="feeder"></param>
-            <returns></returns>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.ChildcareUtility_Patch.Translate_Prefix(RimWorld.ChildcareUtility.BreastfeedFailReason@)">
-            <summary>
-            Avoid not lactating not player facing
-            </summary>
-            <param name="reason"></param>
+        <member name="M:MilkCum.Fluids.Shared.Data.FluidPoolState.SingleBreastTickGrowth(System.Single,System.Single,System.Single,System.Single)">
+            <summary>单乳池进水：当前水位 + 本 tick 流速，先填至 baseCap 再允许撑大至 stretchCap，超出部分溢出。返回 (新水位, 本 tick 溢出量)。</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.HediffComp_Chargeable_Patch.GreedyConsume_Prefix(Verse.HediffComp_Chargeable,System.Single@,System.Single)">
-            <summary>吸奶时从池扣量：按「从第一对开始、选最满一侧、依次吃到饱」从 CompEquallyMilkable 扣奶，再同步 Charge（见 Docs/泌乳系统逻辑图）。</summary>
+        <member name="T:MilkCum.Fluids.Shared.Data.FluidTag">
+            <summary>体液标签（乳汁/精液等共享）。</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.WorkGiverPatches.Play_JobOnThing_Prefix(Verse.Pawn,Verse.Thing,Verse.AI.Job@)">
+        <member name="T:MilkCum.Fluids.Shared.Models.FlowModel">
+            <summary>体液流速模型（乳汁/精液共享）。占位，后续可抽自 Lactation 双池流速逻辑。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Models.NutritionModel">
+            <summary>体液营养模型（奶营养/回缩吸收等）。占位，后续可抽自 Lactation 营养计算。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Models.PressureModel">
+            <summary>体液压力模型（满池/撑大等）。占位，后续可抽自 Lactation 池压力逻辑。</summary>
+        </member>
+        <member name="M:MilkCum.Harmony.WorkGiverPatches.Play_JobOnThing_Prefix(Verse.Pawn,Verse.Thing,Verse.AI.Job@)">
             <summary>
             Childcare-capable mech/animal don't play with themselves as babies
             Patching JobOnThing to be compatible with Surrogate Mechanoid that uses JobOnThing directly
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.WorkGiverPatches.CanCreateManualFeedingJob_Prefix(Verse.Pawn,Verse.Thing,System.Boolean@)">
+        <member name="M:MilkCum.Harmony.WorkGiverPatches.CanCreateManualFeedingJob_Prefix(Verse.Pawn,Verse.Thing,System.Boolean@)">
             <summary>
             Prevent bottle feeding self
             Disable bottle feeding for non-breastfeedable
@@ -435,7 +1376,7 @@
             <param name="__result"></param>
             <returns></returns>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.WorkGiverPatches.CopyFrom_Prefix(RimWorld.StorageSettings,RimWorld.StorageSettings)">
+        <member name="M:MilkCum.Harmony.WorkGiverPatches.CopyFrom_Prefix(RimWorld.StorageSettings,RimWorld.StorageSettings)">
             <summary>
             Fix null reference when used with VEF
             </summary>
@@ -443,81 +1384,49 @@
             <param name="other"></param>
             <returns></returns>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.CumpilationIntegration">
+        <member name="T:MilkCum.Harmony.CumpilationIntegration">
             <summary>
-            本 Mod 已合并 Cumpilation：为精液物品打产主(producer)，食用规则与奶制品一致(CompShowProducer + allowedConsumers)。
-            桶可关联床：仅床主可用空桶；占用时提示“不是你的桶”；共享卧室=混合精液。
-            7.13: 单源(ExtractCum、DeflateBucket 单主、Gathering from sex)设 producer；混合桶/清洁污物回收不设 producer。
+            鏈?Mod 宸插悎骞?Cumpilation锛氫负绮炬恫鐗╁搧鎵撲骇涓?producer)锛岄鐢ㄨ鍒欎笌濂跺埗鍝佷竴鑷?CompShowProducer + allowedConsumers)銆?
+            妗跺彲鍏宠仈搴婏細浠呭簥涓诲彲鐢ㄧ┖妗讹紱鍗犵敤鏃舵彁绀衡€滀笉鏄綘鐨勬《鈥濓紱鍏变韩鍗у=娣峰悎绮炬恫銆?
+            7.13: 鍗曟簮(ExtractCum銆丏eflateBucket 鍗曚富銆丟athering from sex)璁?producer锛涙贩鍚堟《/娓呮磥姹＄墿鍥炴敹涓嶈 producer銆?
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.CumpilationIntegration.JobGiver_Deflate_TryFindBucketFor_Postfix(Verse.Pawn,Verse.Thing@,System.Boolean@)">
+        <member name="M:MilkCum.Harmony.CumpilationIntegration.JobGiver_Deflate_TryFindBucketFor_Postfix(Verse.Pawn,Verse.Thing@,System.Boolean@)">
             <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied. TryFindBucketFor returns bool and has (Pawn, out Thing).</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.CumpilationIntegration.GetProducerFromBucketDeflate(System.Object,System.Object)">
+        <member name="M:MilkCum.Harmony.CumpilationIntegration.GetProducerFromBucketDeflate(System.Object,System.Object)">
             <summary>
             From JobDriver_DeflateBucket instance and current fluid, get the pawn to use as producer
             by reading cumflationHediff's SourceStorage sources (same fluid, pick by weight).
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.HaulAIUtility_Patch.HaulToCellStorageJob_Prefix(Verse.AI.Job@,Verse.Thing,Verse.IntVec3)">
+        <member name="M:MilkCum.Harmony.HaulAIUtility_Patch.HaulToCellStorageJob_Prefix(Verse.AI.Job@,Verse.Thing,Verse.IntVec3)">
             <summary>
             Fix starting job 10 time error when trying to fill hopper with labeled human milk
             This fixes a missing check in vanilla code
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.CompProperties_Milkable_Patch.Postfix(RimWorld.CompProperties_Milkable)">
-            <summary>Replace CompMilkable with CompEquallyMilkable；仅改 compClass，不阻止原构造执行，兼容未来原版/第三方构造逻辑。</summary>
+        <member name="T:MilkCum.Harmony.WorkGiver_Ingest_MilkProductFilter">
+            <summary>分配进食任务时排除不允许食用的带产主流体制品（奶/精液）。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.ThingWithComps_Patch.InitializeComps_Post(Verse.ThingWithComps)">
-            <summary>Ensure EquallyMilkable Comp on Pawn；ExtensionHelper.CompEquallyMilkable() 内部已 if (TryGetComp==null) AddComp，不会重复添加。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.Hediff_Pregnant_Patch.DoBirthSpawn_Prefix(Verse.Pawn)">
-            <summary>
-            设计原则 2/7：仅 Prefix 挂接，不替换原版 DoBirthSpawn。分娩结束时为母亲添加 Lactating 并调用 ApplyBirthPoolValues；动物与人类（Biotech）统一处理。
-            </summary>
-        </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.Need_Food_Patch.GetTipString_PostFix(RimWorld.Need_Food,System.String@)">
-            <summary>
-            Add hunger rate from lactating to food need tip string
-            </summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.Need_Food_LactatingNutrition_Patch">
-            <summary>泌乳灌满期间按 ExtraNutritionPerDay 施加额外饥饿；basis 控制倍率(150=1:1)。统一使用 comp.ExtraNutritionPerDay() 避免与 HediffComp 逻辑分叉。池满时 ExtraNutritionPerDay 已为 0，此处再按当前 Fullness 做一次满池判断，避免执行顺序导致多扣。回缩吸收：满池回缩时 GetReabsorbedNutritionPerDay &gt; 0，本补丁按同样 basis 将吸收量加回饱食度。设计原则 6：仅 Postfix 追加，不替换原版 NeedInterval 主逻辑。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.HarmonyPatches.Need_Food_LactatingNutrition_Patch.NeedTicksInterval">
-            <summary>Need_Food.NeedInterval 的调用间隔（tick），用于将每日流速折算为每间隔的饱食度变化。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.HediffSet_Remove_Patch">
-            <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.ProlactinAddictionPatch">
-            <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.PoolModelBirthHelper">
-            <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.BreastPoolTooltipHelper">
-            <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.BreastPoolTooltipHelper.BuildBreastPairBlock(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.Single,System.Single,System.Boolean}},System.String,Verse.Pawn)">
-            <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.HediffComp_SexPart_CompTipStringExtra_Patch">
-            <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块，保证「人类乳房」等 RJW 乳房 hediff 悬停时一定显示储量/流速。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.WorkGiver_Ingest_MilkProductFilter">
-            <summary>分配进食任务时排除不允许食用的奶制品。目标方法在 1.6 可能在不同程序集，故不参与 PatchAll，由 ApplyOptionalPatches 在找到时再打补丁。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.JobDriver_Ingest_MilkProductCheck">
+        <member name="T:MilkCum.Harmony.JobDriver_Ingest_MilkProductCheck">
             <summary>进食开始时再次校验：若食物带 CompShowProducer.producer 且食用者不在允许范围内，则结束进食任务。目标在 1.6 可能在不同程序集，可选应用。</summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.Patch_PostIngested_PartnerAteMyProduct">
-            <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。</summary>
+        <member name="T:MilkCum.Harmony.Patch_PostIngested_PartnerAteMyProduct">
+            <summary>7.5：食用者吃完带产主的奶/精液制品后，若食用者是产主的伴侣，给产主轻微正面记忆。喝奶（带 CompPartialMilk 的奶瓶）时满足 Dubs Bad Hygiene 的饮水需求。</summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.Bill_Production_Notify_IterationCompleted_Patch">
-            <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
+        <member name="T:MilkCum.Harmony.Compatibility.RjwMilkHumanWorkGiverPatch">
+            <summary>
+            方案 A 轻量：当目标拥有 CompEquallyMilkable 且 ActiveAndFull 时，禁止 RJW 的 WorkGiver_MilkHuman 派发 MilkHuman，
+            仅由本 mod 的 WorkGiver_MilkCumMilk 派发 JobDefOf.Milk + JobDriver_MilkCumMilk，统一走流速挤奶。
+            </summary>
         </member>
-        <member name="T:MilkCum.Milk.HarmonyPatches.StatWorker_ShouldShowFor_Patch">
+        <member name="M:MilkCum.Harmony.Compatibility.RjwMilkHumanWorkGiverPatch.HasJobOnThing_Prefix(System.Object,Verse.Pawn,Verse.Thing,System.Boolean@)">
+            <summary>
+            若当前是 RJW 的挤奶 WorkGiver 且目标有本 mod 的 CompEquallyMilkable 且可挤，则不再派发 RJW 的 MilkHuman job。
+            </summary>
+        </member>
+        <member name="T:MilkCum.Harmony.StatWorker_ShouldShowFor_Patch">
             <summary>
             信息卡统计 NRE 全局防护。StatsReportUtility.StatsToDraw 会枚举分类下所有 StatDef 并调用 Worker.ShouldShowFor(req)。
             任一 StatWorker（原版或 mod）在 req 无 Pawn、或 Pawn 下某属性为 null 时都可能 NRE，导致列表错位与 ArgumentOutOfRangeException。
@@ -526,240 +1435,132 @@
             见 ADR-004、报错修复记录。
             </summary>
         </member>
-        <member name="M:MilkCum.Milk.HarmonyPatches.StatWorker_ShouldShowFor_Patch.Finalizer(System.Exception,System.Boolean@)">
+        <member name="M:MilkCum.Harmony.StatWorker_ShouldShowFor_Patch.Finalizer(System.Exception,System.Boolean@)">
             <summary>兜底：ShouldShowFor 内任意 NRE/异常都视为「不显示」并吞掉，避免信息卡崩溃。</summary>
         </member>
-        <member name="T:MilkCum.Milk.Helpers.PoolModelConstants">
-            <summary>水池模型常量：规格第七节、第一节、十四节已定。详见 记忆库/domain/代码常量与公式对应。</summary>
+        <member name="T:MilkCum.Harmony.FillTab_Delegate">
+            <summary>无静态状态：baby 通过参数传入，避免多窗口/多线程下串值。</summary>
         </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.BaseValueT">
-            <summary>基础值_T（B_T）：每日基础衰减 = 1/(B_T×有效药效系数)。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.BaseValueTBirth">
-            <summary>分娩时 L 增量（不乘有效药效系数），单位与 L 一致（归一化容量）。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.EffectiveDrugFactorMin">
-            <summary>有效药效系数下限：max(1−耐受, 0.05)。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.NegativeFeedbackK">
-            <summary>负反馈系数 k：每日衰减 = 1/(B_T×E) + k×L。τ≈1/k 游戏日。建议 [0.002, 0.05]。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.LactationEndEpsilon">
-            <summary>L 下限：L 小于此值时视为 0，泌乳结束。避免浮点长期接近 0 不结束。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.BaseAbsorptionDelayTicks">
-            <summary>吸收延迟：基准 tick 数（0.25 游戏日）。实际延迟 = BaseAbsorptionDelayTicks × factor，factor = Lerp(1.5, 0.5, InverseLerp(0.25, 2, Clamp(代谢率, 0.25, 2)))，不做除法避免爆炸。见 记忆库/decisions/ADR-002-吸收延迟基准。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.StretchCapFactor">
-            <summary>满池撑大：单侧最大水位 = HalfPool × StretchCapFactor（规格：暂时允许超过基础容量）。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.OverflowFilthThreshold">
-            <summary>溢出污物：累计溢出量达到此阈值时生成 1 格地面污物（不扣水位）。改小则更容易出污物。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.ShrinkPerStep">
-            <summary>排水后回缩：每 60 tick 超出基础容量部分乘以 (1 - ShrinkPerStep)，约 1 游戏日回缩到基础容量。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.DoseToLFactor">
-            <summary>剂量转 L 系数 C_dose：ΔL = Δs × C_dose × E_tol(t_before)。默认 1。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Helpers.PoolModelConstants.NutritionPerPoolUnit">
-            <summary>1 池单位对应的营养：ExtraNutritionPerDay = flow × 本值；改池容量或 L 单位时只改此处即可保持平衡。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Helpers.DubsBadHygieneIntegration">
-            <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.DubsBadHygieneIntegration.IsDubsBadHygieneActive">
-            <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef 或检测到 DBH 模组）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Verse.Pawn)">
-            <summary>卫生风险系数 0~1（1=最易诱发乳腺炎）。当启用 DBH 联动时用 Hygiene 需求等级（低=高风险）；否则用当前房间清洁度（脏=高风险）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.HasDrugInducedLactation(Verse.Pawn)">
-            <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于显示/添加「药物泌乳负担」等。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.IsInLactatingState(Verse.Pawn)">
-            <summary>统一泌乳判断：本体 Lactating 或 RJW 系 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.ClearLactatingStateCache(Verse.Pawn)">
-            <summary>清除泌乳缓存（如 hediff 变更时可调，非必须）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.AllowedToBreastFeed(Verse.Pawn,Verse.Pawn)">
-            <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetDefaultSucklers(Verse.Pawn)">
-            <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（用于名单为空时预填，不再用“空=默认”判断）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.IsAllowedSuckler(Verse.Pawn,Verse.Pawn)">
-            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶（名单内即可；名单默认预填子女+伴侣）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.CanConsumeMilkProduct(Verse.Pawn,Verse.Thing)">
-            <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，见 7.4）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBedOwner(RimWorld.Building_Bed)">
-            <summary>床的分配对象（床主）。兼容无 AssigningPawn 的 RimWorld 版本，通过 CompAssignableToPawn 获取。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.TryGiveFirstLactationBirthMemory(Verse.Pawn)">
-            <summary>分娩后首次泌乳成就类记忆；仅当尚未拥有该记忆时发放，供原版/RJW 分娩入口统一调用。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetVirtualBreastPools(Verse.Pawn)">
-            <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每个 hediff 表示一对乳房：左/右各为该 hediff 的 Severity×系数；多 hediff 时左右均为所有 hediff 容量之和（总容量=2×和）。容量允许 0（乳退化）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetLeftBreastCapacityFactor(Verse.Pawn)">
-            <summary>左池容量：虚拟左池，不修改 Hediff。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetRightBreastCapacityFactor(Verse.Pawn)">
-            <summary>右池容量：虚拟右池，不修改 Hediff。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastCapacityFactors(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左池/右池容量。仅计算层虚拟左右池：无 RJW 乳房 hediff 时不创建乳池，返回 0；否则每个 hediff 表示一对乳房，左右均为所有 hediff 容量之和。不调用 AddHediff/RemoveHediff。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastPoolEntries(Verse.Pawn)">
-            <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。设计前提：泌乳逻辑仅在「胸部部位有乳房」时进行，即只有存在乳房 hediff（GetBreastList 非空）时才建乳池、进水、挤奶等；无乳房则返回空、不创建默认池。每个 hediff 表示一对，产生 _L/_R 两键，同一对共享 PairIndex。约定：永不返回 null，无乳房时返回空列表。见 记忆库/design/泌乳前提-仅在有乳房时、双池与PairIndex。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromConditions(Verse.Pawn,Verse.BodyPartRecord)">
-            <summary>规格：乳腺炎/堵塞等健康影响进水流速。返回 1f 减去乳房不适类 hediff 的惩罚（severity×0.5），最小 0.5。part 为 null 时按全身（任一乳腺炎即生效）；part 非空时仅当该部位的乳腺炎生效，对应「哪对乳房的哪一侧」。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolKeyFromSideKey(System.String)">
-            <summary>从侧 key（如 HumanBreast_L）得到池 key（HumanBreast）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPartForPoolKey(Verse.Pawn,System.String)">
-            <summary>该对乳房（poolKey）对应的身体部位，用于按部位的状态（如乳腺炎）判定。无对应 hediff 时返回 null。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetConditionsForSide(Verse.Pawn,System.String)">
-            <summary>指定侧（sideKey，如 poolKey_L）的状态系数，用于流速与 UI 按「该乳房该侧」显示。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromGenes(Verse.Pawn)">
-            <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返回 1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromRJW_Left(Verse.Pawn)">
-            <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入左。无乳房 hediff 时 0。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultiplierFromRJW_Right(Verse.Pawn)">
-            <summary>右乳流速倍率：与容量一致，每个 hediff 表示一对，所有 hediff 的 fluidMultiplier 之和计入右。无乳房 hediff 时 0。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetMilkFlowMultipliersFromRJW(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左右池流速倍率（与容量一致：每个 hediff 表示一对，左/右均为所有 hediff 的 fluidMultiplier 之和）。无 RJW 乳房 hediff 时 0/0。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolKeyForBreastHediff(Verse.Pawn,Verse.Hediff)">
-            <summary>健康页悬停：给定乳房 hediff（须在 GetBreastList 中或与列表中某项 def+Part 一致），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一为 baseKey_i，每对唯一。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetFlowPerDayForBreastPair(Verse.Pawn,System.String)">
-            <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPressureFactorForSide(Verse.Pawn,System.String)">
-            <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolEntriesForBreastHediff(Verse.Pawn,Verse.Hediff)">
-            <summary>健康页悬停（多乳）：返回该 hediff 对应的所有池条目（1 条为单侧乳，2 条为拆成 _L/_R 的一对），用于显示「左乳：奶量/容量, 右乳：奶量/容量」。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolEntriesForPoolKey(Verse.Pawn,System.String)">
-            <summary>健康页悬停（身体部位）：从 poolKey（如 part.def.defName）直接取该对乳房的池条目，不依赖 GetBreastList 中的 hediff。用于悬停「人类乳房」部位时显示左/右乳奶量。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetPoolEntriesForBreastPart(Verse.Pawn,Verse.BodyPartRecord)">
-            <summary>健康页悬停（身体部位）：从 BodyPartRecord 取该部位对应的池条目，用 part.def.defName 作 poolKey。无 RJW 乳房 hediff 时人类无对应池，返回空。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetBreastOrChestPart(Verse.Pawn)">
-            <summary>获取“乳房/胸部”身体部位，用于将 hediff 挂在健康页的乳房行。优先 Breast，否则 Chest（RJW），否则 Torso。无合适部位时返回 null（hediff 将显示为全身）。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Helpers.ExtensionHelper.GetGenitalsPart(Verse.Pawn)">
-            <summary>获取“生殖器”身体部位，用于将精液相关 hediff 挂在健康页的生殖器行。优先使用 RJW Genital_Helper.get_genitalsBPR，否则从身体中找 Genitals 或 Anus。无合适部位时返回 null。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.Jobs.JobDriver_EquallyMilk.workTotal">
-            <summary>按容量量化：本次挤奶所需工作量，由 MilkAmount 与池满度计算。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.Jobs.JobDriver_EquallyMilk.GetWorkTotal">
-            <summary>按容量量化：工作量 = 基准 × (1 + 容量系数×(MilkAmount-1)) × (0.5+0.5×池满度)，有上下限。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_AddictionSatisfied">
-            <summary>10.8-5：当成瘾处于满足阶段时显示小幅正面心情。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_HighToleranceLowMilk">
-            <summary>建议 9：高耐受且当前泌乳量(L)偏低时，产生轻微挫败感心情。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_LongTermDrugLactation">
-            <summary>长期药物泌乳：药物诱发泌乳且持续超过约 15 天时显示情境心情。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_LongTimeNotMilked">
-            <summary>10.8-6：人类泌乳且奶量较多但超过 2 游戏日未被挤奶时显示不适心情。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_MilkPoolFull">
-            <summary>10.8-6：满池时（人类）显示轻微不适心情。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.Thoughts.ThoughtWorker_ProlactinWithdrawal">
-            <summary>10.8-4：仅当成瘾处于戒断阶段时显示催乳素戒断心情。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.World.PendingLactatingEntry">
-            <summary>吸收延迟待生效条目：到 endTick 时给 pawn 添加 Lactating 并执行 AddFromDrug(deltaSeverity)。见 Docs/泌乳系统逻辑图。</summary>
-        </member>
-        <member name="F:MilkCum.Milk.World.PendingLactatingEntry.toleranceBefore">
-            <summary>吃药前的耐受严重度 t_before，用于计算 Δs 与 E_tol。</summary>
-        </member>
-        <member name="T:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay">
-            <summary>水池模型吸收延迟：吃药后延迟一段时间再挂 Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.RemoveInvalidPendingEntries">
-            <summary>加载后移除 pawn 为 null 或已销毁的条目，避免跨存档/地图引用。见 Docs/泌乳系统逻辑图。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.ApplyProlactinMoodEffects(Verse.Pawn,System.Single)">
-            <summary>10.8-4：药物生效后的心情效果（愉悦记忆 + 大剂量兴奋 hediff），供延迟生效与无 World 立即生效共用。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetAbsorptionDelayTicks(Verse.Pawn)">
-            <summary>根据代谢率计算吸收延迟 tick。用 Lerp 映射 rate→倍率(0.5~1.5)，不做除法，避免 rate 极小或负值时爆炸。原版 MetabolicRate 可为 0.01、负数等。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawn(Verse.Pawn)">
-            <summary>该小人在待生效队列中最早一批的剩余 tick（用于悬停显示）。无待生效则返回 0。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetRemainingTicksForPawnCore(Verse.Pawn)">
-            <summary>实例方法：该小人在本组件待生效队列中最早一批的剩余 tick。</summary>
-        </member>
-        <member name="M:MilkCum.Milk.World.WorldComponent_EqualMilkingAbsorptionDelay.GetMetabolicRate(Verse.Pawn)">
-            <summary>取 pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返回 1f。见 Docs/泌乳系统逻辑图。</summary>
-        </member>
-        <member name="T:MilkCum.UI.PawnColumnWorker_MilkAllowDeflate">
-            <summary>奶表格列：是否允许泄精（去做泄到桶/清洁/随地的 Job）。</summary>
-        </member>
-        <member name="T:MilkCum.UI.PawnColumnWorker_MilkEquivalentDose">
-            <summary>殖民者列：当前等效剂量（只读，由 L 与公式推导）。</summary>
-        </member>
-        <member name="T:MilkCum.UI.PawnColumnWorker_MilkRemainingDays">
-            <summary>建议 7：奶表格中显示泌乳剩余天数。</summary>
-        </member>
-        <member name="T:MilkCum.UI.PawnColumnWorker_MilkSealCum">
-            <summary>奶表格列：塞住（防止精液自然泄漏）。仅人形成人且有阴道时显示。</summary>
-        </member>
-        <member name="M:MilkCum.UI.PawnColumnWorker_MilkType.GetMinHeaderHeight(RimWorld.PawnTable)">
+        <member name="M:MilkCum.Harmony.FillTab_Delegate.ShouldHideInAutoFeed(Verse.Pawn,Verse.Pawn)">
             <summary>
-            Called once on table dirty, clear cache
+            Controls what to hide in auto feed ITab menu.
             </summary>
-            <param name="table"></param>
+        </member>
+        <member name="T:MilkCum.Harmony.DrawRow_Delegate">
+            <summary>无静态状态：baby/feeder 通过参数传入，避免多窗口/多线程下串值。</summary>
+        </member>
+        <member name="M:MilkCum.Harmony.ITab_Pawn_Feeding_Patch.GenerateFloatMenuOption_Postfix(Verse.FloatMenuOption@,Verse.AutofeedMode,RimWorld.ITab_Pawn_Feeding.BabyFeederPair)">
+            <summary>
+            Change label from Childcare to Breastfeed for appropriate feeder
+            Should change labels for pawns that cannot do childcare but can breastfeed
+            </summary>
+        </member>
+        <member name="T:MilkCum.Harmony.Pawn_MindState_Patch">
+            <summary>DrawRow 在 1.6 为 6 参数，不再 patch；若保留 TargetMethod 返回 null 会导致 Harmony 报 unexpected result，故整类移除。</summary>
+        </member>
+        <member name="M:MilkCum.Harmony.Pawn_MindState_Patch.AutofeedSetting_Prefix(Verse.AI.Pawn_MindState,Verse.AutofeedMode@,Verse.Pawn)">
+            <summary>
+            Allow childcare for Pawns that doesn't have Developmental stage baby
+            </summary>
+        </member>
+        <member name="M:MilkCum.Harmony.Pawn_MindState_Patch.SetAutofeeder_Prefix(Verse.AI.Pawn_MindState,Verse.Pawn,Verse.AutofeedMode)">
+            <summary>
+            Allow assigning childcare to Pawns that can't do childcare
+            TODO Clean up logic
+            </summary>
+        </member>
+        <member name="M:MilkCum.Harmony.ChildcareUtility_Patch.CanSuckle_PostFix(System.Boolean@,Verse.Pawn,System.Nullable{RimWorld.ChildcareUtility.BreastfeedFailReason}@)">
+            <summary>
+            This function is also used to determine who is a baby by vanilla. Don't bypass age check
+            </summary>
+            <param name="__result"></param>
+            <param name="baby"></param>
+            <param name="reason"></param>
+        </member>
+        <member name="M:MilkCum.Harmony.ChildcareUtility_Patch.SuckleFromLactatingPawn_Prefix(System.Boolean@,Verse.Pawn,Verse.Pawn,System.Int32)">
+            <summary>
+            Allow suckle to gain energy instead of nutrition, bypass vanilla suckle
+            </summary>
+            <param name="__result"></param>
+            <param name="baby"></param>
+            <param name="feeder"></param>
             <returns></returns>
         </member>
-        <member name="M:MilkCum.UI.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
-            <summary>泌乳者或任意人形均可指定谁可食用我产出的奶/精液（合并后始终启用精液机制）。</summary>
+        <member name="M:MilkCum.Harmony.ChildcareUtility_Patch.Translate_Prefix(RimWorld.ChildcareUtility.BreastfeedFailReason@)">
+            <summary>
+            Avoid not lactating not player facing
+            </summary>
+            <param name="reason"></param>
         </member>
-        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawSection(UnityEngine.Rect,System.Int32,System.Int32)">
-            <summary>主/子 Tab 结构下按区块绘制。mainTab 2=健康与风险，3=效率与界面，4=联动与扩展。</summary>
+        <member name="M:MilkCum.Harmony.HediffComp_Chargeable_Patch.GreedyConsume_Prefix(Verse.HediffComp_Chargeable,System.Single@,System.Single)">
+            <summary>吸奶时从池扣量：按「从第一对开始、选最满一侧、依次吃到饱」从 CompEquallyMilkable 扣奶，再同步 Charge（见 Docs/泌乳系统逻辑图）。</summary>
         </member>
-        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawDevModeSection(UnityEngine.Rect)">
-            <summary>开发模式：选中小人的泌乳状态调试信息。仅在游戏中且有当前地图时访问 Selector，避免在 Mod 设置界面触发 Find.MapUI 的 InvalidCastException。</summary>
+        <member name="M:MilkCum.Harmony.CompProperties_Milkable_Patch.Postfix(RimWorld.CompProperties_Milkable)">
+            <summary>Replace CompMilkable with CompEquallyMilkable；仅改 compClass，不阻止原构造执行，兼容未来原版/第三方构造逻辑。</summary>
         </member>
-        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawBreastPoolBlock(Verse.Listing_Standard)">
-            <summary>乳房与池：容量、灌满时间、剩余天数等可调系数集中在此，带详细说明。</summary>
+        <member name="M:MilkCum.Harmony.ThingWithComps_Patch.InitializeComps_Post(Verse.ThingWithComps)">
+            <summary>Ensure EquallyMilkable Comp on Pawn；ExtensionHelper.CompEquallyMilkable() 内部已 if (TryGetComp==null) AddComp，不会重复添加。</summary>
         </member>
-        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawOverview(UnityEngine.Rect)">
-            <summary>主/子 Tab 结构下：仅绘制总览（营养→能量、哺乳时间）。</summary>
+        <member name="M:MilkCum.Harmony.Hediff_Pregnant_Patch.DoBirthSpawn_Prefix(Verse.Pawn)">
+            <summary>
+            设计原则 2/7：仅 Prefix 挂接，不替换原版 DoBirthSpawn。分娩结束时为母亲添加 Lactating 并调用 ApplyBirthPoolValues；动物与人类（Biotech）统一处理。
+            </summary>
         </member>
-        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawTab(UnityEngine.Rect,System.Int32)">
-            <summary>主/子 Tab 结构下：仅绘制指定子 Tab 内容（0=人形，1=动物，2=机械族），不画内层 Tab 栏。</summary>
+        <member name="M:MilkCum.Harmony.Need_Food_Patch.GetTipString_PostFix(RimWorld.Need_Food,System.String@)">
+            <summary>为饱食度悬停提示追加「饥饿率」拆解：当前饥饿档位、各 hediff 的 hungerRateFactor/hungerRateFactorOffset、最终乘数。本 mod 的 Lactating 已不用饥饿率，但可显示其他 hediff（如戒断）的影响。</summary>
         </member>
-        <member name="T:MilkCum.UI.Widget_CumpilationSettings">
-            <summary>精液/Cumpilation 设置：膨胀、填充、覆盖、收集、泄精等，统一到主 mod 设置的一个 Tab。</summary>
+        <member name="T:MilkCum.Harmony.HediffSet_Remove_Patch">
+            <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
         </member>
-        <member name="T:MilkCum.UI.Widget_RaceOverrides">
-            <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>
+        <member name="T:MilkCum.Harmony.ProlactinAddictionPatch">
+            <summary>设计原则 1：耐受/成瘾交给原版。本补丁仅挂接服用催乳剂后的「水池模型」逻辑（移除刚加的 Lactating、入队延迟、AddFromDrug）；成瘾判定与概率、耐受增减由原版 ChemicalDef + CompProperties_Drug + outcomeDoers/SeverityPerDay 驱动，此处不手写。</summary>
         </member>
-        <member name="T:MilkCum.UI.Window_ProducerRestrictions">
-            <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+        <member name="T:MilkCum.Harmony.PoolModelBirthHelper">
+            <summary>水池模型：分娩时对 Lactating 应用剩余天数+=10、当前泌乳量+=基础值。</summary>
+        </member>
+        <member name="T:MilkCum.Harmony.BreastPoolTooltipHelper">
+            <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
+        </member>
+        <member name="M:MilkCum.Harmony.BreastPoolTooltipHelper.BuildBreastPairBlock(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.Single,System.Single,System.Boolean}},System.String,Verse.Pawn)">
+            <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
+        </member>
+        <member name="T:MilkCum.Harmony.HediffComp_SexPart_CompTipStringExtra_Patch">
+            <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块。仅当「有泌乳且当前为 RJW 乳房行」时追加；没有泌乳不追加，非乳房行不追加（genitalFamily != Breasts 已 return）。若 __result 中已包含本块（同一 getter 被调用两次并拼接时会重复），则不再追加以免同一悬浮内出现两份相同内容。</summary>
+        </member>
+        <member name="T:MilkCum.Harmony.Thing_GetStatValue_PartialMilkNutrition_Patch">
+            <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。目标方法可能为 Thing.GetStatValue(StatDef) 或 (StatDef,int)，或为扩展方法不在 Thing 上；由 ModInit 在找到目标时手动 Patch。</summary>
+        </member>
+        <member name="T:MilkCum.Harmony.Bill_Production_Notify_IterationCompleted_Patch">
+            <summary>When a recipe completes, copy producer/producerKind from milk ingredients to products that have CompShowProducer (e.g. Milk made from EM_HumanMilk).</summary>
+        </member>
+        <member name="T:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration">
+            <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。喝奶（吸奶或食用奶瓶）时满足 DBH 的饮水(Thirst)需求。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.IsDubsBadHygieneActive">
+            <summary>Dubs Bad Hygiene 是否已加载（存在 Hygiene NeedDef 或检测到 DBH 模组）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.IsThirstNeedAvailable">
+            <summary>饮水(Thirst)需求是否可用（DBH 已加载且启用 Thirst 时）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.SatisfyThirst(Verse.Pawn,System.Single)">
+            <summary>为喝奶者满足饮水需求。amount 为池单位/营养当量（1 池单位=1 营养），按 1:1 加到 Thirst.CurLevel，上限 MaxLevel。仅当 DBH 已加载且存在 Thirst 需求时生效。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Verse.Pawn)">
+            <summary>卫生风险系数 0~1（1=最易诱发乳腺炎）。当启用 DBH 联动时用 Hygiene 需求等级（低=高风险）；否则用当前房间清洁度（脏=高风险）。</summary>
+        </member>
+        <member name="M:MilkCum.PipeSystem.ApplyPatches.Building_Milking_PlaceMilkThing_Patch.Prefix(MilkCum.Core.Building_Milking,Verse.Thing@)">
+            <summary>浜哄ザ锛堝甫 producer 涓斾负浜虹被锛変笉杩涘叆绠￠亾/澶ф《锛岀洿鎺ユ斁缃紱鍔ㄧ墿濂舵墠杩涘叆绠￠亾銆</summary>
+        </member>
+        <member name="T:MilkCum.PipeSystem.ApplyPatches.ThingWithComps_DrawAt_Patch">
+            <summary>
+            Actually draw the damn attachments
+            </summary>
+        </member>
+        <member name="M:MilkCum.PipeSystem.Alert_NoStorage_Patch.ThingsList_Postfix(System.Collections.Generic.List{Verse.Thing}@)">
+            <summary>
+            Remove no storage alert for milking buildings
+            </summary>
+            <param name="__result"></param>
         </member>
         <member name="M:MilkCum.RJW.Hediff_BasePregnancy_Patch.PostBirth_Prefix(Verse.Pawn,Verse.Pawn)">
             <summary>RJW 分娩：与原版 DoBirthSpawn 一致，为母亲加 Lactating 并统一调用 ApplyBirthPoolValues（设计原则 2：分娩入口统一）。</summary>
@@ -794,644 +1595,76 @@
         <member name="M:MilkCum.RJW.RJWSexAndFertility.ApplyPostSexLactationBoost(Verse.Pawn)">
             <summary>3.2：性行为后为泌乳者增加少量池进水（若设置开启）。</summary>
         </member>
-        <member name="T:Cumpilation.Bukkake.BukkakeUtility">
+        <member name="T:MilkCum.UI.Dialog_GeneConfig">
+            <summary>奶类型基因配置弹窗。若后续增加选项导致内容超出窗口，可改为可滚动或按内容计算高度。</summary>
+        </member>
+        <member name="T:MilkCum.UI.PawnColumnWorker_MilkAllowDeflate">
+            <summary>濂惰〃鏍煎垪锛氭槸鍚﹀厑璁告硠绮撅紙鍘诲仛娉勫埌妗?娓呮磥/闅忓湴鐨?Job锛夈€</summary>
+        </member>
+        <member name="T:MilkCum.UI.PawnColumnWorker_MilkEquivalentDose">
+            <summary>殖民者列：当前等效剂量（只读，由 L 与公式推导）。</summary>
+        </member>
+        <member name="T:MilkCum.UI.PawnColumnWorker_MilkFullness">
+            <summary>奶池满度列：无本 mod 泌乳 Comp 时显示 "-"（如其他 mod 的 Lactating）。</summary>
+        </member>
+        <member name="T:MilkCum.UI.PawnColumnWorker_MilkRemainingDays">
+            <summary>建议 7：奶表格中显示泌乳剩余天数。</summary>
+        </member>
+        <member name="T:MilkCum.UI.PawnColumnWorker_MilkSealCum">
+            <summary>濂惰〃鏍煎垪锛氬浣忥紙闃叉绮炬恫鑷劧娉勬紡锛夈€備粎浜哄舰鎴愪汉涓旀湁闃撮亾鏃舵樉绀恒€</summary>
+        </member>
+        <member name="M:MilkCum.UI.PawnColumnWorker_MilkType.GetMinHeaderHeight(RimWorld.PawnTable)">
             <summary>
-            Initializes and Manages both the "Per Body-Part" Splashes on Bukkake as well as their controllers. 
-            
-            DevNote: 
-            Initially, the Bukkake implementation from Ed86-Cum had two mechanics that got removed. 
-            1) The body-parts had a "Overspill" logic which means that if your chest was full, 
-               you'd get splashes on the arms and legs. 
-            2) The Controller would calculate itself regularly. 
-               This is now done upon spawning parts and the controller just ticks down.  
-            
-            Also, all drawing got removed. The drawing framework people should take care of that (#Innocent)
+            Called once on table dirty, clear cache
             </summary>
-        </member>
-        <member name="M:Cumpilation.Bukkake.BukkakeUtility.CanBeCovered(Verse.Pawn)">
-            <summary>
-            Simple check if the pawn can be covered with fluids.
-            Only some sanity checks and ruling animals out.
-            </summary>
-            <param name="pawn">The pawn that might be covered.</param>
-            <returns>True if the pawn can be covered by fluid, false otherwise.</returns>
-        </member>
-        <member name="M:Cumpilation.Bukkake.BukkakeUtility.PartitionSeverity(System.Single,System.Int32,System.Single)">
-            <summary>
-            Partitions a float into a sub-list of smaller floats whose sum is the initialSeverity. 
-            There will be atmost 3 * initialseverity parts, or max_parts, whatever is smaller. 
-            The size of each partition is capped at 1.0 (default).
-            </summary>
-            <param name="initialSeverity"></param>
-            <param name="max_parts">Max number of partitions to create, default capped at 10</param>
-            <param name="max_severity_on_part">Max value for each entry, default capped at 1.0</param>
-            <returns>A list of floats whose sum is the original severity.</returns>
-        </member>
-        <member name="M:Cumpilation.Bukkake.BukkakeUtility.TicksToCleanSplashFromSelf(Verse.Hediff,System.Single)">
-            <summary>
-            Looks up the ticks (time) required to clean a splash from a body-part. 
-            In case of any error, null value or other issues, 240 (2s) is returned, which was the original cleanup time from frameworks.
-            If the severity is lower (or higher) than 1, it is considerd as a linear co-efficient. 
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff.summedSeverityRequiredForFullController">
-            <summary>
-            How many of the sub-hediffs severity are required to have a 1.0 Severity of the corresponding Controller.
-            Default 4.5 "full" (=Severity 1.0) parts to reach the full bukkake.
-            For a normal pawn, there should be 6 or 7 bodyparts, so 4.5 is already quite a lot. 
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Common.DefModExtension_PawnTargetting.blockingHediffs">
-            <summary>
-            A list of hediffs that block spawning of this Hediff.
-            If any is present, at any severity other than 0, `CanTargetPawn` will return false.
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Common.FluidUtility.StoreFluidSource(Verse.Hediff,Verse.Pawn,rjw.SexFluidDef,System.Single)">
-            <summary>
-            Tries to store a record of `FluidSource` in a given Hediff.
-            In case the Hediff does not have a `HediffComp_SourceStorage` nothing will happen. 
-            If there already exists a Storage Entry for this Pawn and this fluid, it will be increased by the incoming amount.
-            </summary>
-            <param name="cumflationHediff">The hediff to store a record in</param>
-            <param name="origin">The pawn that originated the Fluid</param>
-            <param name="fluid">The type of fluid</param>
-            <param name="amount">The amount of fluid</param>
-        </member>
-        <member name="M:Cumpilation.Common.FluidUtility.LikesCumflation(Verse.Pawn)">
-            <summary>
-            Returns true if the pawn likes cumflation / cumstuffing for one or the other reason. 
-            Important: This is a separate method intentionally, so it can be patched. 
-            </summary>
-            <param name="inflated">The pawn that maybe likes cumflation</param>
-            <returns>True, if the pawn likes cumflation from traits, quirks or zoophile.</returns>
-        </member>
-        <member name="F:Cumpilation.Common.HediffCompProperties_RandomlySpawnFilth.chanceBasedOnSeverity">
-            <summary>
-            Scale the chance based on severity. If Chance is 50% and Severity is 50%, then there is a 25% final chance.
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Common.HediffCompProperties_RandomlySpawnFilth.onlyAtStagesHigherThan">
-            <summary>
-            Only try to spawn filth if the current stage is higher than the specified number.
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Common.HediffComp_ChangeFluidfactorBasedOnSeverity">
-            <summary>
-            Adjusts the targetted SexParts fluid-amount based on a linear factor between a configured Max and Min value. 
-            
-            Example: Max 5, Min 2
-            Severity 100% -> 5.0
-            Severity 50%  -> 3.5
-            Severity 0%   -> 2.0
-            Severity 33%  -> 3.0
-            Severity 66%  -> 4.0
-            Severity 250% -> 5.0
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Common.IngestionOutcomeDoer_PawnTargetting.blockingHediffs">
-            <summary>
-            A list of hediffs that block spawning of this Hediff.
-            If any is present, at any severity other than 0, `CanTargetPawn` will return false.
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Common.MapUtility.PawnIsOnHomeMap(Verse.Pawn)">
-            <summary>
-            Checks if the pawn is on the players home map. 
-            
-            Reason is that drones should only be punished for absence of queen if they are on the map and there is no queen.
-            If they are on a mission, transport-pod etc. they should not get boni or mali. 
-            </summary>
-            <param name="pawn">The pawn for which to check map-presence.</param>
-            <returns>True if the pawn is on the home-map, False otherwise.</returns>
-        </member>
-        <member name="M:Cumpilation.Common.PartUtility.FindFittingSexParts(Verse.Pawn,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            This method finds all relevant, targetted parts as specified. 
-            
-            A sanity check, if the pawn is valid / healthy and matches the configuration, is done earlier in `IsValidPawn`. 
-            </summary>
-            <param name="pawn">The pawn for which to find SexParts.</param>
-            <param name="targetPenis">Consider Penises (using `RJW.PartHelper.Is_Penis`)</param>
-            <param name="targetVagina">Consider Vaginas (using `RJW.PartHelper.Is_Vagina`)</param>
-            <param name="targetBreast">Consider Breasts (using HomeBrew helper)</param>
-            <param name="targetAnus">Consider Anus (using `RJW.PartHelper.Is_Anus`)</param>
-            <param name="targetOther">Consider SexParts that are not in any other category</param>
-            <param name="onlyFirst">only return the first (fitting) part.</param>
-            <param name="needsFluid">only return parts that have fluid.</param>
-            <returns>All targetted SexParts of the pawn, or an empty List on Errors.</returns>
-        </member>
-        <member name="M:Cumpilation.Common.PartUtility.IsValidPawn(Verse.Pawn,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.IEnumerable{Verse.HediffDef},System.Collections.Generic.IEnumerable{RimWorld.TraitDef},System.Boolean)">
-            <summary>
-            Does a bunch of checks on a pawn, if it is a valid target.
-            </summary>
-            <param name="pawn">The pawn to check</param>
-            <param name="allowMen">Men are valid targets (Using RW.Gender)</param>
-            <param name="allowWomen">Women are valid targets (using RW.Gender)</param>
-            <param name="allowFutas">Futas are valid targets (using RJW.GenderUtility.IsFuta); Futa is checked before men and women.</param>
-            <param name="allowAnimals">Animals are valid targets.</param>
-            <param name="blockingHediffs">Return an empty list if any of the HediffDefs is present at a severity other than 0.</param>
-            <param name="blockingTraits"></param>
-            <returns>True if the pawn is a valid target, false if it cannot be targeted</returns>
-        </member>
-        <member name="M:Cumpilation.ModLog.Error(System.String)">
-            <summary>
-            Logs the given message with [SaveStorage.ModId] appended.
-            </summary>
-        </member>
-        <member name="M:Cumpilation.ModLog.Message(System.String)">
-            <summary>
-            Logs the given message with [SaveStorage.ModId] appended.
-            </summary>
-        </member>
-        <member name="M:Cumpilation.ModLog.Warning(System.String)">
-            <summary>
-            Logs the given message with [SaveStorage.ModId] appended.
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Cumflation.CumflationUtility.CumflatePawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
-            <summary>
-            Manages Cumflation by adding and increasing the relevant Hediff, checked for each Genital.
-            
-            Also does the check IF a pawn should be cumflated.
-            </summary>
-            <param name="inflator">Donor of the fluid</param>
-            <param name="inflated">Receiver of the fluid</param>
-            <param name="props">Sexprops, always useful.</param>
-        </member>
-        <member name="M:Cumpilation.Cumflation.CumflationUtility.TryQueueOverflowingCumflation(Verse.Pawn)">
-            <summary>
-            If the pawn is "overflowing", i.E. the severity is over 1, 
-            it will try to start a Job to spray cum around.
-            The Job will run until the Severity is below 1. 
-            </summary>
-            <param name="inflated">The pawn that might gets the Job.</param>
-        </member>
-        <member name="M:Cumpilation.Cumflation.CumflationUtility.GetOrCreateCumflationHediff(Verse.Pawn)">
-            <summary>
-            Gets (or creates) a Cumflation Hediff for the `inflated`-pawn, 
-            located in the Genitals BodyPart. 
-            The severity is set later in case of a new creation.
-            </summary>
-            <param name="inflated"></param>
-            <returns>A Cumflation Hediff of the inflated pawn.</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.CumflationUtility.CanBeCumflated(Verse.Pawn)">
-            <summary>
-            Modding - Hook. 
-            Default: All Pawns can be cumflated. Animals cannot be cumflated.
-            </summary>
-            <param name="pawn">The pawn that might be cumflated.</param>
-            <returns>True, unless patched.</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.CumflationUtility.DetermineCumflationSeverity(Verse.Pawn,System.Single,rjw.SexFluidDef)">
-            <summary>
-            Calculates the resulting Cumflation-Severity relative to the fluid-amount and pawns body size. 
-            Also used to determine "overflow". 
-            
-            This method is also used to determine "cumstuffed" despite the name. 
-            </summary>
-            <param name="pawn">The pawn that might be cumflated</param>
-            <param name="fluidAmount">The amount of fluid coming in.</param>
-            <param name="def">FluidDef, optional for patching.</param>
-            <returns>The severity of the resulting cumflation</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.CumflationUtility.FluidAmountRequiredToCumflatePawn(Verse.Pawn,rjw.SexFluidDef)">
-            <summary>
-            We assume a simple relation: 100 fluid per 1 Bodysize. 
-            The returning value will determine how much of the fluid is necessary for 1.0 cumflation severity.
-            
-            This might be altered with Patches etc. or extra behaviour, which is why this is a separate method despite very simple logic. 
-            </summary>
-            <param name="pawn">The pawn for which </param>
-            <param name="fluid">Optional for patches: For which fluid to check.</param>
-            <returns>A number how much fluid amount is necessary for a "full" cumflation, i.E. a cumflation result resulting in 1.0 cumflation severity. </returns>
-        </member>
-        <member name="F:Cumpilation.Cumflation.StuffingDef.resultingStuffedHediff">
-            <summary>
-            Note: The Cumstuffed Hediff MUST have a `HediffComp_SharedSeverityPerDay` otherwise there will be issues. 
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Cumflation.StuffingDef.amountOfFluidForFullStuffing">
-            <summary>
-            The amount of Fluid required for making a 1.0 Severity Hediff of the relative xxx-stuffing.
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Cumflation.StuffingDef.thoughtThreshold">
-            <summary>
-            How much severity does the resulting stuffing must have to give a thought?
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Cumflation.HediffCompProperties_SharedSeverityPerDay">
-            <summary>
-            Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
-            Hediffs with this Comp are present. 
-            
-            Example: You have 1 hediff with `-0.10` SeverityPerDay. It will behave as normal. 
-            Example 2: You have 3 hediffs with `-0.15` SeverityPerDay each. 
-            Because you have three, they will effectively reduce by `-0.05` each day, resulting in a "global" reduction of 0.15 amongst all. 
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Cumflation.HediffCompProperties_VomitFluidMtb.mtbDays">
-            <summary>
-            "mean time between" measured in days. 
-            If set to 1, there will be 1 vomiting per days (in random occurrence).
-            If set to 2, there will be 0.5 vomiting per days, etc. 
-            If set to 0.1, there will be 10 vomitings per days
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Cumflation.HediffCompProperties_VomitFluidMtb.scaleWithSeverity">
-            <summary>
-            If true, the "chance" of application is scaled with the Severity of the Stuffing. 
-            So if your stuffing is 1.0, it will have a "full mtbDays". 
-            Otherwise, if your stuffing is 0.5, it will will result in half as much Vomiting.
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Cumflation.HediffComp_SharedSeverityPerDay">
-            <summary>
-            Extension to the "HediffComp_SeverityPerDay" that adjusts depending on how many 
-            Hediffs with this Comp are present. 
-            
-            Example: You have 1 hediff with `-0.10` SeverityPerDay. It will behave as normal. 
-            Example 2: You have 3 hediffs with `-0.15` SeverityPerDay each. 
-            Because you have three, they will effectively reduce by `-0.05` each day, resulting in a "global" reduction of 0.15 amongst all. 
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Cumflation.JobDriver_OverflowingCumflation">
-            <summary>
-            - Stop the pawn flat / make it look like it
-            - Spray correct outside of it
-            - Spray until the cumflation is at &lt;1.0
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Cumflation.JobDriver_VomitFluid.LookupRandomFilthDef(Verse.Pawn)">
-            <summary>
-            Checks the pawns "Stuffed" Hediffs and returns a fitting FilthDef. 
-            If there is none, it'll return the normal Filth_Vomit.
-            </summary>
-            <param name="pawn">The Pawn which has stuffing-hediffs</param>
-            <returns>A filth fitting for the existing stuffing-hediffs, or a Filth_Vomit as fallback.</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.Patch_TransferFluids_Stuff.PrintDebugInfoForSexRoles(rjw.SexProps)">
-            Tim -> Anal Rape -> Joe             := Joe=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
-            Tim -> Anal Riding (Reverse) -> Joe := Joe=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
-            Tim -> Anal Rape -> Eva             := Eva=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
-            Tim -> Cunnilingus (Reverse) -> Eva := Eva=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
-        </member>
-        <member name="M:Cumpilation.Cumflation.StuffingUtility.StuffPawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
-            <summary>
-            Manages Stuffing by adding and increasing the relevant Hediff, checked for each Genital.
-            If the pawn is already "fully stuffed", old liquids get pushed out by reducing their severity.
-            See the bottom of `StuffingUtility` for examples on the Behaviour.
-            
-            Also does the check IF a pawn should be stuffed.
-            </summary>
-            <param name="inflator">Donor of the fluid</param>
-            <param name="inflated">Receiver of the fluid</param>
-            <param name="props">Sexprops, always useful.</param>
-        </member>
-        <member name="M:Cumpilation.Cumflation.StuffingUtility.CanBeStuffed(Verse.Pawn)">
-            <summary>
-            Modding - Hook. 
-            Default: All Pawns can be Stuffed.
-            </summary>
-            <param name="pawn">The pawn that might be stuffed.</param>
-            <returns>True, unless patched.</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.StuffingUtility.GetMaximumCombinedStuffingSeverity(Verse.Pawn)">
-            <summary>
-            Mod-Hook, no initial behaviour planned. 
-            Default: All pawns can have 1 total stuffing severity. 
-            </summary>
-            <param name="pawn">The pawn that might be stuffed</param>
-            <returns>1.0 as default</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.StuffingUtility.GetOrCreateStuffHediff(Verse.Pawn,rjw.SexFluidDef)">
-            <summary>
-            Gets (or creates) a Stuffing Hediff for the `inflated`-pawn, 
-            located in the Genitals BodyPart. 
-            The severity is set later in case of a new creation.
-            </summary>
-            <param name="inflated"></param>
-            <returns>A Stuffed Hediff of the inflated pawn.</returns>
-        </member>
-        <member name="M:Cumpilation.Cumflation.StuffingUtility.DetermineStuffingSeverity(Verse.Pawn,System.Single,rjw.SexFluidDef)">
-            <summary>
-            Calculates the resulting severity for a given pawn.
-            Will return a float bigger than 0.0, potentially bigger than 1.0;
-            There is no limit at 1 because this method is also used for the overflow. 
-            </summary>
-            <param name="pawn">The pawn that will be checked for - bodysize is important.</param>
-            <param name="fluidAmount">The amount of incoming fluid</param>
-            <param name="def">The incoming fluid</param>
-            <returns>The severity of a stuffing-hediff given bodysize and fluid-amount.</returns>
-        </member>
-        <member name="T:Cumpilation.Fluids.Cum.SpecialThingFilterWorker_CumBase">
-            <summary>
-            (Simple) Filters for Food to include or non-include cum. 
-            
-            DevNote: Gently taken from Amevarashi-Sexperience
-            https://gitgud.io/amevarashi/rjw-sexperience/-/tree/master/Source/RJWSexperience/Cum/FilterWorkers?ref_type=heads
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Fluids.Slug.SexFluidIngestionDoer_ConsumeSlug">
-            <summary>
-            Adds up to MAX_SEVERITY (Default=0.2f) Toxic Buildup to the receiver upon consuming Slug. 
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Gathering.MechPassiveFluidGathererComp">
-            <summary>
-            Does basically the same as the Passive-Fluid Gatherer but checks that it's only for mechs that have power. 
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Gathering.PassiveFluidGathererComp">
-            <summary>
-            Unlike `FluidGatheringBuilding` that works upon nearby sex, the PassiveFluidGatherer is trying to clean nearby floors from Filth.
-            Due to logic, they must be in the same room. 
-            
-            Important: For this to work properly, the ThingWithComp needs to have a `<tickerType>Normal</tickerType>` to run CompTick
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Gathering.PassiveFluidGathererComp.GatheredFilth">
-            <summary>
-            Stores the currently running information on how much of which filth was soaked in (by filth def and producer for bed-linked filtering).
-            Resets on load.
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Gathering.PassiveFluidGathererComp.FilthToItem">
-            <summary>
-            Checks the current `GatheredFilth` and spawns any item inside me if there is enough Filth gathered of the right kind.
-            The logic for how much and what you need is done by `FluidGatheringDef`s. 
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Gathering.PassiveFluidGathererComp.CleanFilth(System.Collections.Generic.IEnumerable{RimWorld.Filth})">
-            <summary>
-            Sucks up supported Filths. If bucket is linked to a bed with an owner, only absorbs filth recorded as that owner's; otherwise absorbs all (mixed).
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Gathering.FluidGatheringBuilding">
-            <summary>
-            Extension that can be added to (storage) buildings, to gather fluids on orgasm. 
-            This is meant to manage things at `Patch_SatisfyPersonal_FillFluidGatherers`. 
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Gathering.FluidGatheringBuilding.range">
-            <summary>
-            The range in which fluids are gathered on Orgasm
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Gathering.FluidGatheringBuilding.supportedFluids">
-            <summary>
-            All supported fluids, so that a cumbucket cannot collect girl-cum.
-            </summary>
-        </member>
-        <member name="F:Cumpilation.Gathering.FluidGatheringBuilding.collectsFromInternal">
-            <summary>
-            "true" will work for all Sextypes, "false" will only work for Handjob, Footjob, etc. things on the outside. 
-            </summary>
-        </member>
-        <member name="T:Cumpilation.Gathering.FilthProducerRegistry">
-            <summary>
-            本 Mod 生成污物时登记产主；高级桶吸收时可按床主过滤，并给产出打产主。
-            键为 (地图, 格, 污物Def)，同一格多次生成时后者覆盖（仅保留最后产主）。
-            </summary>
-        </member>
-        <member name="M:Cumpilation.Gathering.FilthProducerRegistry.GetAndRemove(Verse.Map,Verse.IntVec3,Verse.ThingDef)">
-            <summary>取出并移除该格该污物的产主记录；无记录则返回 null。</summary>
-        </member>
-        <member name="M:Cumpilation.Gathering.GatheringUtility.GetNearbyFilth(Verse.Thing,System.Boolean,System.Int32)">
-            <summary>
-            Returns a list of all Filths that are within a given range, and within the same room of this Comps parent.
-            When `onlyFluidFilth` is true, only filth that is specified in a rjw.SexFluidDef will be considered. 
-            </summary>
-            <param name="onlyFluidFilth">If true, only Filth that is mentioned in rjw.SexFluidDefs are returned</param>
-            <param name="range">Filter for the horicontal distance to the parent.</param>
-            <returns>A list of Fitlhs in the same room of the parent, filtered for SexFluids and/or range.</returns>
-        </member>
-        <member name="M:Cumpilation.Gathering.GatheringUtility.IsSupportedFilthType(RimWorld.Filth,System.Collections.Generic.IEnumerable{rjw.SexFluidDef})">
-            <summary>
-            Small helper that checks for a filth if the Gatherer can handle is. 
-            This consist of checking if the filth is in a (supported) fluidDef, 
-            or if there is a filth specified in a gatheringDef. 
-            </summary>
-            <param name="filth"></param>
+            <param name="table"></param>
             <returns></returns>
         </member>
-        <member name="M:Cumpilation.Gathering.GatheringUtility.AddFluidToSink(rjw.SexFluidDef,System.Single,Verse.Building)">
-            <summary>
-            Other big method, used when there are other sources of fluid coming into the Sinks. 
-            This happens for example on JobDrivers that Clean Bukkake.
-            
-            If everything works out, the correct item is spawned, following the FluidGatheringDef.
-            </summary>
-            <param name="fluid">The fluid coming in, can be unsupported and nothing will happen.</param>
-            <param name="fluidAmount">The amount of fluid coming in.</param>
-            <param name="sink">The potential sink that the building </param>
+        <member name="M:MilkCum.UI.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
+            <summary>仅泌乳者（女性）显示「谁可以使用我的奶」；男性显示「谁可以吃我的精液制品」；非哺乳者不显示产奶限制列。</summary>
         </member>
-        <member name="T:Cumpilation.Gathering.Patch_CasualSexHelper_FindNearbyBucketToMasturbate">
-            <summary>
-            Changes the Position that (Player) Pawns want to Masturbate at. 
-            If there is a supported and free Fluid-Gatherer (Sink), a position next to it will be chosen. 
-            
-            Extracted and Extended behaviour from Amevarashi Sexperience:
-            https://gitgud.io/amevarashi/rjw-sexperience/-/blob/master/Source/RJWSexperience/Patches/RJW_Patch.cs#L123
-            </summary>
+        <member name="F:MilkCum.UI.Widget_AdvancedSettings.SectionScrollContentHeight">
+            <summary>Fixed height for settings section scroll content. If users report truncation on very high DPI or many options, consider content-based height or ListView (if RimWorld API supports it).</summary>
         </member>
-        <member name="M:Cumpilation.Gathering.Patch_CasualSexHelper_FindNearbyBucketToMasturbate.Prefix(Verse.Pawn,Verse.Pawn,Verse.IntVec3@)">
-            <summary>
-            If masturbation and current map has a bucket, return location near the bucket
-            </summary>
-            <param name="__result">The place to stand near a bucket</param>
-            <returns>Run original method</returns>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawSection(UnityEngine.Rect,System.Int32,System.Int32)">
+            <summary>专业级 7 主 Tab：按 mainTab 分发到健康/权限/数值/联动等区块。</summary>
         </member>
-        <member name="T:Cumpilation.HarmonyInit">
-            <summary>
-            已合并进 EqualMilking：不再在此创建 Harmony，由 EqualMilking 主入口统一 PatchAll() 本程序集（含 Cumpilation 的 [HarmonyPatch]）。
-            </summary>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawDevModeSection(UnityEngine.Rect)">
+            <summary>DevMode: selected pawn lactation debug. Only when playing and map active; avoids InvalidCastException in Mod settings.</summary>
         </member>
-        <member name="T:Cumpilation.Leaking.Settings">
-            <summary>数据已统一到 EqualMilkingSettings；此类仅作代理，供 Cumpilation 代码读取。</summary>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawIntegrationSectionExtended(UnityEngine.Rect,System.Int32)">
+            <summary>专业级：RJW / DBH / 营养系统 三子 Tab。</summary>
         </member>
-        <member name="M:Cumpilation.Oscillation.OscillationHelper.GetOrCreateBlueBallsHediff(Verse.Pawn)">
-            <summary>
-            Gets (or creates) a BlueBall Hediff for the pawn, 
-            located in the Genitals BodyPart. 
-            The severity is set later in case of a new creation.
-            </summary>
-            <param name="pawn"></param>
-            <returns>A Blueball Hediff with Severity 0 of the pawn.</returns>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawBreastPoolBlock(Verse.Listing_Standard)">
+            <summary>Breast and pool: capacity, fill time, remaining days; tunable params with descriptions.</summary>
         </member>
-        <member name="T:Cumpilation.Reactions.ThoughtDefExtension_StageFromConsumption">
-            <summary>
-            
-            
-            Initially taken from Ameravashis Sexperience, extended to cover multiple fluids, optional quirks and traits that hardwire results.
-            </summary>
+        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawOverview(UnityEngine.Rect)">
+            <summary>主/子 Tab 结构下：仅绘制总览（营养→能量、回缩吸收）。</summary>
         </member>
-        <member name="T:Cumpilation.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
-            <summary>
-            Handles the updating (and thought-giving) when pawns consume meals with fluid based ingredients. 
-            
-            To work, there need to be two defs: 
-            - A RecordFluidMappingDef
-            - The IngestionOutComeDoer
-            
-            Originally, this was from Amaverashi-Sexperience but extended for multiple fluids. 
-            https://gitgud.io/amevarashi/rjw-sexperience/-/blob/master/Source/RJWSexperience/Cum/IngestionOutcomeDoer_RecordEatenCum.cs?ref_type=heads
-            </summary>
+        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawNutritionEnergyBlock(UnityEngine.Rect@)">
+            <summary>营养→能量、额外饥饿、回缩吸收：Draw 与 DrawOverview 共用。</summary>
         </member>
-        <member name="T:Cumpilation.Reactions.Patches.Patch_IngestMeal_UpdateRecordAndGiveThoughts">
-            <summary>
-            I have one IngestionOutcomeDoer but it's not enough. The individual outcome-doers are not used in meals. 
-            This triggers all (relevant) ingredients to give their thoughts. 
-            This also means that if a meal is made of cum and insect jelly, the eater will get two thoughts. 
-            
-            TODO: Right now, the "NumEaten" is updated, but the "AmountEaten" is buggy. 
-            But as it gives the right thoughts, I am decently happy for now. 
-            </summary>
+        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawBreastfeedSystemFull(UnityEngine.Rect)">
+            <summary>专业级「哺乳系统」一页：总览说明 + 营养→能量/回缩 + 人形/动物/机械三类设置（可滚动）。</summary>
         </member>
-        <member name="T:Cumpilation.Reactions.Thought_Recordbased">
-            <summary>
-            Thought class that uses record to select active stage 
-            Initially taken from Ameravashis Sexperience, extended to cover multiple fluids, optional quirks and traits that hardwire results.
-            </summary>
+        <member name="M:MilkCum.UI.Widget_BreastfeedSettings.DrawAllTabs(UnityEngine.Rect)">
+            <summary>合并绘制人形/动物/机械族三类哺乳设置于同一可滚动页（原三个子 Tab 合并为一个）。</summary>
         </member>
-        <member name="M:Cumpilation.Reactions.Thought_Recordbased.TryMergeWithExistingMemory(System.Boolean@)">
-            <summary>
-            This method is called for every thought right after the pawn is assigned
-            </summary>
+        <member name="T:MilkCum.UI.Widget_CumpilationSettings">
+            <summary>绮炬恫/Cumpilation 璁剧疆锛氳啫鑳€銆佸～鍏呫€佽鐩栥€佹敹闆嗐€佹硠绮剧瓑锛岀粺涓€鍒颁富 mod 璁剧疆鐨勪竴涓?Tab銆</summary>
         </member>
-        <member name="T:Cumpilation.Settings">
-            <summary>数据已统一到 EqualMilkingSettings；此类仅作代理，供 Cumpilation 代码读取。</summary>
+        <member name="F:MilkCum.UI.Widget_MilkTagsTable.FixedProductTagKeys">
+            <summary>濂舵爣绛句腑濮嬬粓淇濈暀鐨勭墿鍝佺绫伙紙浜哄ザ銆佸姩鐗╁ザ銆佺簿娑诧級锛屼笉闅?namesToProducts 绉婚櫎锛涗笖涓庝骇涓婚檺鍒躲€岃皝鍙互鍚冦€嶈仈鍔ㄣ€</summary>
         </member>
-        <member name="F:HediffWithComps_EqualMilkingLactating.SeverityStepsPerUnit">
-            <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage. maxSteps=81, count=162; if future allows severity>20 (e.g. large dose), display stays at last stage—not a bug, just a note.</summary>
+        <member name="T:MilkCum.UI.Widget_RaceOverrides">
+            <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>
         </member>
-        <member name="M:HediffWithComps_EqualMilkingLactating.OnGatheredLetdownByKeys(System.Collections.Generic.IEnumerable{System.String})">
-            <summary>挤奶/吸奶后按被扣量的池侧添加喷乳反射刺激（仅被操作的该侧 R 升高）。</summary>
+        <member name="T:MilkCum.UI.Window_ProducerRestrictions">
+            <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
         </member>
-        <member name="M:HediffWithComps_EqualMilkingLactating.GenStages">
-            <summary>设计原则 5：stages 由 XML 移除，此处 C# 动态生成；capMods 在 GenStage 内设置（当前 Clear 由 EM_LactatingGain 等独立 Hediff 提供能力），避免与 Def 静态阶段冲突。</summary>
-        </member>
-        <member name="M:HediffWithComps_EqualMilkingLactating.GenStage(Verse.HediffStage@,System.Single,System.Boolean,System.Boolean)">
-            <summary>Stage 名（括号内）：仅当真正不衰减时显示「永久」，否则留空；具体「天数：X」在 CompLabelInBracketsExtra 动态显示。</summary>
-        </member>
-        <member name="F:HediffComp_EqualMilkingLactating.currentLactationAmount">
-            <summary>水池模型（L 驱动）：当前泌乳量 L。唯一状态量；每日衰减 = 1/(B_T×E)+k×L；泌乳结束 L≤0。</summary>
-        </member>
-        <member name="F:HediffComp_EqualMilkingLactating.letdownReflexByKey">
-            <summary>四层模型：喷乳反射 R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key 与 breastFullness 一致，如 HumanBreast_L）。挤奶/吸奶某侧仅提升该侧 R。</summary>
-        </member>
-        <member name="F:HediffComp_EqualMilkingLactating.currentInflammation">
-            <summary>四层模型：炎症负荷 I≥0。每 60 tick 离散更新；I>I_crit 触发乳腺炎。</summary>
-        </member>
-        <member name="F:HediffComp_EqualMilkingLactating.milkingLStimulusAccumulatedThisDay">
-            <summary>挤奶 L 刺激：当日已累计量，每游戏日重置。</summary>
-        </member>
-        <member name="F:HediffComp_EqualMilkingLactating.effectiveToleranceE">
-            <summary>耐受动态：有效耐受 E∈[0,1]，dE/dt = μ·L − ν·E；用于 E_tol 计算。</summary>
-        </member>
-        <member name="F:HediffComp_EqualMilkingLactating.cachedWasPermanentLactation">
-            <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名。</summary>
-        </member>
-        <member name="P:HediffComp_EqualMilkingLactating.RemainingDays">
-            <summary>剩余天数（游戏日）。动力学 dL/dt = -(a+k×L)，精确解 T = (1/k)×ln(1 + k×L/a)；a=1/(B_T×E)。k→0 或 a≤0 时退化为 L/D(L)。</summary>
-        </member>
-        <member name="P:HediffComp_EqualMilkingLactating.CurrentLactationAmount">
-            <summary>当前泌乳量 L（规格：基础值 = 总容量，归一化 1）。</summary>
-        </member>
-        <member name="P:HediffComp_EqualMilkingLactating.IsPermanentLactation">
-            <summary>是否为永久泌乳（基因或动物设置）：L 不衰减；括号阶段名与悬停「剩余时间」均据此显示「永久」。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.UpdateToleranceDynamic(System.Single,System.Single)">
-            <summary>耐受动态：dE/dt = μ·L − ν·E。Δt 单位：游戏日。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetEffectiveToleranceE">
-            <summary>耐受动态：当前 E，供 GetProlactinToleranceFactor 使用。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.UpdateInflammation(System.Single,System.Single)">
-            <summary>四层模型：炎症 I 离散更新。dI/dt = α·P² + β·Injury + γ·BadHygiene − ρ·I；Δt 单位：小时。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.TryTriggerMastitisFromInflammation">
-            <summary>四层模型：若 I>I_crit 且允许乳腺炎，则挂 EM_Mastitis（与现有 MTB 判定并存）。启用质量时有效 I_crit 随 MilkQuality 提高。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetMilkQuality">
-            <summary>四层模型（阶段3.3）：MilkQuality = f(Hunger, I) ∈ [0,1]。饱食度高、炎症低则质量高；未启用质量时返回 1。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.AddMilkingLStimulus">
-            <summary>四层模型：挤奶/吸奶时 L 微幅刺激，单次与每日带上限。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflex">
-            <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的加权平均，无数据时不低于 letdownReflexMin。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexRaw(System.String)">
-            <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会与 min 合并）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexForSide(System.String)">
-            <summary>指定侧的 R，无记录时为 0（用于显示/平均）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier(System.String)">
-            <summary>进水流速的 R 倍率（按侧）：无刺激（该侧无记录）时=1；有刺激时加成模式=1+R×(boost-1)，否则=R（衰减后不低于 minR）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetLetdownReflexFlowMultiplier">
-            <summary>进水流速的 R 倍率（全侧平均，用于总产奶效率一行显示）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.DecayLetdownReflex(System.Single)">
-            <summary>四层模型：各侧 R 指数衰减；仅保留当前池中存在的 key，避免字典无限增长。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.AddLetdownReflexStimulus(System.String)">
-            <summary>四层模型：挤奶/吸奶刺激该侧，R += ΔR，Clamp 至 1。仅被刺激的那一侧（如第一对的左乳）提升喷乳反射。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetBaseValueNormalized(Verse.Pawn)">
-            <summary>归一化基础值 = 总容量（规格：基础值 = 总容量），当前实现为 1。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetEffectiveDrugFactor">
-            <summary>有效药效系数：统一使用 EqualMilkingSettings.GetProlactinToleranceFactor。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.FormatFlowFactor(System.Single)">
-            <summary>流速因子显示用：整数显示为 "1"，否则保留 1～2 位小数。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
-            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由设置反推。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
-            <summary>当前 L 下的每日衰减（用于显示）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.AddFromDrug(System.Single)">
-            <summary>吃药时进水：ΔL = Δs × C_dose。Δs 为本次实际生效的 Lactating 严重度增量（已包含一次耐受削弱）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.AddFromBirth">
-            <summary>分娩时累加：L += 基础值（不乘有效药效系数）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
-            <summary>泌乳结束：清空双池、移除 Lactating hediff。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.ExtraNutritionPerDay">
-            <summary>灌满期间额外营养/天：与产奶流速平衡，flow（池单位/天）× NutritionPerPoolUnit；满池后不额外消耗。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.ExtraEnergyPerDay">
-            <summary>机械体灌满期间额外能量/天：与产奶流速 1:1 平衡，flowPerDay（池单位/天）× nutritionToEnergyFactor；满池后不额外消耗。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetFlowPerDay">
-            <summary>当前产奶流速（池单位/天）= 左池流速 + 右池流速；与 CompEquallyMilkable 一致。启用四层时：驱动可用 D_eff=L·H(L)，再乘 PressureFactor(P)×R（见 Docs 第十二节）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.GetFlowPerDayBreakdown">
-            <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示「产奶效率：1(300%)/天」及「驱动×1 饥饿×1 状态×1 …」。</summary>
-        </member>
-        <member name="T:HediffComp_EqualMilkingLactating.FlowBreakdown">
-            <summary>产奶流速拆解：总流速与各乘数因子（与 GetFlowPerDay 一致），用于 UI 显示。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
-            <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
-            <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（乳房体积、基因、设置、状态、驱动、饥饿、压力、喷乳反射）。</summary>
-        </member>
-        <member name="P:HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
-            <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开为 1～4 块详情。</summary>
-        </member>
-        <member name="M:HediffComp_EqualMilkingLactating.SyncChargeFromPool">
-            <summary>吸奶/消费后：仅将 Charge 同步为当前池总满度，并触发 OnGathered（不按比例缩放池，因已由 DrainForConsume 按对按侧扣过）。</summary>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawListSection(UnityEngine.Rect,System.Single@,System.Collections.Generic.List{Verse.Pawn},System.Collections.Generic.List{Verse.Pawn},System.String,System.String,System.Collections.Generic.List{Verse.Pawn},System.Collections.Generic.HashSet{Verse.Pawn})">
+            <param name="displayList">用于显示「已允许」的名单；可与 modifyList 相同，或为空时用默认名单以仅显示。</param>
+            <param name="modifyList">实际被「允许/禁止」按钮修改的名单。</param>
         </member>
     </members>
 </doc>

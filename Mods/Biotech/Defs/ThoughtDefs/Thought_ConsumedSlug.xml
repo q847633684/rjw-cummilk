@@ -6,7 +6,7 @@
     <durationDays>1.0</durationDays>
     <stackLimit>1</stackLimit>
     <stackedEffectMultiplier>0.3</stackedEffectMultiplier>
-    <thoughtClass>Cumpilation.Reactions.Thought_Recordbased</thoughtClass>
+    <thoughtClass>MilkCum.Fluids.Cum.Reactions.Thought_Recordbased</thoughtClass>
     <stages>
         <li>
             <label>ate slug</label>
@@ -25,7 +25,7 @@
         </li>
     </stages>
     <modExtensions>
-        <li Class="Cumpilation.Reactions.ThoughtDefExtension_StageFromConsumption">
+        <li Class="MilkCum.Fluids.Cum.Reactions.ThoughtDefExtension_StageFromConsumption">
             <recordDef>Cumpilation_NumOfConsumedSlug</recordDef>
             <minimumValueforStage>
                 <li>0</li>

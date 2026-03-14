@@ -5,9 +5,9 @@
         <defName>Cumpilation_ThinkTree</defName>
         <insertTag>Humanlike_PreMain</insertTag>
         <insertPriority>10</insertPriority>
-        <thinkRoot Class="Cumpilation.Leaking.ThinkNode_ConditionalCumflationSeverity">
+        <thinkRoot Class="MilkCum.Fluids.Cum.Leaking.ThinkNode_ConditionalCumflationSeverity">
             <subNodes>
-                <li Class="Cumpilation.Leaking.JobGiver_Deflate" />
+                <li Class="MilkCum.Fluids.Cum.Leaking.JobGiver_Deflate" />
             </subNodes>
         </thinkRoot>
     </ThinkTreeDef>

@@ -1,8 +1,10 @@
 # Equal Milking 设置 UI 重构框架
 
+**当前实现**：已采用方案 B（4 个主 Tab：精液 / 母乳 / 基因与种族 / 权限与默认），完整结构见 [design/模组设置窗口完整UI结构](../design/模组设置窗口完整UI结构.md)。下文「三、四」为框架目标/可选方案，与现实现状并存供参考。
+
 ## 一、现状问题
 
-1. **分类混乱**：「高级」页塞入泌乳效率、哺乳时间、界面显示、RJW/DBH 联动、乳腺炎、溢出、种族覆盖、从 Def 加载等，主题不统一。
+1. **分类混乱**：「高级」页塞入泌乳效率、哺乳时间、界面显示、RJW/DBH 联动、乳腺炎、溢出、种族覆盖等，主题不统一。
 2. **归属不清**：如「哺乳时间」在高级里，与「哺乳」Tab 分开；种族白名单/黑名单在高级里，与「种族/挤奶」Tab 分离。
 3. **缺少说明**：部分选项仅有 key 无描述（Tooltip），或描述过于简略，用户不清楚用途与推荐值。
 4. **Tab 命名不直观**：如「重命名/奶类型」实际是物品标签（种族/显示），「默认」实际是「按身份默认允许挤奶/被喂奶」。
@@ -36,7 +38,7 @@
 
 | 子 Tab | 内容 | 说明/描述需求 |
 |--------|------|----------------|
-| **总览** | 哺乳总览说明、营养→能量、哺乳时间 breastfeedTime | 谁可以喂谁、单次哺乳时长、机械族营养换算。 |
+| **总览** | 哺乳总览说明、营养→能量 | 谁可以喂谁、机械族营养换算；吸奶流速由产奶表产量调节（无单独哺乳时长设置）。 |
 | **人形** | Widget_BreastfeedSettings 人形部分 | 允许哺乳、可喂人/动物/机械等。 |
 | **动物** | Widget_BreastfeedSettings 动物部分 | 同上。 |
 | **机械族** | Widget_BreastfeedSettings 机械族部分 | 同上。 |
@@ -48,7 +50,6 @@
 | **乳腺炎** | allowMastitis、MTB、满池/卫生风险系数、人形/动物 MTB 乘数 | 每项 Tooltip。 |
 | **卫生(DBH)** | useDubsBadHygieneForMastitis（仅当 DBH 激活时显示） | 用 DBH 卫生需求 vs 房间清洁度。 |
 | **耐受与溢出** | allowToleranceAffectMilk、toleranceFlowImpactExponent；overflowFilthDefName、aiPreferHighFullnessTargets、只读参考天数 | 耐受影响产奶、溢出污物 Def、AI 优先挤更满。 |
-| **从 Def 加载** | 按钮 ApplyDefaultsFromDef | 从内置默认值（GetBuiltinDefaults）或 EM_Defaults Def 应用，不覆盖种族列表；其他 mod 可 patch GetBuiltinDefaults。 |
 
 ### 主 Tab 4：效率与界面
 
@@ -90,14 +91,12 @@
 |------|------|----------------|
 | **哺乳总览** | 一句说明：谁可以喂谁、在下面分类型设置。 | 新增 EM.BreastfeedOverviewDesc。 |
 | **营养→能量** | nutritionToEnergyFactor（机械族哺乳） | 保留；Tooltip 说明用于机械族哺乳时的营养换算。 |
-| **哺乳时间** | breastfeedTime | 从高级移入；Tooltip：单次哺乳动作时长（tick）。 |
-| **人形/动物/机械族** | 现有 Widget_BreastfeedSettings 三子 Tab | 保留；每类「允许哺乳」「可喂人/动物/机械」等已有逻辑，补一句区块描述即可。 |
+| **人形/动物/机械族** | 现有 Widget_BreastfeedSettings 三子 Tab | 保留；每类「允许哺乳」「可喂人/动物/机械」等已有逻辑，补一句区块描述即可。吸奶流速由产奶表产量调节，无 breastfeedTime 设置。 |
 
 ### Tab 3：健康与风险（乳腺炎、耐受、溢出、AI）
 
 | 区块 | 内容 | 说明/描述需求 |
 |------|------|----------------|
-| **从 Def 加载默认** | 按钮 ApplyDefaultsFromDef | 保留；描述写清：从内置默认值或 EM_Defaults Def 应用关键默认值，不覆盖种族列表；其他 mod 可 patch GetBuiltinDefaults。 |
 | **乳腺炎** | allowMastitis、mastitisBaseMtbDays、overFullnessRiskMultiplier、hygieneRiskMultiplier、人形/动物 MTB 乘数 | 保留；每项 Tooltip：是否启用、基准 MTB（天）、满池过久风险系数、卫生风险系数、人形/动物 MTB 倍率。 |
 | **卫生来源** | useDubsBadHygieneForMastitis（仅当 DBH 激活时显示） | 保留；描述：用 DBH 卫生需求 vs 房间清洁度。 |
 | **耐受** | allowToleranceAffectMilk、toleranceFlowImpactExponent | 保留；描述：催乳素耐受是否影响产奶效率、指数曲线。 |
@@ -143,7 +142,7 @@
 |-------------|---------------------|-------------|
 | 1 | EM.Tab.MilkAndFluids | 产奶 \| 奶标签 \| 种族覆盖 \| 精液/体液 |
 | 2 | EM.Tab.Breastfeed | 总览 \| 人形 \| 动物 \| 机械族 |
-| 3 | EM.Tab.HealthAndRisk | 乳腺炎 \| 卫生(DBH) \| 耐受与溢出 \| 从 Def 加载 |
+| 3 | EM.Tab.HealthAndRisk | 乳腺炎 \| 卫生(DBH) \| 耐受与溢出 |
 | 4 | EM.Tab.EfficiencyAndInterface | 泌乳效率 \| 身份与菜单 |
 | 5 | EM.Tab.IntegrationAndAdvanced | RJW \| DBH \| 基因与高级 |
 
@@ -162,8 +161,8 @@
 
 ## 六、实现步骤建议
 
-1. **Phase 1**：在 `EqualMilkingSettings.cs` 中实现 **主 Tab 栏**（5 个主 Tab）与 **子 Tab 栏**（根据当前 mainTabIndex 显示对应子 Tab 列表）；contentRect 根据 mainTabIndex + subTabIndex 分发到现有 Widget；同步增加/调整 Lang key（EM.Tab.* 主 Tab，EM.SubTab.* 子 Tab）。
-2. **Phase 2**：拆 Widget_AdvancedSettings，按主/子 Tab 表迁入对应 Widget。**主 Tab 1** 下子 Tab 分别对应产奶表、奶标签、种族覆盖、Widget_CumpilationSettings。
+1. **Phase 1**：~~主 Tab 栏 + 子 Tab 栏~~ **已完成**（方案 B：4 主 Tab，精液/母乳/基因与种族/权限与默认；母乳 10 子 Tab，基因与种族 4 子 Tab）。
+2. **Phase 2**：拆 Widget_AdvancedSettings，按主/子 Tab 表迁入对应 Widget（可选，减轻单文件负担）。
 3. **Phase 3**：补全所有缺失的 `*Desc` Tooltip，并统一区块标题与灰色说明文字。
 4. **Phase 4**：整理 Languages 下 Keyed/DefInjected，确保中英 key 一致、无空描述。
 
@@ -171,8 +170,19 @@
 
 ## 七、文件与引用关系（重构后）
 
-- **EqualMilkingSettings.cs**：DoWindowContents 绘制 **主 Tab 栏**（如 TabRecord 或自定义按钮）、**子 Tab 栏**（主 Tab 切换时更新子 Tab 列表）、contentRect 根据 mainTabIndex + subTabIndex 调用对应 Widget。
-- **Widget_***.cs**：每个（主 Tab, 子 Tab）组合对应一个 Widget 或同一 Widget 内分支；主 Tab 1 下 4 个子 Tab 分别对应产奶表、奶标签、种族覆盖、Cumpilation。
+- **MilkCumSettings.cs**（当前 Equal Milking 设置类）：DoWindowContents 绘制主 Tab 栏、子 Tab 栏，contentRect 根据 mainTabIndex + subTabIndex 调用对应 Widget。见 [模组设置窗口完整UI结构](../design/模组设置窗口完整UI结构.md)。
+- **Widget_***.cs**：每个（主 Tab, 子 Tab）组合对应一个 Widget 或同一 Widget 内分支；方案 B 下母乳 4–9 由 Widget_AdvancedSettings.DrawSection 分支。
 - **Languages/**：Keyed 中 EM.Section.*、EM.Tab.*、各选项的 Desc；DefInjected 若有设置相关注入可保持。
 
 此框架可直接用于后续按 Phase 逐步重构与补描述；若需要先实现某一 Phase 的代码草稿，可指定 Phase 与 Tab 编号。
+
+---
+
+## 八、下一步建议（继续时可选）
+
+| 步骤 | 内容 |
+|------|------|
+| **Phase 2** | 将 Widget_AdvancedSettings 按区块拆成 Widget_HealthSettings、Widget_EfficiencySettings、Widget_IntegrationSettings 等，减轻单文件负担（见 [模组设置UI系统整理与优化方案](../design/模组设置UI系统整理与优化方案.md) 方案 C）。 |
+| **Phase 3** | 补全缺失 Tooltip：例如「耐受与溢出」页的 `EM.OverflowFilthDefName` 仅有标签无 TipRegion，可增 `EM.OverflowFilthDefNameDesc`；其余项多数已有 *Desc，可逐项对照 UI 检查。 |
+| **Phase 4** | 整理 Languages：中英 Keyed 键一致、无空描述；DefInjected 若有设置相关注入可一并检查。 |
+| **文档同步** | 若再调整主/子 Tab 结构，需同步更新 [模组设置窗口完整UI结构](../design/模组设置窗口完整UI结构.md)、本框架第四节与第七节。 |

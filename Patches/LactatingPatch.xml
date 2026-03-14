@@ -3,7 +3,7 @@
     <xpath>
       Defs/HediffDef[defName="Lactating"]/comps/li[@Class="HediffCompProperties_Lactating"]</xpath>
     <value>
-      <li Class="HediffCompProperties_EqualMilkingLactating">
+      <li Class="MilkCum.Fluids.Lactation.Hediffs.HediffCompProperties_EqualMilkingLactating">
         <ticksToFullCharge>150000</ticksToFullCharge>
         <initialCharge>0</initialCharge>
         <fullChargeAmount>1</fullChargeAmount>
@@ -15,11 +15,20 @@
     <xpath>
       Defs/HediffDef[defName="Lactating"]/initialSeverity</xpath>
     <value>
-      <initialSeverity>0.9999</initialSeverity>
+      <initialSeverity>0</initialSeverity>
     </value>
   </Operation>
+  <!-- 原版逻辑：L 与 Severity 同步，衰减由 SeverityPerDay 驱动。先移除再添加，保证唯一；-0.10 → 一剂 0.5 约 5 天，与「吃一次加 5 天」一致 -->
   <Operation Class="PatchOperationRemove">
     <xpath>Defs/HediffDef[defName="Lactating"]/comps/li[@Class="HediffCompProperties_SeverityPerDay"]</xpath>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/HediffDef[defName="Lactating"]/comps</xpath>
+    <value>
+      <li Class="HediffCompProperties_SeverityPerDay">
+        <severityPerDay>-0.10</severityPerDay>
+      </li>
+    </value>
   </Operation>
   <!-- 保留至少一个 stage，避免信息卡等 UI 用 def.stages[CurStageIndex] 时越界闪退；具体阶段显示由 C# 动态生成 -->
   <Operation Class="PatchOperationReplace">

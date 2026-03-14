@@ -1,0 +1,143 @@
+using UnityEngine;
+
+namespace MilkCum.Fluids.Shared.Data;
+
+/// <summary>
+/// 体液池状态（乳汁/精液共享）：双池状态与推进逻辑。不持有 Pawn，容量/流速由调用方传入。
+/// </summary>
+public class FluidPoolState
+{
+    public float LeftFullness;
+    public float RightFullness;
+    public int TicksFullPool;
+
+    public float TotalFullness => LeftFullness + RightFullness;
+
+    public void SetFrom(float left, float right, int ticksFull)
+    {
+        LeftFullness = left;
+        RightFullness = right;
+        TicksFullPool = ticksFull;
+    }
+
+    /// <summary>
+    /// 双池进水：先填满两侧基础容量；仅当两侧都满（≥基础容量）后才允许撑大（至 stretchCap），超出部分溢出。返回本 tick 溢出量。
+    /// </summary>
+    public float TickGrowth(float flowLeftPerTick, float flowRightPerTick,
+        float leftBaseCap, float rightBaseCap, float stretchCapLeft, float stretchCapRight)
+    {
+        LeftFullness = Mathf.Clamp(LeftFullness, 0f, stretchCapLeft);
+        RightFullness = Mathf.Clamp(RightFullness, 0f, stretchCapRight);
+
+        float roomLeftBase = Mathf.Max(0f, leftBaseCap - LeftFullness);
+        float roomRightBase = Mathf.Max(0f, rightBaseCap - RightFullness);
+
+        float addLeft;
+        float addRight;
+
+        // 阶段一：只填到基础容量（可把一侧满后富余的流速加到另一侧）
+        if (roomLeftBase <= 0f && roomRightBase <= 0f)
+        {
+            addLeft = 0f;
+            addRight = 0f;
+        }
+        else if (roomLeftBase <= 0f)
+        {
+            addLeft = 0f;
+            addRight = Mathf.Min(flowLeftPerTick + flowRightPerTick, roomRightBase);
+        }
+        else if (roomRightBase <= 0f)
+        {
+            addLeft = Mathf.Min(flowLeftPerTick + flowRightPerTick, roomLeftBase);
+            addRight = 0f;
+        }
+        else
+        {
+            float totalFlow = flowLeftPerTick + flowRightPerTick;
+            addLeft = Mathf.Min(flowLeftPerTick, roomLeftBase);
+            addRight = Mathf.Min(flowRightPerTick, roomRightBase);
+            float remainder = totalFlow - addLeft - addRight;
+            if (remainder > 1E-6f)
+            {
+                float roomLeftRemain = roomLeftBase - addLeft;
+                float roomRightRemain = roomRightBase - addRight;
+                float roomTotal = roomLeftRemain + roomRightRemain;
+                if (roomTotal > 1E-6f)
+                {
+                    float fracLeft = roomLeftRemain / roomTotal;
+                    float addLeftRemainder = Mathf.Min(remainder * fracLeft, roomLeftRemain);
+                    float addRightRemainder = Mathf.Min(remainder - addLeftRemainder, roomRightRemain);
+                    addLeft += addLeftRemainder;
+                    addRight += addRightRemainder;
+                }
+                else if (roomLeftRemain > 1E-6f)
+                    addLeft += Mathf.Min(remainder, roomLeftRemain);
+                else if (roomRightRemain > 1E-6f)
+                    addRight += Mathf.Min(remainder, roomRightRemain);
+            }
+        }
+
+        float remainderAfterBase = flowLeftPerTick + flowRightPerTick - addLeft - addRight;
+        float newLeft = LeftFullness + addLeft;
+        float newRight = RightFullness + addRight;
+
+        // 阶段二：仅当两侧都达到基础容量时，才允许撑大。用入口时的 LeftFullness/RightFullness 判断，避免 newLeft/newRight 浮点偏差导致不触发 stretch。
+        const float eps = 1E-5f;
+        bool bothAtBase = LeftFullness >= leftBaseCap - eps && RightFullness >= rightBaseCap - eps;
+        if (remainderAfterBase > 1E-6f && bothAtBase)
+        {
+            float stretchRoomLeft = Mathf.Max(0f, stretchCapLeft - newLeft);
+            float stretchRoomRight = Mathf.Max(0f, stretchCapRight - newRight);
+            float stretchRoomTotal = stretchRoomLeft + stretchRoomRight;
+            if (stretchRoomTotal > 1E-6f)
+            {
+                float toAddStretch = Mathf.Min(remainderAfterBase, stretchRoomTotal);
+                float addLeftStretch = Mathf.Min(toAddStretch * (stretchRoomLeft / stretchRoomTotal), stretchRoomLeft);
+                float addRightStretch = Mathf.Min(toAddStretch - addLeftStretch, stretchRoomRight);
+                addLeft += addLeftStretch;
+                addRight += addRightStretch;
+            }
+        }
+
+        float overflowTotal = flowLeftPerTick + flowRightPerTick - addLeft - addRight;
+        LeftFullness += addLeft;
+        RightFullness += addRight;
+        return Mathf.Max(0f, overflowTotal);
+    }
+
+    /// <summary>
+    /// 排水后回缩：超出基础容量部分乘以 shrinkFactor（0~1），shrinkFactor 越小回缩越快；可含健康度系数。
+    /// </summary>
+    public void TickShrink(float leftBaseCap, float rightBaseCap, float shrinkFactor)
+    {
+        if (LeftFullness > leftBaseCap)
+            LeftFullness = leftBaseCap + (LeftFullness - leftBaseCap) * shrinkFactor;
+        if (RightFullness > rightBaseCap)
+            RightFullness = rightBaseCap + (RightFullness - rightBaseCap) * shrinkFactor;
+    }
+
+    /// <summary>
+    /// 更新连续满池 tick 计数：总水位 >= 阈值则累加 deltaTicks，否则置 0。
+    /// </summary>
+    public void UpdateFullPoolCounter(float fullThreshold, int deltaTicks)
+    {
+        if (TotalFullness >= fullThreshold)
+            TicksFullPool += deltaTicks;
+        else
+            TicksFullPool = 0;
+    }
+
+    /// <summary>单乳池进水：当前水位 + 本 tick 流速，先填至 baseCap 再允许撑大至 stretchCap，超出部分溢出。返回 (新水位, 本 tick 溢出量)。</summary>
+    public static (float newFullness, float overflow) SingleBreastTickGrowth(float currentFullness, float flowPerTick, float baseCap, float stretchCap)
+    {
+        currentFullness = Mathf.Clamp(currentFullness, 0f, stretchCap);
+        float roomBase = Mathf.Max(0f, baseCap - currentFullness);
+        float add = Mathf.Min(flowPerTick, roomBase);
+        float remainder = flowPerTick - add;
+        float newVal = currentFullness + add;
+        float stretchRoom = Mathf.Max(0f, stretchCap - newVal);
+        float addStretch = Mathf.Min(remainder, stretchRoom);
+        float overflow = flowPerTick - add - addStretch;
+        return (newVal + addStretch, overflow);
+    }
+}

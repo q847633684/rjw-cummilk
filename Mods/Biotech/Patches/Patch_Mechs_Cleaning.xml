@@ -13,7 +13,7 @@
   <Operation Class="PatchOperationAdd">
     <xpath>Defs/ThingDef[defName="Mech_Cleansweeper"]/comps</xpath>
     <value>
-      <li Class="Cumpilation.Gathering.MechPassiveFluidGathererCompProperties">
+      <li Class="MilkCum.Fluids.Cum.Gathering.MechPassiveFluidGathererCompProperties">
         <range>5</range>
         <supportedFluids>
           <li>Cum</li>

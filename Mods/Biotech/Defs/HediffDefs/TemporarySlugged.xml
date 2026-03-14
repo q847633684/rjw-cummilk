@@ -12,7 +12,7 @@
                 <!-- default: Last ~1 Week -->
                 <severityPerDay>-0.15</severityPerDay>
             </li>
-            <li Class="Cumpilation.Common.HediffCompProperties_FluidChangeWithPenalty">
+            <li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_FluidChangeWithPenalty">
                 <fluid>Cumpilation_Slug</fluid>
 
                 <allowMen>true</allowMen>
@@ -30,7 +30,7 @@
                 <penaltyHediff>ToxicBuildup</penaltyHediff>
                 <penaltySeverity>0.4</penaltySeverity>
             </li>
-            <li Class="Cumpilation.Common.HediffCompProperties_FluidAmountChange">
+            <li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_FluidAmountChange">
                 <multiplier>1.2</multiplier>
                 <allowMen>true</allowMen>
                 <allowFutas>true</allowFutas>

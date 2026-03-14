@@ -12,7 +12,7 @@
                 <!-- default: Last  2 days  -->
                 <severityPerDay>-0.5</severityPerDay>
             </li>
-            <li Class="Cumpilation.Common.HediffCompProperties_FluidAmountChange">
+            <li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_FluidAmountChange">
                 <multiplier>1.5</multiplier>
                 <allowMen>true</allowMen>
                 <allowFutas>true</allowFutas>
@@ -48,7 +48,7 @@
                 <!-- default: Last  3 days  -->
                 <severityPerDay>-0.33</severityPerDay>
             </li>
-            <li Class="Cumpilation.Common.HediffCompProperties_FluidAmountChange">
+            <li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_FluidAmountChange">
                 <multiplier>1.4</multiplier>
                 <allowMen>false</allowMen>
                 <allowFutas>true</allowFutas>

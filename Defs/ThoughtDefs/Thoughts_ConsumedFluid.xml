@@ -6,7 +6,7 @@
 		<durationDays>0.5</durationDays>
 		<stackLimit>1</stackLimit>
 		<stackedEffectMultiplier>0.4</stackedEffectMultiplier>
-		<thoughtClass>Cumpilation.Reactions.Thought_Recordbased</thoughtClass>
+		<thoughtClass>MilkCum.Fluids.Cum.Reactions.Thought_Recordbased</thoughtClass>
 		<stages>
 			<li>
 				<label>ate cum</label>
@@ -30,7 +30,7 @@
 			</li>
 		</stages>
 		<modExtensions>
-			<li Class="Cumpilation.Reactions.ThoughtDefExtension_StageFromConsumption">
+			<li Class="MilkCum.Fluids.Cum.Reactions.ThoughtDefExtension_StageFromConsumption">
 				<recordDef>Cumpilation_NumOfConsumedCum</recordDef>
 				<minimumValueforStage>
 					<li>0</li>
@@ -58,7 +58,7 @@
 		<durationDays>0.75</durationDays>
 		<stackLimit>1</stackLimit>
 		<stackedEffectMultiplier>0.5</stackedEffectMultiplier>
-		<thoughtClass>Cumpilation.Reactions.Thought_Recordbased</thoughtClass>
+		<thoughtClass>MilkCum.Fluids.Cum.Reactions.Thought_Recordbased</thoughtClass>
 		<stages>
 			<li>
 				<label>ate insect spunk</label>
@@ -82,7 +82,7 @@
 			</li>
 		</stages>
 		<modExtensions>
-			<li Class="Cumpilation.Reactions.ThoughtDefExtension_StageFromConsumption">
+			<li Class="MilkCum.Fluids.Cum.Reactions.ThoughtDefExtension_StageFromConsumption">
 				<recordDef>Cumpilation_NumOfConsumedInsectSpunk</recordDef>
 				<minimumValueforStage>
 					<li>0</li>

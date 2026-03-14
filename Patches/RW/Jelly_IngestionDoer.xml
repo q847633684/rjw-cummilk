@@ -4,7 +4,7 @@
 		<xpath>Defs/ThingDef[defName="InsectJelly"]/ingestible</xpath>
 		<value>
             <outcomeDoers>
-				<li Class="Cumpilation.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
+				<li Class="MilkCum.Fluids.Cum.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
 					<fluid>InsectSpunk</fluid>
 					<unitAmount>2</unitAmount>
 				</li>

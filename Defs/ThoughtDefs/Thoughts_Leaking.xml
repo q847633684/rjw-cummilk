@@ -2,7 +2,7 @@
 <Defs>
     <ThoughtDef>
         <defName>Cumpilation_Thought_WearingPlug</defName>
-        <workerClass>Cumpilation.Leaking.ThoughtWorker_WearingPlug</workerClass>
+        <workerClass>MilkCum.Fluids.Cum.Leaking.ThoughtWorker_WearingPlug</workerClass>
         <nullifyingTraits>
             <li>Masochist</li>
         </nullifyingTraits>
@@ -17,7 +17,7 @@
 
     <ThoughtDef>
         <defName>Cumpilation_Thought_WearingPlugMasochist</defName>
-        <workerClass>Cumpilation.Leaking.ThoughtWorker_WearingPlug</workerClass>
+        <workerClass>MilkCum.Fluids.Cum.Leaking.ThoughtWorker_WearingPlug</workerClass>
         <requiredTraits>
             <li>Masochist</li>
         </requiredTraits>

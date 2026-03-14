@@ -5,7 +5,7 @@
         <defName>ExtractCum</defName>
         <label>extract cum</label>
         <description>Extract cum from this pawn's well-stuffed pussy.</description>
-        <workerClass>Cumpilation.Leaking.Recipe_ExtractCum</workerClass>
+        <workerClass>MilkCum.Fluids.Cum.Leaking.Recipe_ExtractCum</workerClass>
         <jobString>Extracting cum.</jobString>
         <soundWorking>Recipe_Surgery</soundWorking>
         <workSpeedStat>MedicalOperationSpeed</workSpeedStat>

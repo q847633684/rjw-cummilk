@@ -34,7 +34,7 @@
 			<optimalityOffsetHumanlikes>-10</optimalityOffsetHumanlikes>
 			<optimalityOffsetFeedingAnimals>-10</optimalityOffsetFeedingAnimals>
 			<outcomeDoers>
-				<li Class="Cumpilation.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
+				<li Class="MilkCum.Fluids.Cum.Reactions.IngestionOutcomeDoer_RecordEatenFluid">
 					<fluid>Cum</fluid>
 					<unitAmount>1</unitAmount>
 				</li>
