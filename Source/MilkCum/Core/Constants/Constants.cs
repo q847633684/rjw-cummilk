@@ -33,4 +33,11 @@ public static class PoolModelConstants
     public const float DoseToLFactor = 1f;
     /// <summary>1 池单位 = 1 营养（设计对等）：产奶花 1 营养得 1 池、喝奶花 1 池得 1 营养。ExtraNutritionPerDay = flow×本值；Need_Food 补丁按此扣饱食度，CompPartialMilk 食用时 fillAmount 直接作营养。原版饱食条 0..MaxLevel(≈1)，泌乳时额外掉条属设计。</summary>
     public const float NutritionPerPoolUnit = 1f;
+
+    /// <summary>浮点余量：扣量时 &lt; 此值视为 0，避免残留；Drain 与 DrainForConsumeByRates 共用。</summary>
+    public const float FloatDustEpsilon = 0.001f;
+    /// <summary>浮点近似零：&lt; 此值视为 0，用于比例与判空。</summary>
+    public const float Epsilon = 1E-6f;
+    /// <summary>每 60 tick 对应游戏日比例（60/60000）。</summary>
+    public const float Interval60PerDay = 60f / 60000f;
 }

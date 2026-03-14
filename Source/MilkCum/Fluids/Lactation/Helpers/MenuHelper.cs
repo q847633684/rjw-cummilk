@@ -28,26 +28,30 @@ public static class MenuHelper
         ListerThings listerThings = map.listerThings;
         Pawn pawn = thing as Pawn ?? (thing as Building_HoldingPlatform)?.HeldPawn;
         if (pawn == null) { yield break; } // This should never happen, but just in case
-        if (listerThings.ThingsOfDef(MilkCumDefOf.EM_Prolactin).Any(prolactin => prolactin.IsInAnyStorage()) && !(pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.Severity >= 1f))
+        Thing firstProlactinInStorage = listerThings.ThingsOfDef(MilkCumDefOf.EM_Prolactin).FirstOrDefault(t => t.IsInAnyStorage());
+        if (firstProlactinInStorage != null && !(pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating)?.Severity >= 1f))
         {
             yield return new FloatMenuOption(Lang.GiveTo(MilkCumDefOf.EM_Prolactin.label, thing.LabelShort), delegate
             {
-                Job job = new(MilkCumDefOf.EM_InjectLactatingDrug, listerThings.ThingsOfDef(MilkCumDefOf.EM_Prolactin).FirstOrDefault(), pawn)
+                Thing target = listerThings.ThingsOfDef(MilkCumDefOf.EM_Prolactin).FirstOrDefault(t => t.IsInAnyStorage());
+                if (target != null)
                 {
-                    count = 1
-                };
-                actor.jobs.TryTakeOrderedJob(job);
+                    Job job = new Job(MilkCumDefOf.EM_InjectLactatingDrug, target, pawn) { count = 1 };
+                    actor.jobs.TryTakeOrderedJob(job);
+                }
             }, MilkCumDefOf.EM_Prolactin);
         }
-        if (listerThings.ThingsOfDef(MilkCumDefOf.EM_Lucilactin).Any(lucilactin => lucilactin.IsInAnyStorage()))
+        Thing firstLucilactinInStorage = listerThings.ThingsOfDef(MilkCumDefOf.EM_Lucilactin).FirstOrDefault(t => t.IsInAnyStorage());
+        if (firstLucilactinInStorage != null)
         {
             yield return new FloatMenuOption(Lang.GiveTo(MilkCumDefOf.EM_Lucilactin.label, thing.LabelShort), delegate
             {
-                Job job = new(MilkCumDefOf.EM_InjectLactatingDrug, listerThings.ThingsOfDef(MilkCumDefOf.EM_Lucilactin).FirstOrDefault(), pawn)
+                Thing target = listerThings.ThingsOfDef(MilkCumDefOf.EM_Lucilactin).FirstOrDefault(t => t.IsInAnyStorage());
+                if (target != null)
                 {
-                    count = 1
-                };
-                actor.jobs.TryTakeOrderedJob(job);
+                    Job job = new Job(MilkCumDefOf.EM_InjectLactatingDrug, target, pawn) { count = 1 };
+                    actor.jobs.TryTakeOrderedJob(job);
+                }
             }, MilkCumDefOf.EM_Lucilactin);
         }
     }

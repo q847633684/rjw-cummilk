@@ -14,7 +14,11 @@ public partial class CompEquallyMilkable
     /// <summary>缓存 GetBreastPoolEntries()，每 60 tick 失效，减少每 tick 分配与 GC。</summary>
     private List<FluidPoolEntry> cachedEntries;
     private int cachedEntriesTick = -1;
+    /// <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效，避免每 60 tick 重建 Dictionary+List。</summary>
+    private List<List<FluidPoolEntry>> cachedPairGroups;
     private const int CacheInvalidateInterval = 60;
+    /// <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
+    private const bool PreferLeftWhenEqual = true;
 
     /// <summary>该侧是否处于溢出状态（已触发溢出且当前高于基础容量），用于停泌乳与回缩判定。</summary>
     private bool IsOverflowState(string key, float cur, float baseCap)
@@ -34,7 +38,18 @@ public partial class CompEquallyMilkable
             return cachedEntries;
         cachedEntries = Pawn != null ? Pawn.GetBreastPoolEntries() : new List<FluidPoolEntry>();
         cachedEntriesTick = now;
+        cachedPairGroups = null;
         return cachedEntries;
+    }
+
+    /// <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
+    private List<List<FluidPoolEntry>> GetCachedPairGroups()
+    {
+        var entries = GetCachedEntries();
+        if (cachedPairGroups != null)
+            return cachedPairGroups;
+        cachedPairGroups = BuildPairGroupsByPairIndex(entries);
+        return cachedPairGroups;
     }
 
     /// <summary>池侧数量（左+右等），用于机器挤奶并行扣量时算每侧速率。使用缓存，避免每 tick 分配。</summary>
@@ -104,8 +119,7 @@ public partial class CompEquallyMilkable
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftF = GetFullnessForKey(leftE.Key);
                 float rightF = GetFullnessForKey(rightE.Key);
-                // 同对内满度相等时先左，与 DrainForConsume 一致（ADR-003）
-                bool drainLeftFirst = leftF > rightF || Mathf.Approximately(leftF, rightF);
+                bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && PreferLeftWhenEqual);
                 singleKey = drainLeftFirst ? leftE.Key : rightE.Key;
                 break;
             }
@@ -150,6 +164,8 @@ public partial class CompEquallyMilkable
         leftFullness = 0f;
         rightFullness = 0f;
         breastFullness?.Clear();
+        cachedEntries = null;
+        cachedPairGroups = null;
         SyncBaseFullness();
     }
 

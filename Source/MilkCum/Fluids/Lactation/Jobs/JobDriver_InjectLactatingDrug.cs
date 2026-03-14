@@ -77,41 +77,18 @@ public class JobDriver_InjectLactatingDrug : JobDriver
 				PawnUtility.ForceWait(pawn, actor.jobs.curDriver.ticksLeftThisToil, null, true, true);
 			}
 		};
-#if v1_5
-			toil.tickAction = delegate
-			{
-				if (pawn != toil.actor)
-				{
-					toil.actor.rotationTracker.FaceCell(pawn.Position);
-				}
-				else
-				{
-					Thing thing2 = toil.actor.CurJob.GetTarget(IngestableInd).Thing;
-					if (thing2 != null && thing2.Spawned)
-					{
-						toil.actor.rotationTracker.FaceCell(thing2.Position);
-					}
-				}
-				toil.actor.GainComfortFromCellIfPossible(false);
-			};
-#else
 		toil.tickIntervalAction = delegate (int interval)
 		{
 			if (pawn != toil.actor)
-			{
 				toil.actor.rotationTracker.FaceCell(pawn.Position);
-			}
 			else
 			{
 				Thing thing2 = toil.actor.CurJob.GetTarget(IngestableInd).Thing;
 				if (thing2 != null && thing2.Spawned)
-				{
 					toil.actor.rotationTracker.FaceCell(thing2.Position);
-				}
 			}
 			toil.actor.GainComfortFromCellIfPossible(interval);
 		};
-#endif
 		toil.WithProgressBar(IngestableInd, delegate
 		{
 			Thing thing3 = toil.actor.CurJob.GetTarget(IngestableInd).Thing;

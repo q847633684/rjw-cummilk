@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Shared.Data;
 using RimWorld;
@@ -54,8 +55,7 @@ public partial class CompEquallyMilkable
                 if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
                 float leftF = GetFullnessForKey(leftE.Key);
                 float rightF = GetFullnessForKey(rightE.Key);
-                bool preferLeft = true;
-                bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && preferLeft);
+                bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && PreferLeftWhenEqual);
                 string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
                 string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
                 float firstF = drainLeftFirst ? leftF : rightF;
@@ -92,12 +92,11 @@ public partial class CompEquallyMilkable
                 }
             }
         }
-        const float floatDustEpsilon = 0.001f;
-        if (remaining > 1E-6f && remaining < floatDustEpsilon)
+        if (remaining > PoolModelConstants.Epsilon && remaining < PoolModelConstants.FloatDustEpsilon)
         {
             foreach (var e in entries)
             {
-                if (remaining <= 1E-6f || string.IsNullOrEmpty(e.Key)) break;
+                if (remaining <= PoolModelConstants.Epsilon || string.IsNullOrEmpty(e.Key)) break;
                 float f = GetFullnessForKey(e.Key);
                 if (f <= 0f) continue;
                 float take = Mathf.Min(remaining, f);
@@ -145,7 +144,7 @@ public partial class CompEquallyMilkable
             totalWouldTake += take;
         }
         while (takes.Count < entries.Count) takes.Add(0f);
-        float factor = totalWouldTake > remainingCap && totalWouldTake > 1E-6f ? remainingCap / totalWouldTake : 1f;
+        float factor = totalWouldTake > remainingCap && totalWouldTake > PoolModelConstants.Epsilon ? remainingCap / totalWouldTake : 1f;
         float totalDrained = 0f;
         for (int i = 0; i < entries.Count && i < takes.Count; i++)
         {
@@ -160,6 +159,22 @@ public partial class CompEquallyMilkable
                 breastFullness[e.Key] = Mathf.Max(0f, cur - take);
                 drainedKeys?.Add(e.Key);
                 totalDrained += take;
+            }
+        }
+        float remainingRequest = remainingCap - totalDrained;
+        if (remainingRequest > PoolModelConstants.Epsilon && remainingRequest < PoolModelConstants.FloatDustEpsilon)
+        {
+            for (int i = 0; i < entries.Count && remainingRequest > PoolModelConstants.Epsilon; i++)
+            {
+                var e = entries[i];
+                if (string.IsNullOrEmpty(e.Key)) continue;
+                float f = GetFullnessForKey(e.Key);
+                if (f <= 0f) continue;
+                float take = Mathf.Min(remainingRequest, f);
+                breastFullness[e.Key] = Mathf.Max(0f, f - take);
+                drainedKeys?.Add(e.Key);
+                totalDrained += take;
+                remainingRequest -= take;
             }
         }
         SyncLeftRightFromBreastFullness();

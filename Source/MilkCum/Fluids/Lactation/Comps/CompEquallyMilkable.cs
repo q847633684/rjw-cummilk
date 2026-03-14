@@ -4,6 +4,7 @@ using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Fluids.Lactation.Jobs;
+using MilkCum.Core.Constants;
 using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using UnityEngine;
@@ -69,6 +70,8 @@ public partial class CompEquallyMilkable : CompMilkable
     internal float OverflowAccumulator => overflowAccumulator;
     /// <summary>上一轮 UpdateMilkPools 是否执行过向基础容量的回缩；界面仅在有回缩时显示回缩吸收。</summary>
     private bool hadShrinkLastStep = false;
+    /// <summary>上一轮回缩时折算的「每日回缩吸收营养」，供 GetReabsorbedNutritionPerDay 直接返回，避免 UI/Needs 读取时再次遍历 entries。</summary>
+    private float cachedReabsorbedNutritionPerDay = 0f;
     /// <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
     private Dictionary<string, bool> overflowTriggeredByKey = new Dictionary<string, bool>();
 
@@ -145,12 +148,12 @@ public partial class CompEquallyMilkable : CompMilkable
             if (updateTick > Find.TickManager.TicksGame) { return cachedActive; }
             if (parent.Faction == null || parent is not Pawn pawn || !parent.SpawnedOrAnyParentSpawned || !pawn.IsColonyPawn())
             {
-                updateTick = Find.TickManager.TicksGame + 500;
+                updateTick = Find.TickManager.TicksGame + 120;
                 cachedActive = false;
                 return false;
             }
             cachedActive = pawn.IsLactating() && pawn.IsMilkable() && (pawn == Pawn ? GetCachedEntries().Count : pawn.GetBreastPoolEntries().Count) > 0;
-            updateTick = Find.TickManager.TicksGame + 500;
+            updateTick = Find.TickManager.TicksGame + 120;
             return cachedActive;
         }
     }
@@ -166,7 +169,7 @@ public partial class CompEquallyMilkable : CompMilkable
             {
                 float effectiveMax = baseMax + capacityAdaptation;
                 float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
-                float step = 60f / 60000f; // 每 60 tick = 0.001 游戏日
+                float step = PoolModelConstants.Interval60PerDay;
                 float theta = Mathf.Max(0f, MilkCumSettings.adaptationTheta);
                 float omega = Mathf.Max(0f, MilkCumSettings.adaptationOmega);
                 capacityAdaptation += step * (theta * Mathf.Max(P - 0.85f, 0f) - omega * (1f - P));
@@ -199,6 +202,11 @@ public partial class CompEquallyMilkable : CompMilkable
         if (onCurrentMap || parent.IsHashIntervalTick(300))
             UpdateMilkPools();
         if (parent.IsHashIntervalTick(2000)) MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, Fullness, ticksFullPool);
+        if (parent.IsHashIntervalTick(2500))
+        {
+            allowedSucklers?.RemoveAll(p => p == null || p.Destroyed);
+            allowedConsumers?.RemoveAll(p => p == null || p.Destroyed);
+        }
     }
 
     /// <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity），仅在 CompTick 调用，避免 Active getter 产生副作用</summary>

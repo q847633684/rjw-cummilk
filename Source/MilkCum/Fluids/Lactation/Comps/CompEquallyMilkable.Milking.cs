@@ -25,7 +25,11 @@ public partial class CompEquallyMilkable
         float speedMult = 1f + (isMachine ? (building?.SpeedOffset() ?? 0f) : 0f);
         speedMult = Mathf.Max(0.01f, speedMult);
         if (lactatingComp == null)
-            return baseFlowPerSecond * raceMult * speedMult;
+        {
+            float maxF = Mathf.Max(0.01f, maxFullness);
+            float f = Mathf.Clamp01(Fullness / maxF);
+            return baseFlowPerSecond * raceMult * (f * f) * speedMult;
+        }
         if (entries.Count == 0)
         {
             float letdown = Mathf.Max(0.01f, lactatingComp.GetLetdownReflexFlowMultiplier());
@@ -83,7 +87,7 @@ public partial class CompEquallyMilkable
         }
         if (milkingSpot != null)
             milkingSpot.PlaceMilkThing(thing);
-        else
+        else if (doer != null && doer.Spawned)
             GenPlace.TryPlaceThing(thing, doer.Position, doer.Map, ThingPlaceMode.Near);
     }
 
@@ -98,6 +102,9 @@ public partial class CompEquallyMilkable
         Pawn pawn = parent as Pawn;
         int tick = Find.TickManager.TicksGame;
         float fullnessBeforeTotal = Fullness;
+        const float onGatheredThreshold = 0.0001f;
+        if (totalDrained > onGatheredThreshold)
+            pawn?.LactatingHediffWithComps()?.OnGathered();
         pawn?.LactatingHediffWithComps()?.TryGetComp<HediffComp_EqualMilkingLactating>()?.AddRemainingDays(1f);
         int numBottles = Mathf.FloorToInt(totalDrained);
         if (totalDrained - numBottles >= 0.999f)
@@ -105,7 +112,6 @@ public partial class CompEquallyMilkable
         int bottlesSpawned = 0;
         if (numBottles > 0)
         {
-            pawn.LactatingHediffWithComps()?.OnGathered();
             int num = numBottles;
             while (num > 0)
             {
@@ -119,7 +125,6 @@ public partial class CompEquallyMilkable
         }
         else if (totalDrained >= 0.001f && totalDrained < 1f && MilkCumDefOf.EM_HumanMilkPartial != null && ResourceDef == MilkCumDefOf.EM_HumanMilk)
         {
-            pawn.LactatingHediffWithComps()?.OnGathered();
             Thing thing = ThingMaker.MakeThing(MilkCumDefOf.EM_HumanMilkPartial);
             if (thing.TryGetComp<CompPartialMilk>() is CompPartialMilk compPartial)
                 compPartial.fillAmount = totalDrained;

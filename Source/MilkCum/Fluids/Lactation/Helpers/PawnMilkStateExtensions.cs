@@ -33,7 +33,7 @@ public static class PawnMilkStateExtensions
     public static bool IsMilkable(this Pawn pawn) => MilkCumSettings.IsMilkable(pawn);
     public static bool IsLactating(this Pawn pawn) => pawn?.health?.hediffSet?.HasHediff(HediffDefOf.Lactating) ?? false;
 
-    /// <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于显�?添加「药物泌乳负担」等</summary>
+    /// <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于 UI 显示与添加「药物泌乳负担」等。</summary>
     public static bool HasDrugInducedLactation(this Pawn pawn)
     {
         if (pawn?.health?.hediffSet == null) return false;
@@ -41,7 +41,7 @@ public static class PawnMilkStateExtensions
             || (MilkCumDefOf.EM_Prolactin_Addiction != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Prolactin_Addiction) != null);
     }
 
-    /// <summary>统一泌乳判断：本�?Lactating �?RJW �?Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存</summary>
+    /// <summary>统一泌乳判断：本 mod Lactating、或 RJW 的 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>
     public static bool IsInLactatingState(this Pawn pawn)
     {
         if (pawn?.health?.hediffSet == null) return false;

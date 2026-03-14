@@ -3,6 +3,7 @@ using MilkCum.Core;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Lactation.Helpers;
+using MilkCum.Core.Constants;
 using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using UnityEngine;
@@ -13,28 +14,12 @@ namespace MilkCum.Fluids.Lactation.Comps;
 /// <summary>池进水、溢出、回缩、满池信件。见 Docs/泌乳系统逻辑图。</summary>
 public partial class CompEquallyMilkable
 {
-    /// <summary>回缩吸收：仅当该侧触发了溢出逻辑且本步有回缩时，界面显示回缩吸收。本方法将回缩量折算为「每日补充营养」；无回缩时返回 0。</summary>
+    /// <summary>回缩吸收：仅当本步有回缩时返回 UpdateMilkPools 中缓存的「每日补充营养」；无回缩或未开启时返回 0。避免 UI/Needs 每次读取时遍历 entries。</summary>
     public float GetReabsorbedNutritionPerDay()
     {
-        if (!MilkCumSettings.reabsorbNutritionEnabled || Pawn == null || breastFullness == null) return 0f;
+        if (!MilkCumSettings.reabsorbNutritionEnabled || Pawn == null) return 0f;
         if (!hadShrinkLastStep) return 0f;
-        var entries = GetCachedEntries();
-        if (entries.Count == 0) return 0f;
-        float healthPercent = 1f;
-        if (Pawn.health?.summaryHealth != null)
-            healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
-        float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
-        float reabsorbedPoolPerStep = 0f;
-        foreach (var e in entries)
-        {
-            if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
-            if (!IsOverflowState(e.Key, cur, e.Capacity)) continue;
-            reabsorbedPoolPerStep += (cur - e.Capacity) * (1f - shrinkFactor);
-        }
-        if (reabsorbedPoolPerStep <= 0f) return 0f;
-        float reabsorbedPoolPerDay = reabsorbedPoolPerStep * (60000f / 60f); // 每 60 tick 一次
-        return reabsorbedPoolPerDay * PoolModelConstants.NutritionPerPoolUnit
-            * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency);
+        return cachedReabsorbedNutritionPerDay;
     }
 
     /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）。仅当本步发生溢出时才执行池水位回缩与回缩吸收；回缩后满度降低、下一轮压力减小流速恢复，效果上从满池微量进水转为明显泌乳，形成逻辑闭环。回缩时超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
@@ -67,13 +52,14 @@ public partial class CompEquallyMilkable
             lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
         MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
         if (MilkCumSettings.enableToleranceDynamic)
-            lactatingComp.UpdateToleranceDynamic(currentLactation, 60f / 60000f);
+            lactatingComp.UpdateToleranceDynamic(currentLactation, PoolModelConstants.Interval60PerDay);
         float extraFall60 = 0f;
-        if (Fullness < maxFullness && Pawn != null)
+        float baseMax = Mathf.Max(0.01f, maxFullness - capacityAdaptation);
+        if (Fullness < baseMax && Pawn != null)
         {
             int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
             float factor = basis / 150f;
-            const float interval60PerDay = 60f / 60000f;
+            float interval60PerDay = PoolModelConstants.Interval60PerDay;
             extraFall60 = lactatingComp.ExtraNutritionPerDay() * factor * interval60PerDay;
             if (Pawn.needs?.food != null)
                 Pawn.needs.food.CurLevel = Mathf.Clamp(Pawn.needs.food.CurLevel - extraFall60, 0f, Pawn.needs.food.MaxLevel);
@@ -94,7 +80,7 @@ public partial class CompEquallyMilkable
                 if (!string.IsNullOrEmpty(e.Key))
                     fullnessBeforePerKey[e.Key] = breastFullness.TryGetValue(e.Key, out float v) ? v : 0f;
         }
-        var pairGroups = BuildPairGroupsByPairIndex(entries);
+        var pairGroups = GetCachedPairGroups();
         for (int g = 0; g < pairGroups.Count; g++)
         {
             var list = pairGroups[g];
@@ -174,6 +160,10 @@ public partial class CompEquallyMilkable
             if (breastFullness[e.Key] <= e.Capacity) overflowTriggeredByKey[e.Key] = false;
         }
         hadShrinkLastStep = reabsorbedPoolThisStep > 0f;
+        cachedReabsorbedNutritionPerDay = hadShrinkLastStep
+            ? reabsorbedPoolThisStep / PoolModelConstants.Interval60PerDay * PoolModelConstants.NutritionPerPoolUnit
+                * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency)
+            : 0f;
         float addBack = 0f;
         if (reabsorbedPoolThisStep > 0f && MilkCumSettings.reabsorbNutritionEnabled && Pawn != null)
         {
@@ -216,7 +206,7 @@ public partial class CompEquallyMilkable
                 float after = breastFullness.TryGetValue(e.Key, out float a) ? a : 0f;
                 float reabsorb = reabsorbedPerKey.TryGetValue(e.Key, out float r) ? r : 0f;
                 float inflow = after - before + reabsorb;
-                float nutritionShare = totalInflow >= 1E-6f ? extraFall60 * (inflow / totalInflow) : 0f;
+                float nutritionShare = totalInflow >= PoolModelConstants.Epsilon ? extraFall60 * (inflow / totalInflow) : 0f;
                 MilkCumSettings.PoolTickLog($"  池 {e.Key}: 营养-{nutritionShare:F4} 进+{inflow:F4} 回缩-{reabsorb:F4} 满={after:F3}");
             }
         }

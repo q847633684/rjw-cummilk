@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using Verse;
 using UnityEngine;
 
@@ -7,7 +7,10 @@ namespace MilkCum.Fluids.Lactation.Hediffs;
 /// <summary>Provides safe tooltip for 催乳素耐受; avoids "Error getting tip text" from vanilla DrugEffectFactor comp.</summary>
 public class Hediff_ProlactinTolerance : HediffWithComps
 {
-    /// <summary>RimWorld 部分版本�?Hediff.TipString �?virtual，用 new 隐藏基类成员以避免编译错误；悬停时仍会显示安全文案</summary>
+    /// <summary>无 HediffComp_SeverityPerDay 时的默认每日变化（与常见 SeverityPerDay 一致）；XML 中应挂该 comp。</summary>
+    private const float DefaultSeverityChangePerDay = -0.015f;
+
+    /// <summary>RimWorld 部分版本中 Hediff.TipString 为 virtual，用 new 隐藏基类成员以避免编译错误；悬停时仍会显示安全文案。</summary>
     public new string TipString => GetTipStringSafe();
 
     private string GetTipStringSafe()
@@ -29,12 +32,13 @@ public class Hediff_ProlactinTolerance : HediffWithComps
         }
     }
 
+    /// <summary>耐受每日变化：优先从 XML 的 HediffComp_SeverityPerDay 读取；无 comp 时用 DefaultSeverityChangePerDay。</summary>
     private float SeverityChangePerDay
     {
         get
         {
             var comp = this.TryGetComp<HediffComp_SeverityPerDay>();
-            return comp != null ? comp.SeverityChangePerDay() : -0.015f;
+            return comp != null ? comp.SeverityChangePerDay() : DefaultSeverityChangePerDay;
         }
     }
 }
