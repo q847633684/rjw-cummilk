@@ -97,6 +97,15 @@
     <EM.WhoCanUseMyCumProductsDefault>Default: only me. Add pawns to also allow them to eat my cum or cum-based products.</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionConsumersRequiresTagPawn>This restriction only applies when "Show pawn name" is enabled for that product type under Settings → Milk tags. Currently off, so the list is hidden.</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>Female: who can use my milk, who can eat my milk products. Male: who can eat my cum products. Set per producer in the Milk table — click "Specify" (…) on the row.</EM.ProducerRestrictionsHint>
+    <EM.DefaultSucklerRulesSection>Default "who can use my milk" (when list is empty)</EM.DefaultSucklerRulesSection>
+    <EM.DefaultSucklerIncludeChildren>Include children</EM.DefaultSucklerIncludeChildren>
+    <EM.DefaultSucklerIncludeChildrenDesc>When checked, children of the producer are allowed by default.</EM.DefaultSucklerIncludeChildrenDesc>
+    <EM.DefaultSucklerIncludeLover>Include lover</EM.DefaultSucklerIncludeLover>
+    <EM.DefaultSucklerIncludeLoverDesc>When checked, lovers are allowed by default.</EM.DefaultSucklerIncludeLoverDesc>
+    <EM.DefaultSucklerIncludeSpouse>Include spouse</EM.DefaultSucklerIncludeSpouse>
+    <EM.DefaultSucklerIncludeSpouseDesc>When checked, spouses are allowed by default.</EM.DefaultSucklerIncludeSpouseDesc>
+    <EM.DefaultSucklerExcludeParents>Exclude parents (mother/father)</EM.DefaultSucklerExcludeParents>
+    <EM.DefaultSucklerExcludeParentsDesc>When checked, the producer's parents are not allowed by default.</EM.DefaultSucklerExcludeParentsDesc>
     <EM.HealthTabRestrictionsButton>Who can use my milk / milk or cum products</EM.HealthTabRestrictionsButton>
     <EM.Specify>Specify</EM.Specify>
     <EM.DrugRoleHint>To enter lactation: Prolactin or Lucilactin. To boost milk output when already lactating: Galactogogues.</EM.DrugRoleHint>

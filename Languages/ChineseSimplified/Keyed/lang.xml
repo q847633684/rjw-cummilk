@@ -96,6 +96,15 @@
     <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionConsumersRequiresTagPawn>此限制仅在「设置 → 奶标签」中为该类物品开启「显示动物名」时生效；当前未开启，故不显示名单。</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>女性：谁可以使用我的奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
+    <EM.DefaultSucklerRulesSection>默认「谁可以使用我的奶」（名单为空时）</EM.DefaultSucklerRulesSection>
+    <EM.DefaultSucklerIncludeChildren>包含子女</EM.DefaultSucklerIncludeChildren>
+    <EM.DefaultSucklerIncludeChildrenDesc>勾选时，产奶者的子女默认允许使用奶。</EM.DefaultSucklerIncludeChildrenDesc>
+    <EM.DefaultSucklerIncludeLover>包含恋人</EM.DefaultSucklerIncludeLover>
+    <EM.DefaultSucklerIncludeLoverDesc>勾选时，恋人默认允许。</EM.DefaultSucklerIncludeLoverDesc>
+    <EM.DefaultSucklerIncludeSpouse>包含配偶</EM.DefaultSucklerIncludeSpouse>
+    <EM.DefaultSucklerIncludeSpouseDesc>勾选时，配偶默认允许。</EM.DefaultSucklerIncludeSpouseDesc>
+    <EM.DefaultSucklerExcludeParents>排除父母（母亲/父亲）</EM.DefaultSucklerExcludeParents>
+    <EM.DefaultSucklerExcludeParentsDesc>勾选时，产奶者的父母默认不允许使用奶。</EM.DefaultSucklerExcludeParentsDesc>
     <EM.HealthTabRestrictionsButton>谁可用我的奶 / 奶制品 / 精液制品</EM.HealthTabRestrictionsButton>
     <EM.Specify>指定</EM.Specify>
     <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>

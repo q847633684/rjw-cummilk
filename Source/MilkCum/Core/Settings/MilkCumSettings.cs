@@ -36,6 +36,14 @@ internal class MilkCumSettings : ModSettings
 	public static bool showPrisonerOptions = true;
 	public static bool showAnimalOptions = true;
 	public static bool showMiscOptions = true;
+	/// <summary>默认允许用奶规则（名单为空时）：是否把「子女」算入默认允许。</summary>
+	public static bool defaultSucklerIncludeChildren = true;
+	/// <summary>默认允许用奶规则：是否把「恋人」算入默认允许。</summary>
+	public static bool defaultSucklerIncludeLover = true;
+	/// <summary>默认允许用奶规则：是否把「配偶」算入默认允许。</summary>
+	public static bool defaultSucklerIncludeSpouse = true;
+	/// <summary>默认允许用奶规则：是否排除「父母」（母亲/父亲）。</summary>
+	public static bool defaultSucklerExcludeParents = true;
 	public static float nutritionToEnergyFactor = 100f;
 	/// <summary>娉屼钩鐏屾弧鏈熼棿棰濆楗ラタ锛氭粦鍧?0鈥?00锛?50=1:1銆傞ケ椋熷害姣?150 tick 棰濆涓嬮檷 = flowPerDay脳(150/60000)脳(鏈€?150)銆</summary>
 	public static int lactationExtraNutritionBasis = 150;
@@ -281,6 +289,10 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref showPrisonerOptions, "EM.ShowPrisonerOptions", true);
 		Scribe_Values.Look(ref showAnimalOptions, "EM.ShowAnimalOptions", true);
 		Scribe_Values.Look(ref showMiscOptions, "EM.ShowMiscOptions", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeChildren, "EM.DefaultSucklerIncludeChildren", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeLover, "EM.DefaultSucklerIncludeLover", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeSpouse, "EM.DefaultSucklerIncludeSpouse", true);
+		Scribe_Values.Look(ref defaultSucklerExcludeParents, "EM.DefaultSucklerExcludeParents", true);
 		Scribe_Values.Look(ref nutritionToEnergyFactor, "EM.NutritionToEnergyFactor", 100f);
 		Scribe_Values.Look(ref lactationExtraNutritionBasis, "EM.LactationExtraNutritionFactor", 150);
 		if (Scribe.mode == LoadSaveMode.LoadingVars && lactationExtraNutritionBasis is >= 1 and < 150)

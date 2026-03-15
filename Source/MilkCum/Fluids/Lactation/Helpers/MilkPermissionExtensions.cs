@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
+using MilkCum.Core.Settings;
 using MilkCum.Fluids.Shared.Comps;
 using RimWorld;
 using Verse;
@@ -11,6 +13,23 @@ namespace MilkCum.Fluids.Lactation.Helpers;
 /// 挤奶/吸奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedSucklers/allowedConsumers）、床主、首次泌乳记忆、成�?育儿文案�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
 public static class MilkPermissionExtensions
 {
+    #region 开放接口：谁可以使用我的奶 / 奶制品（供其他 mod 覆盖或扩展权限逻辑）
+
+    /// <summary>
+    /// 吸奶/挤奶权限的外部处理器。产主 producer 是否允许 doer 使用自己的奶（直接吸奶或挤奶）。
+    /// 返回 true=允许，false=不允许，null=交回内置逻辑（名单 + 默认子女+伴侣）。
+    /// 按注册顺序调用，第一个返回非 null 的结果即采用。
+    /// </summary>
+    public static readonly List<Func<Pawn, Pawn, bool?>> AllowSucklerHandlers = new List<Func<Pawn, Pawn, bool?>>();
+
+    /// <summary>
+    /// 奶制品食用权限的外部处理器。产主 producer 是否允许 consumer 食用自己的奶制品（含带 CompShowProducer 的奶/精液制品）。
+    /// 返回 true=允许，false=不允许，null=交回内置逻辑（allowedConsumers 名单，空=仅产主本人）。
+    /// 按注册顺序调用，第一个返回非 null 的结果即采用。
+    /// </summary>
+    public static readonly List<Func<Pawn, Pawn, Thing, bool?>> CanConsumeMilkProductHandlers = new List<Func<Pawn, Pawn, Thing, bool?>>();
+
+    #endregion
     public static bool AllowMilking(this Pawn pawn) => pawn.CompEquallyMilkable()?.MilkSettings?.allowMilking ?? false;
     public static bool SetAllowMilking(this Pawn pawn, bool allow)
     {
@@ -73,47 +92,114 @@ public static class MilkPermissionExtensions
         return true;
     }
 
-    /// <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（Lover/Spouse，用于名单为空时预填，不再用“空=默认”判断）</summary>
-    public static List<Pawn> GetDefaultSucklers(Pawn producer)
+    /// <summary>产主 producer 的“父母”之一是否为 doer（用于默认名单排除父母，只保留子女+伴侣）。</summary>
+    public static bool IsParentOf(this Pawn producer, Pawn doer)
     {
-        var list = new List<Pawn>();
-        if (producer?.relations == null) return list;
-        if (producer.relations.Children != null)
+        if (producer?.relations?.DirectRelations == null || doer == null) return false;
+        return producer.relations.DirectRelations.Any(r => r.def == PawnRelationDefOf.Parent && r.otherPawn == doer);
+    }
+
+    /// <summary>仅根据关系与设置生成默认允许集合（不查 comp）。供 GetDefaultSucklers 与 IsDefaultAllowedSuckler 共用。</summary>
+    public static IEnumerable<Pawn> YieldDefaultSucklers(Pawn producer)
+    {
+        if (producer?.relations == null) yield break;
+        bool incChild = MilkCumSettings.defaultSucklerIncludeChildren;
+        bool incLover = MilkCumSettings.defaultSucklerIncludeLover;
+        bool incSpouse = MilkCumSettings.defaultSucklerIncludeSpouse;
+        bool exclParent = MilkCumSettings.defaultSucklerExcludeParents;
+        if (incChild && producer.relations.Children != null)
         {
             foreach (Pawn p in producer.relations.Children)
-                if (p != null && !p.Destroyed && !list.Contains(p))
-                    list.Add(p);
+                if (p != null && !p.Destroyed)
+                    yield return p;
         }
-        foreach (DirectPawnRelation rel in producer.relations.DirectRelations)
+        if ((incLover || incSpouse) && producer.relations.DirectRelations != null)
         {
-            if (rel.def != PawnRelationDefOf.Lover && rel.def != PawnRelationDefOf.Spouse) continue;
-            if (rel.otherPawn != null && !rel.otherPawn.Destroyed && !list.Contains(rel.otherPawn))
-                list.Add(rel.otherPawn);
+            foreach (DirectPawnRelation r in producer.relations.DirectRelations)
+            {
+                if (r.otherPawn == null || r.otherPawn.Destroyed) continue;
+                if (r.def == PawnRelationDefOf.Lover && !incLover) continue;
+                if (r.def == PawnRelationDefOf.Spouse && !incSpouse) continue;
+                if (r.def != PawnRelationDefOf.Lover && r.def != PawnRelationDefOf.Spouse) continue;
+                if (exclParent && producer.IsParentOf(r.otherPawn)) continue;
+                yield return r.otherPawn;
+            }
+        }
+    }
+
+    /// <summary>默认允许集合的单人判断：doer 是否在 YieldDefaultSucklers 中。不分配 List。</summary>
+    public static bool IsDefaultAllowedSuckler(Pawn producer, Pawn doer)
+    {
+        if (producer == null || doer == null) return false;
+        foreach (Pawn p in YieldDefaultSucklers(producer))
+            if (p == doer) return true;
+        return false;
+    }
+
+    /// <summary>获取默认“可使用我的奶”名单（用于预填/UI）；逻辑与 YieldDefaultSucklers 一致，去重后返回 List。</summary>
+    public static List<Pawn> GetDefaultSucklers(Pawn producer)
+    {
+        var seen = new HashSet<Pawn>();
+        var list = new List<Pawn>();
+        foreach (Pawn p in YieldDefaultSucklers(producer))
+        {
+            if (seen.Add(p)) list.Add(p);
         }
         return list;
     }
 
-    /// <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣」；名单非空时仅名单内的人可吸奶/挤奶。</summary>
+    /// <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣、排除父母」；名单非空时仅名单内的人可吸奶/挤奶。优先走 AllowSucklerHandlers 开放接口。</summary>
     public static bool IsAllowedSuckler(Pawn producer, Pawn doer)
     {
+        if (producer != null && doer != null && AllowSucklerHandlers.Count > 0)
+        {
+            foreach (var handler in AllowSucklerHandlers)
+            {
+                try
+                {
+                    bool? result = handler(producer, doer);
+                    if (result.HasValue) return result.Value;
+                }
+                catch (Exception)
+                {
+                    // 单 handler 异常不阻断其他 handler 与内置逻辑
+                }
+            }
+        }
         var comp = producer?.CompEquallyMilkable();
         if (comp == null) return true;
         if (comp.allowedSucklers == null) return false;
         if (comp.allowedSucklers.Count == 0)
-            return GetDefaultSucklers(producer).Contains(doer);
+            return IsDefaultAllowedSuckler(producer, doer);
         return comp.allowedSucklers.Contains(doer);
     }
 
-    /// <summary>指定谁可以使用产出的�?精液制品：无 producer 允许；自己始终允许；否则看产�?allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，�?7.4）</summary>
+    /// <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人。优先走 CanConsumeMilkProductHandlers 开放接口。</summary>
     public static bool CanConsumeMilkProduct(this Pawn consumer, Thing food)
     {
         if (consumer == null || food == null) return true;
         var comp = food.TryGetComp<CompShowProducer>();
         if (comp?.producer == null) return true;
         if (comp.producer == consumer) return true;
-        var producerComp = comp.producer.CompEquallyMilkable();
+        Pawn producer = comp.producer;
+        if (CanConsumeMilkProductHandlers.Count > 0)
+        {
+            foreach (var handler in CanConsumeMilkProductHandlers)
+            {
+                try
+                {
+                    bool? result = handler(producer, consumer, food);
+                    if (result.HasValue) return result.Value;
+                }
+                catch (Exception)
+                {
+                    // 单 handler 异常不阻断其他 handler 与内置逻辑
+                }
+            }
+        }
+        var producerComp = producer.CompEquallyMilkable();
         if (producerComp?.allowedConsumers == null || producerComp.allowedConsumers.Count == 0)
-            return false; // 仅产主本人（含囚�?奴隶：未 explicitly 加入名单则殖民者不可食用）
+            return false; // 仅产主本人（含囚犯/奴隶：未 explicitly 加入名单则殖民者不可食用）
         return producerComp.allowedConsumers.Contains(consumer);
     }
 

@@ -76,6 +76,18 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.breastfeedCapacityFactor">
             <summary>鎸夊閲忛噺鍖栵細鍚稿ザ鏈夋晥鏃堕棿闅忓杺濂惰€?MilkAmount 鐨勭郴鏁帮紝effectiveTime *= (1 + 鏈€济?MilkAmount-1))锛岄檺鍒跺湪 [0.5, 2]銆</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.defaultSucklerIncludeChildren">
+            <summary>默认允许用奶规则（名单为空时）：是否把「子女」算入默认允许。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.defaultSucklerIncludeLover">
+            <summary>默认允许用奶规则：是否把「恋人」算入默认允许。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.defaultSucklerIncludeSpouse">
+            <summary>默认允许用奶规则：是否把「配偶」算入默认允许。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.defaultSucklerExcludeParents">
+            <summary>默认允许用奶规则：是否排除「父母」（母亲/父亲）。</summary>
+        </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationExtraNutritionBasis">
             <summary>娉屼钩鐏屾弧鏈熼棿棰濆楗ラタ锛氭粦鍧?0鈥?00锛?50=1:1銆傞ケ椋熷害姣?150 tick 棰濆涓嬮檷 = flowPerDay脳(150/60000)脳(鏈€?150)銆</summary>
         </member>
@@ -114,6 +126,12 @@
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.toleranceDynamicNu">
             <summary>鑰愬彈琛板噺鐜?谓锛堟瘡娓告垙鏃ワ級锛汦 鑷劧鍥炶惤銆</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLevelCap">
+            <summary>泌乳水平上限（L_cap）：&gt;0 时，吃药超过此值的部分不再增加进水量 L，只增加 Severity（延长泌乳时间），流速由 min(L, cap) 决定，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLevelCapDurationMultiplier">
+            <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.ProlactinToleranceGainPerDose">
             <summary>鍌钩绱犲崟鍓傚湪 XML 涓鑰愬彈 Hediff 鐨?Severity 澧為噺锛堜笌 Lactating 鍚屽墏鍙犲姞涓€鑷达紝榛樿 0.044锛夛紱鏀?XML 鏃堕渶鍚屾銆</summary>
@@ -1017,6 +1035,9 @@
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CurrentLactationAmount">
             <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
         </member>
+        <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.EffectiveLactationAmountForFlow">
+            <summary>用于流速/驱动力计算的 L：当 lactationLevelCap&gt;0 时取 min(L, cap)，避免超上限时流速过高。</summary>
+        </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.IsPermanentLactation">
             <summary>是否为永久泌乳（基因或动物设置）：L 不衰减；括号阶段名与悬停「剩余时间」均据此显示「永久」</summary>
         </member>
@@ -1077,17 +1098,18 @@
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
             <summary>当前 L 下的每日衰减（仅用于显示/调试；实际衰减由原版 SeverityPerDay 驱动）。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddToLAndSeverity(System.Single)">
-            <summary>L 与 Severity 同时增加并封顶到 def.maxSeverity（原版逻辑下两者同步）。</summary>
-        </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromDrug(System.Single,System.Boolean)">
-            <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。</summary>
+            <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。
+            封顶+倍数逻辑与 AddRemainingDays 共用 ApplyDeltaLToLAndSeverity。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromBirth">
             <summary>分娩时累加：L 与 Severity 均加上基础值（不乘有效药效系数），原版 SeverityPerDay 对总 severity 生效。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
-            <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。</summary>
+            <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。启用 lactationLevelCap 时与 AddFromDrug 一致：L 封顶，超出部分按倍数转为 Severity。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ApplyDeltaLToLAndSeverity(System.Single)">
+            <summary>将 ΔL 应用到 L 与 Severity；启用 lactationLevelCap 时 L 封顶，超出部分按 lactationLevelCapDurationMultiplier 转为 Severity（与 AddFromDrug 一致）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ResetAndRemoveLactating">
             <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
@@ -1142,17 +1164,40 @@
             <summary>
             挤奶/吸奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedSucklers/allowedConsumers）、床主、首次泌乳记忆、成�?育儿文案�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.AllowSucklerHandlers">
+            <summary>
+            吸奶/挤奶权限的外部处理器。产主 producer 是否允许 doer 使用自己的奶（直接吸奶或挤奶）。
+            返回 true=允许，false=不允许，null=交回内置逻辑（名单 + 默认子女+伴侣）。
+            按注册顺序调用，第一个返回非 null 的结果即采用。
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.CanConsumeMilkProductHandlers">
+            <summary>
+            奶制品食用权限的外部处理器。产主 producer 是否允许 consumer 食用自己的奶制品（含带 CompShowProducer 的奶/精液制品）。
+            返回 true=允许，false=不允许，null=交回内置逻辑（allowedConsumers 名单，空=仅产主本人）。
+            按注册顺序调用，第一个返回非 null 的结果即采用。
+            </summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.AllowedToBreastFeed(Verse.Pawn,Verse.Pawn)">
             <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsParentOf(Verse.Pawn,Verse.Pawn)">
+            <summary>产主 producer 的“父母”之一是否为 doer（用于默认名单排除父母，只保留子女+伴侣）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.YieldDefaultSucklers(Verse.Pawn)">
+            <summary>仅根据关系与设置生成默认允许集合（不查 comp）。供 GetDefaultSucklers 与 IsDefaultAllowedSuckler 共用。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsDefaultAllowedSuckler(Verse.Pawn,Verse.Pawn)">
+            <summary>默认允许集合的单人判断：doer 是否在 YieldDefaultSucklers 中。不分配 List。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.GetDefaultSucklers(Verse.Pawn)">
-            <summary>获取默认“可使用我的奶”名单：子女 + 伴侣（Lover/Spouse，用于名单为空时预填，不再用“空=默认”判断）</summary>
+            <summary>获取默认“可使用我的奶”名单（用于预填/UI）；逻辑与 YieldDefaultSucklers 一致，去重后返回 List。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsAllowedSuckler(Verse.Pawn,Verse.Pawn)">
-            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣」；名单非空时仅名单内的人可吸奶/挤奶。</summary>
+            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣、排除父母」；名单非空时仅名单内的人可吸奶/挤奶。优先走 AllowSucklerHandlers 开放接口。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.CanConsumeMilkProduct(Verse.Pawn,Verse.Thing)">
-            <summary>指定谁可以使用产出的�?精液制品：无 producer 允许；自己始终允许；否则看产�?allowedConsumers，空=仅产主本人（囚犯/奴隶亦同，不默认允许殖民者，�?7.4）</summary>
+            <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人。优先走 CanConsumeMilkProductHandlers 开放接口。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.GetBedOwner(RimWorld.Building_Bed)">
             <summary>床的分配对象（床主）。兼容无 AssigningPawn �?RimWorld 版本，通过 CompAssignableToPawn 获取</summary>
