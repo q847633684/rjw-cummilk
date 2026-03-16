@@ -183,7 +183,7 @@
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
     <EM.PoolSuppressionHint>长期不排乳→泌乳抑制↑→自然结束</EM.PoolSuppressionHint>
-    <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
+    <EM.PoolDaysPrefix>泌乳期天数：</EM.PoolDaysPrefix>
     <EM.PoolDaysSuffix>日</EM.PoolDaysSuffix>
     <EM.EquivalentDose>等效剂量：{0}</EM.EquivalentDose>
     <EM.EquivalentDoseColumn>等效剂量</EM.EquivalentDoseColumn>

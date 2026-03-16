@@ -870,7 +870,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         {
             float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
             float fullness = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : Charge;
-            string head = IsPermanentLactation ? "" : ("(" + "EM.PoolDaysPrefix".Translate() + RemainingDays.ToString("F1") + "EM.PoolDaysSuffix".Translate() + ") ");
+            string head = IsPermanentLactation ? "" : ("EM.PoolDaysPrefix".Translate() + RemainingDays.ToString("F1") + "EM.PoolDaysSuffix".Translate() + " ");
             return base.CompLabelInBracketsExtra + head + Lang.MilkFullness + ": " + (fullness / maxF).ToStringPercent();
         }
     }

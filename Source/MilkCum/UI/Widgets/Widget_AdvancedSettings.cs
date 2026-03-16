@@ -204,13 +204,6 @@ public class Widget_AdvancedSettings
 		TooltipHandler.TipRegion(rAiFullness, "EM.AiPreferHighFullnessTargetsDesc".Translate());
 	}
 
-	private void DrawToleranceOverflowBlock(Listing_Standard list)
-	{
-		DrawToleranceBlock(list);
-		list.Gap(6f);
-		DrawOverflowBlock(list);
-	}
-
 	private void DrawEfficiencyOrInterfaceSection(Rect content, int subTab)
 	{
 		var list = new Listing_Standard();
@@ -253,33 +246,6 @@ public class Widget_AdvancedSettings
 		}
 		else
 			DrawBreastPoolBlock(list);
-		list.End();
-	}
-
-	private void DrawIntegrationSection(Rect content, int subTab)
-	{
-		var list = new Listing_Standard();
-		list.Begin(content);
-		if (subTab == SubTabIntegration_RJW && ModLister.GetModWithIdentifier("rim.job.world") != null)
-		{
-			GUI.color = Color.gray;
-			list.Label("EM.SectionDesc_RJW".Translate());
-			GUI.color = Color.white;
-			list.Gap(4f);
-			GUI.color = Color.gray;
-			list.Label("EM.RJWSection".Translate());
-			GUI.color = Color.white;
-			list.Gap(4f);
-			DrawRjwBlock(list);
-		}
-		else if (subTab == SubTabIntegration_RJW)
-		{
-			GUI.color = Color.gray;
-			list.Label("EM.RequiresRJWMod".Translate());
-			GUI.color = Color.white;
-		}
-		else if (subTab == SubTabIntegration_DBH && DubsBadHygieneIntegration.IsDubsBadHygieneActive())
-			DrawDbhBlock(list);
 		list.End();
 	}
 
