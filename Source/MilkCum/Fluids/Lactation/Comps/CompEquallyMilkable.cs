@@ -75,6 +75,20 @@ public partial class CompEquallyMilkable : CompMilkable
     /// <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
     private Dictionary<string, bool> overflowTriggeredByKey = new Dictionary<string, bool>();
 
+    /// <summary>池逻辑在 UpdateMilkPools 中写入：本步实际进水流速（池单位/天），供 UI 直接读取，与回缩/溢出等逻辑一致。不存档。</summary>
+    internal float CachedFlowPerDayForDisplay;
+    /// <summary>写入 CachedFlowPerDayForDisplay 时的游戏 tick，用于判断缓存是否有效（60 tick 内有效）。</summary>
+    internal int CachedFlowTick = -1;
+    /// <summary>池逻辑在 UpdateMilkPools 中按 key 写入的每侧流速（池单位/天），供 GetFlowPerDayForBreastPair 等直接读取，不存档。</summary>
+    internal Dictionary<string, float> CachedFlowPerDayByKey;
+    /// <summary>池逻辑中按实际进水流速加权的压力/喷乳反射/状态因子，供 GetFlowPerDayBreakdown 悬停显示，不存档。</summary>
+    internal float CachedPressureForDisplay, CachedLetdownForDisplay, CachedConditionsForDisplay;
+
+    /// <summary>缓存是否在 60 tick 内有效。</summary>
+    internal bool IsCachedFlowValid() => CachedFlowTick >= 0 && Find.TickManager != null && (Find.TickManager.TicksGame - CachedFlowTick) <= 60;
+    /// <summary>取指定 key 的缓存流速（池单位/天），无缓存或 key 不存在则返回 0。</summary>
+    internal float GetCachedFlowPerDayForKey(string key) => CachedFlowPerDayByKey != null && CachedFlowPerDayByKey.TryGetValue(key, out float v) ? v : 0f;
+
     public override void PostExposeData()
     {
         base.PostExposeData();

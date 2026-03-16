@@ -68,13 +68,13 @@
             <summary>3.1：哺乳者获得「哺乳了某人」记忆，用于社交/关系。</summary>
         </member>
         <member name="T:MilkCum.Core.Settings.MainTabIndex">
-            <summary>涓撲笟绾?UI锛氭寜绯荤粺绫诲瀷鍒嗗眰銆傛牳蹇冩満鍒?/ 鍋ュ悍椋庨櫓 / 鏉冮檺瑙勫垯 / 鏁板€煎钩琛?/ 妯＄粍鑱斿姩 / 鏁版嵁绉嶆棌 / 璋冭瘯宸ュ叿锛堜粎 DevMode锛夈€</summary>
+            <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingWorkTotalBase">
-            <summary>鎸ゅザ娴侀€熷熀鍑嗭細baseFlowPerSecond = 60/鏈€硷紙姹犲崟浣?绉掞級銆傞粯璁?60 鈫?婊℃睜绾?1 鐡?绉掞紙鐜板疄鏃堕棿锛夛紱璋冨ぇ鍒欏彉鎱€</summary>
+            <summary>挤奶流速基准：baseFlowPerSecond = 60/基准值（池单位/秒）。默认 60 → 满池约 1 瓶/秒（现实时间）；调大则变慢。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.breastfeedCapacityFactor">
-            <summary>鎸夊閲忛噺鍖栵細鍚稿ザ鏈夋晥鏃堕棿闅忓杺濂惰€?MilkAmount 鐨勭郴鏁帮紝effectiveTime *= (1 + 鏈€济?MilkAmount-1))锛岄檺鍒跺湪 [0.5, 2]銆</summary>
+            <summary>按容量量化：吸奶有效时间随喂奶量 MilkAmount 的系数，effectiveTime *= (1 + 系数*(MilkAmount-1))，限制在 [0.5, 2]。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.defaultSucklerIncludeChildren">
             <summary>默认允许用奶规则（名单为空时）：是否把「子女」算入默认允许。</summary>
@@ -89,43 +89,49 @@
             <summary>默认允许用奶规则：是否排除「父母」（母亲/父亲）。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationExtraNutritionBasis">
-            <summary>娉屼钩鐏屾弧鏈熼棿棰濆楗ラタ锛氭粦鍧?0鈥?00锛?50=1:1銆傞ケ椋熷害姣?150 tick 棰濆涓嬮檷 = flowPerDay脳(150/60000)脳(鏈€?150)銆</summary>
+            <summary>泌乳额外营养基准：以 150 为 1:1，将每日泌乳进水量折算成额外营养（用于进食上限校正）。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.reabsorbNutritionEnabled">
-            <summary>鍥炵缉鍚告敹锛氭弧姹犲洖缂╂椂锛屾湭婧㈠嚭閮ㄥ垎瑙嗕负琚韩浣撳惛鏀讹紝鎸夋瘮渚嬭ˉ鍏呴ケ椋熷害锛?=鍏抽棴锛?=涓庝骇濂舵秷鑰?1:1 鎶樼畻銆</summary>
+            <summary>回缩吸收开关：开启时，池内剩余奶量会按下方效率转成营养；关闭时，未被吸奶消耗的部分全部作废。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.reabsorbNutritionEfficiency">
-            <summary>鍥炵缉鍚告敹鏁堢巼锛?~1锛屽惛鏀剁殑姹犲崟浣嶆姌鎴愯惀鍏荤殑姣斾緥锛岄粯璁?0.5 閬垮厤婊℃睜鎸傛満杩囧己銆</summary>
+            <summary>回缩吸收效率，0~1：吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationPoolTickLog">
-            <summary>DevMode 涓斿嬀閫夋椂锛屾瘡 60 tick 杈撳嚭娉屼钩灏忎汉鐨勮惀鍏?涔虫睜/鍥炵缉/鍚稿ザ鏄庣粏鍒版棩蹇椼€</summary>
+            <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/奶池/回缩/吸奶明细到日志。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingActionLog">
-            <summary>DevMode 涓斿嬀閫夋椂锛岃緭鍑哄惛濂?鎸ゅザ/鏈哄櫒浜уザ鍏ュ彛姹囨€绘棩蹇楋紙姣忔鎿嶄綔涓€缁勶級锛岀敤浜庡钩琛′笌 AI 璋冭瘯銆</summary>
+            <summary>DevMode 时打开：输出每次挤奶操作（手动/机械）入口、结果等明细日志，用于调试与 AI 测试。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLog">
-            <summary>DevMode 鏃跺嬀閫夊垯杈撳嚭娉屼钩鍏抽敭璺緞鏃ュ織锛堝垎濞┿€佽繘姘淬€佺Щ闄ゆ硨涔崇瓑锛夛紱鍏抽棴鍙噺灏戝埛灞忥紝浠呯敤 PoolTickLog 鐪嬫槑缁嗐€</summary>
+            <summary>DevMode 时打开：输出泌乳关键流程日志（进水/衰减/溢出等），关闭可减少刷屏；仅用于细查 PoolTickLog 不方便的情况。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationDrugIntakeLog">
-            <summary>鍕鹃€夋椂锛屾瘡娆″悆鑽繘姘达紙AddFromDrug锛夋椂杈撳嚭璋冭瘯鏃ュ織锛毼攕銆佽繘姘次擫銆佸墿浣欐椂闂村彉鍖栥€</summary>
+            <summary>DevMode 时打开：每次药物带来进水（AddFromDrug）时输出调试日志，包含 ΔS、进水量与剩余时间变化。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.LactationLog(System.String)">
-            <summary>DevMode 鏃惰緭鍑烘硨涔冲叧閿矾寰勬棩蹇楋紝渚夸簬鎺掓煡 L/姹?鑽墿/鍒嗗ī 琛屼负銆傚彈 lactationLog 寮€鍏虫帶鍒躲€</summary>
+            <summary>仅在 DevMode 且 lactationLog 打开时调用：辅助输出与 L/池/污物/衰减表相关的详细日志。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.PoolTickLog(System.String)">
-            <summary>浠呭綋 DevMode 涓?lactationPoolTickLog 涓?true 鏃惰緭鍑猴紝鐢ㄤ簬姣忔钀ュ吇/涔虫睜/鍥炵缉/鍚稿ザ鏄庣粏銆</summary>
+            <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/奶池/回缩/吸奶明细。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient">
-            <summary>涔虫埧瀹归噺绯绘暟锛氬乏鍙充钩瀹归噺 = RJW Severity 脳 鏈郴鏁帮紝2=榛樿锛屼笌娉屼钩鏁堢巼绛夊彲璋冮」瀵瑰簲銆</summary>
+            <summary>RJW 胸围容量系数：左右乳容量 = RJW 胸围严重度 × 本系数，默认 2，与泌乳流速倍率保持可调对应。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwLactationFertilityFactor">
+            <summary>泌乳期对 RJW 生育能力的倍率（0~1），1 = 不影响，0.85 = 略微降低怀孕率。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwLactatingInSexDescriptionEnabled">
+            <summary>是否在性行为描述中加入「泌乳中」提示。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwSexAddsLactationBoost">
-            <summary>3.2锛氭€ц涓哄悗涓烘硨涔冲弬涓庤€呭鍔犲皯閲忔睜杩涙按锛埼擫锛夛紝鍙€夈€</summary>
+            <summary>3.2：性行为结束后是否给泌乳增加一小段额外进水/持续时间加成，可选。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.toleranceDynamicMu">
-            <summary>鑰愬彈绱Н鐜?渭锛堟瘡娓告垙鏃ワ級锛汱 楂樺垯 E 涓婂崌銆</summary>
+            <summary>耐受累积率 μ（每游戏日）：越高，长时间高 L 时 E 上升越快。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.toleranceDynamicNu">
-            <summary>鑰愬彈琛板噺鐜?谓锛堟瘡娓告垙鏃ワ級锛汦 鑷劧鍥炶惤銆</summary>
+            <summary>耐受衰减率 ν（每游戏日）：越高，停药后耐受自然回落越快。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLevelCap">
             <summary>泌乳水平上限（L_cap）：&gt;0 时，吃药超过此值的部分不再增加进水量 L，只增加 Severity（延长泌乳时间），流速由 min(L, cap) 决定，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</summary>
@@ -134,62 +140,62 @@
             <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.ProlactinToleranceGainPerDose">
-            <summary>鍌钩绱犲崟鍓傚湪 XML 涓鑰愬彈 Hediff 鐨?Severity 澧為噺锛堜笌 Lactating 鍚屽墏鍙犲姞涓€鑷达紝榛樿 0.044锛夛紱鏀?XML 鏃堕渶鍚屾銆</summary>
+            <summary>泌乳药物单次在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 一并叠加），默认 0.044；若改 XML 请同步更新此处说明。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecay">
-            <summary>鑽墿娉屼钩琛板噺鐢ㄦ湁鏁?B_T锛氱敱 baselineMilkDurationDays 鍙嶆帹锛屼娇鍗曟鍓傞噺锛圠鈮?.5銆丒=1锛夋椂鍓╀綑澶╂暟 鈮?鍩哄噯澶╂暟銆侱=0.5/baseline 鈬?B_T_eff=1/(0.5/baseline鈭択脳0.5)銆</summary>
+            <summary>药物泌乳容量用有效数 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≥0.5、E=1）时剩余天数 ≥ 基准天数。B=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecayBirth">
-            <summary>鍒嗗ī娉屼钩琛板噺鐢ㄦ湁鏁?B_T锛氱敱 birthInducedMilkDurationDays 鍙嶆帹锛屽叕寮忓悓鑽墿銆</summary>
+            <summary>分娩泌乳容量用有效数 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetPressureFactor(System.Single)">
-            <summary>甯︿笅闄?Logistic锛歠(P)=f_min+(1鈭抐_min)脳1/(1+exp(k脳(P鈭扨c)))锛孭 澶ф椂骞虫粦闄嶉€燂紝鏈€浣?f_min 姘镐笉褰掗浂銆傞粯璁?k=6銆丳c=0.9銆乫_min=0.02锛屽ザ閲忚揪 90% 鎵嶅紑濮嬪線涓嬪帇銆</summary>
-            <param name="P">璇ヤ晶婊″害/璇ヤ晶鎾戝ぇ瀹归噺锛?锝?锛堝彲鐣ュぇ浜?1 鏃朵粛鎸夊叕寮忕畻锛夈€</param>
+            <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降压，最小 f_min 永不为零。默认 k=6、Pc=0.9、f_min=0.02，奶量达 90% 才开始往下压。</summary>
+            <param name="P">该侧满度/该侧最大容量，0～1（可略大于 1 时仍按公式算）。</param>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveDrive(System.Single)">
-            <summary>鍥涘眰妯″瀷锛堥樁娈?锛夛細鏈夋晥椹卞姩鍔?D_eff = L路H(L)銆侶(L)=1鈭抏xp(鈭抋路L)锛涜嫢 L_ref>0 鍒欑敤鍙傝€冨€煎綊涓€锛欴_eff = L路(1鈭抏^{-aL})/(1鈭抏^{-aL_ref})锛屽熬鏈熸洿骞虫粦銆</summary>
+            <summary>驱动强度模型：有效驱动力 D_eff = L×H(L)，H(L)=1−exp(−aL)；如 L_ref&gt;0 则做归一化：D_eff = L×(1−e^{−aL})/(1−e^{−aL_ref})，高 L 时趋于饱和。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.pressureFactorMin">
-            <summary>鍘嬪姏鏇茬嚎涓嬮檺 f_min锛氭弧姹犳椂鐢熶骇鍊嶇巼涓嶄綆浜庢鍊硷紝姘镐笉褰掗浂銆傛帹鑽?0.02锝?.15銆</summary>
+            <summary>压力因子下限 f_min：挤奶时产量倍率不会低于该值，避免「一点不出奶」；推荐 0.02～0.15。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexDecayLambda">
-            <summary>鍠蜂钩鍙嶅皠琛板噺鐜?位锛堟瘡鍒嗛挓锛夛紱R_new = R 脳 exp(-位脳螖t)銆</summary>
+            <summary>射出反射衰减率 λ（每分钟）：R_new = R × exp(−λΔt)。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexStimulusDeltaR">
-            <summary>鎸ゅザ/鍚稿ザ鏃?R 鐨勫閲?螖R锛孯 鍔犱笂鍚?Clamp 鑷?1銆傝澶т竴浜涳紙濡?1锛夊彲涓€娆″埡婵€鍗虫弧 R銆</summary>
+            <summary>每次刺激/持续刺激时 R 的增量 ΔR，叠加后 Clamp 至 1；设高一点（如 1）可模拟一次迅速射奶。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.letdownReflexBoostMultiplier">
-            <summary>鍠蜂钩鍙嶅皠鍔犳垚鍊嶇巼锛氳繘姘存祦閫熷€嶇巼 = 1 + R脳(鏈€尖垝1)锛孯=1 鏃朵负鏈€煎€嶏紙寤鸿 1.5~2.5锛夛紝R=0 鏃朵负 1 鍊嶏紱璁句负 1 鍗虫棤鍔犳垚銆</summary>
+            <summary>射出反射的乘数上限：流速倍率 = 1 + R×(本值−1)；R=1 时为最大倍率（建议 1.5～2.5），R=0 时为 1。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationDecayInflammationEta">
-            <summary>鐐庣棁瀵?L 琛板噺鐨勬姂鍒跺洜瀛?畏锛欴 += 畏路I銆</summary>
+            <summary>炎症对 L 衰减的额外系数 η：L += −η×I。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.hormoneSaturationA">
-            <summary>H(L) 楗卞拰绯绘暟 a锛涘缓璁?0.5锝?.5銆</summary>
+            <summary>H(L) 的饱和系数 a，建议 0.5～2.5。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.hormoneSaturationLRef">
-            <summary>鍙傝€?L 褰掍竴锛欴_eff = L路(1鈭抏^{-aL})/(1鈭抏^{-aL_ref})锛屼娇灏炬湡鏇村钩婊戯紱鈮? 鏃朵笉褰掍竴銆</summary>
+            <summary>参考 L_ref 用于归一化：D_eff = L×(1−e^{−aL})/(1−e^{−aL_ref})，让中等 L 更平滑。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationTheta">
-            <summary>鎵╁鐜?胃锛堟瘡娓告垙鏃ワ級锛汸 澶т簬 0.85 鏃跺閲忓鍔犮€</summary>
+            <summary>容量增长系数 θ（每游戏日）：P&gt;0.85 时增加最大容量。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationOmega">
-            <summary>鍥炵缉鐜?蠅锛堟瘡娓告垙鏃ワ級锛汸 灏忎簬 1 鏃跺閲忓噺灏戙€</summary>
+            <summary>缩减系数 ω（每游戏日）：P&lt;1 时缓慢减小最大容量。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationCapMaxRatio">
-            <summary>閫傚簲瀹归噺涓婇檺锛氫笉瓒呰繃鍩虹瀹归噺鐨勬姣斾緥锛堝 0.2=20%锛夈€</summary>
+            <summary>适应后容量上限：不超过基础容量的该比例（如 0.2=20%）。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkQualityInflammationWeight">
-            <summary>鐐庣棁瀵硅川閲忕殑鎶戝埗绯绘暟锛涜川閲?鈭?(1 鈭?鏈€济桰)锛孖 澶у垯璐ㄩ噺闄嶃€</summary>
+            <summary>炎症对营养值的惩罚系数：营养值≈原值×(1−本值×Inflammation)，越大则炎症时品质下降越明显。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkQualityProtectionFactor">
-            <summary>璐ㄩ噺瀵逛钩鑵虹値闃堝€肩殑淇濇姢绯绘暟锛涙湁鏁?I_crit = I_crit脳(1 + 鏈€济桵ilkQuality)銆</summary>
+            <summary>品质对饱食度阈值的保护系数：高品质牛奶可稍微提高 I_crit，减少轻微炎症触发。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.EnsureScribeDeepTypes">
-            <summary>纭繚 Scribe_Deep 鍙嶅簭鍒楀寲鐨勫璞＄被鍨嬫纭紝閬垮厤鏃у瓨妗ｆ垨绫诲瀷鍙樻洿瀵艰嚧 InvalidCastException銆</summary>
+            <summary>确保 Scribe_Deep 反序列化得到的对象类型正确，避免旧存档或类型变更造成 InvalidCastException。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetDefaultMilkProduct(Verse.ThingDef)">
-            <summary>璁捐鍘熷垯 3/4锛氶粯璁や骇濂跺紑鍏充笌濂堕噺鏉ヨ嚜 Def锛圚umanlike/浣撳瀷锛夛紝涓嶆墜鍐欏簳灞傝鍒欙紱瀹為檯寮€鍏崇敱 namesToProducts + 璁剧疆鍐冲畾銆</summary>
+            <summary>设计原则 3/4：默认泌乳开关与量级全部从 Def（Humanlike/畜牧类）推导，不在代码里手写底层规则；实际开放由 namesToProducts + 设置决定。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.IsProducerRestrictionConsumersEffectiveForMilkProducts">
             <summary>濂舵爣绛捐仈鍔細浜т富闄愬埗銆岃皝鍙互鍚冩垜鐨勫ザ鍒跺搧銆嶄粎褰撳ザ鏍囩閲屽搴旂墿鍝佺绫诲紑鍚€屾樉绀哄姩鐗╁悕銆嶆椂鐢熸晥銆傛湰鏂规硶涓?true 鏃讹紝浜т富闄愬埗绐楀彛鏄剧ず璇ュ尯鍧椼€</summary>
@@ -199,16 +205,16 @@
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetRaceDrugDeltaSMultiplier(Verse.Pawn)">
             <summary>褰撳墠鍌钩绱犺€愬彈涓ラ噸搴?t 鈭?[0,1]锛涘畬鍏ㄧ敱娓告垙鍐?Hediff/Comp 鍐冲畾銆</summary>
-            <summary>3.3 鍔ㄧ墿宸紓鍖栵細绉嶆棌瀵瑰偓涔宠嵂鐗╄繘姘村€嶇巼锛屾湭閰嶇疆鍒?1銆</summary>
+            <summary>3.3：按物种对「泌乳药物 ΔS」做乘法修正，raceDrugDeltaSMultiplier；未配置时为 1。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactor(Verse.Pawn)">
-            <summary>缁熶竴鑰愬彈绯绘暟锛欵_tol(t) = max(1 鈭?t, 0.05)銆傚惎鐢ㄨ€愬彈鍔ㄦ€佹椂鐢?comp 鐨?E 璁＄畻銆</summary>
+            <summary>统一耐受因子：E_tol(t) = max(1 − t, 0.05)；启用动态耐受时优先用 comp 的 E。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactorFromE(System.Single)">
-            <summary>鑰愬彈鍔ㄦ€侊細鐢?mod 缁存姢鐨?E 寰楀埌 E_tol = [max(1鈭扙, 0.05)]^exponent銆</summary>
+            <summary>耐受动态：由 mod 维护的 E 得到 E_tol = [max(1−E, 0.05)]^exponent。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactor(System.Single)">
-            <summary>缁熶竴鑰愬彈绯绘暟锛堟寜涓ラ噸搴?t锛夛細E_tol(t) = [max(1 鈭?t, 0.05)]^exponent锛沘llowToleranceAffectMilk 鍏抽棴鏃舵亽涓?1銆</summary>
+            <summary>统一耐受因子（按严重度 t）：E_tol(t) = [max(1 − t, 0.05)]^exponent；关闭耐受影响时恒为 1。</summary>
         </member>
         <member name="T:MilkCum.Core.Settings.MilkRiskSettings">
             <summary>寤鸿 13锛氫钩鑵虹値/椋庨櫓涓庤€愬彈鐩稿叧璁剧疆鍒嗙粍锛屼究浜庡簭鍒楀寲涓?UI锛汦xposeData 浠嶅啓鏃?key 浠ュ吋瀹瑰瓨妗ｃ€</summary>
@@ -533,12 +539,6 @@
             <param name="pawn">The Pawn which has stuffing-hediffs</param>
             <returns>A filth fitting for the existing stuffing-hediffs, or a Filth_Vomit as fallback.</returns>
         </member>
-        <member name="M:MilkCum.Fluids.Cum.Cumflation.Patch_TransferFluids_Stuff.PrintDebugInfoForSexRoles(rjw.SexProps)">
-            Tim -> Anal Rape -> Joe             := Joe=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
-            Tim -> Anal Riding (Reverse) -> Joe := Joe=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
-            Tim -> Anal Rape -> Eva             := Eva=(Receiver, Reverse) , Tim=(!Receiver,!Reverse)
-            Tim -> Cunnilingus (Reverse) -> Eva := Eva=(Receiver, Reverse) , Tim=(!Receiver,Reverse)
-        </member>
         <member name="M:MilkCum.Fluids.Cum.Cumflation.StuffingUtility.StuffPawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
             <summary>
             Manages Stuffing by adding and increasing the relevant Hediff, checked for each Genital.
@@ -826,6 +826,30 @@
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.overflowTriggeredByKey">
             <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CachedFlowPerDayForDisplay">
+            <summary>池逻辑在 UpdateMilkPools 中写入：本步实际进水流速（池单位/天），供 UI 直接读取，与回缩/溢出等逻辑一致。不存档。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CachedFlowTick">
+            <summary>写入 CachedFlowPerDayForDisplay 时的游戏 tick，用于判断缓存是否有效（60 tick 内有效）。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CachedFlowPerDayByKey">
+            <summary>池逻辑在 UpdateMilkPools 中按 key 写入的每侧流速（池单位/天），供 GetFlowPerDayForBreastPair 等直接读取，不存档。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CachedPressureForDisplay">
+            <summary>池逻辑中按实际进水流速加权的压力/喷乳反射/状态因子，供 GetFlowPerDayBreakdown 悬停显示，不存档。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CachedLetdownForDisplay">
+            <summary>池逻辑中按实际进水流速加权的压力/喷乳反射/状态因子，供 GetFlowPerDayBreakdown 悬停显示，不存档。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CachedConditionsForDisplay">
+            <summary>池逻辑中按实际进水流速加权的压力/喷乳反射/状态因子，供 GetFlowPerDayBreakdown 悬停显示，不存档。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsCachedFlowValid">
+            <summary>缓存是否在 60 tick 内有效。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedFlowPerDayForKey(System.String)">
+            <summary>取指定 key 的缓存流速（池单位/天），无缓存或 key 不存在则返回 0。</summary>
+        </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.LastGatheredTick">
             <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>
         </member>
@@ -910,8 +934,14 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsOverflowState(System.String,System.Single,System.Single)">
             <summary>该侧是否处于溢出状态（已触发溢出且当前高于基础容量），用于停泌乳与回缩判定。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsOverflowStateForDisplay(System.String,System.Single,System.Single)">
+            <summary>与 IsOverflowState 一致，供 UI 流速显示使用：处于回缩状态的侧实际不进水，显示流速时应将该侧计为 0。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFullnessForKey(System.String)">
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedEntriesIfValid">
+            <summary>缓存有效时返回已缓存的池条目列表（只读使用），避免 Hediff/UI 重复分配；无效时返回 null，调用方需 fallback 到 GetBreastPoolEntries。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedPairGroups">
             <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
@@ -1121,10 +1151,10 @@
             <summary>机械体灌满期间额外能�?天：与产奶流�?1:1 平衡，flowPerDay（池单位/天）× nutritionToEnergyFactor；满池后不额外消耗</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetFlowPerDay">
-            <summary>当前产奶流速（池单�?天）= 左池流�?+ 右池流速；�?CompEquallyMilkable 一致。启用四层时：驱动可�?D_eff=L·H(L)，再�?PressureFactor(P)×R（见 Docs 第十二节）</summary>
+            <summary>当前产奶流速（池单位/天）。仅读池逻辑缓存，缓存未刷新时返回 0（逻辑由 UpdateMilkPools 统一维护）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetFlowPerDayBreakdown">
-            <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示「产奶效率：1(300%)/天」及「驱动�? 饥饿×1 状态�? …」</summary>
+            <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；因子仍按侧计算供 UI 显示。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown">
             <summary>产奶流速拆解：总流速与各乘数因子（�?GetFlowPerDay 一致），用�?UI 显示</summary>
@@ -1270,7 +1300,7 @@
             <summary>健康页悬停：给定乳房 hediff（须�?GetBreastList 中或与列表中某项 def+Part 一致），返回其对应的池 key（与 GetBreastPoolEntries 一致）。统一�?baseKey_i，每对唯一</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetFlowPerDayForBreastPair(Verse.Pawn,System.String)">
-            <summary>该对乳房的左右乳产奶流速（池单�?天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目</summary>
+            <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；仅读池逻辑每侧缓存，缓存未刷新时返回 0 流速（逻辑由 UpdateMilkPools 统一维护）。entries 优先复用 Comp 的缓存，避免重复构建列表。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPressureFactorForSide(Verse.Pawn,System.String)">
             <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量</summary>

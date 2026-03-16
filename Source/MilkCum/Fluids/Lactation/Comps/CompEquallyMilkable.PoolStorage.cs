@@ -24,6 +24,10 @@ public partial class CompEquallyMilkable
     private bool IsOverflowState(string key, float cur, float baseCap)
         => overflowTriggeredByKey.TryGetValue(key, out bool ov) && ov && cur > baseCap;
 
+    /// <summary>与 IsOverflowState 一致，供 UI 流速显示使用：处于回缩状态的侧实际不进水，显示流速时应将该侧计为 0。</summary>
+    internal bool IsOverflowStateForDisplay(string key, float cur, float baseCap)
+        => IsOverflowState(key, cur, baseCap);
+
     /// <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
     public float GetFullnessForKey(string key)
     {
@@ -40,6 +44,16 @@ public partial class CompEquallyMilkable
         cachedEntriesTick = now;
         cachedPairGroups = null;
         return cachedEntries;
+    }
+
+    /// <summary>缓存有效时返回已缓存的池条目列表（只读使用），避免 Hediff/UI 重复分配；无效时返回 null，调用方需 fallback 到 GetBreastPoolEntries。</summary>
+    internal List<FluidPoolEntry> GetCachedEntriesIfValid()
+    {
+        if (cachedEntries == null || Find.TickManager == null) return null;
+        int now = Find.TickManager.TicksGame;
+        if ((now - cachedEntriesTick) <= CacheInvalidateInterval)
+            return cachedEntries;
+        return null;
     }
 
     /// <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>

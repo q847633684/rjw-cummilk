@@ -233,39 +233,25 @@ public static class PawnMilkPoolExtensions
         return baseKey + "_" + i;
     }
 
-    /// <summary>该对乳房的左右乳产奶流速（池单�?天）及各自流速倍率；流速按侧含压力与喷乳反射。单次遍历条目</summary>
+    /// <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；仅读池逻辑每侧缓存，缓存未刷新时返回 0 流速（逻辑由 UpdateMilkPools 统一维护）。entries 优先复用 Comp 的缓存，避免重复构建列表。</summary>
     public static (float flowLeft, float flowRight, float multLeft, float multRight) GetFlowPerDayForBreastPair(this Pawn pawn, string poolKey)
     {
         if (pawn == null || string.IsNullOrEmpty(poolKey)) return (0f, 0f, 0f, 0f);
-        var comp = pawn.LactatingHediffComp();
-        if (comp == null) return (0f, 0f, 0f, 0f);
+        if (pawn.LactatingHediffComp() == null) return (0f, 0f, 0f, 0f);
         var milkComp = pawn.CompEquallyMilkable();
-        var b = comp.GetFlowPerDayBreakdown();
-        if (b.RjwSum < 0.001f) return (0f, 0f, 0f, 0f);
-        var entries = pawn.GetBreastPoolEntries();
-        float sumWeighted = 0f;
-        float weightL = 0f, weightR = 0f, multL = 0f, multR = 0f;
-        foreach (var e in entries)
+        var entries = milkComp?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        if (entries.Count == 0) return (0f, 0f, 0f, 0f);
+        string keyL = poolKey + "_L", keyR = poolKey + "_R";
+        float multL = 0f, multR = 0f;
+        for (int i = 0; i < entries.Count; i++)
         {
-            float conditionsE = pawn.GetConditionsForSide(e.Key);
-            float pressureE = 1f;
-            if (milkComp != null)
-            {
-                float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
-                float fullE = milkComp.GetFullnessForKey(e.Key);
-                pressureE = MilkCumSettings.enablePressureFactor
-                    ? MilkCumSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
-                    : (fullE >= stretch ? 0f : 1f);
-            }
-            float weight = conditionsE * e.FlowMultiplier * pressureE * comp.GetLetdownReflexFlowMultiplier(e.Key);
-            sumWeighted += weight;
-            if (e.Key == poolKey + "_L") { weightL = weight; multL = e.FlowMultiplier; }
-            else if (e.Key == poolKey + "_R") { weightR = weight; multR = e.FlowMultiplier; }
+            var e = entries[i];
+            if (e.Key == keyL) multL = e.FlowMultiplier;
+            else if (e.Key == keyR) multR = e.FlowMultiplier;
         }
-        if (sumWeighted < 1E-5f) return (0f, 0f, 0f, 0f);
-        float flowL = b.TotalFlow * weightL / sumWeighted;
-        float flowR = b.TotalFlow * weightR / sumWeighted;
-        return (flowL, flowR, multL, multR);
+        if (milkComp == null || !milkComp.IsCachedFlowValid())
+            return (0f, 0f, multL, multR);
+        return (milkComp.GetCachedFlowPerDayForKey(keyL), milkComp.GetCachedFlowPerDayForKey(keyR), multL, multR);
     }
 
     /// <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量</summary>
@@ -273,7 +259,7 @@ public static class PawnMilkPoolExtensions
     {
         var milkComp = pawn?.CompEquallyMilkable();
         if (milkComp == null || string.IsNullOrEmpty(sideKey)) return 1f;
-        var entries = pawn.GetBreastPoolEntries();
+        var entries = milkComp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
         if (entries.Count == 0) return 1f;
         var e = entries.FirstOrDefault(x => x.Key == sideKey);
         if (string.IsNullOrEmpty(e.Key)) return 1f;
@@ -298,9 +284,10 @@ public static class PawnMilkPoolExtensions
     public static List<(string key, float fullness, float capacity, bool isLeft)> GetPoolEntriesForPoolKey(this Pawn pawn, string poolKey)
     {
         var list = new List<(string key, float fullness, float capacity, bool isLeft)>();
-        if (pawn?.CompEquallyMilkable() == null || string.IsNullOrEmpty(poolKey)) return list;
-        var comp = pawn.CompEquallyMilkable();
-        foreach (var e in pawn.GetBreastPoolEntries())
+        var comp = pawn?.CompEquallyMilkable();
+        if (comp == null || string.IsNullOrEmpty(poolKey)) return list;
+        var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        foreach (var e in entries)
         {
             if (e.Key != poolKey && e.Key != poolKey + "_L" && e.Key != poolKey + "_R") continue;
             float f = comp.GetFullnessForKey(e.Key);

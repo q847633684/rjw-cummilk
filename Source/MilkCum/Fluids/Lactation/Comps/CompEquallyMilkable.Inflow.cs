@@ -26,11 +26,25 @@ public partial class CompEquallyMilkable
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
-        if (lactatingComp == null || lactatingComp.RemainingDays <= 0f) { return; }
+        if (lactatingComp == null || lactatingComp.RemainingDays <= 0f)
+        {
+            CachedFlowPerDayForDisplay = 0f;
+            CachedFlowPerDayByKey = null;
+            CachedPressureForDisplay = CachedLetdownForDisplay = CachedConditionsForDisplay = 1f;
+            CachedFlowTick = Find.TickManager.TicksGame;
+            return;
+        }
         float currentLactation = lactatingComp.CurrentLactationAmount;
         float effectiveLForFlow = lactatingComp.EffectiveLactationAmountForFlow;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
-        if (currentLactation <= 0f || hungerFactor <= 0f) { return; }
+        if (currentLactation <= 0f || hungerFactor <= 0f)
+        {
+            CachedFlowPerDayForDisplay = 0f;
+            CachedFlowPerDayByKey = null;
+            CachedPressureForDisplay = CachedLetdownForDisplay = CachedConditionsForDisplay = 1f;
+            CachedFlowTick = Find.TickManager.TicksGame;
+            return;
+        }
         float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
         float condFactor = Pawn.GetMilkFlowMultiplierFromConditions();
         float geneFactor = Pawn.GetMilkFlowMultiplierFromGenes();
@@ -82,6 +96,9 @@ public partial class CompEquallyMilkable
                     fullnessBeforePerKey[e.Key] = breastFullness.TryGetValue(e.Key, out float v) ? v : 0f;
         }
         var pairGroups = GetCachedPairGroups();
+        float totalFlowThisStep = 0f;
+        float pressureWeightedSum = 0f, letdownWeightedSum = 0f, conditionsWeightedSum = 0f;
+        CachedFlowPerDayByKey = new Dictionary<string, float>();
         for (int g = 0; g < pairGroups.Count; g++)
         {
             var list = pairGroups[g];
@@ -104,10 +121,19 @@ public partial class CompEquallyMilkable
                     : (curRight >= stretchRight ? 0f : 1f);
                 float conditionsLeft = Pawn.GetConditionsForSide(leftE.Key);
                 float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
-                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f);
-                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f);
+                float letdownLeft = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f;
+                float letdownRight = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f;
+                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft;
+                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight;
                 if (IsOverflowState(leftE.Key, curLeft, leftCap)) flowLeft = 0f;
                 if (IsOverflowState(rightE.Key, curRight, rightCap)) flowRight = 0f;
+                totalFlowThisStep += flowLeft + flowRight;
+                pressureWeightedSum += flowLeft * pressureLeft + flowRight * pressureRight;
+                letdownWeightedSum += flowLeft * letdownLeft + flowRight * letdownRight;
+                conditionsWeightedSum += flowLeft * conditionsLeft + flowRight * conditionsRight;
+                float toPerDay = 60000f / 60f;
+                CachedFlowPerDayByKey[leftE.Key] = flowLeft * toPerDay;
+                CachedFlowPerDayByKey[rightE.Key] = flowRight * toPerDay;
                 var pairPool = new FluidPoolState();
                 pairPool.SetFrom(curLeft, curRight, 0);
                 float overflow = pairPool.TickGrowth(flowLeft, flowRight, leftCap, rightCap, stretchLeft, stretchRight);
@@ -130,8 +156,14 @@ public partial class CompEquallyMilkable
                         ? MilkCumSettings.GetPressureFactor(current / Mathf.Max(0.001f, stretchCap))
                         : (current >= stretchCap ? 0f : 1f);
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
-                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * (MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f);
+                    float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
+                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE;
                     if (IsOverflowState(e.Key, current, e.Capacity)) flowPerTick = 0f;
+                    totalFlowThisStep += flowPerTick;
+                    pressureWeightedSum += flowPerTick * pressure;
+                    letdownWeightedSum += flowPerTick * letdownE;
+                    conditionsWeightedSum += flowPerTick * conditionsE;
+                    CachedFlowPerDayByKey[e.Key] = flowPerTick * (60000f / 60f);
                     var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
                     breastFullness[e.Key] = newFullness;
                     if (overflow > 0f) overflowTriggeredByKey[e.Key] = true;
@@ -139,6 +171,13 @@ public partial class CompEquallyMilkable
                 }
             }
         }
+        // 供 UI 读取：池逻辑实际进水流速（池单位/天）与流速加权因子，与回缩/溢出等完全一致
+        CachedFlowPerDayForDisplay = totalFlowThisStep * (60000f / 60f);
+        CachedFlowTick = Find.TickManager.TicksGame;
+        float denom = totalFlowThisStep >= 1E-5f ? totalFlowThisStep : 1f;
+        CachedPressureForDisplay = totalFlowThisStep >= 1E-5f ? pressureWeightedSum / denom : 1f;
+        CachedLetdownForDisplay = totalFlowThisStep >= 1E-5f ? letdownWeightedSum / denom : 1f;
+        CachedConditionsForDisplay = totalFlowThisStep >= 1E-5f ? conditionsWeightedSum / denom : (Pawn != null ? Pawn.GetMilkFlowMultiplierFromConditions() : 1f);
         float healthPercent = 1f;
         if (Pawn?.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);

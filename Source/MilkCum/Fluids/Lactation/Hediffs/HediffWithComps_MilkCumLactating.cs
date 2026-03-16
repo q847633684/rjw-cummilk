@@ -377,7 +377,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public float GetLetdownReflex()
     {
         if (!MilkCumSettings.enableLetdownReflex) return 1f;
-        var entries = Pawn?.GetBreastPoolEntries();
+        var entries = Pawn?.CompEquallyMilkable()?.GetCachedEntriesIfValid() ?? Pawn?.GetBreastPoolEntries();
         if ((entries?.Count ?? 0) == 0) return 0f;
         float sumR = 0f;
         int n = 0;
@@ -419,7 +419,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public float GetLetdownReflexFlowMultiplier()
     {
         if (!MilkCumSettings.enableLetdownReflex) return 1f;
-        var entries = Pawn?.GetBreastPoolEntries();
+        var entries = Pawn?.CompEquallyMilkable()?.GetCachedEntriesIfValid() ?? Pawn?.GetBreastPoolEntries();
         if ((entries?.Count ?? 0) == 0) return 1f;
         float sum = 0f;
         foreach (var e in entries)
@@ -433,7 +433,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         if (!MilkCumSettings.enableLetdownReflex || deltaTMinutes <= 0f) return;
         if (letdownReflexByKey == null || letdownReflexByKey.Count == 0) return;
         float lambda = Mathf.Max(0.001f, MilkCumSettings.letdownReflexDecayLambda);
-        var validKeys = Pawn?.GetBreastPoolEntries()?.Select(e => e.Key).ToHashSet();
+        var entries = Pawn?.CompEquallyMilkable()?.GetCachedEntriesIfValid() ?? Pawn?.GetBreastPoolEntries();
+        var validKeys = entries?.Select(e => e.Key).ToHashSet();
         var keys = letdownReflexByKey.Keys.ToList();
         var toRemove = new List<string>();
         foreach (string key in keys)
@@ -640,20 +641,20 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float flow = GetFlowPerDay();
         return flow * MilkCumSettings.nutritionToEnergyFactor;
     }
-    /// <summary>当前产奶流速（池单�?天）= 左池流�?+ 右池流速；�?CompEquallyMilkable 一致。启用四层时：驱动可�?D_eff=L·H(L)，再�?PressureFactor(P)×R（见 Docs 第十二节）</summary>
+    /// <summary>当前产奶流速（池单位/天）。仅读池逻辑缓存，缓存未刷新时返回 0（逻辑由 UpdateMilkPools 统一维护）。</summary>
     internal float GetFlowPerDay()
     {
-        var b = GetFlowPerDayBreakdown();
-        return b.TotalFlow;
+        var milkComp = CompEquallyMilkable;
+        if (milkComp == null || !milkComp.IsCachedFlowValid()) return 0f;
+        return milkComp.CachedFlowPerDayForDisplay;
     }
 
-    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示「产奶效率：1(300%)/天」及「驱动�? 饥饿×1 状态�? …」</summary>
+    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；因子仍按侧计算供 UI 显示。</summary>
     internal FlowBreakdown GetFlowPerDayBreakdown()
     {
         var r = new FlowBreakdown();
-        if (CompEquallyMilkable == null) return r;
-        float maxF = Mathf.Max(0.001f, CompEquallyMilkable.maxFullness);
-        float fullness = CompEquallyMilkable.Fullness;
+        var milkComp = CompEquallyMilkable;
+        if (milkComp == null) return r;
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactationAmount <= 0f || hungerFactor <= 0f) return r;
         r.Drive = MilkCumSettings.GetEffectiveDrive(EffectiveLactationAmountForFlow);
@@ -664,67 +665,15 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float flowLeftMult = Pawn.GetMilkFlowMultiplierFromRJW_Left();
         float flowRightMult = Pawn.GetMilkFlowMultiplierFromRJW_Right();
         r.RjwSum = flowLeftMult + flowRightMult;
-        float flow = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting * r.RjwSum;
-        var entries = Pawn.GetBreastPoolEntries();
-        var milkComp = CompEquallyMilkable;
-        // 压力、喷乳反射、状态（如乳腺炎）均按「哪对乳房的哪一侧」分别计�?
-        if (entries.Count > 0 && milkComp != null)
+        if (!milkComp.IsCachedFlowValid())
         {
-            float baseWithoutConditions = r.Drive * r.Hunger * r.Genes * r.Setting;
-            float flowWithAllFactors = 0f;
-            float sumWeightedLetdown = 0f;
-            float sumWeightedPressure = 0f;
-            float sumWeightedConditions = 0f;
-            foreach (var e in entries)
-            {
-                float conditionsE = Pawn.GetConditionsForSide(e.Key);
-                float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
-                float fullE = milkComp.GetFullnessForKey(e.Key);
-                float pressureE = MilkCumSettings.enablePressureFactor
-                    ? MilkCumSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
-                    : (fullE >= stretch ? 0f : 1f);
-                float letdownE = MilkCumSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier(e.Key) : 1f;
-                float contrib = conditionsE * e.FlowMultiplier * pressureE * letdownE;
-                flowWithAllFactors += contrib;
-                sumWeightedLetdown += e.FlowMultiplier * letdownE;
-                sumWeightedPressure += e.FlowMultiplier * pressureE * letdownE;
-                sumWeightedConditions += e.FlowMultiplier * conditionsE * pressureE * letdownE;
-            }
-            r.Pressure = sumWeightedLetdown >= 1E-5f ? sumWeightedPressure / sumWeightedLetdown : (MilkCumSettings.enablePressureFactor ? MilkCumSettings.GetPressureFactor(fullness / maxF) : (fullness >= maxF ? 0f : 1f));
-            r.Letdown = r.RjwSum >= 1E-5f ? sumWeightedLetdown / r.RjwSum : (MilkCumSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier() : 1f);
-            r.Conditions = flowWithAllFactors >= 1E-5f ? sumWeightedConditions / flowWithAllFactors : r.Conditions;
-            if (flowWithAllFactors >= 1E-5f)
-            {
-                flow = baseWithoutConditions * flowWithAllFactors;
-                // 与 UpdateMilkPools 的 basePerDay 一致：实际进水用了全局状态倍率，扣营养也应用同一倍率，保证 营养- ≈ 乳池+
-                flow *= Pawn.GetMilkFlowMultiplierFromConditions();
-            }
-            else
-            {
-                float basePerDayFallback = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;
-                flow = basePerDayFallback * r.RjwSum;
-                if (!MilkCumSettings.enablePressureFactor && fullness >= maxF) flow = 0f;
-                else if (MilkCumSettings.enablePressureFactor) flow *= r.Pressure;
-                if (MilkCumSettings.enableLetdownReflex) flow *= r.Letdown;
-            }
+            r.TotalFlow = 0f;
+            return r;
         }
-        else
-        {
-            float basePerDay = r.Drive * r.Hunger * r.Conditions * r.Genes * r.Setting;
-            if (MilkCumSettings.enablePressureFactor)
-            {
-                r.Pressure = MilkCumSettings.GetPressureFactor(fullness / maxF);
-                flow = basePerDay * r.RjwSum * r.Pressure;
-            }
-            else
-            {
-                r.Pressure = fullness >= maxF ? 0f : 1f;
-                flow = fullness >= maxF ? 0f : basePerDay * r.RjwSum;
-            }
-            r.Letdown = MilkCumSettings.enableLetdownReflex ? GetLetdownReflexFlowMultiplier() : 1f;
-            if (MilkCumSettings.enableLetdownReflex) flow *= r.Letdown;
-        }
-        r.TotalFlow = flow;
+        r.TotalFlow = milkComp.CachedFlowPerDayForDisplay;
+        r.Pressure = milkComp.CachedPressureForDisplay;
+        r.Letdown = milkComp.CachedLetdownForDisplay;
+        r.Conditions = milkComp.CachedConditionsForDisplay;
         return r;
     }
 
@@ -816,7 +765,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lines.Add("  " + "EM.PoolBreastStretchCapLine".Translate(maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
             };
 
-            // 3. 产奶流速（池/天）：与 UpdateMilkPools 一致，满池时仍按压力曲线有微量进水，故始终显示 GetFlowPerDayBreakdown 的总流速
+            // 3. 产奶流速（池/天）：总流速仅读池逻辑在 UpdateMilkPools 中写入的缓存，保证 UI 与池逻辑单一数据源一致
             lines.Add("EM.PoolSectionFlow".Translate());
             if (growthSpeed > 0f)
             {
