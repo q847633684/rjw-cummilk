@@ -645,8 +645,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     internal float GetFlowPerDay()
     {
         var milkComp = CompEquallyMilkable;
-        if (milkComp == null || !milkComp.IsCachedFlowValid()) return 0f;
-        return milkComp.CachedFlowPerDayForDisplay;
+        return milkComp?.GetTotalFlowPerDayCached() ?? 0f;
     }
 
     /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；因子仍按侧计算供 UI 显示。</summary>

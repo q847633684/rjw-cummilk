@@ -88,17 +88,18 @@ public partial class CompEquallyMilkable
         float stretchTotal = 0f;
         for (int i = 0; i < entries.Count; i++)
             stretchTotal += entries[i].Capacity * PoolModelConstants.StretchCapFactor;
-        var fullnessBeforePerKey = new Dictionary<string, float>();
+        fullnessBeforePerKeyCache.Clear();
         if (MilkCumSettings.lactationPoolTickLog && Pawn != null)
         {
             foreach (var e in entries)
                 if (!string.IsNullOrEmpty(e.Key))
-                    fullnessBeforePerKey[e.Key] = breastFullness.TryGetValue(e.Key, out float v) ? v : 0f;
+                    fullnessBeforePerKeyCache[e.Key] = breastFullness.TryGetValue(e.Key, out float v) ? v : 0f;
         }
         var pairGroups = GetCachedPairGroups();
         float totalFlowThisStep = 0f;
         float pressureWeightedSum = 0f, letdownWeightedSum = 0f, conditionsWeightedSum = 0f;
-        CachedFlowPerDayByKey = new Dictionary<string, float>();
+        CachedFlowPerDayByKey ??= new Dictionary<string, float>();
+        CachedFlowPerDayByKey.Clear();
         for (int g = 0; g < pairGroups.Count; g++)
         {
             var list = pairGroups[g];
@@ -125,8 +126,10 @@ public partial class CompEquallyMilkable
                 float letdownRight = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f;
                 float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft;
                 float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight;
-                if (IsOverflowState(leftE.Key, curLeft, leftCap)) flowLeft = 0f;
-                if (IsOverflowState(rightE.Key, curRight, rightCap)) flowRight = 0f;
+                if (IsOverflowState(leftE.Key, curLeft, leftCap))
+                    flowLeft *= Mathf.Clamp01(MilkCumSettings.overflowResidualFlowFactor);
+                if (IsOverflowState(rightE.Key, curRight, rightCap))
+                    flowRight *= Mathf.Clamp01(MilkCumSettings.overflowResidualFlowFactor);
                 totalFlowThisStep += flowLeft + flowRight;
                 pressureWeightedSum += flowLeft * pressureLeft + flowRight * pressureRight;
                 letdownWeightedSum += flowLeft * letdownLeft + flowRight * letdownRight;
@@ -158,7 +161,8 @@ public partial class CompEquallyMilkable
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
                     float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
                     float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE;
-                    if (IsOverflowState(e.Key, current, e.Capacity)) flowPerTick = 0f;
+                    if (IsOverflowState(e.Key, current, e.Capacity))
+                        flowPerTick *= Mathf.Clamp01(MilkCumSettings.overflowResidualFlowFactor);
                     totalFlowThisStep += flowPerTick;
                     pressureWeightedSum += flowPerTick * pressure;
                     letdownWeightedSum += flowPerTick * letdownE;
@@ -178,12 +182,28 @@ public partial class CompEquallyMilkable
         CachedPressureForDisplay = totalFlowThisStep >= 1E-5f ? pressureWeightedSum / denom : 1f;
         CachedLetdownForDisplay = totalFlowThisStep >= 1E-5f ? letdownWeightedSum / denom : 1f;
         CachedConditionsForDisplay = totalFlowThisStep >= 1E-5f ? conditionsWeightedSum / denom : (Pawn != null ? Pawn.GetMilkFlowMultiplierFromConditions() : 1f);
+        // 清理溢出标记中已不存在的 key，防止字典无限增长
+        if (overflowTriggeredByKey != null && overflowTriggeredByKey.Count > 0)
+        {
+            var validKeys = new HashSet<string>();
+            foreach (var e in entries)
+                if (!string.IsNullOrEmpty(e.Key))
+                    validKeys.Add(e.Key);
+            var keys = new List<string>(overflowTriggeredByKey.Keys);
+            for (int i = 0; i < keys.Count; i++)
+            {
+                string k = keys[i];
+                if (!validKeys.Contains(k))
+                    overflowTriggeredByKey.Remove(k);
+            }
+        }
+
         float healthPercent = 1f;
         if (Pawn?.health?.summaryHealth != null)
             healthPercent = Mathf.Clamp(Pawn.health.summaryHealth.SummaryHealthPercent, 0.2f, 1f);
         float shrinkFactor = (1f - PoolModelConstants.ShrinkPerStep) * healthPercent;
         float reabsorbedPoolThisStep = 0f;
-        var reabsorbedPerKey = new Dictionary<string, float>();
+        reabsorbedPerKeyCache.Clear();
         foreach (var e in entries)
         {
             if (!breastFullness.TryGetValue(e.Key, out float cur)) continue;
@@ -195,7 +215,7 @@ public partial class CompEquallyMilkable
             if (!IsOverflowState(e.Key, cur, e.Capacity)) continue;
             float shrinkAmount = (cur - e.Capacity) * (1f - shrinkFactor);
             reabsorbedPoolThisStep += shrinkAmount;
-            reabsorbedPerKey[e.Key] = shrinkAmount;
+            reabsorbedPerKeyCache[e.Key] = shrinkAmount;
             breastFullness[e.Key] = e.Capacity + (cur - e.Capacity) * shrinkFactor;
             if (breastFullness[e.Key] <= e.Capacity) overflowTriggeredByKey[e.Key] = false;
         }
@@ -204,7 +224,7 @@ public partial class CompEquallyMilkable
             ? reabsorbedPoolThisStep / PoolModelConstants.Interval60PerDay * PoolModelConstants.NutritionPerPoolUnit
                 * Mathf.Clamp01(MilkCumSettings.reabsorbNutritionEfficiency)
             : 0f;
-        float addBack = 0f;
+            float addBack = 0f;
         if (reabsorbedPoolThisStep > 0f && MilkCumSettings.reabsorbNutritionEnabled && Pawn != null)
         {
             int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
@@ -233,18 +253,18 @@ public partial class CompEquallyMilkable
             foreach (var e in entries)
             {
                 if (string.IsNullOrEmpty(e.Key)) continue;
-                float before = fullnessBeforePerKey.TryGetValue(e.Key, out float b) ? b : 0f;
+                float before = fullnessBeforePerKeyCache.TryGetValue(e.Key, out float b) ? b : 0f;
                 float after = breastFullness.TryGetValue(e.Key, out float a) ? a : 0f;
-                float reabsorb = reabsorbedPerKey.TryGetValue(e.Key, out float r) ? r : 0f;
+                float reabsorb = reabsorbedPerKeyCache.TryGetValue(e.Key, out float r) ? r : 0f;
                 float inflow = after - before + reabsorb;
                 totalInflow += inflow;
             }
             foreach (var e in entries)
             {
                 if (string.IsNullOrEmpty(e.Key)) continue;
-                float before = fullnessBeforePerKey.TryGetValue(e.Key, out float b) ? b : 0f;
+                float before = fullnessBeforePerKeyCache.TryGetValue(e.Key, out float b) ? b : 0f;
                 float after = breastFullness.TryGetValue(e.Key, out float a) ? a : 0f;
-                float reabsorb = reabsorbedPerKey.TryGetValue(e.Key, out float r) ? r : 0f;
+                float reabsorb = reabsorbedPerKeyCache.TryGetValue(e.Key, out float r) ? r : 0f;
                 float inflow = after - before + reabsorb;
                 float nutritionShare = totalInflow >= PoolModelConstants.Epsilon ? extraFall60 * (inflow / totalInflow) : 0f;
                 MilkCumSettings.PoolTickLog($"  池 {e.Key}: 营养-{nutritionShare:F4} 进+{inflow:F4} 回缩-{reabsorb:F4} 满={after:F3}");

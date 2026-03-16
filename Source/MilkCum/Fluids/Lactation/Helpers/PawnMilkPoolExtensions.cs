@@ -251,7 +251,7 @@ public static class PawnMilkPoolExtensions
         }
         if (milkComp == null || !milkComp.IsCachedFlowValid())
             return (0f, 0f, multL, multR);
-        return (milkComp.GetCachedFlowPerDayForKey(keyL), milkComp.GetCachedFlowPerDayForKey(keyR), multL, multR);
+        return (milkComp.GetFlowPerDayForKeyCached(keyL), milkComp.GetFlowPerDayForKeyCached(keyR), multL, multR);
     }
 
     /// <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量</summary>

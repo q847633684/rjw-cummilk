@@ -124,6 +124,8 @@ internal class MilkCumSettings : ModSettings
 	public static float lactationLevelCapDurationMultiplier = 1.5f;
 	/// <summary>泌乳药物单次在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 一并叠加），默认 0.044；若改 XML 请同步更新此处说明。</summary>
 	public static float ProlactinToleranceGainPerDose = 0.044f;
+	/// <summary>溢出/回缩状态侧保留的残余进水倍率（0~1），0 = 完全停进水（默认），0.1～0.2 = 轻微「半堵塞」仍有少量进入。</summary>
+	public static float overflowResidualFlowFactor = 0f;
 
 	/// <summary>药物泌乳容量用有效数 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≥0.5、E=1）时剩余天数 ≥ 基准天数。B=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
 	public static float GetEffectiveBaseValueTForDecay()

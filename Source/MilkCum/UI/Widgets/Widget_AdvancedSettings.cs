@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Comps;
 using MilkCum.Core.Utils;
 using RimWorld;
 using UnityEngine;
@@ -85,6 +86,15 @@ public class Widget_AdvancedSettings
 			else
 			{
 				string debug = comp.CompDebugString();
+				var milkComp = sel.CompEquallyMilkable();
+				if (milkComp != null)
+				{
+					int now = Find.TickManager?.TicksGame ?? -1;
+					int age = milkComp.IsCachedFlowValid() && now >= 0 ? now - milkComp.CachedFlowTick : -1;
+					debug += $"\n\n[MilkCum.Cache]\n" +
+					         $"  TotalFlowPerDay = {milkComp.CachedFlowPerDayForDisplay:F3} (age {age} ticks)\n" +
+					         $"  Pressure = {milkComp.CachedPressureForDisplay:F3}, Letdown = {milkComp.CachedLetdownForDisplay:F3}, Conditions = {milkComp.CachedConditionsForDisplay:F3}";
+				}
 				float h = Text.CalcHeight(debug, list.ColumnWidth);
 				Rect rDebug = list.GetRect(Mathf.Min(h, 200f));
 				Widgets.Label(rDebug, debug);
