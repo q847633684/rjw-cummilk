@@ -69,9 +69,6 @@ public class Widget_DefaultSetting
         listing.Label("EM.SectionDesc_DefaultByRole".Translate());
         GUI.color = Color.white;
         listing.Gap(4f);
-        listing.Label("EM.SectionDesc_MilkingSelf".Translate(), -1f);
-        listing.Gap(2f);
-        listing.CheckboxLabeled(Lang.Milking + " (" + Lang.Self + ")", ref setting.allowMilkingSelf);
         listing.CheckboxLabeled("EM.DefaultSetting_CanBeFed".Translate(), ref setting.canBeFed);
         GUI.color = Color.gray;
         listing.Label("EM.DefaultSetting_CanBeFedTip".Translate(), -1f);

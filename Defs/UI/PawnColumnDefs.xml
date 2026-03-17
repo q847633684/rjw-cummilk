@@ -1,32 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
-	<PawnColumnDef>
-		<defName>Milk_AllowSelf</defName>
-		<headerIcon>ui/icons/trainables/tameness</headerIcon>
-		<workerClass>MilkCum.UI.PawnColumnWorker_MilkAllowSelf</workerClass>
-		<sortable>true</sortable>
-		<paintable>true</paintable>
-		<width>80</width>
-	</PawnColumnDef>
-
-	<PawnColumnDef>
-		<defName>Milk_SealCum</defName>
-		<label>EM.Milk_SealCum</label>
-		<workerClass>MilkCum.UI.PawnColumnWorker_MilkSealCum</workerClass>
-		<sortable>true</sortable>
-		<paintable>true</paintable>
-		<width>64</width>
-	</PawnColumnDef>
-
-	<PawnColumnDef>
-		<defName>Milk_AllowDeflate</defName>
-		<label>EM.Milk_AllowDeflate</label>
-		<workerClass>MilkCum.UI.PawnColumnWorker_MilkAllowDeflate</workerClass>
-		<sortable>true</sortable>
-		<paintable>true</paintable>
-		<width>80</width>
-	</PawnColumnDef>
-
  	<PawnColumnDef>
 		<defName>Milk_MilkType</defName>
 		<workerClass>MilkCum.UI.PawnColumnWorker_MilkType</workerClass>

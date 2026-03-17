@@ -995,6 +995,9 @@
         <member name="T:MilkCum.Fluids.Lactation.Comps.CompPartialMilk">
             <summary>未满一瓶的人奶 Comp：fillAmount 为已取池单位（&lt;1），用于营养计算与存档。</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Data.MilkSettings.allowSelfConsumeProducts">
+            <summary>允许自己食用产出的奶/精液制品。关则自己也不能吃自己的制品。默认关，由「允许自己」里的「吃奶」勾选。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Lactation.Givers.JobGiver_ActiveSuckle">
             <summary>
             Allow non-humanlike to breastfeed
@@ -1222,6 +1225,12 @@
             返回 true=允许，false=不允许，null=交回内置逻辑（allowedConsumers 名单，空=仅产主本人）。
             按注册顺序调用，第一个返回非 null 的结果即采用。
             </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.AllowSelfConsumeProducts(Verse.Pawn)">
+            <summary>是否允许自己食用产出的奶/精液制品。默认 false。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.SetAllowSelfConsumeProducts(Verse.Pawn,System.Boolean)">
+            <summary>设置是否允许自己食用产出的奶/精液制品。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.AllowedToBreastFeed(Verse.Pawn,Verse.Pawn)">
             <summary>指定“谁可以使用我的奶”：产奶者名单，默认预填子女+伴侣；吸奶与挤奶均按此名单</summary>
@@ -1688,9 +1697,6 @@
         <member name="T:MilkCum.UI.Dialog_GeneConfig">
             <summary>奶类型基因配置弹窗。若后续增加选项导致内容超出窗口，可改为可滚动或按内容计算高度。</summary>
         </member>
-        <member name="T:MilkCum.UI.PawnColumnWorker_MilkAllowDeflate">
-            <summary>濂惰〃鏍煎垪锛氭槸鍚﹀厑璁告硠绮撅紙鍘诲仛娉勫埌妗?娓呮磥/闅忓湴鐨?Job锛夈€</summary>
-        </member>
         <member name="T:MilkCum.UI.PawnColumnWorker_MilkEquivalentDose">
             <summary>殖民者列：当前等效剂量（只读，由 L 与公式推导）。</summary>
         </member>
@@ -1699,9 +1705,6 @@
         </member>
         <member name="T:MilkCum.UI.PawnColumnWorker_MilkRemainingDays">
             <summary>建议 7：奶表格中显示泌乳剩余天数。</summary>
-        </member>
-        <member name="T:MilkCum.UI.PawnColumnWorker_MilkSealCum">
-            <summary>濂惰〃鏍煎垪锛氬浣忥紙闃叉绮炬恫鑷劧娉勬紡锛夈€備粎浜哄舰鎴愪汉涓旀湁闃撮亾鏃舵樉绀恒€</summary>
         </member>
         <member name="M:MilkCum.UI.PawnColumnWorker_MilkType.GetMinHeaderHeight(RimWorld.PawnTable)">
             <summary>
@@ -1750,11 +1753,28 @@
             <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>
         </member>
         <member name="T:MilkCum.UI.Window_ProducerRestrictions">
-            <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+            <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。筛选用：全部/殖民者/囚犯；表格列：姓名、关系、可以吸奶/挤奶、可以使用制品。</summary>
         </member>
-        <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawListSection(UnityEngine.Rect,System.Single@,System.Collections.Generic.List{Verse.Pawn},System.Collections.Generic.List{Verse.Pawn},System.String,System.String,System.Collections.Generic.List{Verse.Pawn},System.Collections.Generic.HashSet{Verse.Pawn})">
-            <param name="displayList">用于显示「已允许」的名单；可与 modifyList 相同，或为空时用默认名单以仅显示。</param>
-            <param name="modifyList">实际被「允许/禁止」按钮修改的名单。</param>
+        <member name="F:MilkCum.UI.Window_ProducerRestrictions.AllowSelfNarrowThreshold">
+            <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
+        </member>
+        <member name="F:MilkCum.UI.Window_ProducerRestrictions.filter">
+            <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.FillFilteredPawns(System.Collections.Generic.List{Verse.Pawn})">
+            <summary>按当前筛选填充列表（排除产奶者自己），不排序。调用方负责 Clear。使用 RimWorld 实际返回的 List&lt;Pawn&gt; 直接 for 遍历，避免 IEnumerable 枚举器分配。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.GetRelationLabel(Verse.Pawn,Verse.Pawn)">
+            <summary>产奶者与另一人的关系标签；无关系或异常时返回「—」。兼容无 GetGenderSpecificLabel 的 RimWorld 版本。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedSuckler(Verse.Pawn,System.Collections.Generic.List{Verse.Pawn})">
+            <summary>是否在「可以吸奶/挤奶」上显示为允许。名单非空时看名单；空时看 defaultSucklersWhenEmpty（若为 null 则现场取默认）。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawAllowSelfSection(System.Single,System.Single@,System.Single)">
+            <summary>绘制「允许自己」（对自己的操作）：挤奶、吃奶、泄精、塞住。窄屏时两行布局；每项带 Tooltip。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawFilterTabs(UnityEngine.Rect)">
+            <summary>筛选 Tab：全部 | 殖民者 | 囚犯。</summary>
         </member>
     </members>
 </doc>

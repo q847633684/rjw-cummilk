@@ -39,7 +39,6 @@
     <EM.SectionDesc_ToleranceOverflow>耐受是否影响泌乳效率、影响曲线的指数；满池溢出时生成的地面污物 Def；挤奶 AI 是否优先更满的目标。下方为池模型参考显示。</EM.SectionDesc_ToleranceOverflow>
     <EM.SectionDesc_IdentityAndMenu>控制右键点击某类单位时，是否在浮动菜单中显示「给催乳素」「哺乳/吸奶」等选项。按目标的身份（机械体/殖民者/奴隶/囚犯/动物/其它）分别勾选，可减少无关菜单项。</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>此处为该身份（殖民者/奴隶/囚犯/动物/机械/实体）的默认值。新加入或未单独设置过的单位会使用此默认；在 Milk 主界面表格中可对每个单位单独覆盖。</EM.SectionDesc_DefaultByRole>
-    <EM.SectionDesc_MilkingSelf>「挤奶（自身）」：允许该身份单位自己给自己挤奶（自动接挤奶自己的工作）。关闭则只能由别人挤或手动指派。主界面表格中可对单个单位单独开关。</EM.SectionDesc_MilkingSelf>
     <EM.SectionDesc_Efficiency>泌乳期严重度对应的效率与产奶量倍率、泌乳期意识/操纵/移动增益及其上限百分比、动物成年雌性是否常乳。仅影响本 mod 的泌乳与产奶计算。</EM.SectionDesc_Efficiency>
     <EM.LactationEfficiencyMovedHint>泌乳效率与意识/操纵/移动增益已移至「联动与扩展 → 乳房与池」，与容量、流速、剩余天数一起调节。此处仅保留动物常乳。</EM.LactationEfficiencyMovedHint>
     <EM.SectionDesc_RJW>当 rim.job.world (RJW) 已启用时生效。控制泌乳与乳房尺寸、性需求、哺乳后满足、怀孕概率、性行为描述及性行为后奶池增益等联动。</EM.SectionDesc_RJW>
@@ -88,12 +87,6 @@
     <EM.MilkEquivalentDoseColumnTip>当前 L 折算的等效催乳素剂量（只读）。1 剂 ≈ 0.5 L。</EM.MilkEquivalentDoseColumnTip>
     <EM.LactatingColumnTip>是否处于泌乳状态。蓝色=临时，红色=永久（层数）。</EM.LactatingColumnTip>
     <EM.GeneConfigTitle>奶类型基因配置</EM.GeneConfigTitle>
-    <EM.WhoCanSuckleFromMe>谁可以使用我的奶</EM.WhoCanSuckleFromMe>
-    <EM.WhoCanSuckleFromMeDefault>下方名单默认已勾选子女与伴侣；可添加或移除。</EM.WhoCanSuckleFromMeDefault>
-    <EM.WhoCanUseMyMilkProducts>谁可以吃我的奶制品</EM.WhoCanUseMyMilkProducts>
-    <EM.WhoCanUseMyMilkProductsDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkProductsDefault>
-    <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
-    <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionConsumersRequiresTagPawn>此限制仅在「设置 → 奶标签」中为该类物品开启「显示动物名」时生效；当前未开启，故不显示名单。</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>女性：谁可以使用我的奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
     <EM.DefaultSucklerRulesSection>默认「谁可以使用我的奶」（名单为空时）</EM.DefaultSucklerRulesSection>
@@ -105,7 +98,24 @@
     <EM.DefaultSucklerIncludeSpouseDesc>勾选时，配偶默认允许。</EM.DefaultSucklerIncludeSpouseDesc>
     <EM.DefaultSucklerExcludeParents>排除父母（母亲/父亲）</EM.DefaultSucklerExcludeParents>
     <EM.DefaultSucklerExcludeParentsDesc>勾选时，产奶者的父母默认不允许使用奶。</EM.DefaultSucklerExcludeParentsDesc>
-    <EM.HealthTabRestrictionsButton>谁可用我的奶 / 奶制品 / 精液制品</EM.HealthTabRestrictionsButton>
+    <EM.RestrictionsFilterLabel>显示：</EM.RestrictionsFilterLabel>
+    <EM.RestrictionsFilterAll>全部</EM.RestrictionsFilterAll>
+    <EM.RestrictionsFilterColonists>殖民者</EM.RestrictionsFilterColonists>
+    <EM.RestrictionsFilterPrisoners>囚犯</EM.RestrictionsFilterPrisoners>
+    <EM.RestrictionsTableHeaderName>姓名</EM.RestrictionsTableHeaderName>
+    <EM.RestrictionsTableHeaderRelation>关系</EM.RestrictionsTableHeaderRelation>
+    <EM.RestrictionsTableHeaderSuckle>可以吸奶/挤奶</EM.RestrictionsTableHeaderSuckle>
+    <EM.RestrictionsTableHeaderSuckleTip>允许此人直接吸奶或使用挤奶器对该产主进行挤奶。</EM.RestrictionsTableHeaderSuckleTip>
+    <EM.RestrictionsTableHeaderConsume>可以使用制品</EM.RestrictionsTableHeaderConsume>
+    <EM.RestrictionsTableHeaderConsumeTip>允许此人食用该产主产出的奶/精液制品（含加工食物）。</EM.RestrictionsTableHeaderConsumeTip>
+    <EM.RestrictionsFilterEmpty>当前筛选下没有小人。</EM.RestrictionsFilterEmpty>
+    <EM.RestrictionsFilterEmptyHint>请切换上方 Tab（全部/殖民者/囚犯）或等待该类别下有人加入地图。</EM.RestrictionsFilterEmptyHint>
+    <EM.RestrictionsAllowSelfSection>允许自己（对自己的操作）</EM.RestrictionsAllowSelfSection>
+    <EM.RestrictionsAllowOthersSection>允许他人（他人对自己的操作）</EM.RestrictionsAllowOthersSection>
+    <EM.RestrictionsAllowSelf_Milking>挤奶</EM.RestrictionsAllowSelf_Milking>
+    <EM.RestrictionsAllowSelf_MilkingTip>允许自己使用挤奶器或接「自己挤奶」工作。</EM.RestrictionsAllowSelf_MilkingTip>
+    <EM.RestrictionsAllowSelf_Consume>吃奶</EM.RestrictionsAllowSelf_Consume>
+    <EM.RestrictionsAllowSelf_ConsumeTip>允许自己食用产出的奶/精液制品（含加工食物）。关则自己也不能吃自己的制品。</EM.RestrictionsAllowSelf_ConsumeTip>
     <EM.Specify>指定</EM.Specify>
     <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>
     <EM.AnimalAdultFemaleAlwaysLactating>动物：成年雌性常乳</EM.AnimalAdultFemaleAlwaysLactating>

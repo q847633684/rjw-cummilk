@@ -54,6 +54,16 @@ public static class MilkPermissionExtensions
         milkSettings.allowMilkingSelf = allow;
         return true;
     }
+    /// <summary>是否允许自己食用产出的奶/精液制品。默认 false。</summary>
+    public static bool AllowSelfConsumeProducts(this Pawn pawn) => pawn.CompEquallyMilkable()?.MilkSettings?.allowSelfConsumeProducts ?? false;
+    /// <summary>设置是否允许自己食用产出的奶/精液制品。</summary>
+    public static bool SetAllowSelfConsumeProducts(this Pawn pawn, bool allow)
+    {
+        MilkSettings milkSettings = pawn.CompEquallyMilkable()?.MilkSettings;
+        if (milkSettings == null) return false;
+        milkSettings.allowSelfConsumeProducts = allow;
+        return true;
+    }
     public static bool AllowBreastFeeding(this Pawn pawn) => pawn.CompEquallyMilkable()?.MilkSettings?.allowBreastFeeding ?? false;
     public static bool SetAllowBreastFeeding(this Pawn pawn, bool allow)
     {
@@ -180,7 +190,7 @@ public static class MilkPermissionExtensions
         if (consumer == null || food == null) return true;
         var comp = food.TryGetComp<CompShowProducer>();
         if (comp?.producer == null) return true;
-        if (comp.producer == consumer) return true;
+        if (comp.producer == consumer) return comp.producer.AllowSelfConsumeProducts();
         Pawn producer = comp.producer;
         if (CanConsumeMilkProductHandlers.Count > 0)
         {

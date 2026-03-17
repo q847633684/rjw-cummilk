@@ -5,20 +5,34 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse.Sound;
 using MilkCum.Core.Settings;
+using MilkCum.Core.Utils;
+using MilkCum.Fluids.Cum.Cumflation;
+using MilkCum.Fluids.Cum.Leaking;
 using MilkCum.Fluids.Lactation.Helpers;
-using static MilkCum.Core.Utils.Lang;
 
 namespace MilkCum.UI;
 
-/// <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。</summary>
+/// <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。筛选用：全部/殖民者/囚犯；表格列：姓名、关系、可以吸奶/挤奶、可以使用制品。</summary>
 public class Window_ProducerRestrictions : Window
 {
     private readonly Pawn producer;
     private readonly CompEquallyMilkable comp;
-    private const float EntryHeight = 32f;
-    private const int ButtonWidth = 120;
-    private const int SeparatorHeight = 6;
-    private static readonly List<Pawn> tmpSorted = new();
+    private const float EntryHeight = 28f;
+    private const float HeaderHeight = 24f;
+    private const float CheckboxColWidth = 28f;
+    private const float IconSize = 24f;
+    private const float ScrollGap = 16f;
+    private const float TabRowHeight = 36f;
+    /// <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
+    private const float AllowSelfNarrowThreshold = 520f;
+
+    /// <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。</summary>
+    private ProducerRestrictionFilter filter = ProducerRestrictionFilter.All;
+
+    private Vector2 tableScrollPosition;
+
+    private static readonly List<Pawn> tmpFiltered = new();
+    private static readonly List<TabRecord> filterTabs = new();
 
     public Window_ProducerRestrictions(Pawn pawn)
     {
@@ -27,14 +41,118 @@ public class Window_ProducerRestrictions : Window
         closeOnClickedOutside = true;
         draggable = true;
         optionalTitle = "EM.ProducerRestrictionsTitle".Translate(producer?.LabelShort ?? "");
+        absorbInputAroundWindow = true;
     }
 
-    private IEnumerable<Pawn> ColonyPawns()
+    private enum ProducerRestrictionFilter
     {
-        if (producer?.Map == null) yield break;
-        foreach (Pawn p in producer.Map.mapPawns.FreeColonistsAndPrisoners)
+        All,
+        Colonists,
+        Prisoners
+    }
+
+    /// <summary>按当前筛选填充列表（排除产奶者自己），不排序。调用方负责 Clear。使用 RimWorld 实际返回的 List&lt;Pawn&gt; 直接 for 遍历，避免 IEnumerable 枚举器分配。</summary>
+    private void FillFilteredPawns(List<Pawn> outList)
+    {
+        if (producer?.Map == null || outList == null) return;
+        var map = producer.Map;
+        List<Pawn> source;
+        switch (filter)
         {
-            if (p != producer) yield return p;
+            case ProducerRestrictionFilter.Colonists:
+                source = map.mapPawns.FreeColonists;
+                break;
+            case ProducerRestrictionFilter.Prisoners:
+                source = map.mapPawns.PrisonersOfColony;
+                break;
+            default:
+                source = map.mapPawns.FreeColonistsAndPrisoners;
+                break;
+        }
+        for (int i = 0; i < source.Count; i++)
+        {
+            Pawn p = source[i];
+            if (p != producer && p != null && !p.Destroyed)
+                outList.Add(p);
+        }
+    }
+
+    private List<Pawn> GetFilteredPawnsSorted()
+    {
+        tmpFiltered.Clear();
+        FillFilteredPawns(tmpFiltered);
+        tmpFiltered.SortBy(x => x.LabelShort);
+        return tmpFiltered;
+    }
+
+    /// <summary>产奶者与另一人的关系标签；无关系或异常时返回「—」。兼容无 GetGenderSpecificLabel 的 RimWorld 版本。</summary>
+    private static string GetRelationLabel(Pawn producer, Pawn other)
+    {
+        if (producer == null || other == null) return "—";
+        var rel = PawnRelationUtility.GetMostImportantRelation(producer, other);
+        if (rel == null) return "—";
+        try
+        {
+            return rel.GetGenderSpecificLabel(producer);
+        }
+        catch
+        {
+            return rel.label ?? "—";
+        }
+    }
+
+    /// <summary>是否在「可以吸奶/挤奶」上显示为允许。名单非空时看名单；空时看 defaultSucklersWhenEmpty（若为 null 则现场取默认）。</summary>
+    private bool IsAllowedSuckler(Pawn p, List<Pawn> defaultSucklersWhenEmpty)
+    {
+        if (comp?.allowedSucklers == null) return false;
+        if (comp.allowedSucklers.Count > 0) return comp.allowedSucklers.Contains(p);
+        if (defaultSucklersWhenEmpty != null) return defaultSucklersWhenEmpty.Contains(p);
+        return MilkPermissionExtensions.GetDefaultSucklers(producer).Contains(p);
+    }
+
+    private void SetAllowedSuckler(Pawn p, bool allow)
+    {
+        if (comp == null) return;
+        comp.EnsureSaveCompatAllowedLists();
+        if (allow)
+        {
+            if (!comp.allowedSucklers.Contains(p))
+            {
+                comp.allowedSucklers.Add(p);
+                SoundDefOf.Click.PlayOneShotOnCamera();
+            }
+        }
+        else
+        {
+            if (comp.allowedSucklers.Count == 0)
+            {
+                foreach (Pawn x in MilkPermissionExtensions.GetDefaultSucklers(producer))
+                    if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !comp.allowedSucklers.Contains(x))
+                        comp.allowedSucklers.Add(x);
+            }
+            if (comp.allowedSucklers.Remove(p))
+                SoundDefOf.Click.PlayOneShotOnCamera();
+        }
+    }
+
+    private bool IsAllowedConsumer(Pawn p) => comp?.allowedConsumers != null && comp.allowedConsumers.Contains(p);
+
+    private void SetAllowedConsumer(Pawn p, bool allow)
+    {
+        if (comp == null) return;
+        comp.EnsureSaveCompatAllowedLists();
+        if (allow)
+        {
+            if (!comp.allowedConsumers.Contains(p))
+            {
+                comp.allowedConsumers.Add(p);
+                SoundDefOf.Click.PlayOneShotOnCamera();
+            }
+        }
+        else
+        {
+            if (comp.allowedConsumers.Remove(p))
+                SoundDefOf.Click.PlayOneShotOnCamera();
         }
     }
 
@@ -47,88 +165,206 @@ public class Window_ProducerRestrictions : Window
         Text.Font = GameFont.Small;
 
         float y = inRect.y;
-        // 女性：始终显示两个选项框——（1）谁可以使用我的奶 （2）谁可以吃我的奶制品。男性只显示精液制品。
-        if (producer.gender == Gender.Female)
-        {
-            comp.EnsureSaveCompatAllowedLists();
-            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), "EM.WhoCanSuckleFromMe".Translate());
-            y += EntryHeight;
-            GUI.color = Color.gray;
-            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f), "EM.WhoCanSuckleFromMeDefault".Translate());
-            GUI.color = Color.white;
-            y += EntryHeight;
-            // 名单为空时用默认（子女+伴侣）作为显示，实际仍修改 comp.allowedSucklers，点「禁止」时再落盘
-            List<Pawn> sucklerDisplay = comp.allowedSucklers.Count > 0 ? comp.allowedSucklers : MilkPermissionExtensions.GetDefaultSucklers(producer);
-            DrawListSection(inRect, ref y, sucklerDisplay, comp.allowedSucklers, Allow, Forbid, ColonyPawns().ToList(), null);
-            y += SeparatorHeight * 2;
-            Widgets.DrawLineHorizontal(inRect.x, y, inRect.width);
-            y += SeparatorHeight * 2;
-        }
 
-        // 谁可以吃我的奶制品/精液制品：仅当奶标签里对应物品种类开启「显示动物名」时生效，否则完全隐藏该区块
+        // 允许自己：挤奶(自己) | 泄精 | 塞住（仅当产主支持时显示）
+        DrawAllowSelfSection(inRect.x, ref y, inRect.width);
+
+        // 允许他人（他人对自己的操作）：筛选 Tab + 表格
+        GUI.color = Color.gray;
+        Widgets.Label(new Rect(inRect.x, y, inRect.width, HeaderHeight), "EM.RestrictionsAllowOthersSection".Translate());
+        GUI.color = Color.white;
+        y += HeaderHeight + 4f;
+
+        // 筛选 Tab：全部 | 殖民者 | 囚犯
+        Rect filterRow = new Rect(inRect.x, y, inRect.width, TabRowHeight);
+        DrawFilterTabs(filterRow);
+        y += TabRowHeight + 4f;
+
+        bool showSucklerColumn = producer.gender == Gender.Female;
         bool forCumProducts = producer.gender == Gender.Male && !producer.IsLactating();
-        bool showConsumersSection = forCumProducts
+        bool showConsumersColumn = forCumProducts
             ? MilkCumSettings.IsProducerRestrictionConsumersEffectiveForCumProducts()
             : MilkCumSettings.IsProducerRestrictionConsumersEffectiveForMilkProducts();
-        if (showConsumersSection)
+
+        comp.EnsureSaveCompatAllowedLists();
+
+        // 女性且名单为空时缓存默认吸奶名单，避免每行重复计算
+        List<Pawn> cachedDefaultSucklers = null;
+        if (showSucklerColumn && comp.allowedSucklers.Count == 0)
+            cachedDefaultSucklers = MilkPermissionExtensions.GetDefaultSucklers(producer).ToList();
+
+        // 表头：姓名 | 关系 | 可以吸奶/挤奶 | 可以使用制品
+        float nameW = Mathf.Max(80f, inRect.width * 0.35f);
+        float relW = Mathf.Min(80f, inRect.width * 0.2f);
+        float suckleW = showSucklerColumn ? CheckboxColWidth + 4f : 0f;
+        float consumeW = showConsumersColumn ? CheckboxColWidth + 4f : 0f;
+        float rest = inRect.width - nameW - relW - suckleW - consumeW;
+        if (rest < 0f) { relW += rest; rest = 0f; }
+        else { nameW += rest; }
+
+        GUI.color = Color.gray;
+        Rect hName = new Rect(inRect.x, y, nameW, HeaderHeight);
+        Widgets.Label(hName, "EM.RestrictionsTableHeaderName".Translate());
+        Rect hRel = new Rect(hName.xMax, y, relW, HeaderHeight);
+        Widgets.Label(hRel, "EM.RestrictionsTableHeaderRelation".Translate());
+        float cx = hRel.xMax;
+        if (showSucklerColumn)
         {
-            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), forCumProducts ? "EM.WhoCanUseMyCumProducts".Translate() : "EM.WhoCanUseMyMilkProducts".Translate());
-            y += EntryHeight;
-            GUI.color = Color.gray;
-            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight * 0.8f),
-                forCumProducts ? "EM.WhoCanUseMyCumProductsDefault".Translate() : "EM.WhoCanUseMyMilkProductsDefault".Translate());
-            GUI.color = Color.white;
-            y += EntryHeight;
-            DrawListSection(inRect, ref y, comp.allowedConsumers, comp.allowedConsumers, Allow, Forbid, ColonyPawns().ToList(), null);
+            Rect hSuckle = new Rect(cx, y, suckleW, HeaderHeight);
+            Widgets.Label(hSuckle, "EM.RestrictionsTableHeaderSuckle".Translate());
+            TooltipHandler.TipRegion(hSuckle, "EM.RestrictionsTableHeaderSuckleTip".Translate());
+            cx = hSuckle.xMax;
         }
+        if (showConsumersColumn)
+        {
+            Rect hConsume = new Rect(cx, y, consumeW, HeaderHeight);
+            Widgets.Label(hConsume, "EM.RestrictionsTableHeaderConsume".Translate());
+            TooltipHandler.TipRegion(hConsume, "EM.RestrictionsTableHeaderConsumeTip".Translate());
+        }
+        GUI.color = Color.white;
+        y += HeaderHeight + 2f;
+
+        Widgets.DrawLineHorizontal(inRect.x, y, inRect.width);
+        y += 4f;
+
+        List<Pawn> pawns = GetFilteredPawnsSorted();
+        if (pawns.Count == 0)
+        {
+            GUI.color = Color.gray;
+            Widgets.Label(new Rect(inRect.x, y, inRect.width, EntryHeight), "EM.RestrictionsFilterEmpty".Translate());
+            Widgets.Label(new Rect(inRect.x, y + EntryHeight, inRect.width, EntryHeight), "EM.RestrictionsFilterEmptyHint".Translate());
+            GUI.color = Color.white;
+            return;
+        }
+
+        float bodyWidth = inRect.width - ScrollGap;
+        float nW = Mathf.Max(80f, bodyWidth * 0.35f);
+        float rW = Mathf.Min(80f, bodyWidth * 0.2f);
+        float sW = showSucklerColumn ? CheckboxColWidth + 4f : 0f;
+        float cW = showConsumersColumn ? CheckboxColWidth + 4f : 0f;
+        float remainder = bodyWidth - nW - rW - sW - cW;
+        if (remainder < 0f) rW += remainder;
+        else nW += remainder;
+
+        Rect scrollOutRect = new Rect(inRect.x, y, inRect.width, inRect.yMax - y);
+        Rect scrollViewRect = new Rect(0f, 0f, bodyWidth, pawns.Count * EntryHeight);
+        Widgets.BeginScrollView(scrollOutRect, ref tableScrollPosition, scrollViewRect);
+
+        for (int i = 0; i < pawns.Count; i++)
+        {
+            Pawn p = pawns[i];
+            float rowY = i * EntryHeight;
+            Rect row = new Rect(0f, rowY, bodyWidth, EntryHeight);
+            if (Mouse.IsOver(row))
+                Widgets.DrawHighlight(row);
+            Rect rName = new Rect(0f, rowY, nW, EntryHeight);
+            Rect rRel = new Rect(nW, rowY, rW, EntryHeight);
+            Widgets.ThingIcon(new Rect(rName.x, rName.y + (rName.height - IconSize) / 2f, IconSize, IconSize), p);
+            Widgets.Label(new Rect(rName.x + IconSize + 4f, rName.y, rName.width - IconSize - 4f, rName.height), p.LabelCap);
+            Widgets.Label(rRel, GetRelationLabel(producer, p));
+
+            float checkX = rRel.xMax;
+            if (showSucklerColumn)
+            {
+                Rect rSuckle = new Rect(checkX, rowY + (EntryHeight - CheckboxColWidth) / 2f, CheckboxColWidth, CheckboxColWidth);
+                bool suckleChecked = IsAllowedSuckler(p, cachedDefaultSucklers);
+                bool oldSuckle = suckleChecked;
+                Widgets.Checkbox(rSuckle.position, ref suckleChecked, CheckboxColWidth);
+                if (suckleChecked != oldSuckle)
+                    SetAllowedSuckler(p, suckleChecked);
+                checkX = rSuckle.xMax;
+            }
+            if (showConsumersColumn)
+            {
+                Rect rConsume = new Rect(checkX, rowY + (EntryHeight - CheckboxColWidth) / 2f, CheckboxColWidth, CheckboxColWidth);
+                bool consumeChecked = IsAllowedConsumer(p);
+                bool oldConsume = consumeChecked;
+                Widgets.Checkbox(rConsume.position, ref consumeChecked, CheckboxColWidth);
+                if (consumeChecked != oldConsume)
+                    SetAllowedConsumer(p, consumeChecked);
+            }
+        }
+
+        Widgets.EndScrollView();
     }
 
-    /// <param name="displayList">用于显示「已允许」的名单；可与 modifyList 相同，或为空时用默认名单以仅显示。</param>
-    /// <param name="modifyList">实际被「允许/禁止」按钮修改的名单。</param>
-    private void DrawListSection(Rect inRect, ref float y, List<Pawn> displayList, List<Pawn> modifyList, string allowLabel, string forbidLabel, List<Pawn> allCandidates, HashSet<Pawn> exclude)
+    /// <summary>绘制「允许自己」（对自己的操作）：挤奶、吃奶、泄精、塞住。窄屏时两行布局；每项带 Tooltip。</summary>
+    private void DrawAllowSelfSection(float x, ref float y, float width)
     {
-        if (displayList == null || modifyList == null) return;
-        var assigned = new List<Pawn>(displayList);
-        var unassigned = allCandidates.Where(p => !displayList.Contains(p) && (exclude == null || !exclude.Contains(p))).ToList();
-        tmpSorted.Clear();
-        tmpSorted.AddRange(assigned);
-        tmpSorted.SortBy(x => x.LabelShort);
-        float h = EntryHeight;
-        foreach (Pawn p in tmpSorted)
+        Widgets.Label(new Rect(x, y, width, HeaderHeight), "EM.RestrictionsAllowSelfSection".Translate());
+        y += HeaderHeight + 2f;
+
+        float rowHeight = 24f;
+        float gap = 12f;
+        var sealComp = producer?.TryGetComp<Comp_SealCum>();
+        bool adult = producer?.DevelopmentalStage == DevelopmentalStage.Adult;
+        bool narrow = width < AllowSelfNarrowThreshold;
+
+        // 第一行：挤奶、吃奶（窄屏时仅此一行；宽屏时泄精、塞住同行）
+        float rowY = y;
+        float cx = x;
+
+        if (comp?.MilkSettings != null)
         {
-            Rect row = new(inRect.x, y, inRect.width, h);
-            if (Widgets.ButtonText(new Rect(row.xMax - ButtonWidth - 4f, row.y, ButtonWidth, h - 2f), forbidLabel))
-            {
-                if (modifyList.Count == 0 && displayList != modifyList)
-                {
-                    foreach (Pawn x in displayList)
-                        if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !modifyList.Contains(x))
-                            modifyList.Add(x);
-                }
-                modifyList.Remove(p);
-                SoundDefOf.Click.PlayOneShotOnCamera();
-            }
-            Widgets.ThingIcon(new Rect(row.x, row.y, h, h), p);
-            float labelWidth = Mathf.Max(0f, row.width - h - ButtonWidth - 12f);
-            Widgets.Label(new Rect(row.x + h + 4f, row.y, labelWidth, h), p.LabelCap);
-            y += h;
+            Rect r = new Rect(cx, rowY, 160f, rowHeight);
+            bool val = producer.AllowMilkingSelf();
+            bool oldVal = val;
+            Widgets.CheckboxLabeled(r, "EM.RestrictionsAllowSelf_Milking".Translate(), ref val);
+            TooltipHandler.TipRegion(r, "EM.RestrictionsAllowSelf_MilkingTip".Translate());
+            if (val != oldVal) producer.SetAllowMilkingSelf(val);
+            cx = r.xMax + gap;
         }
-        y += SeparatorHeight;
-        tmpSorted.Clear();
-        tmpSorted.AddRange(unassigned);
-        tmpSorted.SortBy(x => x.LabelShort);
-        foreach (Pawn p in tmpSorted)
+
+        if (comp?.MilkSettings != null)
         {
-            Rect row = new(inRect.x, y, inRect.width, h);
-            if (Widgets.ButtonText(new Rect(row.xMax - ButtonWidth - 4f, row.y, ButtonWidth, h - 2f), allowLabel))
-            {
-                modifyList.Add(p);
-                SoundDefOf.Click.PlayOneShotOnCamera();
-            }
-            Widgets.ThingIcon(new Rect(row.x, row.y, h, h), p);
-            float labelWidth = Mathf.Max(0f, row.width - h - ButtonWidth - 12f);
-            Widgets.Label(new Rect(row.x + h + 4f, row.y, labelWidth, h), p.LabelCap);
-            y += h;
+            Rect r = new Rect(cx, rowY, 140f, rowHeight);
+            bool val = producer.AllowSelfConsumeProducts();
+            bool oldVal = val;
+            Widgets.CheckboxLabeled(r, "EM.RestrictionsAllowSelf_Consume".Translate(), ref val);
+            TooltipHandler.TipRegion(r, "EM.RestrictionsAllowSelf_ConsumeTip".Translate());
+            if (val != oldVal) producer.SetAllowSelfConsumeProducts(val);
+            cx = r.xMax + gap;
         }
+
+        if (narrow)
+        {
+            rowY += rowHeight + 4f;
+            cx = x;
+        }
+
+        if (adult && sealComp != null && sealComp.PlayerControlled && CumflationUtility.CanBeCumflated(producer))
+        {
+            Rect r = new Rect(cx, rowY, 120f, rowHeight);
+            bool val = sealComp.CanDeflate();
+            bool oldVal = val;
+            Widgets.CheckboxLabeled(r, "EM.Milk_AllowDeflate".Translate(), ref val);
+            TooltipHandler.TipRegion(r, "EM.Milk_AllowDeflateTip".Translate());
+            if (val != oldVal) sealComp.SetCanDeflate(val);
+            cx = r.xMax + gap;
+        }
+
+        if (adult && sealComp != null && sealComp.canSeal())
+        {
+            Rect r = new Rect(cx, rowY, 100f, rowHeight);
+            bool val = sealComp.IsSealed();
+            bool oldVal = val;
+            Widgets.CheckboxLabeled(r, "EM.Milk_SealCum".Translate(), ref val);
+            TooltipHandler.TipRegion(r, "EM.Milk_SealCumTip".Translate());
+            if (val != oldVal) sealComp.SetSealed(val);
+        }
+
+        y = rowY + rowHeight + 8f;
+        Widgets.DrawLineHorizontal(x, y, width);
+        y += 6f;
+    }
+
+    /// <summary>筛选 Tab：全部 | 殖民者 | 囚犯。</summary>
+    private void DrawFilterTabs(Rect rect)
+    {
+        filterTabs.Clear();
+        filterTabs.Add(new TabRecord("EM.RestrictionsFilterAll".Translate(), () => { filter = ProducerRestrictionFilter.All; SoundDefOf.Click.PlayOneShotOnCamera(); }, filter == ProducerRestrictionFilter.All));
+        filterTabs.Add(new TabRecord("EM.RestrictionsFilterColonists".Translate(), () => { filter = ProducerRestrictionFilter.Colonists; SoundDefOf.Click.PlayOneShotOnCamera(); }, filter == ProducerRestrictionFilter.Colonists));
+        filterTabs.Add(new TabRecord("EM.RestrictionsFilterPrisoners".Translate(), () => { filter = ProducerRestrictionFilter.Prisoners; SoundDefOf.Click.PlayOneShotOnCamera(); }, filter == ProducerRestrictionFilter.Prisoners));
+        TabDrawer.DrawTabs(rect, filterTabs);
     }
 }

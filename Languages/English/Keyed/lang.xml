@@ -39,7 +39,6 @@
     <EM.SectionDesc_ToleranceOverflow>Whether tolerance affects milk efficiency and the impact exponent; which filth def spawns when pool overflows; whether milking AI prefers fuller targets. Reference line shows pool model baselines.</EM.SectionDesc_ToleranceOverflow>
     <EM.SectionDesc_IdentityAndMenu>Controls whether right-clicking a pawn of each type shows "Give prolactin", "Breastfeed/suckle", etc. in the float menu. Check by target identity (mechanoid/colonist/slave/prisoner/animal/misc) to reduce clutter.</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
-    <EM.SectionDesc_MilkingSelf>"Milking (self)": allow this role to milk themselves (auto take milk-self job). Off = only others can milk them or manual assign. The Milk table column overrides per pawn.</EM.SectionDesc_MilkingSelf>
     <EM.SubTab.Efficiency>Efficiency</EM.SubTab.Efficiency>
     <EM.SectionDesc_Efficiency>Efficiency and milk amount multipliers by lactation severity; consciousness/manipulation/moving gain and cap percent; whether adult female animals are always lactating. Affects only this mod's lactation and milk output.</EM.SectionDesc_Efficiency>
     <EM.LactationEfficiencyMovedHint>Lactation efficiency and consciousness/manipulation/moving gain are under Integration → Breast &amp; pool, with capacity, flow and remaining days. Only animal "always lactating" remains here.</EM.LactationEfficiencyMovedHint>
@@ -89,12 +88,6 @@
     <EM.MilkEquivalentDoseColumnTip>Current L expressed as equivalent prolactin doses (read-only). One dose ≈ 0.5 L.</EM.MilkEquivalentDoseColumnTip>
     <EM.LactatingColumnTip>Whether the pawn is lactating. Blue = temporary, red = permanent (stack count).</EM.LactatingColumnTip>
     <EM.GeneConfigTitle>Milk type gene config</EM.GeneConfigTitle>
-    <EM.WhoCanSuckleFromMe>Who can use my milk</EM.WhoCanSuckleFromMe>
-    <EM.WhoCanSuckleFromMeDefault>List below is pre-filled with children and partner by default; add or remove as needed.</EM.WhoCanSuckleFromMeDefault>
-    <EM.WhoCanUseMyMilkProducts>Who can eat my milk products</EM.WhoCanUseMyMilkProducts>
-    <EM.WhoCanUseMyMilkProductsDefault>Default: only me. Add pawns to also allow them to eat my milk or food made from my milk.</EM.WhoCanUseMyMilkProductsDefault>
-    <EM.WhoCanUseMyCumProducts>Who can eat my cum products</EM.WhoCanUseMyCumProducts>
-    <EM.WhoCanUseMyCumProductsDefault>Default: only me. Add pawns to also allow them to eat my cum or cum-based products.</EM.WhoCanUseMyCumProductsDefault>
     <EM.ProducerRestrictionConsumersRequiresTagPawn>This restriction only applies when "Show pawn name" is enabled for that product type under Settings → Milk tags. Currently off, so the list is hidden.</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>Female: who can use my milk, who can eat my milk products. Male: who can eat my cum products. Set per producer in the Milk table — click "Specify" (…) on the row.</EM.ProducerRestrictionsHint>
     <EM.DefaultSucklerRulesSection>Default "who can use my milk" (when list is empty)</EM.DefaultSucklerRulesSection>
@@ -106,7 +99,24 @@
     <EM.DefaultSucklerIncludeSpouseDesc>When checked, spouses are allowed by default.</EM.DefaultSucklerIncludeSpouseDesc>
     <EM.DefaultSucklerExcludeParents>Exclude parents (mother/father)</EM.DefaultSucklerExcludeParents>
     <EM.DefaultSucklerExcludeParentsDesc>When checked, the producer's parents are not allowed by default.</EM.DefaultSucklerExcludeParentsDesc>
-    <EM.HealthTabRestrictionsButton>Who can use my milk / milk or cum products</EM.HealthTabRestrictionsButton>
+    <EM.RestrictionsFilterLabel>Show:</EM.RestrictionsFilterLabel>
+    <EM.RestrictionsFilterAll>All</EM.RestrictionsFilterAll>
+    <EM.RestrictionsFilterColonists>Colonists</EM.RestrictionsFilterColonists>
+    <EM.RestrictionsFilterPrisoners>Prisoners</EM.RestrictionsFilterPrisoners>
+    <EM.RestrictionsTableHeaderName>Name</EM.RestrictionsTableHeaderName>
+    <EM.RestrictionsTableHeaderRelation>Relation</EM.RestrictionsTableHeaderRelation>
+    <EM.RestrictionsTableHeaderSuckle>Can suckle/milk</EM.RestrictionsTableHeaderSuckle>
+    <EM.RestrictionsTableHeaderSuckleTip>Allow this pawn to suckle or use a milker on this producer.</EM.RestrictionsTableHeaderSuckleTip>
+    <EM.RestrictionsTableHeaderConsume>Can use products</EM.RestrictionsTableHeaderConsume>
+    <EM.RestrictionsTableHeaderConsumeTip>Allow this pawn to consume this producer's milk/cum products (including cooked food).</EM.RestrictionsTableHeaderConsumeTip>
+    <EM.RestrictionsFilterEmpty>No pawns match the current filter.</EM.RestrictionsFilterEmpty>
+    <EM.RestrictionsFilterEmptyHint>Switch the tab above (All / Colonists / Prisoners) or wait for pawns of that type to join the map.</EM.RestrictionsFilterEmptyHint>
+    <EM.RestrictionsAllowSelfSection>Allow self (actions on self)</EM.RestrictionsAllowSelfSection>
+    <EM.RestrictionsAllowOthersSection>Allow others (others' actions on you)</EM.RestrictionsAllowOthersSection>
+    <EM.RestrictionsAllowSelf_Milking>Milking</EM.RestrictionsAllowSelf_Milking>
+    <EM.RestrictionsAllowSelf_MilkingTip>Allow self to use a milker or take the self-milking job.</EM.RestrictionsAllowSelf_MilkingTip>
+    <EM.RestrictionsAllowSelf_Consume>Consume</EM.RestrictionsAllowSelf_Consume>
+    <EM.RestrictionsAllowSelf_ConsumeTip>Allow self to consume your milk/cum products (including cooked food). Off = you cannot eat your own products.</EM.RestrictionsAllowSelf_ConsumeTip>
     <EM.Specify>Specify</EM.Specify>
     <EM.DrugRoleHint>To enter lactation: Prolactin or Lucilactin. To boost milk output when already lactating: Galactogogues.</EM.DrugRoleHint>
     <EM.AnimalAdultFemaleAlwaysLactating>Animals: adult females always lactating</EM.AnimalAdultFemaleAlwaysLactating>
