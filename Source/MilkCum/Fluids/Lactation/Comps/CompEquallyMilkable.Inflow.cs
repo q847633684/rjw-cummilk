@@ -47,9 +47,8 @@ public partial class CompEquallyMilkable
         }
         float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
         float condFactor = Pawn.GetMilkFlowMultiplierFromConditions();
-        float geneFactor = Pawn.GetMilkFlowMultiplierFromGenes();
         float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
-        float basePerDay = drive * hungerFactor * condFactor * geneFactor * raceFlow;
+        float basePerDay = drive * hungerFactor * condFactor * raceFlow;
         var entries = GetCachedEntries();
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
@@ -57,8 +56,8 @@ public partial class CompEquallyMilkable
         if (MilkCumSettings.lactationPoolTickLog && Pawn != null)
         {
             MilkCumSettings.PoolTickLog(
-                $"[MilkCum][INFO][MilkFlow] 小人={Pawn.LabelShort} 泌乳量L={currentLactation:F3} 驱动力drive={drive:F3} 饥饿系数hunger={hungerFactor:F3} 状态系数cond={condFactor:F3} 基因系数genes={geneFactor:F3} 种族流速倍率raceFlow={raceFlow:F3}; " +
-                $"每日基础流速basePerDay=drive({drive:F3})×hunger({hungerFactor:F3})×cond({condFactor:F3})×genes({geneFactor:F3})×raceFlow({raceFlow:F3})={basePerDay:F3}; " +
+                $"[MilkCum][INFO][MilkFlow] 小人={Pawn.LabelShort} 泌乳量L={currentLactation:F3} 驱动力drive={drive:F3} 饥饿系数hunger={hungerFactor:F3} 状态系数cond={condFactor:F3} 种族流速倍率raceFlow={raceFlow:F3}; " +
+                $"每日基础流速basePerDay=drive({drive:F3})×hunger({hungerFactor:F3})×cond({condFactor:F3})×raceFlow({raceFlow:F3})={basePerDay:F3}; " +
                 $"每60tick进池量flowPer60tick=basePerDay({basePerDay:F3})/60000×60={flowPerTickScale:F5}；" +
                 $"单侧实际流速≈flowPer60tick×条目流速倍率×该侧状态修正×压力因子×喷乳反射");
         }
@@ -124,8 +123,8 @@ public partial class CompEquallyMilkable
                 float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
                 float letdownLeft = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f;
                 float letdownRight = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f;
-                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft;
-                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight;
+                float flowLeft = leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft * leftE.Density;
+                float flowRight = rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight * rightE.Density;
                 if (IsOverflowState(leftE.Key, curLeft, leftCap))
                     flowLeft *= Mathf.Clamp01(MilkCumSettings.overflowResidualFlowFactor);
                 if (IsOverflowState(rightE.Key, curRight, rightCap))
@@ -160,7 +159,7 @@ public partial class CompEquallyMilkable
                         : (current >= stretchCap ? 0f : 1f);
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
                     float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
-                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE;
+                    float flowPerTick = e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE * e.Density;
                     if (IsOverflowState(e.Key, current, e.Capacity))
                         flowPerTick *= Mathf.Clamp01(MilkCumSettings.overflowResidualFlowFactor);
                     totalFlowThisStep += flowPerTick;

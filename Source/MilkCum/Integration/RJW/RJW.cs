@@ -7,6 +7,8 @@ using System.Linq;
 using rjw;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Comps;
+using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Harmony;
 
 namespace MilkCum.RJW;
@@ -30,6 +32,7 @@ internal static class ApplyPatches
         // 只处理本命名空间内的 patch 类
         new PatchClassProcessor(Harmony, typeof(CompAssignableToPawn_Box_Patch)).Patch();
         new PatchClassProcessor(Harmony, typeof(Hediff_BasePregnancy_Patch)).Patch();
+        new PatchClassProcessor(Harmony, typeof(JobDriver_Sex_OrgasmMilk_Patch)).Patch();
     }
 }
 [HarmonyPatch(typeof(PawnMilkPoolExtensions))]
@@ -98,5 +101,42 @@ public static class Hediff_BasePregnancy_Patch
         {
             // 谁可以使用我的奶：名单默认预填子女+伴侣
         }
+    }
+}
+
+/// <summary>RJW produceFluidOnOrgasm：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量。</summary>
+[HarmonyPatch(typeof(JobDriver_Sex), nameof(JobDriver_Sex.Orgasm))]
+public static class JobDriver_Sex_OrgasmMilk_Patch
+{
+    private const float PoolUnitsPerOrgasmPerBreastSide = 0.05f;
+
+    [HarmonyPostfix]
+    public static void Postfix(JobDriver_Sex __instance)
+    {
+        Pawn pawn = __instance?.pawn;
+        if (pawn == null || pawn.Dead) return;
+        if (!pawn.IsLactating()) return;
+        var comp = pawn.CompEquallyMilkable();
+        if (comp == null) return;
+        if (!MilkCumSettings.rjwBreastSizeEnabled) return;
+        var list = pawn.GetBreastList();
+        if (list == null || list.Count == 0) return;
+        var entries = pawn.GetBreastPoolEntries();
+        if (entries == null || entries.Count < 2 * list.Count) return;
+        var toAdd = new List<(string key, float addAmount, float cap)>();
+        for (int i = 0; i < list.Count; i++)
+        {
+            var h = list[i];
+            if (h?.def is not HediffDef_SexPart def || !def.produceFluidOnOrgasm) continue;
+            int idxL = 2 * i;
+            int idxR = 2 * i + 1;
+            if (idxR >= entries.Count) break;
+            float density = PawnMilkPoolExtensions.GetBreastDensity(h.def);
+            float amount = PoolUnitsPerOrgasmPerBreastSide * density;
+            toAdd.Add((entries[idxL].Key, amount, entries[idxL].Capacity));
+            toAdd.Add((entries[idxR].Key, amount, entries[idxR].Capacity));
+        }
+        if (toAdd.Count > 0)
+            comp.AddMilkToKeys(toAdd);
     }
 }

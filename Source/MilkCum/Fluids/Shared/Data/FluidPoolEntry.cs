@@ -10,13 +10,16 @@ public readonly struct FluidPoolEntry
     public bool IsLeft { get; }
     /// <summary>第几对乳房（0=第一对）；同一对的左乳与右乳共享同一值，用于按对撑大与挤奶从第一对开始选侧。</summary>
     public int PairIndex { get; }
+    /// <summary>RJW PartSizeConfigDef.density：仅用于「奶量增加」时放大进池量（泌乳进水、高潮产液等），不参与容量/流速倍率。人类 1.0。</summary>
+    public float Density { get; }
 
-    public FluidPoolEntry(string key, float capacity, float flowMultiplier, bool isLeft, int pairIndex = 0)
+    public FluidPoolEntry(string key, float capacity, float flowMultiplier, bool isLeft, int pairIndex = 0, float density = 1f)
     {
         Key = key ?? "";
         Capacity = capacity;
         FlowMultiplier = flowMultiplier;
         IsLeft = isLeft;
         PairIndex = pairIndex;
+        Density = density;
     }
 }

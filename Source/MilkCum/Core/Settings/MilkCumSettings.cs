@@ -81,6 +81,12 @@ internal class MilkCumSettings : ModSettings
 	public static bool rjwBreastSizeEnabled = true;
 	/// <summary>RJW 胸围容量系数：左右乳容量 = RJW 胸围严重度 × 本系数，默认 2，与泌乳流速倍率保持可调对应。</summary>
 	public static float rjwBreastCapacityCoefficient = 2f;
+	/// <summary>是否启用「因泌乳永久撑大」：每达到一定泌乳时长即通过 RJW 的 SetSeverity 永久增加乳房体型，不在本 mod 内维护单独数字。</summary>
+	public static bool rjwPermanentBreastGainFromLactationEnabled = false;
+	/// <summary>每多少游戏日泌乳触发一次永久体型增益（每里程碑对每乳调用 comp.SetSeverity(Min(1f, base + delta))）。</summary>
+	public static float rjwPermanentBreastGainDaysPerMilestone = 10f;
+	/// <summary>每次里程碑永久增加的 Severity 量（RJW 定义），上限 1。</summary>
+	public static float rjwPermanentBreastGainSeverityDelta = 0.03f;
 	public static bool rjwLustFromNursingEnabled = true;
 	public static bool rjwSexNeedLactatingBonusEnabled = true;
 	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
@@ -307,6 +313,9 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
 		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
 		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
+		Scribe_Values.Look(ref rjwPermanentBreastGainFromLactationEnabled, "EM.RjwPermanentBreastGainFromLactationEnabled", false);
+		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
+		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
 		Scribe_Values.Look(ref rjwLustFromNursingEnabled, "EM.RjwLustFromNursingEnabled", true);
 		Scribe_Values.Look(ref rjwSexNeedLactatingBonusEnabled, "EM.RjwSexNeedLactatingBonusEnabled", true);
 		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);

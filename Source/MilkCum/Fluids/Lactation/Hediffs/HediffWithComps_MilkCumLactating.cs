@@ -185,6 +185,10 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float effectiveToleranceE;
     /// <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
     private bool cachedWasPermanentLactation;
+    /// <summary>累计泌乳 tick，用于「因泌乳永久撑大」里程碑判定；仅当 rjwBreastSizeEnabled 且 rjwPermanentBreastGainFromLactationEnabled 时累加。</summary>
+    private int lactationTicksAccumulated;
+    /// <summary>已触发的永久体型增益里程碑次数；每达 rjwPermanentBreastGainDaysPerMilestone 天递增一次并对 RJW 乳房 SetSeverity(base + delta)。</summary>
+    private int permanentBreastGainMilestonesDone;
         /// <summary>本 tick 内 TryMergeWith 是否已把 other.Severity 同步到 L（仅本次 ingestion 有效，不存档）。已合并时原版已乘耐受，postfix 不再加量；未合并时 postfix 加 deltaS。</summary>
         internal bool MergedFromIngestionThisTick;
         /// <summary>本 tick 合并时传入的 other.Severity，供验证「原版是否已按耐受修正给药 severity」时打日志；仅本次 ingestion 有效，不存档。</summary>
@@ -282,6 +286,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         Scribe_Values.Look(ref milkingLStimulusAccumulatedThisDay, "EM.MilkingLStimulusAccumulatedThisDay", 0f);
         Scribe_Values.Look(ref lastMilkingLStimulusDayTick, "EM.LastMilkingLStimulusDayTick", -1);
         Scribe_Values.Look(ref effectiveToleranceE, "EM.EffectiveToleranceE", 0f);
+        Scribe_Values.Look(ref lactationTicksAccumulated, "EM.LactationTicksAccumulated", 0);
+        Scribe_Values.Look(ref permanentBreastGainMilestonesDone, "EM.PermanentBreastGainMilestonesDone", 0);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
             // 原版逻辑下 L 与 Severity 同步，读档后若 L≤0 且 Severity>0 则从 Severity 恢复 L
@@ -617,6 +623,22 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             }
         }
         this.Charge = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
+        if (Pawn != null && MilkCumSettings.rjwBreastSizeEnabled && MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled)
+            lactationTicksAccumulated++;
+    }
+
+    /// <summary>是否达到下一档「因泌乳永久撑大」里程碑；若达到则递增 permanentBreastGainMilestonesDone 并返回 true，由 RJW GameComponent 调用 ApplyPermanentBreastGain。仅当 rjwBreastSizeEnabled 且 rjwPermanentBreastGainFromLactationEnabled 时有效。</summary>
+    public bool TryConsumeNextPermanentGainMilestone()
+    {
+        if (!MilkCumSettings.rjwBreastSizeEnabled || !MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled) return false;
+        float days = MilkCumSettings.rjwPermanentBreastGainDaysPerMilestone;
+        if (days <= 0f) return false;
+        int ticksPerMilestone = (int)(days * 60000f);
+        if (ticksPerMilestone <= 0) return false;
+        int next = (permanentBreastGainMilestonesDone + 1) * ticksPerMilestone;
+        if (lactationTicksAccumulated < next) return false;
+        permanentBreastGainMilestonesDone++;
+        return true;
     }
 
     /// <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
@@ -659,7 +681,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         r.Drive = MilkCumSettings.GetEffectiveDrive(EffectiveLactationAmountForFlow);
         r.Hunger = hungerFactor;
         r.Conditions = Pawn.GetMilkFlowMultiplierFromConditions();
-        r.Genes = Pawn.GetMilkFlowMultiplierFromGenes();
         r.Setting = MilkCumSettings.defaultFlowMultiplierForHumanlike;
         float flowLeftMult = Pawn.GetMilkFlowMultiplierFromRJW_Left();
         float flowRightMult = Pawn.GetMilkFlowMultiplierFromRJW_Right();
@@ -683,7 +704,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         public float Drive;
         public float Hunger;
         public float Conditions;
-        public float Genes;
         public float Setting;
         public float RjwSum;
         public float Pressure;
@@ -700,7 +720,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowDrive".Translate(), FormatFlowFactor(b.Drive)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowHunger".Translate(), FormatFlowFactor(b.Hunger)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(conditions)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowGenes".Translate(), FormatFlowFactor(b.Genes)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowSetting".Translate(), FormatFlowFactor(b.Setting)));
         parts.Add("EM.MilkFlowFactorItem".Translate(leftSide ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate(), FormatFlowFactor(sideMult)));
         parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowPressure".Translate(), FormatFlowFactor(pressure)));
@@ -716,7 +735,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float conditions = conditionsForSide ?? b.Conditions;
         var list = new System.Collections.Generic.List<string>();
         list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowBreastVolume".Translate(), FormatFlowFactor(sideMult)));
-        list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowGenes".Translate(), FormatFlowFactor(b.Genes)));
         list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowSetting".Translate(), FormatFlowFactor(b.Setting)));
         list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(conditions)));
         list.Add("EM.MilkFlowFactorLine".Translate("EM.MilkFlowDrive".Translate(), FormatFlowFactor(b.Drive)));

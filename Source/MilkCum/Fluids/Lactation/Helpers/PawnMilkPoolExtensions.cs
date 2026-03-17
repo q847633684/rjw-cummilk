@@ -10,7 +10,9 @@ using Verse;
 namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
-/// 乳池与流速：池条目、容量、MilkDef、泌�?Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压�?满度、身体部位、距离等�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+/// 乳池与流速：池条目、容量、MilkDef、泌乳 Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压奶满度、身体部位、距离等。
+/// 设计：仅使用 RJW 乳房 Hediff 的 Severity / fluidMultiplier / sizeProfile.density，不乘 BodySize、不调用 PartSizeCalculator，避免重复计算体型。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
+/// </summary>
 public static class PawnMilkPoolExtensions
 {
     /// <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每�?hediff 表示一对乳房：�?右各为该 hediff �?Severity×系数；多 hediff 时左右均为所�?hediff 容量之和（总容�?2×和）。容量允�?0（乳退化）</summary>
@@ -70,6 +72,13 @@ public static class PawnMilkPoolExtensions
         catch { }
     }
 
+    /// <summary>RJW PartSizeConfigDef.density：仅用于「奶量增加」时放大进池量（泌乳进水、高潮产液等），不参与容量/流速倍率。人类 1.0，未配置按 1。</summary>
+    public static float GetBreastDensity(HediffDef def)
+    {
+        if (def is not HediffDef_SexPart sp || sp.sizeProfile?.density == null) return 1f;
+        return Mathf.Clamp(sp.sizeProfile.density.Value, 0.5f, 2f);
+    }
+
     /// <summary>按单乳枚举池条目（虚拟左右池，不修改 Hediff）。设计前提：泌乳逻辑仅在「胸部部位有乳房」时进行，即只有存在乳房 hediff（GetBreastList 非空）时才建乳池、进水、挤奶等；无乳房则返回空、不创建默认池。每�?hediff 表示一对，产生 _L/_R 两键，同一对共�?PairIndex。约定：永不返回 null，无乳房时返回空列表。见 记忆�?design/泌乳前提-仅在有乳房时、双池与PairIndex</summary>
     public static List<FluidPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
@@ -91,8 +100,9 @@ public static class PawnMilkPoolExtensions
                 string key = baseKey + "_" + i;
                 float cap = Mathf.Clamp(h.Severity * coeff, 0f, 10f);
                 float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
-                result.Add(new FluidPoolEntry(key + "_L", cap, mult, true, currentPair));
-                result.Add(new FluidPoolEntry(key + "_R", cap, mult, false, currentPair));
+                float density = GetBreastDensity(h.def);
+                result.Add(new FluidPoolEntry(key + "_L", cap, mult, true, currentPair, density));
+                result.Add(new FluidPoolEntry(key + "_R", cap, mult, false, currentPair, density));
                 currentPair++;
             }
         }
@@ -154,20 +164,6 @@ public static class PawnMilkPoolExtensions
         string poolKey = GetPoolKeyFromSideKey(sideKey);
         BodyPartRecord part = pawn.GetPartForPoolKey(poolKey);
         return pawn.GetMilkFlowMultiplierFromConditions(part);
-    }
-
-    /// <summary>RJW-Genes 兼容：基因对泌乳流速的倍率。无基因或未安装 rjw-genes 时返�?1f；如 rjw_genes_big_breasts / rjw_genes_extra_breasts 等可略微提高流速</summary>
-    public static float GetMilkFlowMultiplierFromGenes(this Pawn pawn)
-    {
-        if (pawn?.genes == null || !pawn.RaceProps.Humanlike) return 1f;
-        float mult = 1f;
-        var bigBreasts = DefDatabase<GeneDef>.GetNamedSilentFail("rjw_genes_big_breasts");
-        if (bigBreasts != null && pawn.genes.HasActiveGene(bigBreasts))
-            mult *= 1.12f;
-        var extraBreasts = DefDatabase<GeneDef>.GetNamedSilentFail("rjw_genes_extra_breasts");
-        if (extraBreasts != null && pawn.genes.HasActiveGene(extraBreasts))
-            mult *= 1.08f;
-        return Mathf.Clamp(mult, 0.5f, 1.5f);
     }
 
     /// <summary>左乳流速倍率：与容量一致，每个 hediff 表示一对，所�?hediff �?fluidMultiplier 之和计入左。无乳房 hediff �?0</summary>

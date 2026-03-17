@@ -183,6 +183,20 @@ public partial class CompEquallyMilkable
         SyncBaseFullness();
     }
 
+    /// <summary>向指定池 key 追加奶量（用于 RJW produceFluidOnOrgasm 高潮产液等），追加后同步左右汇总。</summary>
+    public void AddMilkToKeys(IEnumerable<(string key, float addAmount, float cap)> perKey)
+    {
+        if (breastFullness == null || perKey == null) return;
+        foreach (var (key, addAmount, cap) in perKey)
+        {
+            if (string.IsNullOrEmpty(key) || addAmount <= 0f) continue;
+            float cur = GetFullnessForKey(key);
+            breastFullness[key] = Mathf.Min(cap, cur + addAmount);
+        }
+        SyncLeftRightFromBreastFullness();
+        SyncBaseFullness();
+    }
+
     /// <summary>
     /// 设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
     /// </summary>
