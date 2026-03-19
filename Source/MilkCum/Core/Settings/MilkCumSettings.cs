@@ -81,6 +81,10 @@ internal class MilkCumSettings : ModSettings
 	public static bool rjwBreastSizeEnabled = true;
 	/// <summary>RJW 胸围容量系数：左右乳容量 = RJW 胸围严重度 × 本系数，默认 2，与泌乳流速倍率保持可调对应。</summary>
 	public static float rjwBreastCapacityCoefficient = 2f;
+	/// <summary>泌乳期临时体型增益（0~1 段）：RJW Severity 增量，满 L 时生效；默认 0.15。</summary>
+	public static float rjwLactatingSeverityBonus = 0.15f;
+	/// <summary>池 1→1.2 撑大段对应的 RJW Severity 增量；默认 0.05。</summary>
+	public static float rjwLactatingStretchSeverityBonus = 0.05f;
 	/// <summary>是否启用「因泌乳永久撑大」：每达到一定泌乳时长即通过 RJW 的 SetSeverity 永久增加乳房体型，不在本 mod 内维护单独数字。</summary>
 	public static bool rjwPermanentBreastGainFromLactationEnabled = false;
 	/// <summary>每多少游戏日泌乳触发一次永久体型增益（每里程碑对每乳调用 comp.SetSeverity(Min(1f, base + delta))）。</summary>
@@ -108,6 +112,8 @@ internal class MilkCumSettings : ModSettings
 	public static float mastitisBaseMtbDays { get => Risk.mastitisBaseMtbDays; set => Risk.mastitisBaseMtbDays = value; }
 	public static float overFullnessRiskMultiplier { get => Risk.overFullnessRiskMultiplier; set => Risk.overFullnessRiskMultiplier = value; }
 	public static float hygieneRiskMultiplier { get => Risk.hygieneRiskMultiplier; set => Risk.hygieneRiskMultiplier = value; }
+	/// <summary>医学贴近：卫生差且（淤积或损伤）时感染风险系数，MTB 再除以此值（&gt;1 更易触发）。</summary>
+	public static float mastitisInfectionRiskFactor { get => Risk.mastitisInfectionRiskFactor; set => Risk.mastitisInfectionRiskFactor = value; }
 	public static bool allowToleranceAffectMilk { get => Risk.allowToleranceAffectMilk; set => Risk.allowToleranceAffectMilk = value; }
 	public static float toleranceFlowImpactExponent { get => Risk.toleranceFlowImpactExponent; set => Risk.toleranceFlowImpactExponent = value; }
 	// 耐受动态：dE/dt = μ×L − ν×E；启用时由 mod 维护的 E 计算 E_tol（流速/容量），取代仅用游戏内耐受严重度 t。
@@ -238,6 +244,8 @@ internal class MilkCumSettings : ModSettings
 	public static float milkQualityProtectionFactor = 0.5f;
 	// 3.3 婊℃睜浜嬩欢锛氭弧姹犺繃涔咃紙绾?1 澶╋級鏃舵槸鍚﹀彂淇℃彁閱?
 	public static bool enableFullPoolLetter = true;
+	/// <summary>满池信件冷却天数，同一小人两次提醒至少间隔此天数。默认 2。</summary>
+	public static float fullPoolLetterCooldownDays = 2f;
 	// 3.3 鍔ㄧ墿宸紓鍖栵細绉嶆棌 defName 瀵瑰簲鑽墿杩涙按鍊嶇巼锛堟湭鍒楀嚭鐨勭鏃忎负 1锛夈€備笌鍙傛暟鑱斿姩琛ㄤ竴鑷淬€?
 	public static List<string> raceDrugDeltaSMultiplierDefNames = new();
 	public static List<float> raceDrugDeltaSMultiplierValues = new();
@@ -313,6 +321,8 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
 		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
 		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
+		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "EM.RjwLactatingSeverityBonus", 0.15f);
+		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "EM.RjwLactatingStretchSeverityBonus", 0.05f);
 		Scribe_Values.Look(ref rjwPermanentBreastGainFromLactationEnabled, "EM.RjwPermanentBreastGainFromLactationEnabled", false);
 		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
 		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
@@ -330,6 +340,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref _risk.mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
 		Scribe_Values.Look(ref _risk.overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
 		Scribe_Values.Look(ref _risk.hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
+		Scribe_Values.Look(ref _risk.mastitisInfectionRiskFactor, "EM.MastitisInfectionRiskFactor", 1.2f);
 		Scribe_Values.Look(ref _risk.allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
 		Scribe_Values.Look(ref _risk.toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
 		Scribe_Values.Look(ref enableToleranceDynamic, "EM.EnableToleranceDynamic", true);
@@ -345,6 +356,8 @@ internal class MilkCumSettings : ModSettings
 		{
 			lactationLevelCap = Mathf.Clamp(lactationLevelCap, 0f, 100f);
 			lactationLevelCapDurationMultiplier = Mathf.Clamp(lactationLevelCapDurationMultiplier, 0.1f, 10f);
+			rjwLactatingSeverityBonus = Mathf.Clamp(rjwLactatingSeverityBonus, 0f, 1f);
+			rjwLactatingStretchSeverityBonus = Mathf.Clamp(rjwLactatingStretchSeverityBonus, 0f, 1f);
 		}
 		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 30f);
 		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
@@ -380,6 +393,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref milkQualityInflammationWeight, "EM.MilkQualityInflammationWeight", 0.5f);
 		Scribe_Values.Look(ref milkQualityProtectionFactor, "EM.MilkQualityProtectionFactor", 0.5f);
 		Scribe_Values.Look(ref enableFullPoolLetter, "EM.EnableFullPoolLetter", true);
+		Scribe_Values.Look(ref fullPoolLetterCooldownDays, "EM.FullPoolLetterCooldownDays", 2f);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
 		if (Scribe.mode == LoadSaveMode.PostLoadInit)
@@ -952,6 +966,8 @@ public class MilkRiskSettings : IExposable
 	public float mastitisBaseMtbDays = 1.5f;
 	public float overFullnessRiskMultiplier = 1.5f;
 	public float hygieneRiskMultiplier = 1f;
+	/// <summary>医学贴近：卫生差+淤积/损伤时 MTB 再除以此值（感染风险）。</summary>
+	public float mastitisInfectionRiskFactor = 1.2f;
 	public bool allowToleranceAffectMilk = true;
 	public float toleranceFlowImpactExponent = 1f;
 	/// <summary>寤鸿 8锛氫汉褰?鍔ㄧ墿涔宠吅鐐?MTB 涔樻暟锛屼究浜庡尯鍒嗗钩琛°€</summary>
@@ -964,6 +980,7 @@ public class MilkRiskSettings : IExposable
 		Scribe_Values.Look(ref mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
 		Scribe_Values.Look(ref overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
 		Scribe_Values.Look(ref hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
+		Scribe_Values.Look(ref mastitisInfectionRiskFactor, "EM.MastitisInfectionRiskFactor", 1.2f);
 		Scribe_Values.Look(ref allowToleranceAffectMilk, "EM.AllowToleranceAffectMilk", true);
 		Scribe_Values.Look(ref toleranceFlowImpactExponent, "EM.ToleranceFlowImpactExponent", 1f);
 		Scribe_Values.Look(ref mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);

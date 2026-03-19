@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Fluids.Shared.Data;
+using MilkCum.RJW;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -11,12 +12,17 @@ namespace MilkCum.Fluids.Lactation.Comps;
 /// <summary>池存储与同步：缓存条目、按 key/左右汇总、选侧分组、清空/设置总水量。见 Docs/双池与PairIndex、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
-    /// <summary>缓存 GetBreastPoolEntries()，每 60 tick 失效，减少每 tick 分配与 GC。</summary>
+    /// <summary>缓存 GetBreastPoolEntries()，脏或超过 EntriesCacheMaxTicks 时失效，减少分配与 GC。</summary>
     private List<FluidPoolEntry> cachedEntries;
     private int cachedEntriesTick = -1;
-    /// <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效，避免每 60 tick 重建 Dictionary+List。</summary>
+    /// <summary>为 true 时下次 GetCachedEntries 强制重建；120-tick 比较乳房数量或 ClearPools 时设脏。</summary>
+    private bool cachedEntriesDirty = true;
+    /// <summary>上次重建缓存时的乳房 Hediff 数量，用于 120-tick 检测变化并设脏。</summary>
+    private int lastBreastListCount = -1;
+    /// <summary>缓存最长有效 tick 数，超时则重建；与脏标记一起使用，避免长期不刷新。</summary>
+    private const int EntriesCacheMaxTicks = 300;
+    /// <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效。</summary>
     private List<List<FluidPoolEntry>> cachedPairGroups;
-    private const int CacheInvalidateInterval = 60;
     /// <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
     private const bool PreferLeftWhenEqual = true;
 
@@ -35,25 +41,58 @@ public partial class CompEquallyMilkable
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
+    /// <summary>按 entries 汇总左侧或右侧总水位（LeftFullness/RightFullness 用），便于多乳/不对称。</summary>
+    private float GetLeftOrRightFullness(bool left)
+    {
+        if (breastFullness == null || breastFullness.Count == 0) return 0f;
+        var entries = GetCachedEntries();
+        float sum = 0f;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (e.IsLeft != left || string.IsNullOrEmpty(e.Key)) continue;
+            if (breastFullness.TryGetValue(e.Key, out float v)) sum += v;
+        }
+        return sum;
+    }
+
     private List<FluidPoolEntry> GetCachedEntries()
     {
         int now = Find.TickManager.TicksGame;
-        if (cachedEntries != null && (now - cachedEntriesTick) <= CacheInvalidateInterval)
+        if (cachedEntries != null && !cachedEntriesDirty && (now - cachedEntriesTick) <= EntriesCacheMaxTicks)
             return cachedEntries;
         cachedEntries = Pawn != null ? Pawn.GetBreastPoolEntries() : new List<FluidPoolEntry>();
         cachedEntriesTick = now;
+        cachedEntriesDirty = false;
+        lastBreastListCount = Pawn != null ? Pawn.GetBreastListOrEmpty().Count : 0;
         cachedPairGroups = null;
         return cachedEntries;
+    }
+
+    /// <summary>立即标记 entries 缓存为脏，下次 GetCachedEntries 将重建。泌乳/乳房 hediff 增删时调用。</summary>
+    internal void SetEntriesCacheDirty()
+    {
+        cachedEntriesDirty = true;
+    }
+
+    /// <summary>每 120 tick 在 CompTick 中调用：乳房数量变化时设脏，下次 GetCachedEntries 将重建。</summary>
+    internal void EnsureEntriesCacheDirtyIfBreastCountChanged()
+    {
+        if (Pawn == null) return;
+        int cur = Pawn.GetBreastListOrEmpty().Count;
+        if (cachedEntries != null && cur != lastBreastListCount)
+            cachedEntriesDirty = true;
     }
 
     /// <summary>缓存有效时返回已缓存的池条目列表（只读使用），避免 Hediff/UI 重复分配；无效时返回 null，调用方需 fallback 到 GetBreastPoolEntries。</summary>
     internal List<FluidPoolEntry> GetCachedEntriesIfValid()
     {
         if (cachedEntries == null || Find.TickManager == null) return null;
+        if (cachedEntriesDirty) return null;
         int now = Find.TickManager.TicksGame;
-        if ((now - cachedEntriesTick) <= CacheInvalidateInterval)
-            return cachedEntries;
-        return null;
+        if ((now - cachedEntriesTick) > EntriesCacheMaxTicks)
+            return null;
+        return cachedEntries;
     }
 
     /// <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
@@ -149,41 +188,29 @@ public partial class CompEquallyMilkable
         return 0;
     }
 
-    /// <summary>将双池总和同步到基类 fullness，供可能读取基类字段的代码使用</summary>
+    /// <summary>将总池量同步到基类 fullness，供可能读取基类字段的代码使用。</summary>
     private void SyncBaseFullness()
     {
-        fullness = Mathf.Clamp(leftFullness + rightFullness, 0f, maxFullness);
-    }
-
-    /// <summary>从 per-breast 字典汇总到 leftFullness / rightFullness（按 GetBreastPoolEntries 的 IsLeft）</summary>
-    private void SyncLeftRightFromBreastFullness()
-    {
-        if (Pawn == null || breastFullness == null) return;
-        var entries = GetCachedEntries();
-        float left = 0f, right = 0f;
-        foreach (var e in entries)
+        float total = 0f;
+        if (breastFullness != null)
         {
-            if (breastFullness.TryGetValue(e.Key, out float v))
-            {
-                if (e.IsLeft) left += v; else right += v;
-            }
+            foreach (var v in breastFullness.Values) total += v;
         }
-        leftFullness = left;
-        rightFullness = right;
+        fullness = Mathf.Clamp(total, 0f, maxFullness);
     }
 
     /// <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）</summary>
     public void ClearPools()
     {
-        leftFullness = 0f;
-        rightFullness = 0f;
         breastFullness?.Clear();
         cachedEntries = null;
         cachedPairGroups = null;
+        cachedEntriesDirty = true;
+        lastBreastListCount = -1;
         SyncBaseFullness();
     }
 
-    /// <summary>向指定池 key 追加奶量（用于 RJW produceFluidOnOrgasm 高潮产液等），追加后同步左右汇总。</summary>
+    /// <summary>向指定池 key 追加奶量（用于 RJW produceFluidOnOrgasm 高潮产液等）。</summary>
     public void AddMilkToKeys(IEnumerable<(string key, float addAmount, float cap)> perKey)
     {
         if (breastFullness == null || perKey == null) return;
@@ -193,29 +220,26 @@ public partial class CompEquallyMilkable
             float cur = GetFullnessForKey(key);
             breastFullness[key] = Mathf.Min(cap, cur + addAmount);
         }
-        SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
     }
 
-    /// <summary>
-    /// 设置总奶量（0～上限）。从各乳池按比例缩放到目标总水量。
-    /// </summary>
-    /// <param name="value">目标总水量</param>
-    /// <param name="cap">可选；不传时用 maxFullness 为上限；传时用于 clamp（如关压力因子时用撑大总容量）</param>
+    /// <summary>设置总奶量（0～上限）。按 key 比例缩放到目标总水量，唯一写入口之一。</summary>
     public void SetFullness(float value, float? cap = null)
     {
         float target = Mathf.Clamp(value, 0f, cap ?? maxFullness);
-        float total = leftFullness + rightFullness;
-        if (total <= 0f) { SyncBaseFullness(); return; }
-        float factor = target / total;
+        float total = 0f;
         if (breastFullness != null)
         {
-            var keys = new List<string>(breastFullness.Keys);
-            foreach (var k in keys)
-                breastFullness[k] = Mathf.Max(0f, breastFullness[k] * factor);
+            foreach (var v in breastFullness.Values) total += v;
         }
-        leftFullness *= factor;
-        rightFullness *= factor;
+        if (total <= 0f) { SyncBaseFullness(); return; }
+        float factor = target / total;
+        var keys = new List<string>(breastFullness.Keys);
+        for (int i = 0; i < keys.Count; i++)
+        {
+            string k = keys[i];
+            breastFullness[k] = Mathf.Max(0f, breastFullness[k] * factor);
+        }
         SyncBaseFullness();
     }
 }

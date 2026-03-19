@@ -1,21 +1,56 @@
 using MilkCum.Core;
+using MilkCum.Core.Constants;
+using MilkCum.Fluids.Lactation.Comps;
 using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
-/// 泌乳相关健康状态更新：胀满、炎症、乳腺炎（炎症触发与 MTB 触发）�?
-/// 主流程只调本 Helper 的入口，逻辑集中在此，避�?CompEquallyMilkable 膨胀。见 记忆�?docs/待办清单 二、代码位置与主流程�?
+/// 泌乳相关健康状态更新：胀满、炎症、乳腺炎（炎症触发与 MTB 触发）、Lactating hediff 维护。
+/// 主流程只调本 Helper 的入口，逻辑集中在此，避免 CompEquallyMilkable 膨胀。
 /// </summary>
 public static class MilkRelatedHealthHelper
 {
-    /// <summary>满池时添加「乳房胀满」hediff；低�?90% maxFullness 时移除（滞后避免抖动）。由 CompTick �?tick 调用</summary>
+    /// <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity）。由 CompTick 每 120 tick 调用。</summary>
+    public static void EnsureLactatingHediffFromConditions(Pawn pawn)
+    {
+        if (pawn == null || !pawn.SpawnedOrAnyParentSpawned || !pawn.IsColonyPawn() || pawn.Faction == null)
+            return;
+        if (pawn.genes?.HasActiveGene(MilkCumDefOf.EM_Permanent_Lactation) == true)
+        {
+            Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
+            lactating.Severity = Mathf.Max(lactating.Severity, 0.9999f);
+            pawn.CompEquallyMilkable()?.SetEntriesCacheDirty();
+            MilkCumSettings.LactationLog($"Lactating ensured (permanent gene): {pawn.Name}");
+            return;
+        }
+        if (!pawn.RaceProps.Humanlike && !pawn.IsMilkable())
+        {
+            if (pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) is Hediff lactating)
+            {
+                MilkCumSettings.LactationLog($"Lactating removed (not milkable): {pawn.Name}");
+                pawn.health.RemoveHediff(lactating);
+                pawn.CompEquallyMilkable()?.SetEntriesCacheDirty();
+            }
+            return;
+        }
+        if (MilkCumSettings.femaleAnimalAdultAlwaysLactating && pawn.IsAdultFemaleAnimalOfColony())
+        {
+            Hediff lactating = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart());
+            lactating.Severity = Mathf.Max(lactating.Severity, 1f);
+            pawn.CompEquallyMilkable()?.SetEntriesCacheDirty();
+            MilkCumSettings.LactationLog($"Lactating ensured (animal always): {pawn.Name}");
+        }
+    }
+
+    /// <summary>满池时添加「乳房胀满」hediff；低于 90% maxFullness 时移除（滞后避免抖动）。由 CompTick 每 tick 调用</summary>
     public static void UpdateBreastsEngorged(Pawn pawn, float fullness, float maxFullness)
     {
         if (MilkCumDefOf.EM_BreastsEngorged == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
         var engorged = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastsEngorged);
-        float fullThreshold = 0.95f * maxFullness;
+        float fullThreshold = PoolModelConstants.FullnessThresholdFactor * maxFullness;
         float lowThreshold = 0.9f * maxFullness;
         if (fullness >= fullThreshold && engorged == null)
             pawn.health.AddHediff(MilkCumDefOf.EM_BreastsEngorged, pawn.GetBreastOrChestPart());
@@ -37,7 +72,7 @@ public static class MilkRelatedHealthHelper
     {
         if (MilkCumDefOf.EM_Mastitis == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
         if (!MilkCumSettings.allowMastitis) return;
-        bool longFull = ticksFullPool >= 60000;
+        bool longFull = ticksFullPool >= (int)PoolModelConstants.TicksPerGameDay;
         float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(pawn);
         bool badHygiene = hygieneRisk >= 0.4f;
         bool torsoInjury = HasTorsoOrBreastInjury(pawn);
@@ -47,11 +82,14 @@ public static class MilkRelatedHealthHelper
         if (longFull) mtbDays /= UnityEngine.Mathf.Max(0.1f, MilkCumSettings.overFullnessRiskMultiplier);
         if (badHygiene) mtbDays /= UnityEngine.Mathf.Max(0.1f, (0.5f + hygieneRisk) * MilkCumSettings.hygieneRiskMultiplier);
         if (torsoInjury) mtbDays /= 1.3f;
+        // 医学贴近：卫生差且（淤积或损伤）时感染风险升高，MTB 再降（对应细菌经破损/不洁侵入）
+        if (badHygiene && (longFull || torsoInjury))
+            mtbDays /= UnityEngine.Mathf.Max(0.1f, MilkCumSettings.mastitisInfectionRiskFactor);
         float nutritionFactor = 0.5f + 0.5f * UnityEngine.Mathf.Clamp(PawnUtility.BodyResourceGrowthSpeed(pawn), 0f, 1f);
         mtbDays *= UnityEngine.Mathf.Max(0.3f, nutritionFactor);
         float raceMultiplier = pawn.RaceProps.Humanlike ? MilkCumSettings.mastitisMtbDaysMultiplierHumanlike : MilkCumSettings.mastitisMtbDaysMultiplierAnimal;
         mtbDays *= UnityEngine.Mathf.Max(0.01f, raceMultiplier);
-        if (!Rand.MTBEventOccurs(mtbDays, 60000f, 2000f)) return;
+        if (!Rand.MTBEventOccurs(mtbDays, PoolModelConstants.TicksPerGameDay, 2000f)) return;
         var existing = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
         if (existing != null)
         {

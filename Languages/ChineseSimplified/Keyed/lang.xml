@@ -126,6 +126,10 @@
     <EM.RjwBreastCapacityCoefficient>乳房容量系数：{0}</EM.RjwBreastCapacityCoefficient>
     <EM.RjwBreastCapacityCoefficientDesc>左/右池容量 = RJW 乳房 Severity × 本系数（1=不变）。可与流速倍率、泌乳效率等一起调节。</EM.RjwBreastCapacityCoefficientDesc>
     <EM.RjwBreastCapacityCoefficientDescLong>左/右池容量 = RJW 乳房 Severity × 本系数；总容量 = 左+右。系数越大池越大，灌满需时越长；默认 2 时 Severity 0.5 双乳总容量=2。详见 Docs/乳房容量模拟计算.md。</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.RjwLactatingSeverityBonus>泌乳 Severity 加成：{0}</EM.RjwLactatingSeverityBonus>
+    <EM.RjwLactatingSeverityBonusDesc>泌乳时在基础 RJW 乳房 Severity 上增加的数值（池 0–1 段）。默认 0.15。</EM.RjwLactatingSeverityBonusDesc>
+    <EM.RjwLactatingStretchSeverityBonus>撑大段 Severity 加成：{0}</EM.RjwLactatingStretchSeverityBonus>
+    <EM.RjwLactatingStretchSeverityBonusDesc>池在撑大段（1–1.2）时额外增加的 Severity。默认 0.05。</EM.RjwLactatingStretchSeverityBonusDesc>
     <EM.DefaultFlowMultiplierForHumanlikeDescLong>产奶流速（池单位/天）的全局倍率；与容量系数、基准天数一起决定单次剂量下的灌满时间与剩余天数。默认 2 ≈ 单次剂量约 1 游戏日灌满。</EM.DefaultFlowMultiplierForHumanlikeDescLong>
     <EM.BaselineMilkDurationDays>药物泌乳基准天数：{0} 日</EM.BaselineMilkDurationDays>
     <EM.BaselineMilkDurationDaysDesc>参与 L 衰减：单次剂量（L≈0.5）时剩余天数 ≈ 本值。默认 5 即约 5 日；多剂叠加时总天数 &lt; 剂数×本值。</EM.BaselineMilkDurationDaysDesc>
@@ -157,6 +161,8 @@
     <EM.MastitisBaseMtbDays>乳腺炎基准 MTB（天）：{0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>满池过久风险系数：{0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>卫生风险系数：{0}</EM.HygieneRiskMultiplier>
+    <EM.MastitisInfectionRiskFactor>感染风险系数：{0}</EM.MastitisInfectionRiskFactor>
+    <EM.MastitisInfectionRiskFactorDesc>医学贴近：当「卫生差」且「长时间满池或躯干/乳房损伤」时，MTB 再除以此系数（更易触发乳腺炎，对应细菌经破损/不洁侵入）。1=不额外加重；建议 1.1～1.5。</EM.MastitisInfectionRiskFactorDesc>
     <EM.MastitisMtbDaysMultiplierHumanlike>人形乳腺炎 MTB 乘数：{0}</EM.MastitisMtbDaysMultiplierHumanlike>
     <EM.MastitisMtbDaysMultiplierHumanlikeDesc>人形小人的乳腺炎基准 MTB 乘数。&gt;1 表示乳腺炎更少发生。</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
     <EM.MastitisMtbDaysMultiplierAnimal>动物乳腺炎 MTB 乘数：{0}</EM.MastitisMtbDaysMultiplierAnimal>
@@ -189,6 +195,10 @@
     <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>需要挤奶</EM.FullPoolLetterTitle>
     <EM.FullPoolLetterText>{0} 的奶池已满超过一天，建议挤奶以免不适或溢出。</EM.FullPoolLetterText>
+    <EM.EnableFullPoolLetter>满池过久时发送提醒信</EM.EnableFullPoolLetter>
+    <EM.EnableFullPoolLetterDesc>开启后，殖民地小人的奶池持续满池超过约一天会收到提醒信。下方冷却天数限制同一小人再次触发信件的最短间隔。</EM.EnableFullPoolLetterDesc>
+    <EM.FullPoolLetterCooldownDays>满池信件冷却（天）：{0}</EM.FullPoolLetterCooldownDays>
+    <EM.FullPoolLetterCooldownDaysDesc>同一小人两次提醒信的最短间隔天数。默认 2。</EM.FullPoolLetterCooldownDaysDesc>
     <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>

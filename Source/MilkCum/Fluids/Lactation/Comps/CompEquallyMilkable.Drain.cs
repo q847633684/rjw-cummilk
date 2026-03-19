@@ -26,7 +26,6 @@ public partial class CompEquallyMilkable
         var entries = GetCachedEntries();
         if (entries.Count == 0)
         {
-            SyncLeftRightFromBreastFullness();
             SyncBaseFullness();
             return 0f;
         }
@@ -105,7 +104,6 @@ public partial class CompEquallyMilkable
                 remaining -= take;
             }
         }
-        SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
         float drained = amount - remaining;
         if (MilkCumSettings.milkingActionLog && Pawn != null && drained > 0f)
@@ -128,7 +126,6 @@ public partial class CompEquallyMilkable
         var entries = GetCachedEntries();
         if (entries.Count == 0)
         {
-            SyncLeftRightFromBreastFullness();
             SyncBaseFullness();
             return 0f;
         }
@@ -177,7 +174,6 @@ public partial class CompEquallyMilkable
                 remainingRequest -= take;
             }
         }
-        SyncLeftRightFromBreastFullness();
         SyncBaseFullness();
         if (MilkCumSettings.milkingActionLog && Pawn != null && totalDrained > 0f)
         {

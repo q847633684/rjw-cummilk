@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
+using MilkCum.RJW;
 using RimWorld;
 using rjw;
 using UnityEngine;
@@ -19,8 +20,8 @@ public static class PawnMilkPoolExtensions
     public static (float leftCapacity, float rightCapacity) GetVirtualBreastPools(this Pawn pawn)
     {
         if (pawn == null) return (0f, 0f);
-        var list = pawn.GetBreastList();
-        if (list == null || list.Count == 0) return (0f, 0f);
+        var list = pawn.GetBreastListOrEmpty();
+        if (list.Count == 0) return (0f, 0f);
         float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
         float totalCap = 0f;
         for (int i = 0; i < list.Count; i++)
@@ -51,8 +52,8 @@ public static class PawnMilkPoolExtensions
         rightFactor = 0f;
         if (pawn == null) return;
         if (!MilkCumSettings.rjwBreastSizeEnabled) return;
-        var list = pawn.GetBreastList();
-        if (list == null || list.Count == 0) return;
+        var list = pawn.GetBreastListOrEmpty();
+        if (list.Count == 0) return;
         float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
         try
         {
@@ -87,8 +88,8 @@ public static class PawnMilkPoolExtensions
         if (!MilkCumSettings.rjwBreastSizeEnabled) return result;
         try
         {
-            var list = pawn.GetBreastList();
-            if (list == null || list.Count == 0) return result;
+            var list = pawn.GetBreastListOrEmpty();
+            if (list.Count == 0) return result;
             float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
             int currentPair = 0;
             for (int i = 0; i < list.Count; i++)
@@ -147,8 +148,8 @@ public static class PawnMilkPoolExtensions
     public static BodyPartRecord GetPartForPoolKey(this Pawn pawn, string poolKey)
     {
         if (pawn == null || string.IsNullOrEmpty(poolKey)) return null;
-        var list = pawn.GetBreastList();
-        if (list == null) return null;
+        var list = pawn.GetBreastListOrEmpty();
+        if (list.Count == 0) return null;
         foreach (var h in list)
         {
             if (pawn.GetPoolKeyForBreastHediff(h) == poolKey)
@@ -187,8 +188,8 @@ public static class PawnMilkPoolExtensions
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return;
         try
         {
-            var list = pawn.GetBreastList();
-            if (list == null || list.Count == 0) return;
+            var list = pawn.GetBreastListOrEmpty();
+            if (list.Count == 0) return;
             float totalMult = 0f;
             foreach (var h in list)
             {
@@ -209,8 +210,8 @@ public static class PawnMilkPoolExtensions
     public static string GetPoolKeyForBreastHediff(this Pawn pawn, Hediff breastHediff)
     {
         if (pawn == null || breastHediff == null) return null;
-        var list = pawn.GetBreastList();
-        if (list == null || list.Count == 0) return null;
+        var list = pawn.GetBreastListOrEmpty();
+        if (list.Count == 0) return null;
         int i = list.IndexOf(breastHediff);
         if (i < 0)
         {

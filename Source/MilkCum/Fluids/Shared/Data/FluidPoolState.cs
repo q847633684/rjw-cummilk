@@ -1,6 +1,24 @@
+using MilkCum.Core.Constants;
 using UnityEngine;
 
 namespace MilkCum.Fluids.Shared.Data;
+
+/// <summary>双池基础容量与撑大容量，用于 TickGrowth 参数封装。</summary>
+public readonly struct BreastPairCapacities
+{
+    public float LeftBase { get; }
+    public float RightBase { get; }
+    public float LeftStretch { get; }
+    public float RightStretch { get; }
+
+    public BreastPairCapacities(float leftBase, float rightBase, float leftStretch, float rightStretch)
+    {
+        LeftBase = leftBase;
+        RightBase = rightBase;
+        LeftStretch = leftStretch;
+        RightStretch = rightStretch;
+    }
+}
 
 /// <summary>
 /// 体液池状态（乳汁/精液共享）：双池状态与推进逻辑。不持有 Pawn，容量/流速由调用方传入。
@@ -21,16 +39,14 @@ public class FluidPoolState
     }
 
     /// <summary>
-    /// 双池进水：先填满两侧基础容量；仅当两侧都满（≥基础容量）后才允许撑大（至 stretchCap），超出部分溢出。返回本 tick 溢出量。
+    /// 双池进水（纯计算）：先填满两侧基础容量，仅当两侧都满后才允许撑大，超出部分溢出。返回 (newLeft, newRight, overflow)，不修改 LeftFullness/RightFullness，由调用方写回并做回缩。
     /// </summary>
-    public float TickGrowth(float flowLeftPerTick, float flowRightPerTick,
-        float leftBaseCap, float rightBaseCap, float stretchCapLeft, float stretchCapRight)
+    public (float newLeft, float newRight, float overflow) TickGrowth(float flowLeftPerTick, float flowRightPerTick, BreastPairCapacities cap)
     {
-        LeftFullness = Mathf.Clamp(LeftFullness, 0f, stretchCapLeft);
-        RightFullness = Mathf.Clamp(RightFullness, 0f, stretchCapRight);
-
-        float roomLeftBase = Mathf.Max(0f, leftBaseCap - LeftFullness);
-        float roomRightBase = Mathf.Max(0f, rightBaseCap - RightFullness);
+        float left = Mathf.Clamp(LeftFullness, 0f, cap.LeftStretch);
+        float right = Mathf.Clamp(RightFullness, 0f, cap.RightStretch);
+        float roomLeftBase = Mathf.Max(0f, cap.LeftBase - left);
+        float roomRightBase = Mathf.Max(0f, cap.RightBase - right);
 
         float addLeft;
         float addRight;
@@ -57,12 +73,12 @@ public class FluidPoolState
             addLeft = Mathf.Min(flowLeftPerTick, roomLeftBase);
             addRight = Mathf.Min(flowRightPerTick, roomRightBase);
             float remainder = totalFlow - addLeft - addRight;
-            if (remainder > 1E-6f)
+            if (remainder > PoolModelConstants.Epsilon)
             {
                 float roomLeftRemain = roomLeftBase - addLeft;
                 float roomRightRemain = roomRightBase - addRight;
                 float roomTotal = roomLeftRemain + roomRightRemain;
-                if (roomTotal > 1E-6f)
+                if (roomTotal > PoolModelConstants.Epsilon)
                 {
                     float fracLeft = roomLeftRemain / roomTotal;
                     float addLeftRemainder = Mathf.Min(remainder * fracLeft, roomLeftRemain);
@@ -70,26 +86,26 @@ public class FluidPoolState
                     addLeft += addLeftRemainder;
                     addRight += addRightRemainder;
                 }
-                else if (roomLeftRemain > 1E-6f)
+                else if (roomLeftRemain > PoolModelConstants.Epsilon)
                     addLeft += Mathf.Min(remainder, roomLeftRemain);
-                else if (roomRightRemain > 1E-6f)
+                else if (roomRightRemain > PoolModelConstants.Epsilon)
                     addRight += Mathf.Min(remainder, roomRightRemain);
             }
         }
 
         float remainderAfterBase = flowLeftPerTick + flowRightPerTick - addLeft - addRight;
-        float newLeft = LeftFullness + addLeft;
-        float newRight = RightFullness + addRight;
+        float newLeft = left + addLeft;
+        float newRight = right + addRight;
 
-        // 阶段二：仅当两侧都达到基础容量时，才允许撑大。用入口时的 LeftFullness/RightFullness 判断，避免 newLeft/newRight 浮点偏差导致不触发 stretch。
-        const float eps = 1E-5f;
-        bool bothAtBase = LeftFullness >= leftBaseCap - eps && RightFullness >= rightBaseCap - eps;
-        if (remainderAfterBase > 1E-6f && bothAtBase)
+        // 阶段二：仅当两侧都达到基础容量时，才允许撑大。用阶段一后的 newLeft/newRight 判断，避免「本 tick 刚好补满」仍不触发 stretch、导致撑大难而溢出多。
+        float eps = PoolModelConstants.DisplayEpsilon;
+        bool bothAtBase = newLeft >= cap.LeftBase - eps && newRight >= cap.RightBase - eps;
+        if (remainderAfterBase > PoolModelConstants.Epsilon && bothAtBase)
         {
-            float stretchRoomLeft = Mathf.Max(0f, stretchCapLeft - newLeft);
-            float stretchRoomRight = Mathf.Max(0f, stretchCapRight - newRight);
+            float stretchRoomLeft = Mathf.Max(0f, cap.LeftStretch - newLeft);
+            float stretchRoomRight = Mathf.Max(0f, cap.RightStretch - newRight);
             float stretchRoomTotal = stretchRoomLeft + stretchRoomRight;
-            if (stretchRoomTotal > 1E-6f)
+            if (stretchRoomTotal > PoolModelConstants.Epsilon)
             {
                 float toAddStretch = Mathf.Min(remainderAfterBase, stretchRoomTotal);
                 float addLeftStretch = Mathf.Min(toAddStretch * (stretchRoomLeft / stretchRoomTotal), stretchRoomLeft);
@@ -100,9 +116,9 @@ public class FluidPoolState
         }
 
         float overflowTotal = flowLeftPerTick + flowRightPerTick - addLeft - addRight;
-        LeftFullness += addLeft;
-        RightFullness += addRight;
-        return Mathf.Max(0f, overflowTotal);
+        float resultLeft = left + addLeft;
+        float resultRight = right + addRight;
+        return (resultLeft, resultRight, Mathf.Max(0f, overflowTotal));
     }
 
     /// <summary>

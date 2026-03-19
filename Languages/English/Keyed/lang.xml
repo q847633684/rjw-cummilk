@@ -127,6 +127,10 @@
     <EM.RjwBreastCapacityCoefficient>Breast capacity coefficient: {0}</EM.RjwBreastCapacityCoefficient>
     <EM.RjwBreastCapacityCoefficientDesc>Left/right pool capacity = RJW breast Severity × this value (1 = unchanged). Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
     <EM.RjwBreastCapacityCoefficientDescLong>Left/right pool capacity = RJW breast Severity × this value; total capacity = left + right. Higher = larger pool, longer to fill; default 2 with Severity 0.5 gives total capacity 2. See Docs.</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.RjwLactatingSeverityBonus>Lactating Severity bonus: {0}</EM.RjwLactatingSeverityBonus>
+    <EM.RjwLactatingSeverityBonusDesc>Added to base RJW breast Severity while lactating (pool 0–1). Default 0.15.</EM.RjwLactatingSeverityBonusDesc>
+    <EM.RjwLactatingStretchSeverityBonus>Stretch Severity bonus: {0}</EM.RjwLactatingStretchSeverityBonus>
+    <EM.RjwLactatingStretchSeverityBonusDesc>Added when pool is in stretch range (1–1.2). Default 0.05.</EM.RjwLactatingStretchSeverityBonusDesc>
     <EM.DefaultFlowMultiplierForHumanlikeDescLong>Global multiplier for milk flow (pool units/day). With capacity and baseline days, determines fill time and remaining days for a single dose. Default 2 ≈ single dose fills in ~1 game day.</EM.DefaultFlowMultiplierForHumanlikeDescLong>
     <EM.BaselineMilkDurationDays>Drug-induced baseline days: {0}</EM.BaselineMilkDurationDays>
     <EM.BaselineMilkDurationDaysDesc>Drives L decay: remaining days for a single dose (L≈0.5) ≈ this value. Default 5 ≈ 5 days; multi-dose total &lt; doses × this.</EM.BaselineMilkDurationDaysDesc>
@@ -158,6 +162,8 @@
     <EM.MastitisBaseMtbDays>Mastitis base MTB (days): {0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>Over-fullness risk multiplier: {0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>Hygiene risk multiplier: {0}</EM.HygieneRiskMultiplier>
+    <EM.MastitisInfectionRiskFactor>Infection risk factor: {0}</EM.MastitisInfectionRiskFactor>
+    <EM.MastitisInfectionRiskFactorDesc>Medical alignment: when hygiene is bad AND (pool long full or torso/breast injury), MTB is further divided by this factor (higher mastitis risk, mimics bacterial entry). 1 = no extra; suggest 1.1–1.5.</EM.MastitisInfectionRiskFactorDesc>
     <EM.MastitisMtbDaysMultiplierHumanlike>Humanlike mastitis MTB multiplier: {0}</EM.MastitisMtbDaysMultiplierHumanlike>
     <EM.MastitisMtbDaysMultiplierHumanlikeDesc>Multiply base mastitis MTB for humanlike pawns. &gt;1 = less frequent mastitis.</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
     <EM.MastitisMtbDaysMultiplierAnimal>Animal mastitis MTB multiplier: {0}</EM.MastitisMtbDaysMultiplierAnimal>
@@ -190,6 +196,10 @@
     <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>Needs milking</EM.FullPoolLetterTitle>
     <EM.FullPoolLetterText>{0} has been at full milk pool for over a day; consider milking to avoid discomfort or overflow.</EM.FullPoolLetterText>
+    <EM.EnableFullPoolLetter>Send letter when milk pool full too long</EM.EnableFullPoolLetter>
+    <EM.EnableFullPoolLetterDesc>When enabled, a reminder letter is sent if a colonist's milk pool stays full for over one day. Cooldown below limits how often the same pawn can trigger another letter.</EM.EnableFullPoolLetterDesc>
+    <EM.FullPoolLetterCooldownDays>Full-pool letter cooldown (days): {0}</EM.FullPoolLetterCooldownDays>
+    <EM.FullPoolLetterCooldownDaysDesc>Minimum days between two reminder letters for the same pawn. Default 2.</EM.FullPoolLetterCooldownDaysDesc>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>

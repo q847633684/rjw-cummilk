@@ -40,4 +40,17 @@ public static class PoolModelConstants
     public const float Epsilon = 1E-6f;
     /// <summary>每 60 tick 对应游戏日比例（60/60000）。</summary>
     public const float Interval60PerDay = 60f / 60000f;
+    /// <summary>1 游戏日 tick 数。</summary>
+    public const float TicksPerGameDay = 60000f;
+    /// <summary>进水/回缩步长间隔 tick 数（60 tick）。</summary>
+    public const float Interval60Ticks = 60f;
+    /// <summary>满池判定：水位 ≥ 该系数×基础容量时视为「满」。</summary>
+    public const float FullnessThresholdFactor = 0.95f;
+    /// <summary>显示用：流量 &lt; 此值视为 0，避免除零或无效加权。</summary>
+    public const float DisplayEpsilon = 1E-5f;
+
+    /// <summary>乳腺炎排空缓解：池满度低于此比例时视为「排空」，severity 额外衰减（医学：排空乳房是治疗核心）。</summary>
+    public const float MastitisDrainageReliefFullnessThreshold = 0.3f;
+    /// <summary>乳腺炎排空缓解：排空状态下每日额外 severity 衰减量（与 HediffCompProperties_SeverityPerDay 叠加）。</summary>
+    public const float MastitisDrainageReliefSeverityPerDay = 0.01f;
 }

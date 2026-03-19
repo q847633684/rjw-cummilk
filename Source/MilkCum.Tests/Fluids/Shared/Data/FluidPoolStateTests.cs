@@ -18,11 +18,12 @@ public class FluidPoolStateTests
         float leftCap = 2f, rightCap = 2f, stretchL = 3f, stretchR = 3f;
         float flowL = 1f, flowR = 1f;
 
-        float overflow = s.TickGrowth(flowL, flowR, leftCap, rightCap, stretchL, stretchR);
+        var cap = new BreastPairCapacities(leftCap, rightCap, stretchL, stretchR);
+        var (newLeft, newRight, overflow) = s.TickGrowth(flowL, flowR, cap);
 
         Assert.That(overflow, Is.EqualTo(0f).Within(Eps));
-        Assert.That(s.LeftFullness, Is.EqualTo(1f).Within(Eps));
-        Assert.That(s.RightFullness, Is.EqualTo(1f).Within(Eps));
+        Assert.That(newLeft, Is.EqualTo(1f).Within(Eps));
+        Assert.That(newRight, Is.EqualTo(1f).Within(Eps));
     }
 
     [Test]
@@ -32,11 +33,12 @@ public class FluidPoolStateTests
         float leftCap = 2f, rightCap = 2f, stretchL = 3f, stretchR = 3f;
         float flowL = 0.5f, flowR = 0.5f;
 
-        float overflow = s.TickGrowth(flowL, flowR, leftCap, rightCap, stretchL, stretchR);
+        var cap = new BreastPairCapacities(leftCap, rightCap, stretchL, stretchR);
+        var (newLeft, newRight, overflow) = s.TickGrowth(flowL, flowR, cap);
 
         Assert.That(overflow, Is.EqualTo(0f).Within(Eps));
-        Assert.That(s.LeftFullness, Is.EqualTo(2f).Within(Eps));
-        Assert.That(s.RightFullness, Is.EqualTo(1f).Within(Eps));
+        Assert.That(newLeft, Is.EqualTo(2f).Within(Eps));
+        Assert.That(newRight, Is.EqualTo(1f).Within(Eps));
     }
 
     [Test]
@@ -46,11 +48,12 @@ public class FluidPoolStateTests
         float leftCap = 2f, rightCap = 2f, stretchL = 3f, stretchR = 3f;
         float flowL = 0.5f, flowR = 0.5f;
 
-        float overflow = s.TickGrowth(flowL, flowR, leftCap, rightCap, stretchL, stretchR);
+        var cap = new BreastPairCapacities(leftCap, rightCap, stretchL, stretchR);
+        var (newLeft, newRight, overflow) = s.TickGrowth(flowL, flowR, cap);
 
         Assert.That(overflow, Is.EqualTo(0f).Within(Eps));
-        Assert.That(s.LeftFullness, Is.EqualTo(1f).Within(Eps));
-        Assert.That(s.RightFullness, Is.EqualTo(2f).Within(Eps));
+        Assert.That(newLeft, Is.EqualTo(1f).Within(Eps));
+        Assert.That(newRight, Is.EqualTo(2f).Within(Eps));
     }
 
     [Test]
@@ -60,11 +63,12 @@ public class FluidPoolStateTests
         float leftCap = 2f, rightCap = 2f, stretchL = 3f, stretchR = 3f;
         float flowL = 0.5f, flowR = 0.5f;
 
-        float overflow = s.TickGrowth(flowL, flowR, leftCap, rightCap, stretchL, stretchR);
+        var cap = new BreastPairCapacities(leftCap, rightCap, stretchL, stretchR);
+        var (newLeft, newRight, overflow) = s.TickGrowth(flowL, flowR, cap);
 
         Assert.That(overflow, Is.EqualTo(0f).Within(Eps));
-        Assert.That(s.LeftFullness, Is.EqualTo(2.5f).Within(Eps));
-        Assert.That(s.RightFullness, Is.EqualTo(2.5f).Within(Eps));
+        Assert.That(newLeft, Is.EqualTo(2.5f).Within(Eps));
+        Assert.That(newRight, Is.EqualTo(2.5f).Within(Eps));
     }
 
     [Test]
@@ -74,11 +78,12 @@ public class FluidPoolStateTests
         float leftCap = 2f, rightCap = 2f, stretchL = 3f, stretchR = 3f;
         float flowL = 1f, flowR = 1f;
 
-        float overflow = s.TickGrowth(flowL, flowR, leftCap, rightCap, stretchL, stretchR);
+        var cap = new BreastPairCapacities(leftCap, rightCap, stretchL, stretchR);
+        var (newLeft, newRight, overflow) = s.TickGrowth(flowL, flowR, cap);
 
         Assert.That(overflow, Is.EqualTo(2f).Within(Eps));
-        Assert.That(s.LeftFullness, Is.EqualTo(3f).Within(Eps));
-        Assert.That(s.RightFullness, Is.EqualTo(3f).Within(Eps));
+        Assert.That(newLeft, Is.EqualTo(3f).Within(Eps));
+        Assert.That(newRight, Is.EqualTo(3f).Within(Eps));
     }
 
     [Test]
@@ -88,11 +93,12 @@ public class FluidPoolStateTests
         float leftCap = 1f, rightCap = 1f, stretchL = 2f, stretchR = 2f;
         float flowL = 0.3f, flowR = 0.3f; // total 0.6, room 0.5 each → 0.3+0.3 无余量
 
-        float overflow = s.TickGrowth(flowL, flowR, leftCap, rightCap, stretchL, stretchR);
+        var cap = new BreastPairCapacities(leftCap, rightCap, stretchL, stretchR);
+        var (newLeft, newRight, overflow) = s.TickGrowth(flowL, flowR, cap);
 
         Assert.That(overflow, Is.EqualTo(0f).Within(Eps));
-        Assert.That(s.LeftFullness, Is.EqualTo(0.8f).Within(Eps));
-        Assert.That(s.RightFullness, Is.EqualTo(0.8f).Within(Eps));
+        Assert.That(newLeft, Is.EqualTo(0.8f).Within(Eps));
+        Assert.That(newRight, Is.EqualTo(0.8f).Within(Eps));
     }
 
     #endregion

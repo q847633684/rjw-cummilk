@@ -147,6 +147,12 @@ public class Widget_AdvancedSettings
 		Widgets.HorizontalSlider(rHygiene, ref hygieneRiskMultiplier, new FloatRange(0.5f, 3f), "EM.HygieneRiskMultiplier".Translate(MilkCumSettings.hygieneRiskMultiplier.ToString("F1")), 0.1f);
 		MilkCumSettings.hygieneRiskMultiplier = hygieneRiskMultiplier;
 		list.Gap(6f);
+		Rect rInfection = list.GetRect(UNIT_SIZE);
+		float mastitisInfectionRiskFactor = MilkCumSettings.mastitisInfectionRiskFactor;
+		Widgets.HorizontalSlider(rInfection, ref mastitisInfectionRiskFactor, new FloatRange(1f, 3f), "EM.MastitisInfectionRiskFactor".Translate(MilkCumSettings.mastitisInfectionRiskFactor.ToString("F1")), 0.05f);
+		MilkCumSettings.mastitisInfectionRiskFactor = mastitisInfectionRiskFactor;
+		TooltipHandler.TipRegion(rInfection, "EM.MastitisInfectionRiskFactorDesc".Translate());
+		list.Gap(6f);
 		Rect rMtbHuman = list.GetRect(UNIT_SIZE);
 		float mastitisMtbDaysMultiplierHumanlike = MilkCumSettings.mastitisMtbDaysMultiplierHumanlike;
 		Widgets.HorizontalSlider(rMtbHuman, ref mastitisMtbDaysMultiplierHumanlike, new FloatRange(0.1f, 3f), "EM.MastitisMtbDaysMultiplierHumanlike".Translate(MilkCumSettings.mastitisMtbDaysMultiplierHumanlike.ToString("F2")), 0.05f);
@@ -202,6 +208,16 @@ public class Widget_AdvancedSettings
 		Widgets.Label(rFilth.LeftHalf(), "EM.OverflowFilthDefName".Translate());
 		overflowFilth = Widgets.TextField(rFilth.RightHalf(), overflowFilth, 64);
 		MilkCumSettings.overflowFilthDefName = overflowFilth?.Trim() ?? "Filth_Vomit";
+		list.Gap(4f);
+		Rect rFullPoolLetter = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rFullPoolLetter, "EM.EnableFullPoolLetter".Translate(), ref MilkCumSettings.enableFullPoolLetter, false);
+		TooltipHandler.TipRegion(rFullPoolLetter, "EM.EnableFullPoolLetterDesc".Translate());
+		list.Gap(4f);
+		Rect rCooldown = list.GetRect(UNIT_SIZE);
+		float cooldownDays = MilkCumSettings.fullPoolLetterCooldownDays;
+		Widgets.HorizontalSlider(rCooldown, ref cooldownDays, new FloatRange(0.5f, 7f), "EM.FullPoolLetterCooldownDays".Translate(cooldownDays.ToString("F1")), 0.5f);
+		MilkCumSettings.fullPoolLetterCooldownDays = cooldownDays;
+		TooltipHandler.TipRegion(rCooldown, "EM.FullPoolLetterCooldownDaysDesc".Translate());
 		list.Gap(6f);
 		GUI.color = Color.gray;
 		list.Label("EM.BreastPoolParamsInToleranceHint".Translate());
@@ -333,6 +349,18 @@ public class Widget_AdvancedSettings
 		Widgets.HorizontalSlider(rCapCoeff, ref capCoeff, new FloatRange(0.25f, 4f), "EM.RjwBreastCapacityCoefficient".Translate(MilkCumSettings.rjwBreastCapacityCoefficient.ToString("F2")), 0.05f);
 		MilkCumSettings.rjwBreastCapacityCoefficient = capCoeff;
 		TooltipHandler.TipRegion(rCapCoeff, "EM.RjwBreastCapacityCoefficientDescLong".Translate());
+		list.Gap(4f);
+		Rect rLactSev = list.GetRect(UNIT_SIZE);
+		float lactSev = MilkCumSettings.rjwLactatingSeverityBonus;
+		Widgets.HorizontalSlider(rLactSev, ref lactSev, new FloatRange(0f, 1f), "EM.RjwLactatingSeverityBonus".Translate(lactSev.ToString("F2")), 0.01f);
+		MilkCumSettings.rjwLactatingSeverityBonus = lactSev;
+		TooltipHandler.TipRegion(rLactSev, "EM.RjwLactatingSeverityBonusDesc".Translate());
+		list.Gap(4f);
+		Rect rStretchSev = list.GetRect(UNIT_SIZE);
+		float stretchSev = MilkCumSettings.rjwLactatingStretchSeverityBonus;
+		Widgets.HorizontalSlider(rStretchSev, ref stretchSev, new FloatRange(0f, 1f), "EM.RjwLactatingStretchSeverityBonus".Translate(stretchSev.ToString("F2")), 0.01f);
+		MilkCumSettings.rjwLactatingStretchSeverityBonus = stretchSev;
+		TooltipHandler.TipRegion(rStretchSev, "EM.RjwLactatingStretchSeverityBonusDesc".Translate());
 		list.Gap(6f);
 		// 流速倍率
 		Rect rFlowMult = list.GetRect(UNIT_SIZE);

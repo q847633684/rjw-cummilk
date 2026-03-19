@@ -119,8 +119,8 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
         var comp = pawn.CompEquallyMilkable();
         if (comp == null) return;
         if (!MilkCumSettings.rjwBreastSizeEnabled) return;
-        var list = pawn.GetBreastList();
-        if (list == null || list.Count == 0) return;
+        var list = pawn.GetBreastListOrEmpty();
+        if (list.Count == 0) return;
         var entries = pawn.GetBreastPoolEntries();
         if (entries == null || entries.Count < 2 * list.Count) return;
         var toAdd = new List<(string key, float addAmount, float cap)>();
