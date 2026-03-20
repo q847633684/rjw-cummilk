@@ -64,7 +64,7 @@ public static class MenuHelper
             && (actor.WorkTypeIsDisabled(WorkTypeDefOf.Childcare) || actor.IsWorkTypeDisabledByAge(WorkTypeDefOf.Childcare, out _)))
         { yield break; }
         // 产奶者（actor）去喂 吸奶者（pawn）：须在产奶者的「谁可以用我的奶」中允许 pawn
-        if (actor.CanBreastfeedNow(pawn, out _) && MilkPermissionExtensions.IsAllowedSuckler(actor, pawn))
+        if (actor.CanBreastfeedNow(pawn, out _) && MilkPermissionExtensions.IsAllowedBreastfeed(actor, pawn))
         {
             yield return FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(Lang.Join(Lang.Breastfeed, pawn.LabelShort), delegate
                 {
@@ -72,7 +72,7 @@ public static class MenuHelper
                 }, actor.MilkDef()), actor, pawn);
         }
         // 吸奶者（actor）去吸 产奶者（pawn）的奶：须在产奶者（pawn）的「谁可以用我的奶」中允许 actor
-        if (pawn.CanBreastfeedNow(actor, out _) && MilkPermissionExtensions.IsAllowedSuckler(pawn, actor))
+        if (pawn.CanBreastfeedNow(actor, out _) && MilkPermissionExtensions.IsAllowedBreastfeed(pawn, actor))
         {
             string suckleLabel = "EM.MenuSuckleFrom".Translate(pawn.LabelShort);
             yield return FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(suckleLabel, delegate

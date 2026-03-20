@@ -10,7 +10,10 @@ using Verse;
 namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
-/// 挤奶/吸奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedSucklers/allowedConsumers）、床主、首次泌乳记忆、成�?育儿文案�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+/// 吸奶/挤奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedBreastfeeders/allowedMilkers/allowedConsumers）。
+/// 另包含床主、首次泌乳记忆与哺乳/育儿相关的文案逻辑。
+/// 该类也允许通过公开的 Handler 列表扩展外部权限判定。
+/// </summary>
 public static class MilkPermissionExtensions
 {
     #region 开放接口：谁可以使用我的奶 / 奶制品（供其他 mod 覆盖或扩展权限逻辑）
@@ -96,7 +99,7 @@ public static class MilkPermissionExtensions
         }
         if (pawn == baby) { return false; }
         if (!pawn.CanBreastfeedEver(baby)) { return false; }
-        if (!IsAllowedSuckler(pawn, baby)) { return false; }
+        if (!IsAllowedBreastfeed(pawn, baby)) { return false; }
         var babyComp = baby.CompEquallyMilkable();
         if (babyComp != null && !babyComp.AllowedToBeAutoFedBy(pawn)) { return false; }
         return true;
@@ -158,8 +161,8 @@ public static class MilkPermissionExtensions
         return list;
     }
 
-    /// <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣、排除父母」；名单非空时仅名单内的人可吸奶/挤奶。优先走 AllowSucklerHandlers 开放接口。</summary>
-    public static bool IsAllowedSuckler(Pawn producer, Pawn doer)
+    /// <summary>吸奶时是否“自愿”：产主允许 doer 直接吸奶/哺乳。优先走 AllowSucklerHandlers 开放接口；当显式名单为空时回落到默认子女+伴侣规则。</summary>
+    public static bool IsAllowedBreastfeed(Pawn producer, Pawn doer)
     {
         if (producer != null && doer != null && AllowSucklerHandlers.Count > 0)
         {
@@ -178,11 +181,40 @@ public static class MilkPermissionExtensions
         }
         var comp = producer?.CompEquallyMilkable();
         if (comp == null) return true;
-        if (comp.allowedSucklers == null) return false;
-        if (comp.allowedSucklers.Count == 0)
+        if (comp.allowedBreastfeeders == null) return false;
+        if (comp.allowedBreastfeeders.Count == 0)
             return IsDefaultAllowedSuckler(producer, doer);
-        return comp.allowedSucklers.Contains(doer);
+        return comp.allowedBreastfeeders.Contains(doer);
     }
+
+    /// <summary>挤奶时是否“自愿”：产主允许 doer 使用挤奶器对该产主进行挤奶。优先走 AllowSucklerHandlers 开放接口；当显式名单为空时回落到默认子女+伴侣规则。</summary>
+    public static bool IsAllowedMilking(Pawn producer, Pawn doer)
+    {
+        if (producer != null && doer != null && AllowSucklerHandlers.Count > 0)
+        {
+            foreach (var handler in AllowSucklerHandlers)
+            {
+                try
+                {
+                    bool? result = handler(producer, doer);
+                    if (result.HasValue) return result.Value;
+                }
+                catch (Exception)
+                {
+                    // 单 handler 异常不阻断其他 handler 与内置逻辑
+                }
+            }
+        }
+        var comp = producer?.CompEquallyMilkable();
+        if (comp == null) return true;
+        if (comp.allowedMilkers == null) return false;
+        if (comp.allowedMilkers.Count == 0)
+            return IsDefaultAllowedSuckler(producer, doer);
+        return comp.allowedMilkers.Contains(doer);
+    }
+
+    /// <summary>兼容旧 API：返回吸奶或挤奶任一允许。</summary>
+    public static bool IsAllowedSuckler(Pawn producer, Pawn doer) => IsAllowedBreastfeed(producer, doer) || IsAllowedMilking(producer, doer);
 
     /// <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人。优先走 CanConsumeMilkProductHandlers 开放接口。</summary>
     public static bool CanConsumeMilkProduct(this Pawn consumer, Thing food)

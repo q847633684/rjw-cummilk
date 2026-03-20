@@ -27,7 +27,7 @@ public class WorkGiver_MilkCumMilk : WorkGiver_Milk
         || !target.CanCasuallyInteractNow(false, true) //Allow sleeping pawns to be milked
         || target.CurJob?.GetTarget(TargetIndex.A).Thing is Pawn //Prevent interrupt the other pawn's job on other pawns e.g.milking, tend, etc.
         || !target.IsLactating()
-        || !MilkPermissionExtensions.IsAllowedSuckler(target, pawn)
+        || !MilkPermissionExtensions.IsAllowedMilking(target, pawn)
         || target.GetDefaultMilkSetting() == null
         || (target.CurJob?.GetTarget(TargetIndex.A).Thing is Building building && building is not Building_Bed)) //TODO properly detect continuous jobs
         {

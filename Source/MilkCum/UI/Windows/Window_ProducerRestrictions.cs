@@ -12,7 +12,7 @@ using MilkCum.Fluids.Lactation.Helpers;
 
 namespace MilkCum.UI;
 
-/// <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。筛选用：全部/殖民者/囚犯；表格列：姓名、关系、可以吸奶/挤奶、可以使用制品。</summary>
+/// <summary>产奶者指定：谁可以直接吸奶、谁可以对我挤奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。筛选用：全部/殖民者/囚犯；表格列：姓名、关系、吸奶、挤奶、使用制品。</summary>
 public class Window_ProducerRestrictions : Window
 {
     private readonly Pawn producer;
@@ -102,36 +102,70 @@ public class Window_ProducerRestrictions : Window
         }
     }
 
-    /// <summary>是否在「可以吸奶/挤奶」上显示为允许。名单非空时看名单；空时看 defaultSucklersWhenEmpty（若为 null 则现场取默认）。</summary>
-    private bool IsAllowedSuckler(Pawn p, List<Pawn> defaultSucklersWhenEmpty)
+    /// <summary>是否在「可以吸奶」上显示为允许。名单非空时看名单；空时看 defaultBreastfeedersWhenEmpty（若为 null 则现场取默认）。</summary>
+    private bool IsAllowedBreastfeed(Pawn p, List<Pawn> defaultBreastfeedersWhenEmpty)
     {
-        if (comp?.allowedSucklers == null) return false;
-        if (comp.allowedSucklers.Count > 0) return comp.allowedSucklers.Contains(p);
-        if (defaultSucklersWhenEmpty != null) return defaultSucklersWhenEmpty.Contains(p);
+        if (comp?.allowedBreastfeeders == null) return false;
+        if (comp.allowedBreastfeeders.Count > 0) return comp.allowedBreastfeeders.Contains(p);
+        if (defaultBreastfeedersWhenEmpty != null) return defaultBreastfeedersWhenEmpty.Contains(p);
         return MilkPermissionExtensions.GetDefaultSucklers(producer).Contains(p);
     }
 
-    private void SetAllowedSuckler(Pawn p, bool allow)
+    private void SetAllowedBreastfeed(Pawn p, bool allow)
     {
         if (comp == null) return;
-        comp.EnsureSaveCompatAllowedLists();
+        comp.EnsureAllowedLists();
         if (allow)
         {
-            if (!comp.allowedSucklers.Contains(p))
+            if (!comp.allowedBreastfeeders.Contains(p))
             {
-                comp.allowedSucklers.Add(p);
+                comp.allowedBreastfeeders.Add(p);
                 SoundDefOf.Click.PlayOneShotOnCamera();
             }
         }
         else
         {
-            if (comp.allowedSucklers.Count == 0)
+            if (comp.allowedBreastfeeders.Count == 0)
             {
                 foreach (Pawn x in MilkPermissionExtensions.GetDefaultSucklers(producer))
-                    if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !comp.allowedSucklers.Contains(x))
-                        comp.allowedSucklers.Add(x);
+                    if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !comp.allowedBreastfeeders.Contains(x))
+                        comp.allowedBreastfeeders.Add(x);
             }
-            if (comp.allowedSucklers.Remove(p))
+            if (comp.allowedBreastfeeders.Remove(p))
+                SoundDefOf.Click.PlayOneShotOnCamera();
+        }
+    }
+
+    /// <summary>是否在「可以挤奶」上显示为允许。名单非空时看名单；空时看 defaultMilkersWhenEmpty（若为 null 则现场取默认）。</summary>
+    private bool IsAllowedMilking(Pawn p, List<Pawn> defaultMilkersWhenEmpty)
+    {
+        if (comp?.allowedMilkers == null) return false;
+        if (comp.allowedMilkers.Count > 0) return comp.allowedMilkers.Contains(p);
+        if (defaultMilkersWhenEmpty != null) return defaultMilkersWhenEmpty.Contains(p);
+        return MilkPermissionExtensions.GetDefaultSucklers(producer).Contains(p);
+    }
+
+    private void SetAllowedMilking(Pawn p, bool allow)
+    {
+        if (comp == null) return;
+        comp.EnsureAllowedLists();
+        if (allow)
+        {
+            if (!comp.allowedMilkers.Contains(p))
+            {
+                comp.allowedMilkers.Add(p);
+                SoundDefOf.Click.PlayOneShotOnCamera();
+            }
+        }
+        else
+        {
+            if (comp.allowedMilkers.Count == 0)
+            {
+                foreach (Pawn x in MilkPermissionExtensions.GetDefaultSucklers(producer))
+                    if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !comp.allowedMilkers.Contains(x))
+                        comp.allowedMilkers.Add(x);
+            }
+            if (comp.allowedMilkers.Remove(p))
                 SoundDefOf.Click.PlayOneShotOnCamera();
         }
     }
@@ -141,7 +175,7 @@ public class Window_ProducerRestrictions : Window
     private void SetAllowedConsumer(Pawn p, bool allow)
     {
         if (comp == null) return;
-        comp.EnsureSaveCompatAllowedLists();
+        comp.EnsureAllowedLists();
         if (allow)
         {
             if (!comp.allowedConsumers.Contains(p))
@@ -180,27 +214,33 @@ public class Window_ProducerRestrictions : Window
         // 留出少量垂直间距，避免表头贴得太近。
         y += 6f;
 
-        bool showSucklerColumn = producer.gender == Gender.Female;
+        bool showBreastfeedColumn = producer.gender == Gender.Female;
+        bool showMilkingColumn = showBreastfeedColumn;
         bool forCumProducts = producer.gender == Gender.Male && !producer.IsLactating();
         bool showConsumersColumn = forCumProducts
             ? MilkCumSettings.IsProducerRestrictionConsumersEffectiveForCumProducts()
             : MilkCumSettings.IsProducerRestrictionConsumersEffectiveForMilkProducts();
 
-        comp.EnsureSaveCompatAllowedLists();
+        comp.EnsureAllowedLists();
 
-        // 女性且名单为空时缓存默认吸奶名单，避免每行重复计算
-        List<Pawn> cachedDefaultSucklers = null;
-        if (showSucklerColumn && comp.allowedSucklers.Count == 0)
-            cachedDefaultSucklers = MilkPermissionExtensions.GetDefaultSucklers(producer).ToList();
+        // 名单为空时缓存默认吸奶名单，避免每行重复计算
+        List<Pawn> cachedDefaultBreastfeeders = null;
+        List<Pawn> cachedDefaultMilkers = null;
+        if (showBreastfeedColumn && comp.allowedBreastfeeders.Count == 0)
+            cachedDefaultBreastfeeders = MilkPermissionExtensions.GetDefaultSucklers(producer).ToList();
+        if (showMilkingColumn && comp.allowedMilkers.Count == 0)
+            cachedDefaultMilkers = MilkPermissionExtensions.GetDefaultSucklers(producer).ToList();
 
-        // 表头：姓名 | 关系 | 可以吸奶/挤奶 | 可以使用制品
+        // 表头：姓名 | 关系 | 吸奶 | 挤奶 | 可以使用制品
         float nameW = Mathf.Max(80f, inRect.width * 0.35f);
         float relW = Mathf.Min(80f, inRect.width * 0.2f);
-        float suckleW = showSucklerColumn ? CheckboxColWidth + 4f : 0f;
+        float breastfeedW = showBreastfeedColumn ? CheckboxColWidth + 4f : 0f;
+        float milkingW = showMilkingColumn ? CheckboxColWidth + 4f : 0f;
         float consumeW = showConsumersColumn ? CheckboxColWidth + 4f : 0f;
-        float rest = inRect.width - nameW - relW - suckleW - consumeW;
+        float rest = inRect.width - nameW - relW - breastfeedW - milkingW - consumeW;
+        // 给复选/选项列预留空间：剩余宽度优先补到关系列（而不是姓名列），避免“姓名列占太宽导致右侧挤压/空白很多”。
         if (rest < 0f) { relW += rest; rest = 0f; }
-        else { nameW += rest; }
+        else { relW += rest; }
 
         GUI.color = Color.gray;
         Rect hName = new Rect(inRect.x, y, nameW, HeaderHeight);
@@ -208,12 +248,19 @@ public class Window_ProducerRestrictions : Window
         Rect hRel = new Rect(hName.xMax, y, relW, HeaderHeight);
         Widgets.Label(hRel, "EM.RestrictionsTableHeaderRelation".Translate());
         float cx = hRel.xMax;
-        if (showSucklerColumn)
+        if (showBreastfeedColumn)
         {
-            Rect hSuckle = new Rect(cx, y, suckleW, HeaderHeight);
-            Widgets.Label(hSuckle, "EM.RestrictionsTableHeaderSuckle".Translate());
-            TooltipHandler.TipRegion(hSuckle, "EM.RestrictionsTableHeaderSuckleTip".Translate());
-            cx = hSuckle.xMax;
+            Rect hBreastfeed = new Rect(cx, y, breastfeedW, HeaderHeight);
+            Widgets.Label(hBreastfeed, "EM.RestrictionsTableHeaderBreastfeed".Translate());
+            TooltipHandler.TipRegion(hBreastfeed, "EM.RestrictionsTableHeaderBreastfeedTip".Translate());
+            cx = hBreastfeed.xMax;
+        }
+        if (showMilkingColumn)
+        {
+            Rect hMilking = new Rect(cx, y, milkingW, HeaderHeight);
+            Widgets.Label(hMilking, "EM.RestrictionsTableHeaderMilking".Translate());
+            TooltipHandler.TipRegion(hMilking, "EM.RestrictionsTableHeaderMilkingTip".Translate());
+            cx = hMilking.xMax;
         }
         if (showConsumersColumn)
         {
@@ -240,11 +287,13 @@ public class Window_ProducerRestrictions : Window
         float bodyWidth = inRect.width - ScrollGap;
         float nW = Mathf.Max(80f, bodyWidth * 0.35f);
         float rW = Mathf.Min(80f, bodyWidth * 0.2f);
-        float sW = showSucklerColumn ? CheckboxColWidth + 4f : 0f;
+        float bW = showBreastfeedColumn ? CheckboxColWidth + 4f : 0f;
+        float mW = showMilkingColumn ? CheckboxColWidth + 4f : 0f;
         float cW = showConsumersColumn ? CheckboxColWidth + 4f : 0f;
-        float remainder = bodyWidth - nW - rW - sW - cW;
+        float remainder = bodyWidth - nW - rW - bW - mW - cW;
+        // 同 header：剩余宽度优先补到关系列，减少姓名列无效空白。
         if (remainder < 0f) rW += remainder;
-        else nW += remainder;
+        else rW += remainder;
 
         // 自适应滚动框高度：
         // 1) 人少时：滚动框高度 = 实际行高总和，避免框下多余空白。
@@ -274,15 +323,25 @@ public class Window_ProducerRestrictions : Window
             Widgets.Label(rRel, GetRelationLabel(producer, p));
 
             float checkX = rRel.xMax;
-            if (showSucklerColumn)
+            if (showBreastfeedColumn)
             {
-                Rect rSuckle = new Rect(checkX, rowY + (EntryHeight - CheckboxColWidth) / 2f, CheckboxColWidth, CheckboxColWidth);
-                bool suckleChecked = IsAllowedSuckler(p, cachedDefaultSucklers);
-                bool oldSuckle = suckleChecked;
-                Widgets.Checkbox(rSuckle.position, ref suckleChecked, CheckboxColWidth);
-                if (suckleChecked != oldSuckle)
-                    SetAllowedSuckler(p, suckleChecked);
-                checkX = rSuckle.xMax;
+                Rect rBreastfeed = new Rect(checkX, rowY + (EntryHeight - CheckboxColWidth) / 2f, CheckboxColWidth, CheckboxColWidth);
+                bool breastfeedChecked = IsAllowedBreastfeed(p, cachedDefaultBreastfeeders);
+                bool oldBreastfeed = breastfeedChecked;
+                Widgets.Checkbox(rBreastfeed.position, ref breastfeedChecked, CheckboxColWidth);
+                if (breastfeedChecked != oldBreastfeed)
+                    SetAllowedBreastfeed(p, breastfeedChecked);
+                checkX = rBreastfeed.xMax;
+            }
+            if (showMilkingColumn)
+            {
+                Rect rMilking = new Rect(checkX, rowY + (EntryHeight - CheckboxColWidth) / 2f, CheckboxColWidth, CheckboxColWidth);
+                bool milkingChecked = IsAllowedMilking(p, cachedDefaultMilkers);
+                bool oldMilking = milkingChecked;
+                Widgets.Checkbox(rMilking.position, ref milkingChecked, CheckboxColWidth);
+                if (milkingChecked != oldMilking)
+                    SetAllowedMilking(p, milkingChecked);
+                checkX = rMilking.xMax;
             }
             if (showConsumersColumn)
             {

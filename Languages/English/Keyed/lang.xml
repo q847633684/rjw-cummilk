@@ -105,9 +105,13 @@
     <EM.RestrictionsFilterPrisoners>Prisoners</EM.RestrictionsFilterPrisoners>
     <EM.RestrictionsTableHeaderName>Name</EM.RestrictionsTableHeaderName>
     <EM.RestrictionsTableHeaderRelation>Relation</EM.RestrictionsTableHeaderRelation>
-    <EM.RestrictionsTableHeaderSuckle>Can suckle/milk</EM.RestrictionsTableHeaderSuckle>
+    <EM.RestrictionsTableHeaderBreastfeed>Breastfeed</EM.RestrictionsTableHeaderBreastfeed>
+    <EM.RestrictionsTableHeaderBreastfeedTip>Allow this pawn to breastfeed/suckle directly.</EM.RestrictionsTableHeaderBreastfeedTip>
+    <EM.RestrictionsTableHeaderMilking>Milking</EM.RestrictionsTableHeaderMilking>
+    <EM.RestrictionsTableHeaderMilkingTip>Allow this pawn to use a milker on this producer.</EM.RestrictionsTableHeaderMilkingTip>
+    <EM.RestrictionsTableHeaderSuckle>Suckle/milk</EM.RestrictionsTableHeaderSuckle>
     <EM.RestrictionsTableHeaderSuckleTip>Allow this pawn to suckle or use a milker on this producer.</EM.RestrictionsTableHeaderSuckleTip>
-    <EM.RestrictionsTableHeaderConsume>Can use products</EM.RestrictionsTableHeaderConsume>
+    <EM.RestrictionsTableHeaderConsume>Use products</EM.RestrictionsTableHeaderConsume>
     <EM.RestrictionsTableHeaderConsumeTip>Allow this pawn to consume this producer's milk/cum products (including cooked food).</EM.RestrictionsTableHeaderConsumeTip>
     <EM.RestrictionsFilterEmpty>No pawns match the current filter.</EM.RestrictionsFilterEmpty>
     <EM.RestrictionsFilterEmptyHint>Switch the tab above (All / Colonists / Prisoners) or wait for pawns of that type to join the map.</EM.RestrictionsFilterEmptyHint>

@@ -847,8 +847,11 @@
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.RightFullness">
             <summary>右侧总水位（按 GetCachedEntries 中非 IsLeft 的 key 汇总），用于 UI/调试。</summary>
         </member>
-        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedSucklers">
-            <summary>谁可以使用我的奶。名单为空时会预填子女/伴侣；仅名单内的人可吸奶/挤奶</summary>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedBreastfeeders">
+            <summary>谁可以对我进行「吸奶/哺乳」（直接吸奶）。名单为空时会预填子女/伴侣。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedMilkers">
+            <summary>谁可以对我进行「挤奶」（使用挤奶器/机器挤奶）。名单为空时会预填子女/伴侣。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedConsumers">
             <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）</summary>
@@ -943,7 +946,7 @@
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.LastGatheredTick">
             <summary>10.8-6：最近一次被挤奶的游戏 tick；供 ThoughtWorker_LongTimeNotMilked 使用</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureSaveCompatAllowedLists">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureAllowedLists">
             <summary>读档时调用（PostLoadInit）：确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Active">
@@ -953,7 +956,7 @@
             <summary>显式刷新并返回当前是否处于可泌乳活动状态；CompTick 每 60 tick 调用，避免 getter 产生隐式状态变更。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CleanupAllowedLists">
-            <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowedSucklers、allowedConsumers 引用。</summary>
+            <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowed 列表引用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ApplyDrugInducedLactationEffects">
             <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
@@ -1332,7 +1335,10 @@
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions">
             <summary>
-            挤奶/吸奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedSucklers/allowedConsumers）、床主、首次泌乳记忆、成�?育儿文案�?/// �?ExtensionHelper 拆出，见 记忆�?design/架构原则与重组建议�?/// </summary>
+            吸奶/挤奶/哺乳权限与名单：Allow*、Allowed*、名单（allowedBreastfeeders/allowedMilkers/allowedConsumers）。
+            另包含床主、首次泌乳记忆与哺乳/育儿相关的文案逻辑。
+            该类也允许通过公开的 Handler 列表扩展外部权限判定。
+            </summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.AllowSucklerHandlers">
             <summary>
@@ -1369,8 +1375,14 @@
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.GetDefaultSucklers(Verse.Pawn)">
             <summary>获取默认“可使用我的奶”名单（用于预填/UI）；逻辑与 YieldDefaultSucklers 一致，去重后返回 List。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsAllowedBreastfeed(Verse.Pawn,Verse.Pawn)">
+            <summary>吸奶时是否“自愿”：产主允许 doer 直接吸奶/哺乳。优先走 AllowSucklerHandlers 开放接口；当显式名单为空时回落到默认子女+伴侣规则。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsAllowedMilking(Verse.Pawn,Verse.Pawn)">
+            <summary>挤奶时是否“自愿”：产主允许 doer 使用挤奶器对该产主进行挤奶。优先走 AllowSucklerHandlers 开放接口；当显式名单为空时回落到默认子女+伴侣规则。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.IsAllowedSuckler(Verse.Pawn,Verse.Pawn)">
-            <summary>挤奶/吸奶时是否“自愿”：产主允许 doer 使用奶。名单为空时视为默认「仅子女+伴侣、排除父母」；名单非空时仅名单内的人可吸奶/挤奶。优先走 AllowSucklerHandlers 开放接口。</summary>
+            <summary>兼容旧 API：返回吸奶或挤奶任一允许。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkPermissionExtensions.CanConsumeMilkProduct(Verse.Pawn,Verse.Thing)">
             <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人。优先走 CanConsumeMilkProductHandlers 开放接口。</summary>
@@ -1928,7 +1940,7 @@
             <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>
         </member>
         <member name="T:MilkCum.UI.Window_ProducerRestrictions">
-            <summary>产奶者指定：谁可以使用我的奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。筛选用：全部/殖民者/囚犯；表格列：姓名、关系、可以吸奶/挤奶、可以使用制品。</summary>
+            <summary>产奶者指定：谁可以直接吸奶、谁可以对我挤奶（名单默认子女+伴侣）、谁可以使用我产出的奶/奶制品（默认仅自己）。筛选用：全部/殖民者/囚犯；表格列：姓名、关系、吸奶、挤奶、使用制品。</summary>
         </member>
         <member name="F:MilkCum.UI.Window_ProducerRestrictions.AllowSelfNarrowThreshold">
             <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
@@ -1943,8 +1955,11 @@
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.GetRelationLabel(Verse.Pawn,Verse.Pawn)">
             <summary>产奶者与另一人的关系标签；无关系或异常时返回「—」。兼容无 GetGenderSpecificLabel 的 RimWorld 版本。</summary>
         </member>
-        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedSuckler(Verse.Pawn,System.Collections.Generic.List{Verse.Pawn})">
-            <summary>是否在「可以吸奶/挤奶」上显示为允许。名单非空时看名单；空时看 defaultSucklersWhenEmpty（若为 null 则现场取默认）。</summary>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedBreastfeed(Verse.Pawn,System.Collections.Generic.List{Verse.Pawn})">
+            <summary>是否在「可以吸奶」上显示为允许。名单非空时看名单；空时看 defaultBreastfeedersWhenEmpty（若为 null 则现场取默认）。</summary>
+        </member>
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedMilking(Verse.Pawn,System.Collections.Generic.List{Verse.Pawn})">
+            <summary>是否在「可以挤奶」上显示为允许。名单非空时看名单；空时看 defaultMilkersWhenEmpty（若为 null 则现场取默认）。</summary>
         </member>
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawAllowSelfSection(System.Single,System.Single@,System.Single)">
             <summary>绘制「允许自己」（对自己的操作）：挤奶、吃奶、泄精、塞住。窄屏时两行布局；每项带 Tooltip。</summary>

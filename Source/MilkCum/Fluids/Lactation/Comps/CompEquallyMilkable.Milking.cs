@@ -154,7 +154,7 @@ public partial class CompEquallyMilkable
         }
         if (parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
         {
-            if (MilkPermissionExtensions.IsAllowedSuckler(milkedPawn, doer))
+            if (MilkPermissionExtensions.IsAllowedMilking(milkedPawn, doer))
             {
                 if (MilkCumDefOf.EM_AllowedMilking != null)
                     milkedPawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_AllowedMilking);

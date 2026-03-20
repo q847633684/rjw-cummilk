@@ -61,8 +61,10 @@ public partial class CompEquallyMilkable : CompMilkable
             return milkSettings;
         }
     }
-    /// <summary>谁可以使用我的奶。名单为空时会预填子女/伴侣；仅名单内的人可吸奶/挤奶</summary>
-    internal List<Pawn> allowedSucklers = new();
+    /// <summary>谁可以对我进行「吸奶/哺乳」（直接吸奶）。名单为空时会预填子女/伴侣。</summary>
+    internal List<Pawn> allowedBreastfeeders = new();
+    /// <summary>谁可以对我进行「挤奶」（使用挤奶器/机器挤奶）。名单为空时会预填子女/伴侣。</summary>
+    internal List<Pawn> allowedMilkers = new();
     /// <summary>谁可以使用我产出的奶/精液制品（不含自己，自己始终允许）。空列表 = 仅自己；非空 = 自己+列表中人。囚犯/奴隶产主时亦不默认允许殖民者（7.4）</summary>
     internal List<Pawn> allowedConsumers = new();
     private int updateTick = 0;
@@ -161,11 +163,12 @@ public partial class CompEquallyMilkable : CompMilkable
             }
         }
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
-        Scribe_Collections.Look(ref allowedSucklers, "AllowedSucklers", LookMode.Reference);
+        Scribe_Collections.Look(ref allowedBreastfeeders, "AllowedBreastfeeders", LookMode.Reference);
+        Scribe_Collections.Look(ref allowedMilkers, "AllowedMilkers", LookMode.Reference);
         Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
-            EnsureSaveCompatAllowedLists();
+            EnsureAllowedLists();
             if (milkSettings == null && parent is Pawn pawn)
                 milkSettings = pawn.GetDefaultMilkSetting();
             if (lastGatheredTick < 0)
@@ -178,20 +181,36 @@ public partial class CompEquallyMilkable : CompMilkable
     public int LastGatheredTick => lastGatheredTick;
 
     /// <summary>读档时调用（PostLoadInit）：确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图）。</summary>
-    public void EnsureSaveCompatAllowedLists()
+    public void EnsureAllowedLists()
     {
-        allowedSucklers ??= new List<Pawn>();
+        allowedBreastfeeders ??= new List<Pawn>();
+        allowedMilkers ??= new List<Pawn>();
         allowedConsumers ??= new List<Pawn>();
-        allowedSucklers.RemoveAll(p => p == null || p.Destroyed);
+        allowedBreastfeeders.RemoveAll(p => p == null || p.Destroyed);
+        allowedMilkers.RemoveAll(p => p == null || p.Destroyed);
         allowedConsumers.RemoveAll(p => p == null || p.Destroyed);
-        if (allowedSucklers.Count == 0 && parent is Pawn p)
+        // 新逻辑：名单为空时预填子女/伴侣
+        if (parent is Pawn p)
         {
-            var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
-            foreach (Pawn pawn in defaults)
+            if (allowedBreastfeeders.Count == 0)
             {
-                if (pawn == null || pawn.Destroyed || allowedSucklers.Contains(pawn)) continue;
-                if (p.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != p.MapHeld) continue;
-                allowedSucklers.Add(pawn);
+                var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
+                foreach (Pawn pawn in defaults)
+                {
+                    if (pawn == null || pawn.Destroyed || allowedBreastfeeders.Contains(pawn)) continue;
+                    if (p.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != p.MapHeld) continue;
+                    allowedBreastfeeders.Add(pawn);
+                }
+            }
+            if (allowedMilkers.Count == 0)
+            {
+                var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
+                foreach (Pawn pawn in defaults)
+                {
+                    if (pawn == null || pawn.Destroyed || allowedMilkers.Contains(pawn)) continue;
+                    if (p.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != p.MapHeld) continue;
+                    allowedMilkers.Add(pawn);
+                }
             }
         }
     }
@@ -273,10 +292,11 @@ public partial class CompEquallyMilkable : CompMilkable
         if (parent.IsHashIntervalTick(2000)) MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, Fullness, ticksFullPool);
     }
 
-    /// <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowedSucklers、allowedConsumers 引用。</summary>
+    /// <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowed 列表引用。</summary>
     internal void CleanupAllowedLists()
     {
-        allowedSucklers?.RemoveAll(p => p == null || p.Destroyed);
+        allowedBreastfeeders?.RemoveAll(p => p == null || p.Destroyed);
+        allowedMilkers?.RemoveAll(p => p == null || p.Destroyed);
         allowedConsumers?.RemoveAll(p => p == null || p.Destroyed);
     }
 

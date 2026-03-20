@@ -104,9 +104,13 @@
     <EM.RestrictionsFilterPrisoners>囚犯</EM.RestrictionsFilterPrisoners>
     <EM.RestrictionsTableHeaderName>姓名</EM.RestrictionsTableHeaderName>
     <EM.RestrictionsTableHeaderRelation>关系</EM.RestrictionsTableHeaderRelation>
-    <EM.RestrictionsTableHeaderSuckle>可以吸奶/挤奶</EM.RestrictionsTableHeaderSuckle>
+    <EM.RestrictionsTableHeaderBreastfeed>吸奶</EM.RestrictionsTableHeaderBreastfeed>
+    <EM.RestrictionsTableHeaderBreastfeedTip>允许此人直接吸奶（哺乳）。</EM.RestrictionsTableHeaderBreastfeedTip>
+    <EM.RestrictionsTableHeaderMilking>挤奶</EM.RestrictionsTableHeaderMilking>
+    <EM.RestrictionsTableHeaderMilkingTip>允许此人使用挤奶器对该产主进行挤奶。</EM.RestrictionsTableHeaderMilkingTip>
+    <EM.RestrictionsTableHeaderSuckle>吸奶/挤奶</EM.RestrictionsTableHeaderSuckle>
     <EM.RestrictionsTableHeaderSuckleTip>允许此人直接吸奶或使用挤奶器对该产主进行挤奶。</EM.RestrictionsTableHeaderSuckleTip>
-    <EM.RestrictionsTableHeaderConsume>可以使用制品</EM.RestrictionsTableHeaderConsume>
+    <EM.RestrictionsTableHeaderConsume>使用制品</EM.RestrictionsTableHeaderConsume>
     <EM.RestrictionsTableHeaderConsumeTip>允许此人食用该产主产出的奶/精液制品（含加工食物）。</EM.RestrictionsTableHeaderConsumeTip>
     <EM.RestrictionsFilterEmpty>当前筛选下没有小人。</EM.RestrictionsFilterEmpty>
     <EM.RestrictionsFilterEmptyHint>请切换上方 Tab（全部/殖民者/囚犯）或等待该类别下有人加入地图。</EM.RestrictionsFilterEmptyHint>
