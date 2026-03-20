@@ -75,7 +75,7 @@ namespace MilkCum.Fluids.Cum.Leaking
         {
             Pawn pawn = (Pawn)parent;
 
-            if (pawn.Dead || !PlayerControlled)
+            if (pawn.Dead)
             {
                 return false;
             }
@@ -86,18 +86,9 @@ namespace MilkCum.Fluids.Cum.Leaking
             {
                 return false;
             }
-
-            if (!vaginas.Any(v => !v.Def.partTags.Contains("Resizable")))
-            {
-                return true;
-            }
-
-            if (pawn.health.hediffSet.HasHediff(DefOfs.Cumpilation_Sealed))
-            {
-                return true;
-            }
-
-            return false;
+            // 与 UI 文案一致：只要有人形成人且有阴道，就允许「塞住」状态逻辑。
+            // 具体部件可用性（Resizable/hediff）不再作为 canSeal 的硬条件，避免 UI 只显示“泄精”不显示“塞住”。
+            return true;
         }
 
     }

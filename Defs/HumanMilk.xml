@@ -1,6 +1,7 @@
 <Defs>
     <ThingDef ParentName="OrganicProductBase">
         <defName>EM_HumanMilk</defName>
+        <thingClass>ThingWithComps</thingClass>
         <label>human milk</label>
         <graphicData>
             <graphicClass>Graphic_StackCount</graphicClass>
@@ -20,6 +21,8 @@
                 <daysToRotStart>14</daysToRotStart>
                 <rotDestroys>true</rotDestroys>
             </li>
+            <li Class="MilkCum.Fluids.Shared.Comps.CompProperties_MilkQuality" />
+            <li Class="MilkCum.Fluids.Shared.Comps.CompProperties_ShowProducer" />
         </comps>
         <ingestible>
             <preferability>RawTasty</preferability>
@@ -60,6 +63,7 @@
             <li Class="MilkCum.Fluids.Lactation.Comps.CompProperties_PartialMilk">
                 <fillAmount>0.5</fillAmount>
             </li>
+            <li Class="MilkCum.Fluids.Shared.Comps.CompProperties_MilkQuality" />
             <li Class="MilkCum.Fluids.Shared.Comps.CompProperties_ShowProducer" />
         </comps>
         <ingestible>

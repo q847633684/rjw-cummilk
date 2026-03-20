@@ -75,7 +75,7 @@ public partial class CompEquallyMilkable
         return GetMilkingFlowRateForSideIndex(idx, false, null);
     }
 
-    /// <summary>放置一个奶物品并设置产主信息；整瓶与未满瓶共用，减少重复。</summary>
+    /// <summary>放置一个奶物品并设置产主信息与品质；整瓶与未满瓶共用，减少重复。</summary>
     private static void PlaceMilkThingOnce(Thing thing, Pawn producer, Building_Milking milkingSpot, Pawn doer)
     {
         if (thing.TryGetComp<CompShowProducer>() is CompShowProducer compShowProducer && producer != null && producer.RaceProps.Humanlike)
@@ -85,20 +85,35 @@ public partial class CompEquallyMilkable
             if (MilkCumSettings.HasPawnTag(thing))
                 compShowProducer.producer = producer;
         }
+        if (thing.TryGetComp<CompMilkQuality>() is CompMilkQuality milkQuality && producer != null)
+            milkQuality.quality = GetMilkQualityForProducer(producer);
         if (milkingSpot != null)
             milkingSpot.PlaceMilkThing(thing);
         else if (doer != null && doer.Spawned)
             GenPlace.TryPlaceThing(thing, doer.Position, doer.Map, ThingPlaceMode.Near);
     }
 
-    /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。</summary>
-    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null)
+    /// <summary>根据泌乳者状态计算奶瓶品质（0~1）：有乳腺炎偏低，L 高偏高。</summary>
+    private static float GetMilkQualityForProducer(Pawn producer)
+    {
+        if (producer?.health?.hediffSet == null) return 0.7f;
+        if (MilkCumDefOf.EM_Mastitis != null && producer.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis) != null)
+            return 0.3f;
+        var lactating = producer.LactatingHediffComp();
+        float effectiveL = lactating?.EffectiveLactationAmountForFlow ?? 0f;
+        return effectiveL >= 0.5f ? 0.9f : 0.6f;
+    }
+
+    /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。drainedKeys 非空时对被扣量侧对应的乳腺炎做额外排空缓解。</summary>
+    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null, List<string> drainedKeys = null)
     {
         if (totalDrained <= 0f)
         {
             SyncBaseFullness();
             return;
         }
+        totalDrainedLifetime += totalDrained;
+        gatherCountLifetime++;
         Pawn pawn = parent as Pawn;
         int tick = Find.TickManager.TicksGame;
         float fullnessBeforeTotal = Fullness;
@@ -152,12 +167,44 @@ public partial class CompEquallyMilkable
         lastGatheredTick = Find.TickManager.TicksGame;
         if (parent is Pawn pawnForMastitis && MilkCumDefOf.EM_Mastitis != null)
         {
-            var mastitis = pawnForMastitis.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
-            if (mastitis != null && mastitis.Severity > 0.01f)
+            var mastitisHediffs = pawnForMastitis.health?.hediffSet?.hediffs;
+            if (mastitisHediffs != null)
             {
-                mastitis.Severity = Mathf.Max(0f, mastitis.Severity - 0.05f);
-                if (mastitis.Severity <= 0f)
-                    pawnForMastitis.health.RemoveHediff(mastitis);
+                const float perSideDecay = 0.02f;
+                const float globalDecay = 0.05f;
+                var partsRelieved = new HashSet<BodyPartRecord>();
+                if (drainedKeys != null && drainedKeys.Count > 0)
+                {
+                    foreach (string sideKey in drainedKeys)
+                    {
+                        string poolKey = PawnMilkPoolExtensions.GetPoolKeyFromSideKey(sideKey);
+                        BodyPartRecord part = pawnForMastitis.GetPartForPoolKey(poolKey);
+                        if (part == null || partsRelieved.Contains(part)) continue;
+                        partsRelieved.Add(part);
+                        Hediff mastitisOnPart = null;
+                        for (int i = 0; i < mastitisHediffs.Count; i++)
+                        {
+                            if (mastitisHediffs[i].def == MilkCumDefOf.EM_Mastitis && mastitisHediffs[i].Part == part)
+                            {
+                                mastitisOnPart = mastitisHediffs[i];
+                                break;
+                            }
+                        }
+                        if (mastitisOnPart != null && mastitisOnPart.Severity > 0.01f)
+                        {
+                            mastitisOnPart.Severity = Mathf.Max(0f, mastitisOnPart.Severity - perSideDecay);
+                            if (mastitisOnPart.Severity <= 0f)
+                                pawnForMastitis.health.RemoveHediff(mastitisOnPart);
+                        }
+                    }
+                }
+                Hediff anyMastitis = pawnForMastitis.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
+                if (anyMastitis != null && anyMastitis.Severity > 0.01f)
+                {
+                    anyMastitis.Severity = Mathf.Max(0f, anyMastitis.Severity - globalDecay);
+                    if (anyMastitis.Severity <= 0f)
+                        pawnForMastitis.health.RemoveHediff(anyMastitis);
+                }
             }
         }
     }

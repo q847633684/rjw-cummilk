@@ -26,7 +26,8 @@ public class Window_ProducerRestrictions : Window
     /// <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
     private const float AllowSelfNarrowThreshold = 520f;
 
-    /// <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。</summary>
+    /// <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。
+    /// 当前 UI 不再提供筛选器（你要求删除筛选框），因此默认始终为 All。</summary>
     private ProducerRestrictionFilter filter = ProducerRestrictionFilter.All;
 
     private Vector2 tableScrollPosition;
@@ -175,10 +176,9 @@ public class Window_ProducerRestrictions : Window
         GUI.color = Color.white;
         y += HeaderHeight + 4f;
 
-        // 筛选 Tab：全部 | 殖民者 | 囚犯
-        Rect filterRow = new Rect(inRect.x, y, inRect.width, TabRowHeight);
-        DrawFilterTabs(filterRow);
-        y += TabRowHeight + 4f;
+        // 你要求删除筛选框：此处不再绘制筛选 Tab。
+        // 留出少量垂直间距，避免表头贴得太近。
+        y += 6f;
 
         bool showSucklerColumn = producer.gender == Gender.Female;
         bool forCumProducts = producer.gender == Gender.Male && !producer.IsLactating();
@@ -246,8 +246,18 @@ public class Window_ProducerRestrictions : Window
         if (remainder < 0f) rW += remainder;
         else nW += remainder;
 
-        Rect scrollOutRect = new Rect(inRect.x, y, inRect.width, inRect.yMax - y);
-        Rect scrollViewRect = new Rect(0f, 0f, bodyWidth, pawns.Count * EntryHeight);
+        // 自适应滚动框高度：
+        // 1) 人少时：滚动框高度 = 实际行高总和，避免框下多余空白。
+        // 2) 人多时：滚动框高度 = 可显示的最大行数 * 行高，让它占满可用空间并可滚动。
+        float contentHeight = pawns.Count * EntryHeight;
+        float availableHeight = Mathf.Max(0f, inRect.yMax - y);
+        float maxVisibleRows = Mathf.Floor(availableHeight / EntryHeight);
+        float viewportRowsHeight = Mathf.Max(EntryHeight, maxVisibleRows * EntryHeight);
+        float scrollOutHeight = contentHeight <= viewportRowsHeight ? contentHeight : viewportRowsHeight;
+        // 防御：可用高度过小也保证至少能显示一行
+        scrollOutHeight = Mathf.Max(EntryHeight, scrollOutHeight);
+        Rect scrollOutRect = new Rect(inRect.x, y, inRect.width, scrollOutHeight);
+        Rect scrollViewRect = new Rect(0f, 0f, bodyWidth, contentHeight);
         Widgets.BeginScrollView(scrollOutRect, ref tableScrollPosition, scrollViewRect);
 
         for (int i = 0; i < pawns.Count; i++)
@@ -332,7 +342,8 @@ public class Window_ProducerRestrictions : Window
             cx = x;
         }
 
-        if (adult && sealComp != null && sealComp.PlayerControlled && CumflationUtility.CanBeCumflated(producer))
+        // 与语言文案一致：只要有阴道等条件即可显示，不再要求 PlayerControlled。
+        if (adult && sealComp != null && sealComp.canSeal() && CumflationUtility.CanBeCumflated(producer))
         {
             Rect r = new Rect(cx, rowY, 120f, rowHeight);
             bool val = sealComp.CanDeflate();
@@ -358,7 +369,8 @@ public class Window_ProducerRestrictions : Window
         y += 6f;
     }
 
-    /// <summary>筛选 Tab：全部 | 殖民者 | 囚犯。</summary>
+    /// <summary>筛选 Tab：全部 | 殖民者 | 囚犯。
+    /// 当前 UI 已删除筛选器，这个方法保留但不会被调用。</summary>
     private void DrawFilterTabs(Rect rect)
     {
         filterTabs.Clear();

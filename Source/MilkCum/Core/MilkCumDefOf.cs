@@ -1,6 +1,9 @@
 using RimWorld;
 using Verse;
+
 namespace MilkCum.Core;
+
+/// <summary>本 mod 的 Def 统一由此类引用（EM = Equal Milking）。技能/文档中的 EMDefOf 即指此类。</summary>
 [DefOf]
 public static class MilkCumDefOf
 {

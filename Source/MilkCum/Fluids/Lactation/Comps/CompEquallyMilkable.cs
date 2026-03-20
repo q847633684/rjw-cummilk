@@ -75,6 +75,8 @@ public partial class CompEquallyMilkable : CompMilkable
     private int ticksFullPool;
     /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏</summary>
     private int lastFullPoolLetterTick = -1;
+    /// <summary>3.3 满池信件：上次发送时的游戏日，用于「每 Pawn 每日最多一封」限制</summary>
+    private int lastFullPoolLetterDay = -1;
     /// <summary>四层模型（阶段 0.2）：组织适应导致的容量增量，maxFullness = 基础容量 + 本值</summary>
     private float capacityAdaptation;
     /// <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick</summary>
@@ -91,6 +93,12 @@ public partial class CompEquallyMilkable : CompMilkable
     private readonly Dictionary<string, float> fullnessBeforePerKeyCache = new Dictionary<string, float>();
     /// <summary>用于 PoolTickLog：记录每侧本步回缩量，避免每次 UpdateMilkPools 分配新字典。</summary>
     private readonly Dictionary<string, float> reabsorbedPerKeyCache = new Dictionary<string, float>();
+    /// <summary>统计：累计产奶量（池单位），用于成就/UI</summary>
+    private float totalDrainedLifetime;
+    /// <summary>统计：被挤奶/吸奶次数（每次 SpawnBottles 或等效产出计 1）</summary>
+    private int gatherCountLifetime;
+    /// <summary>统计：满池溢出触发污物次数</summary>
+    private int overflowEventCount;
 
     /// <summary>池逻辑在 UpdateMilkPools 中写入：本步实际进水流速（池单位/天），供 UI 直接读取，与回缩/溢出等逻辑一致。不存档。</summary>
     internal float CachedFlowPerDayForDisplay;
@@ -132,7 +140,11 @@ public partial class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref lastGatheredTick, "PoolLastGatheredTick", -1);
         Scribe_Values.Look(ref ticksFullPool, "PoolTicksFull", 0);
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
+        Scribe_Values.Look(ref lastFullPoolLetterDay, "EM.LastFullPoolLetterDay", -1);
         Scribe_Values.Look(ref capacityAdaptation, "EM.CapacityAdaptation", 0f);
+        Scribe_Values.Look(ref totalDrainedLifetime, "EM.TotalDrainedLifetime", 0f);
+        Scribe_Values.Look(ref gatherCountLifetime, "EM.GatherCountLifetime", 0);
+        Scribe_Values.Look(ref overflowEventCount, "EM.OverflowEventCount", 0);
         Scribe_Collections.Look(ref breastFullness, "BreastFullness", LookMode.Value, LookMode.Value);
         if (Scribe.mode != LoadSaveMode.Saving)
         {
@@ -248,9 +260,11 @@ public partial class CompEquallyMilkable : CompMilkable
             MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, Fullness, maxFullness);
         }
         if (!cachedActive) { return; }
-        // LOD：非当前地图的 pawn 每 300 tick 更新一次池，降低规模大时的负担；需结合 Profiler 验证
-        bool onCurrentMap = Pawn?.MapHeld == null || Pawn.MapHeld == Find.CurrentMap;
-        if (onCurrentMap || parent.IsHashIntervalTick(300))
+        // LOD：当前地图每 60 tick；非当前地图 300 tick；未载入地图（商队等）600 tick，降低多档负担
+        bool onCurrentMap = Pawn?.MapHeld != null && Pawn.MapHeld == Find.CurrentMap;
+        bool notOnAnyMap = Pawn?.MapHeld == null;
+        int interval = onCurrentMap ? 60 : (notOnAnyMap ? PoolModelConstants.LODIntervalNotOnMapTicks : 300);
+        if (onCurrentMap || parent.IsHashIntervalTick(interval))
         {
             UpdateMilkPools();
             if (MilkCumSettings.rjwBreastSizeEnabled && Pawn != null && Pawn.IsInLactatingState())
@@ -303,6 +317,7 @@ public partial class CompEquallyMilkable : CompMilkable
         if (!Prefs.DevMode || !cachedActive || Pawn == null) yield break;
         string label = "池 P=" + CachedPressureForDisplay.ToString("F2") + " L=" + CachedLetdownForDisplay.ToString("F2") + " C=" + CachedConditionsForDisplay.ToString("F2");
         string tip = "overflow=" + overflowAccumulator.ToString("F3") + " 满=" + Fullness.ToString("F3") + "/" + maxFullness.ToString("F3") + " 流/天=" + CachedFlowPerDayForDisplay.ToString("F3");
+        tip += " | 累计产奶=" + totalDrainedLifetime.ToString("F1") + " 挤奶次数=" + gatherCountLifetime + " 溢出次数=" + overflowEventCount;
         if (hadShrinkLastStep)
             tip += " 回缩吸收/天=" + cachedReabsorbedNutritionPerDay.ToString("F3");
         yield return new Command_Action

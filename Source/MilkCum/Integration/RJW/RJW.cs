@@ -104,7 +104,7 @@ public static class Hediff_BasePregnancy_Patch
     }
 }
 
-/// <summary>RJW produceFluidOnOrgasm：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量。</summary>
+/// <summary>RJW 高潮产液（produceFluidOnOrgasm）：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量（AddMilkToKeys）。性行为后 L 增量见 RJWSexAndFertility.ApplyPostSexLactationBoost（rjwSexAddsLactationBoost）。</summary>
 [HarmonyPatch(typeof(JobDriver_Sex), nameof(JobDriver_Sex.Orgasm))]
 public static class JobDriver_Sex_OrgasmMilk_Patch
 {

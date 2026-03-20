@@ -33,6 +33,8 @@ public static class PoolModelConstants
     public const float DoseToLFactor = 1f;
     /// <summary>1 池单位 = 1 营养（设计对等）：产奶花 1 营养得 1 池、喝奶花 1 池得 1 营养。ExtraNutritionPerDay = flow×本值；Need_Food 补丁按此扣饱食度，CompPartialMilk 食用时 fillAmount 直接作营养。原版饱食条 0..MaxLevel(≈1)，泌乳时额外掉条属设计。</summary>
     public const float NutritionPerPoolUnit = 1f;
+    /// <summary>泌乳额外营养折算分母：lactationExtraNutritionBasis(0~300) / 本值 = 营养系数，150 = 100% 基准（1:1）。</summary>
+    public const float NutritionBasisDenominator = 150f;
 
     /// <summary>浮点余量：扣量时 &lt; 此值视为 0，避免残留；Drain 与 DrainForConsumeByRates 共用。</summary>
     public const float FloatDustEpsilon = 0.001f;
@@ -53,4 +55,6 @@ public static class PoolModelConstants
     public const float MastitisDrainageReliefFullnessThreshold = 0.3f;
     /// <summary>乳腺炎排空缓解：排空状态下每日额外 severity 衰减量（与 HediffCompProperties_SeverityPerDay 叠加）。</summary>
     public const float MastitisDrainageReliefSeverityPerDay = 0.01f;
+    /// <summary>LOD：未载入地图的 Pawn（如商队、囚犯）更新池的 tick 间隔，降低多档负担。</summary>
+    public const int LODIntervalNotOnMapTicks = 600;
 }

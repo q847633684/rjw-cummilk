@@ -16,6 +16,8 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
     private float totalDrained;
     private Sustainer milkSustainer;
     private readonly List<string> drainedKeys = new();
+    /// <summary>本场次被扣量的池侧 key 集合，用于挤奶结束时按侧做乳腺炎排空缓解。</summary>
+    private readonly HashSet<string> sessionDrainedKeys = new();
     public Pawn Target => job.GetTarget(TargetIndex.A).Thing as Pawn;
     public Building_Milking MilkBuilding => job.GetTarget(TargetIndex.B).Thing as Building_Milking;
     public override void ExposeData()
@@ -38,6 +40,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
         float whole = Mathf.Floor(comp.Fullness);
         amountToTake = whole >= 1f ? whole : 0f;
         totalDrained = 0f;
+        sessionDrainedKeys.Clear();
     }
 
     public override bool TryMakePreToilReservations(bool errorOnFailed)
@@ -117,7 +120,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             {
                 if (totalDrained > 0f)
                 {
-                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, new List<string>(sessionDrainedKeys));
                     totalDrained = 0f;
                 }
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded);
@@ -145,7 +148,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
                 {
                     if (totalDrained > 0f)
                     {
-                        comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                        comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, new List<string>(sessionDrainedKeys));
                         totalDrained = 0f;
                     }
                     this.milkSustainer?.End();
@@ -154,6 +157,8 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
                 }
                 actualDrained = comp.DrainForConsume(drain, drainedKeys);
             }
+            for (int i = 0; i < drainedKeys.Count; i++)
+                sessionDrainedKeys.Add(drainedKeys[i]);
             // 通知泌乳反射：本 tick 被扣量的池侧 key，用于更新喷乳反射 R 与流速倍率
             Target.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys);
             Target.LactatingHediffComp()?.SyncChargeFromPool();
@@ -168,7 +173,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             {
                 if (totalDrained > 0f)
                 {
-                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding);
+                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, new List<string>(sessionDrainedKeys));
                     totalDrained = 0f;
                 }
                 this.milkSustainer?.End();
@@ -180,7 +185,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             this.milkSustainer?.End();
             // 挤奶被打断时，已扣的池量仍产瓶，不丢失
             if (totalDrained > 0f && Target?.CompEquallyMilkable() is CompEquallyMilkable comp)
-                comp.SpawnBottlesForDrainedAmount(totalDrained, pawn, MilkBuilding);
+                comp.SpawnBottlesForDrainedAmount(totalDrained, pawn, MilkBuilding, new List<string>(sessionDrainedKeys));
             if (Target?.CurJobDef == JobDefOf.Wait_MaintainPosture)
             {
                 Target.jobs.EndCurrentJob(JobCondition.InterruptForced);

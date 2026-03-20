@@ -31,6 +31,9 @@ public class Widget_MilkableTable
 		IEnumerable<ThingDef> pawnDefs = MilkCumSettings.pawnDefs;
 		if (pawnDefs == null)
 			return;
+		// 将可泌乳条目物化，避免同一个 IEnumerable 在 UI 绘制时被 Count/枚举重复执行。
+		List<ThingDef> pawnDefList = pawnDefs as List<ThingDef> ?? pawnDefs.ToList();
+		int pawnCount = pawnDefList.Count;
 		IEnumerable<ThingDef> itemDefs = (from def in DefDatabase<ThingDef>.AllDefs where def.category == ThingCategory.Item && !def.IsApparel && !def.IsBuildingArtificial && !def.IsCorpse && !def.isUnfinishedThing && !def.IsWeapon select def).Distinct().OrderBy(def => def.defName);
         Text.Font = GameFont.Small;
 
@@ -43,11 +46,17 @@ public class Widget_MilkableTable
         widgetRow.Label(Lang.MilkAmount, UNIT_SIZE * 3, Lang.MilkAmountDesc);
         Text.Font = GameFont.Small;
 		Rect tableRect = new(rect.x, rect.y + UNIT_SIZE, rect.width, rect.height - UNIT_SIZE);
-		Rect scrollRect = new(tableRect.x, tableRect.y, tableRect.width - UNIT_SIZE, pawnDefs.Count() * UNIT_SIZE);
-		Widgets.BeginScrollView(tableRect, ref scrollPosition, scrollRect, true);
+		// 自适应滚动框高度：内容不够填满时不铺太高，避免出现大量“空白框”。
+		float contentHeight = pawnCount * UNIT_SIZE;
+		float outHeight = Mathf.Min(tableRect.height, contentHeight);
+		outHeight = Mathf.Max(UNIT_SIZE, outHeight);
+		Rect outRect = new(tableRect.x, tableRect.y, tableRect.width, outHeight);
+		// 不强制显示水平滚动条，否则会占用宽度导致最右列（例如“指定/按钮”）被裁。
+		Rect scrollRect = new(tableRect.x, tableRect.y, tableRect.width, contentHeight);
+		Widgets.BeginScrollView(outRect, ref scrollPosition, scrollRect, false);
 		try
 		{
-		using (IEnumerator<ThingDef> enumerator = pawnDefs.GetEnumerator())
+		using (IEnumerator<ThingDef> enumerator = pawnDefList.GetEnumerator())
         {
             float y_Offset = tableRect.y - UNIT_SIZE;
             while (enumerator.MoveNext())

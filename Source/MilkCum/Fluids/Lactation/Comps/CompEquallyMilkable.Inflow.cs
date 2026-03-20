@@ -18,11 +18,11 @@ public partial class CompEquallyMilkable
     private const float CapacityHysteresisForOverflowClear = 0.98f;
     private const float OverflowAccumulatorCap = 100f;
 
-    /// <summary>营养折算系数（泌乳消耗/回缩加回），统一维护避免重复与硬编码。</summary>
+    /// <summary>营养折算系数（泌乳消耗/回缩加回）。lactationExtraNutritionBasis 以 NutritionBasisDenominator 为 100% 基准。</summary>
     private float GetNutritionFactorForExtra()
     {
         int basis = Mathf.Clamp(MilkCumSettings.lactationExtraNutritionBasis, 0, 300);
-        return basis / 150f;
+        return basis / PoolModelConstants.NutritionBasisDenominator;
     }
 
     /// <summary>回缩吸收：仅当本步有回缩时返回 UpdateMilkPools 中缓存的「每日补充营养」；无回缩或未开启时返回 0。避免 UI/Needs 每次读取时遍历 entries。</summary>
@@ -304,15 +304,18 @@ public partial class CompEquallyMilkable
         }
     }
 
-    /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 2 天最多发一封「需要挤奶」提醒信。见 Docs/泌乳系统逻辑图</summary>
+    /// <summary>3.3 满池事件：满池超过约 1 天且开启设置时，每 Pawn 每日最多一封，且受 fullPoolLetterCooldownDays 冷却。见 Docs/泌乳系统逻辑图</summary>
     private void TrySendFullPoolLetter()
     {
         if (!MilkCumSettings.enableFullPoolLetter || Pawn == null || !Pawn.Spawned || !Pawn.IsColonyPawn()
             || ticksFullPool < (int)PoolModelConstants.TicksPerGameDay) return;
+        int currentDay = GenDate.DaysPassed;
+        if (lastFullPoolLetterDay >= 0 && lastFullPoolLetterDay == currentDay) return;
         int now = Find.TickManager.TicksGame;
         int cooldownTicks = (int)(Mathf.Max(0.5f, MilkCumSettings.fullPoolLetterCooldownDays) * GenDate.TicksPerDay);
         if (lastFullPoolLetterTick >= 0 && now - lastFullPoolLetterTick < cooldownTicks) return;
         lastFullPoolLetterTick = now;
+        lastFullPoolLetterDay = currentDay;
         string title = "EM.FullPoolLetterTitle".Translate();
         if (string.IsNullOrEmpty(title) || title == "EM.FullPoolLetterTitle") title = "EM.MilkPoolFull".Translate();
         string text = "EM.FullPoolLetterText".Translate(Pawn.LabelShort);
@@ -338,6 +341,8 @@ public partial class CompEquallyMilkable
                 overflowAccumulator -= PoolModelConstants.OverflowFilthThreshold;
                 filthSpawned++;
             }
+            if (filthSpawned > 0)
+                overflowEventCount += filthSpawned;
             if (filthSpawned > 0 && Pawn.RaceProps.Humanlike && Pawn.needs?.mood?.thoughts?.memories != null
                 && MilkCumDefOf.EM_MilkOverflow != null)
                 Pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_MilkOverflow);

@@ -151,7 +151,7 @@ public static class ChildcareHelper
             {
                 baby.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedMe, pawn, null);
                 pawn.needs?.mood?.thoughts.memories.TryGainMemory(ThoughtDefOf.BreastfedBaby, baby, null);
-                // 3.1 ?????? 1 ?????/???? EM ?????EM_NursedBy / EM_NursedSomeone??????????
+                // 3.1 哺乳关系/记忆：吸满约 1 瓶后给双方 EM_NursedBy / EM_NursedSomeone 记忆，用于社交与关系
                 if (MilkCumDefOf.EM_NursedBy != null)
                     baby.needs?.mood?.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_NursedBy, pawn, null);
                 if (MilkCumDefOf.EM_NursedSomeone != null)
