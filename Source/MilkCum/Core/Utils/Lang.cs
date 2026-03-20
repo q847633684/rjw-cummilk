@@ -175,7 +175,6 @@ public static class Lang
     public static string MilkType => "Stat_Animal_MilkType".Translate();
     public static string MilkTypeDesc => "Stat_Animal_MilkTypeDesc".Translate();
     public static string MilkAmount => "Stat_Animal_MilkAmount".Translate();
-    public static string MilkAmountDesc => "EM.MilkAmountDesc".Translate();
     public static string MilkFullness => "MilkFullness".Translate();
     public static string Misc => "MiscRecordsCategory".Translate();
     public static string Nutrition => "Nutrition".Translate();

@@ -52,7 +52,6 @@ public static class ChildcareHelper
         float flowPerSecond = comp.GetMilkingFlowRateForSingleSide();
         float ratePerTick = flowPerSecond / 60f * (float)delta;
 
-        float milkAmt = feeder.MilkAmount();
         // 营养→乳池 / 乳池→营养 统一 1:1：1 池单位 = 1 营养，吸出多少池就加多少饱食度（与 Need_Food 补丁一致）
         const float nutritionPerPoolUnit = 1f;
         float toDrainPool = Mathf.Min(ratePerTick, comp.Fullness);

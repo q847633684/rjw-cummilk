@@ -43,7 +43,6 @@ public class Widget_MilkableTable
         widgetRow.Label(Lang.Pawn, UNIT_SIZE * 8, null);
         widgetRow.Label(lactatingLabel, UNIT_SIZE * 3, null);
         widgetRow.Label(Lang.MilkType, UNIT_SIZE * 6, Lang.MilkTypeDesc);
-        widgetRow.Label(Lang.MilkAmount, UNIT_SIZE * 3, Lang.MilkAmountDesc);
         Text.Font = GameFont.Small;
 		Rect tableRect = new(rect.x, rect.y + UNIT_SIZE, rect.width, rect.height - UNIT_SIZE);
 		// 自适应滚动框高度：内容不够填满时不铺太高，避免出现大量“空白框”。
@@ -70,11 +69,6 @@ public class Widget_MilkableTable
                 Widgets.Checkbox(new Vector2(tableRect.x + UNIT_SIZE * 10, y_Offset), ref product.isMilkable, UNIT_SIZE);
                 // “指定”按钮不要依赖 isMilkable：避免出现只有部分行（例如你看到的只有男生）显示按钮的情况。
                 SetupSelectProductButton(new Rect(tableRect.x + UNIT_SIZE * 11, y_Offset, UNIT_SIZE * 7, UNIT_SIZE), pawnDef, itemDefs);
-                if (product.isMilkable)
-                {
-                    string text = product.milkAmount.ToString();
-                    Widgets.TextFieldNumeric(new Rect(tableRect.x + UNIT_SIZE * 19, y_Offset, UNIT_SIZE * 3, UNIT_SIZE), ref product.milkAmount, ref text, 1, 99999);
-                }
             }
         }
         }

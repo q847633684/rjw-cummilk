@@ -19,9 +19,11 @@ public partial class CompEquallyMilkable : CompMilkable
     protected Pawn Pawn => parent as Pawn;
     /// <summary>产出周期已移除，挤奶间隔固定为 1 天（水池模型不依赖此值）</summary>
     protected override int GatherResourcesIntervalDays => 1;
-    protected override int ResourceAmount => (int)Pawn.MilkAmount();
+    // 统一数据源：vanilla 的 ResourceAmount 也改为使用乳池单位（Fullness），避免 milkAmount 与实际产出/扣量产生歧义。
+    protected override int ResourceAmount => (int)Fullness;
     protected override ThingDef ResourceDef => Pawn.MilkDef();
-    protected virtual float fResourceAmount => Pawn.MilkAmount();
+    // 对应的浮点资源量同样以乳池单位表示。
+    protected virtual float fResourceAmount => Fullness;
     /// <summary>吸奶 session 累计量（池单位，1 池 = 1 瓶）。吸奶统一到 Drain 后由 ChildcareHelper 累加，结束时用于 amountFed/心情/outcomeDoers。</summary>
     public float breastfedAmount = 0f;
     public float maxFullness = 1f;

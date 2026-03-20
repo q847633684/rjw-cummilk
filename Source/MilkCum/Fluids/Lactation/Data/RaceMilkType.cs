@@ -5,10 +5,8 @@ public class RaceMilkType : IExposable
 {
     public static bool defaultIsMilkable = true; //Magic
     public static string defaultMilkTypeDefName = "Milk";
-    public static int defaultMilkAmount = 3; //Human approximate milk amount, should be 2.xf but round up
     public bool isMilkable;
     public string milkTypeDefName;
-    public int milkAmount;
     public ThingDef MilkTypeDef
     {
         get
@@ -21,7 +19,6 @@ public class RaceMilkType : IExposable
     {
         this.isMilkable = defaultIsMilkable;
         this.milkTypeDefName = defaultMilkTypeDefName;
-        this.milkAmount = defaultMilkAmount;
     }
     public void SetMilkType(ThingDef thingDef)
     {
@@ -32,6 +29,5 @@ public class RaceMilkType : IExposable
     {
         Scribe_Values.Look<bool>(ref isMilkable, "isMilkable", defaultIsMilkable, false);
         Scribe_Values.Look<string>(ref milkTypeDefName, "milkTypeDefName", defaultMilkTypeDefName, false);
-        Scribe_Values.Look<int>(ref milkAmount, "milkAmount", defaultMilkAmount, false);
     }
 }

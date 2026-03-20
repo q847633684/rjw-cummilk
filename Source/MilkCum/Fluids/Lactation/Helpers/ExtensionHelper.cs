@@ -11,7 +11,6 @@ public static class ExtensionHelper
     public static void Set(this CompProperties_Milkable comp, RaceMilkType value)
     {
         comp.milkDef = DefDatabase<ThingDef>.GetNamed(value.milkTypeDefName, true);
-        comp.milkAmount = value.milkAmount;
         comp.milkIntervalDays = 1;
         comp.milkFemaleOnly = false;
     }

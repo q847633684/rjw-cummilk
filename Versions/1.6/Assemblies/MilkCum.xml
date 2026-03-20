@@ -1964,9 +1964,5 @@
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawAllowSelfSection(System.Single,System.Single@,System.Single)">
             <summary>绘制「允许自己」（对自己的操作）：挤奶、吃奶、泄精、塞住。窄屏时两行布局；每项带 Tooltip。</summary>
         </member>
-        <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawFilterTabs(UnityEngine.Rect)">
-            <summary>筛选 Tab：全部 | 殖民者 | 囚犯。
-            当前 UI 已删除筛选器，这个方法保留但不会被调用。</summary>
-        </member>
     </members>
 </doc>

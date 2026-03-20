@@ -674,7 +674,6 @@ internal class MilkCumSettings : ModSettings
 			if (compMilkable?.milkDef != null)
 			{
 				milkProduct.milkTypeDefName = compMilkable.milkDef.defName;
-				milkProduct.milkAmount = compMilkable.milkAmount;
 				milkProduct.isMilkable = true;
 				milkProducts.Add(def, milkProduct);
 			}
@@ -750,14 +749,12 @@ internal class MilkCumSettings : ModSettings
 		{
 			if (def.race.Humanlike)
 			{
-				milkProduct.milkAmount = Mathf.FloorToInt(3f * def.race.baseBodySize / ThingDefOf.Human.race.baseBodySize);
 				milkProduct.isMilkable = true;
 				milkProduct.milkTypeDefName = MilkCumDefOf.EM_HumanMilk.defName;
 			}
 			else
 			{
 				milkProduct.isMilkable = false;
-				milkProduct.milkAmount = Mathf.FloorToInt(14f * def.race.baseBodySize / ThingDefOf.Cow.race.baseBodySize);
 			}
 		}
 		return milkProduct;
@@ -910,7 +907,18 @@ internal class MilkCumSettings : ModSettings
 	}
 	internal static float GetMilkAmount(Pawn pawn)
 	{
-		return namesToProducts.GetWithFallback(pawn.def.defName, new RaceMilkType()).milkAmount;
+		if (pawn?.def == null) return 0f;
+
+		// RJW/兼容层仍可能会调用 PawnMilkPoolExtensions.MilkAmount()。
+		// 在统一数据源后，这里优先读取原版 CompProperties_Milkable 的 milkAmount（若定义了 milkDef），否则回退到体型公式。
+		CompProperties_Milkable compMilkable = pawn.def.GetCompProperties<CompProperties_Milkable>();
+		if (compMilkable?.milkDef != null && compMilkable.milkAmount > 0f)
+			return compMilkable.milkAmount;
+
+		if (pawn.def.race?.Humanlike == true)
+			return Mathf.FloorToInt(3f * pawn.def.race.baseBodySize / ThingDefOf.Human.race.baseBodySize);
+
+		return Mathf.FloorToInt(14f * pawn.def.race.baseBodySize / ThingDefOf.Cow.race.baseBodySize);
 	}
 	/// <summary>褰撳墠鍌钩绱犺€愬彈涓ラ噸搴?t 鈭?[0,1]锛涘畬鍏ㄧ敱娓告垙鍐?Hediff/Comp 鍐冲畾銆</summary>
 	/// <summary>3.3：按物种对「泌乳药物 ΔS」做乘法修正，raceDrugDeltaSMultiplier；未配置时为 1。</summary>
