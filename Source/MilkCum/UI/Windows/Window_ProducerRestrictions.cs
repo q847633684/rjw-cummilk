@@ -1,4 +1,4 @@
-using RimWorld;
+﻿using RimWorld;
 using Verse;
 using UnityEngine;
 using System.Collections.Generic;
@@ -366,7 +366,6 @@ public class Window_ProducerRestrictions : Window
         float rowHeight = 24f;
         float gap = 12f;
         var sealComp = producer?.TryGetComp<Comp_SealCum>();
-        bool adult = producer?.DevelopmentalStage == DevelopmentalStage.Adult;
         bool narrow = width < AllowSelfNarrowThreshold;
 
         // 第一行：挤奶、吃奶（窄屏时仅此一行；宽屏时泄精、塞住同行）
@@ -401,8 +400,8 @@ public class Window_ProducerRestrictions : Window
             cx = x;
         }
 
-        // 与语言文案一致：只要有阴道等条件即可显示，不再要求 PlayerControlled。
-        if (adult && sealComp != null && sealComp.canSeal() && CumflationUtility.CanBeCumflated(producer))
+        // 不再依赖“成人/能否 cumflated/可塞住”这些显示判断：只要有泄漏/塞住组件就给出权限开关。
+        if (sealComp != null)
         {
             Rect r = new Rect(cx, rowY, 120f, rowHeight);
             bool val = sealComp.CanDeflate();
@@ -413,7 +412,7 @@ public class Window_ProducerRestrictions : Window
             cx = r.xMax + gap;
         }
 
-        if (adult && sealComp != null && sealComp.canSeal())
+        if (sealComp != null)
         {
             Rect r = new Rect(cx, rowY, 100f, rowHeight);
             bool val = sealComp.IsSealed();
@@ -426,16 +425,5 @@ public class Window_ProducerRestrictions : Window
         y = rowY + rowHeight + 8f;
         Widgets.DrawLineHorizontal(x, y, width);
         y += 6f;
-    }
-
-    /// <summary>筛选 Tab：全部 | 殖民者 | 囚犯。
-    /// 当前 UI 已删除筛选器，这个方法保留但不会被调用。</summary>
-    private void DrawFilterTabs(Rect rect)
-    {
-        filterTabs.Clear();
-        filterTabs.Add(new TabRecord("EM.RestrictionsFilterAll".Translate(), () => { filter = ProducerRestrictionFilter.All; SoundDefOf.Click.PlayOneShotOnCamera(); }, filter == ProducerRestrictionFilter.All));
-        filterTabs.Add(new TabRecord("EM.RestrictionsFilterColonists".Translate(), () => { filter = ProducerRestrictionFilter.Colonists; SoundDefOf.Click.PlayOneShotOnCamera(); }, filter == ProducerRestrictionFilter.Colonists));
-        filterTabs.Add(new TabRecord("EM.RestrictionsFilterPrisoners".Translate(), () => { filter = ProducerRestrictionFilter.Prisoners; SoundDefOf.Click.PlayOneShotOnCamera(); }, filter == ProducerRestrictionFilter.Prisoners));
-        TabDrawer.DrawTabs(rect, filterTabs);
     }
 }

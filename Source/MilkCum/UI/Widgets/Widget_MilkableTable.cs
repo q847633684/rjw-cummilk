@@ -68,10 +68,13 @@ public class Widget_MilkableTable
                 Widgets.Label(new Rect(tableRect.x + UNIT_SIZE, y_Offset, UNIT_SIZE * 9, UNIT_SIZE), pawnDef.DisplayText());
                 //Text.Font = GameFont.Tiny;
                 Widgets.Checkbox(new Vector2(tableRect.x + UNIT_SIZE * 10, y_Offset), ref product.isMilkable, UNIT_SIZE);
-                if (!product.isMilkable) { continue; } //Skip the rest of the row if the pawn is not milkable
+                // “指定”按钮不要依赖 isMilkable：避免出现只有部分行（例如你看到的只有男生）显示按钮的情况。
                 SetupSelectProductButton(new Rect(tableRect.x + UNIT_SIZE * 11, y_Offset, UNIT_SIZE * 7, UNIT_SIZE), pawnDef, itemDefs);
-                string text = product.milkAmount.ToString();
-                Widgets.TextFieldNumeric(new Rect(tableRect.x + UNIT_SIZE * 19, y_Offset, UNIT_SIZE * 3, UNIT_SIZE), ref product.milkAmount, ref text, 1, 99999);
+                if (product.isMilkable)
+                {
+                    string text = product.milkAmount.ToString();
+                    Widgets.TextFieldNumeric(new Rect(tableRect.x + UNIT_SIZE * 19, y_Offset, UNIT_SIZE * 3, UNIT_SIZE), ref product.milkAmount, ref text, 1, 99999);
+                }
             }
         }
         }
