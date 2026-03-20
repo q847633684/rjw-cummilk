@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LanguageData>
   <!-- 主菜单/设置 -->
-  <Equal_Milking>等量挤奶</Equal_Milking>
+  <MilkCum_ModName>精液和母乳</MilkCum_ModName>
+  <Equal_Milking>精液和母乳</Equal_Milking>
   <cumpilation_settings_menuname>膨胀与收集</cumpilation_settings_menuname>
   <cumpilation_cumsettings_menuname>泄漏与泄精</cumpilation_cumsettings_menuname>
 
@@ -13,14 +14,8 @@
   <EM.ProducerRestrictionsColumn>谁可吸奶/吃奶或精液制品</EM.ProducerRestrictionsColumn>
   <EM.ProducerRestrictionsColumnTip>女性：谁可以吸我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。点击「...」进入设置。</EM.ProducerRestrictionsColumnTip>
   <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
-  <EM.WhoCanSuckleFromMe>谁可以使用我的奶（吸奶/挤奶）</EM.WhoCanSuckleFromMe>
-  <EM.WhoCanSuckleFromMeDefault>下方名单默认已勾选子女与伴侣；可添加或移除。</EM.WhoCanSuckleFromMeDefault>
-  <EM.WhoCanUseMyMilkProducts>谁可以吃我的奶制品</EM.WhoCanUseMyMilkProducts>
-  <EM.WhoCanUseMyMilkProductsDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkProductsDefault>
-  <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
-  <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
 
-  <!-- 奶表格列（女：塞住 / 男：允许泄精） -->
+  <!-- 指定弹窗内：塞住/允许泄精（允许自己区块） -->
   <EM.Milk_SealCum>塞住</EM.Milk_SealCum>
   <EM.Milk_SealCumTip>是否塞住，防止精液自然泄漏。仅人形且有阴道时显示。</EM.Milk_SealCumTip>
   <EM.Milk_AllowDeflate>允许泄精</EM.Milk_AllowDeflate>

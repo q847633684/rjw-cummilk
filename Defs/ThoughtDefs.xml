@@ -25,12 +25,18 @@
             </li>
         </stages>
     </ThoughtDef>
-    
+    <!-- 成瘾心情：由原版 Hediff 阶段驱动，ThoughtWorker_Hediff(hediff=EM_Prolactin_Addiction)，阶段 0=满足 +1、阶段 1=戒断 -12 -->
     <ThoughtDef>
-        <defName>EM_Prolactin_Withdrawal</defName>
-        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_ProlactinWithdrawal</workerClass>
+        <defName>EM_ProlactinAddictionThought</defName>
+        <workerClass>ThoughtWorker_Hediff</workerClass>
+        <hediff>EM_Prolactin_Addiction</hediff>
         <validWhileDespawned>true</validWhileDespawned>
         <stages>
+            <li>
+                <label>催乳素满足</label>
+                <description>身体得到了足够的催乳素，状态平稳。</description>
+                <baseMoodEffect>1</baseMoodEffect>
+            </li>
             <li>
                 <label>催乳素戒断</label>
                 <description>我真的需要再服一剂。没有它我的身体感觉不完整。</description>
@@ -87,23 +93,10 @@
             </li>
         </stages>
     </ThoughtDef>
-    <!-- 10.8-5：成瘾满足时的小幅正面心情 -->
-    <ThoughtDef>
-        <defName>EM_AddictionSatisfied</defName>
-        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_AddictionSatisfied</workerClass>
-        <validWhileDespawned>true</validWhileDespawned>
-        <stages>
-            <li>
-                <label>催乳素满足</label>
-                <description>身体得到了足够的催乳素，状态平稳。</description>
-                <baseMoodEffect>1</baseMoodEffect>
-            </li>
-        </stages>
-    </ThoughtDef>
     <!-- 10.8-6：满池时轻微不适 -->
     <ThoughtDef>
         <defName>EM_MilkPoolFull</defName>
-        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_MilkPoolFull</workerClass>
+        <workerClass>MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_MilkPoolFull</workerClass>
         <stages>
             <li>
                 <label>奶水过满</label>
@@ -115,7 +108,7 @@
     <!-- 10.8-6：长时间未挤奶且奶量较多时不适 -->
     <ThoughtDef>
         <defName>EM_LongTimeNotMilked</defName>
-        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_LongTimeNotMilked</workerClass>
+        <workerClass>MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_LongTimeNotMilked</workerClass>
         <stages>
             <li>
                 <label>很久没挤奶</label>
@@ -178,7 +171,7 @@
     <!-- 建议 9：高耐受且泌乳量(L)偏低时轻微挫败感 -->
     <ThoughtDef>
         <defName>EM_HighToleranceLowMilk</defName>
-        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_HighToleranceLowMilk</workerClass>
+        <workerClass>MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_HighToleranceLowMilk</workerClass>
         <stages>
             <li>
                 <label>耐受高产奶少</label>
@@ -216,7 +209,7 @@
     <!-- 长期药物泌乳：情境心情，药物诱发泌乳且持续超过约 15 天 -->
     <ThoughtDef>
         <defName>EM_LongTermDrugLactation</defName>
-        <workerClass>MilkCum.Milk.Thoughts.ThoughtWorker_LongTermDrugLactation</workerClass>
+        <workerClass>MilkCum.Fluids.Lactation.Thoughts.ThoughtWorker_LongTermDrugLactation</workerClass>
         <stages>
             <li>
                 <label>长期药物泌乳</label>

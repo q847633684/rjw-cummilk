@@ -5,7 +5,7 @@
   <ThoughtDef>
     <defName>Cumpilation_CanCumflateMe</defName>
     <thoughtClass>Thought_SituationalSocial</thoughtClass>
-    <workerClass>Cumpilation.Reactions.ThoughtWorker_Cumslut_LookingForJuicyPenetrators</workerClass>
+    <workerClass>MilkCum.Fluids.Cum.Reactions.ThoughtWorker_Cumslut_LookingForJuicyPenetrators</workerClass>
     <validWhileDespawned>false</validWhileDespawned>
 
     <stages>

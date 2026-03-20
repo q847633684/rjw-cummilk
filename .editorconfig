@@ -1,0 +1,10 @@
+# 统一文本编码，避免中文注释乱码（UTF-8 带 BOM 便于 Windows 识别）
+root = true
+
+[*]
+charset = utf-8-bom
+indent_style = tab
+end_of_line = lf
+
+[*.{cs,csproj,xml,md}]
+charset = utf-8-bom

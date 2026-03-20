@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LanguageData>
   <EM_HumanMilk.label>人奶</EM_HumanMilk.label>
+  <EM_HumanMilkPartial.label>人奶(未满)</EM_HumanMilkPartial.label>
   <EM_Prolactin.label>催乳素</EM_Prolactin.label>
   <EM_Lucilactin.label>卢西乳素</EM_Lucilactin.label>
   <EM_MilkingPump.label>挤奶泵</EM_MilkingPump.label>

@@ -13,7 +13,8 @@
             <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
-            <drugCategory>Medical</drugCategory>
+            <!-- Social = 原版精神/成瘾品分类，与驼峰菇一致，策略与信息面板成瘾区块一致 -->
+            <drugCategory>Social</drugCategory>
             <ingestHoldOffsetStanding>
                 <northDefault>
                     <offset>(0.18,0,0)</offset>
@@ -36,12 +37,7 @@
             </recipeUsers>
             <soundWorking>Recipe_Drug</soundWorking>
         </recipeMaker>
-        <comps>
-            <li Class="CompProperties_Drug">
-              <addictiveness>0</addictiveness>
-              <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
-            </li>
-          </comps>
+        <!-- 不在此处放 CompProperties_Drug，否则子类会继承到两个 comp，游戏只读第一个（无 chemical）导致不显示成瘾品成瘾区块；与 RJW 驼峰菇一致，仅子类保留一个带 chemical 的 comp -->
     </ThingDef>
 
     <ThingDef ParentName="EM_DrugBase">
@@ -61,7 +57,7 @@
             <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
-            <drugCategory>Medical</drugCategory>
+            <drugCategory>Social</drugCategory>
             <joy>0.3</joy>
             <joyKind>Chemical</joyKind>
             <outcomeDoers>
@@ -99,12 +95,12 @@
                 <existingAddictionSeverityOffset>0.2</existingAddictionSeverityOffset>
                 <needLevelOffset>1</needLevelOffset>
                 <listOrder>30</listOrder>
-                <!-- 降低单针过量严重度，避免连打多针即触发过量倒地；更宽松 -->
+                <!-- 与 RJW 避孕药/促孕药一致：0.08–0.14/针，连续多针会触发过量（原版 Yayo 约 0.18–0.35） -->
                 <overdoseSeverityOffset>
-                    <min>0.03</min>
-                    <max>0.06</max>
+                    <min>0.08</min>
+                    <max>0.14</max>
                 </overdoseSeverityOffset>
-                <largeOverdoseChance>0.01</largeOverdoseChance>
+                <largeOverdoseChance>0.02</largeOverdoseChance>
             </li>
         </comps>
     </ThingDef>
@@ -123,7 +119,7 @@
             <Flammability>1.0</Flammability>
         </statBases>
         <ingestible>
-            <drugCategory>Medical</drugCategory>
+            <drugCategory>Social</drugCategory>
             <joy>1.2</joy>
             <joyKind>Chemical</joyKind>
             <outcomeDoers>
@@ -161,11 +157,12 @@
                 <needLevelOffset>1</needLevelOffset>
                 <listOrder>30</listOrder>
                 <isCombatEnhancingDrug>false</isCombatEnhancingDrug>
+                <!-- 与 RJW 一致，过量惩罚明显 -->
                 <overdoseSeverityOffset>
-                    <min>0.03</min>
-                    <max>0.06</max>
+                    <min>0.08</min>
+                    <max>0.14</max>
                 </overdoseSeverityOffset>
-                <largeOverdoseChance>0.01</largeOverdoseChance>
+                <largeOverdoseChance>0.02</largeOverdoseChance>
             </li>
         </comps>
     </ThingDef>

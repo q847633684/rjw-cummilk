@@ -4,7 +4,7 @@
   <Operation Class="PatchOperationAdd">
     <xpath>Defs/ThingDef[defName="BiosculpterPod"]/comps</xpath>
     <value>
-      <li Class="Cumpilation.Fluids.CompProperties_BiosculpterPod_FluidIncreaseCycle">
+      <li Class="MilkCum.Fluids.Cum.Fluids.CompProperties_BiosculpterPod_FluidIncreaseCycle">
         <key>fluidincrease</key>
         <increaseFactor>1.3</increaseFactor>
         <label>fluid increase</label>
@@ -15,7 +15,7 @@
         <durationDays>2.25</durationDays>
         <operatingColor>(1.000,0.918,0.000)</operatingColor>
       </li>
-      <li Class="Cumpilation.Fluids.CompProperties_BiosculpterPod_ResetFluidAmountCycle">
+      <li Class="MilkCum.Fluids.Cum.Fluids.CompProperties_BiosculpterPod_ResetFluidAmountCycle">
         <key>fluidreset</key>
         <label>fluid reset</label>
         <description>Resets the fluid-type and output to un-modified amount.</description>

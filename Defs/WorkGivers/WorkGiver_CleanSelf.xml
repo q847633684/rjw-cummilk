@@ -3,7 +3,7 @@
 	<WorkGiverDef>
 		<defName>Cumpilation_CleanSelf</defName>
 		<label>clean self</label>
-		<giverClass>Cumpilation.Bukkake.WorkGiver_CleanSelf</giverClass>
+		<giverClass>MilkCum.Fluids.Cum.Bukkake.WorkGiver_CleanSelf</giverClass>
 		<workType>Cleaning</workType>
 		<verb>clean self</verb>
 		<gerund>cleaning self</gerund>
@@ -18,7 +18,7 @@
 	<WorkGiverDef>
 		<defName>Cumpilation_CleanSelfWithSink</defName>
 		<label>collect cum into a bucket</label>
-		<giverClass>Cumpilation.Bukkake.WorkGiver_CleanSelfWithSink</giverClass>
+		<giverClass>MilkCum.Fluids.Cum.Bukkake.WorkGiver_CleanSelfWithSink</giverClass>
 		<workType>BasicWorker</workType>
 		<verb>collect fluids into a</verb>
 		<gerund>collecting fluids into a</gerund>

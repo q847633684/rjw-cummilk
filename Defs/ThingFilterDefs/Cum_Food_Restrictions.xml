@@ -7,7 +7,7 @@
         <parentCategory>Foods</parentCategory>
         <allowedByDefault>true</allowedByDefault>
         <saveKey>allowWithCum</saveKey>
-        <workerClass>Cumpilation.Fluids.Cum.SpecialThingFilterWorker_Cum</workerClass>
+        <workerClass>MilkCum.Fluids.Cum.Fluids.Cum.SpecialThingFilterWorker_Cum</workerClass>
     </SpecialThingFilterDef>
 
     <SpecialThingFilterDef>
@@ -17,7 +17,7 @@
         <parentCategory>Foods</parentCategory>
         <allowedByDefault>true</allowedByDefault>
         <saveKey>allowWithoutCum</saveKey>
-        <workerClass>Cumpilation.Fluids.Cum.SpecialThingFilterWorker_NoCum</workerClass>
+        <workerClass>MilkCum.Fluids.Cum.Fluids.Cum.SpecialThingFilterWorker_NoCum</workerClass>
     </SpecialThingFilterDef>
 
 </Defs>

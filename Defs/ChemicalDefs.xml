@@ -18,5 +18,6 @@
         <fallPerDay>0.5</fallPerDay>
         <onlyIfCausedByHediff>true</onlyIfCausedByHediff>
         <tutorHighlightTag>NeedAddiction</tutorHighlightTag>
+        <developmentalStageFilter>Adult</developmentalStageFilter>
     </NeedDef>
 </Defs>

@@ -1,27 +1,44 @@
 <LanguageData>
-    <Equal_Milking>Equal Milking</Equal_Milking>
-    <!-- Main / Sub tab labels -->
+    <Equal_Milking>MilkCum</Equal_Milking>
+    <!-- Main / Sub tab labels (方案 B: 精液/母乳/基因与种族/权限与默认) -->
+    <EM.Tab.Cum>Cum / fluids</EM.Tab.Cum>
+    <EM.Tab.Lactation>Lactation</EM.Tab.Lactation>
+    <EM.Tab.GenesAndRaces>Genes &amp; races</EM.Tab.GenesAndRaces>
+    <EM.Tab.PermissionsAndDefaults>Permissions &amp; defaults</EM.Tab.PermissionsAndDefaults>
+    <!-- 专业级 7 主 Tab -->
+    <EM.Tab.CoreSystems>Core systems</EM.Tab.CoreSystems>
+    <EM.Tab.HealthRisk>Health &amp; risk</EM.Tab.HealthRisk>
+    <EM.Tab.Permissions>Permissions &amp; rules</EM.Tab.Permissions>
+    <EM.Tab.Balance>Balance &amp; scaling</EM.Tab.Balance>
+    <EM.Tab.Integrations>Integrations</EM.Tab.Integrations>
+    <EM.Tab.DataRaces>Data &amp; races</EM.Tab.DataRaces>
+    <EM.Tab.DevTools>Dev &amp; diagnostics</EM.Tab.DevTools>
+    <!-- Legacy (unused after 方案 B) -->
     <EM.Tab.MilkAndFluids>Milk &amp; fluids</EM.Tab.MilkAndFluids>
     <EM.Tab.Breastfeed>Breastfeed</EM.Tab.Breastfeed>
+    <EM.MenuSuckleFrom>Suck {0}'s milk</EM.MenuSuckleFrom>
+    <EM.JobReportBreastfeed>breastfeeding TargetA.</EM.JobReportBreastfeed>
+    <EM.JobReportSuckleFrom>sucking TargetA's milk.</EM.JobReportSuckleFrom>
     <EM.Tab.HealthAndRisk>Health &amp; risk</EM.Tab.HealthAndRisk>
     <EM.Tab.EfficiencyAndInterface>Efficiency &amp; interface</EM.Tab.EfficiencyAndInterface>
     <EM.Tab.IntegrationAndAdvanced>Integration &amp; advanced</EM.Tab.IntegrationAndAdvanced>
     <EM.SubTab.Milk>Milk table</EM.SubTab.Milk>
     <EM.SubTab.MilkTags>Milk tags</EM.SubTab.MilkTags>
     <EM.SubTab.RaceOverrides>Race overrides</EM.SubTab.RaceOverrides>
+    <EM.SubTab.Cum>Cum (Cumpilation)</EM.SubTab.Cum>
+    <EM.SubTab.GirlJuice>Girl juice</EM.SubTab.GirlJuice>
+    <EM.SubTab.FluidsGirlJuicePlaceholder>Girl juice (vaginal fluids) — not implemented yet.</EM.SubTab.FluidsGirlJuicePlaceholder>
     <EM.SubTab.Fluids>Fluids (Cumpilation)</EM.SubTab.Fluids>
     <EM.SubTab.BreastfeedOverview>Overview</EM.SubTab.BreastfeedOverview>
+    <EM.SubTab.BreastfeedByType>Who can feed (by type)</EM.SubTab.BreastfeedByType>
     <EM.SubTab.Mastitis>Mastitis</EM.SubTab.Mastitis>
     <EM.SubTab.DBH>DBH</EM.SubTab.DBH>
     <EM.SubTab.ToleranceOverflow>Tolerance &amp; overflow</EM.SubTab.ToleranceOverflow>
-    <EM.SubTab.LoadFromDef>Load from Def</EM.SubTab.LoadFromDef>
     <EM.SectionDesc_Mastitis>Mastitis/clog: master switch enables the mechanic; sliders set base MTB, over-fullness and hygiene risk multipliers, and humanlike/animal multipliers. Does not choose hygiene data source (that is set on the DBH sub-tab).</EM.SectionDesc_Mastitis>
     <EM.SectionDesc_DBH>When Dubs Bad Hygiene is installed, choose whether mastitis/clog hygiene risk uses DBH's Hygiene need (pawn hygiene bar) or vanilla room cleanliness. Checked = DBH; unchecked = room cleanliness.</EM.SectionDesc_DBH>
-    <EM.SectionDesc_LoadFromDef>Click to apply key defaults from the EM_Defaults Def (mastitis, tolerance, baseline milk days, etc.) to current save. Does not overwrite race whitelist/blacklist. Other mods can patch that Def to change defaults.</EM.SectionDesc_LoadFromDef>
     <EM.SectionDesc_ToleranceOverflow>Whether tolerance affects milk efficiency and the impact exponent; which filth def spawns when pool overflows; whether milking AI prefers fuller targets. Reference line shows pool model baselines.</EM.SectionDesc_ToleranceOverflow>
     <EM.SectionDesc_IdentityAndMenu>Controls whether right-clicking a pawn of each type shows "Give prolactin", "Breastfeed/suckle", etc. in the float menu. Check by target identity (mechanoid/colonist/slave/prisoner/animal/misc) to reduce clutter.</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
-    <EM.SectionDesc_MilkingSelf>"Milking (self)": allow this role to milk themselves (auto take milk-self job). Off = only others can milk them or manual assign. The Milk table column overrides per pawn.</EM.SectionDesc_MilkingSelf>
     <EM.SubTab.Efficiency>Efficiency</EM.SubTab.Efficiency>
     <EM.SectionDesc_Efficiency>Efficiency and milk amount multipliers by lactation severity; consciousness/manipulation/moving gain and cap percent; whether adult female animals are always lactating. Affects only this mod's lactation and milk output.</EM.SectionDesc_Efficiency>
     <EM.LactationEfficiencyMovedHint>Lactation efficiency and consciousness/manipulation/moving gain are under Integration → Breast &amp; pool, with capacity, flow and remaining days. Only animal "always lactating" remains here.</EM.LactationEfficiencyMovedHint>
@@ -32,11 +49,26 @@
     <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
     <EM.SubTab.GenesAndAdvanced>Genes &amp; advanced</EM.SubTab.GenesAndAdvanced>
     <EM.SubTab.BreastPool>Breast &amp; pool</EM.SubTab.BreastPool>
+    <!-- 专业级子 Tab -->
+    <EM.SubTab.BreastfeedSystem>Breastfeed system</EM.SubTab.BreastfeedSystem>
+    <EM.SubTab.CumSystem>Cum system</EM.SubTab.CumSystem>
+    <EM.SubTab.FluidBehavior>Fluid behavior</EM.SubTab.FluidBehavior>
+    <EM.SubTab.MastitisSystem>Mastitis</EM.SubTab.MastitisSystem>
+    <EM.SubTab.HygieneSystem>Hygiene</EM.SubTab.HygieneSystem>
+    <EM.SubTab.ToleranceSystem>Tolerance</EM.SubTab.ToleranceSystem>
+    <EM.SubTab.OverflowPollution>Overflow &amp; pollution</EM.SubTab.OverflowPollution>
+    <EM.SubTab.MenuVisibility>Menu visibility</EM.SubTab.MenuVisibility>
+    <EM.SubTab.DefaultBehavior>Default behavior</EM.SubTab.DefaultBehavior>
+    <EM.SubTab.BalanceScaling>Balance &amp; scaling</EM.SubTab.BalanceScaling>
+    <EM.SubTab.RJWIntegration>RJW</EM.SubTab.RJWIntegration>
+    <EM.SubTab.DBHIntegration>DBH</EM.SubTab.DBHIntegration>
+    <EM.SubTab.NutritionSystem>Nutrition</EM.SubTab.NutritionSystem>
+    <EM.SectionDesc_NutritionIntegration>Food ↔ milk pool: mechanoid nutrition→energy factor; lactation extra hunger; reabsorb on shrink. Same logic as in Core → Breastfeed.</EM.SectionDesc_NutritionIntegration>
     <EM.BreastfeedOverviewDesc>Who can feed whom is set below by humanlike / animal / mechanoid. Single feeding duration and mechanoid nutrition→energy here.</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>Lactation extra hunger: {0} (0=off, 150=1:1, 300=double)</EM.LactationExtraNutritionFactor>
     <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>Milking work total base</EM.MilkingWorkTotalBase>
-    <EM.MilkingCapacityFactor>Milking capacity factor</EM.MilkingCapacityFactor>
+    <EM.MilkAmountDesc>Milking drains the full pool; yield only affects milking work total. Nursing duration is set by options and baby need; yield only affects portion/Charge conversion.</EM.MilkAmountDesc>
     <EM.LactatingGain>Lactating gain (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, drug-induced lactation gives a small bonus. Percentage sets strength (0-20%).</EM.LactatingGainDesc>
     <EM.LactatingGainPercent>Gain offset: {0}</EM.LactatingGainPercent>
@@ -46,14 +78,49 @@
     <EM.ProducerRestrictionsColumn>Who can use my milk / eat my milk or cum products</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>Female (lactating): who can use my milk, who can eat my milk products. Male: who can eat my cum products. Different from "Fed by" which is set on the baby.</EM.ProducerRestrictionsColumnTip>
     <EM.ProducerRestrictionsTitle>{0}'s restrictions</EM.ProducerRestrictionsTitle>
-    <EM.WhoCanSuckleFromMe>Who can use my milk</EM.WhoCanSuckleFromMe>
-    <EM.WhoCanSuckleFromMeDefault>List below is pre-filled with children and partner by default; add or remove as needed.</EM.WhoCanSuckleFromMeDefault>
-    <EM.WhoCanUseMyMilkProducts>Who can eat my milk products</EM.WhoCanUseMyMilkProducts>
-    <EM.WhoCanUseMyMilkProductsDefault>Default: only me. Add pawns to also allow them to eat my milk or food made from my milk.</EM.WhoCanUseMyMilkProductsDefault>
-    <EM.WhoCanUseMyCumProducts>Who can eat my cum products</EM.WhoCanUseMyCumProducts>
-    <EM.WhoCanUseMyCumProductsDefault>Default: only me. Add pawns to also allow them to eat my cum or cum-based products.</EM.WhoCanUseMyCumProductsDefault>
+    <EM.MilkTagsTableHeaderDesc>Whether milk/cum product info shows race or producer name. "Show animal names" must be enabled for producer restrictions (who can eat my products) to apply.</EM.MilkTagsTableHeaderDesc>
+    <EM.RequiresRJWMod>Requires RJW (rim.job.world) mod.</EM.RequiresRJWMod>
+    <EM.WindowSearchTitle>Select item</EM.WindowSearchTitle>
+    <EM.SearchItemsPlaceholder>Search by name or defName...</EM.SearchItemsPlaceholder>
+    <EM.Lactating>Lactating</EM.Lactating>
+    <EM.MilkFullnessColumnTip>Pool fullness (0–100%). Shows "-" if the pawn has no EM lactation comp.</EM.MilkFullnessColumnTip>
+    <EM.MilkRemainingDaysColumnTip>Estimated remaining lactation days (from L and baseline duration). Shows "-" if not lactating or permanent.</EM.MilkRemainingDaysColumnTip>
+    <EM.MilkEquivalentDoseColumnTip>Current L expressed as equivalent prolactin doses (read-only). One dose ≈ 0.5 L.</EM.MilkEquivalentDoseColumnTip>
+    <EM.LactatingColumnTip>Whether the pawn is lactating. Blue = temporary, red = permanent (stack count).</EM.LactatingColumnTip>
+    <EM.GeneConfigTitle>Milk type gene config</EM.GeneConfigTitle>
+    <EM.ProducerRestrictionConsumersRequiresTagPawn>This restriction only applies when "Show pawn name" is enabled for that product type under Settings → Milk tags. Currently off, so the list is hidden.</EM.ProducerRestrictionConsumersRequiresTagPawn>
     <EM.ProducerRestrictionsHint>Female: who can use my milk, who can eat my milk products. Male: who can eat my cum products. Set per producer in the Milk table — click "Specify" (…) on the row.</EM.ProducerRestrictionsHint>
-    <EM.HealthTabRestrictionsButton>Who can use my milk / milk or cum products</EM.HealthTabRestrictionsButton>
+    <EM.DefaultSucklerRulesSection>Default "who can use my milk" (when list is empty)</EM.DefaultSucklerRulesSection>
+    <EM.DefaultSucklerIncludeChildren>Include children</EM.DefaultSucklerIncludeChildren>
+    <EM.DefaultSucklerIncludeChildrenDesc>When checked, children of the producer are allowed by default.</EM.DefaultSucklerIncludeChildrenDesc>
+    <EM.DefaultSucklerIncludeLover>Include lover</EM.DefaultSucklerIncludeLover>
+    <EM.DefaultSucklerIncludeLoverDesc>When checked, lovers are allowed by default.</EM.DefaultSucklerIncludeLoverDesc>
+    <EM.DefaultSucklerIncludeSpouse>Include spouse</EM.DefaultSucklerIncludeSpouse>
+    <EM.DefaultSucklerIncludeSpouseDesc>When checked, spouses are allowed by default.</EM.DefaultSucklerIncludeSpouseDesc>
+    <EM.DefaultSucklerExcludeParents>Exclude parents (mother/father)</EM.DefaultSucklerExcludeParents>
+    <EM.DefaultSucklerExcludeParentsDesc>When checked, the producer's parents are not allowed by default.</EM.DefaultSucklerExcludeParentsDesc>
+    <EM.RestrictionsFilterLabel>Show:</EM.RestrictionsFilterLabel>
+    <EM.RestrictionsFilterAll>All</EM.RestrictionsFilterAll>
+    <EM.RestrictionsFilterColonists>Colonists</EM.RestrictionsFilterColonists>
+    <EM.RestrictionsFilterPrisoners>Prisoners</EM.RestrictionsFilterPrisoners>
+    <EM.RestrictionsTableHeaderName>Name</EM.RestrictionsTableHeaderName>
+    <EM.RestrictionsTableHeaderRelation>Relation</EM.RestrictionsTableHeaderRelation>
+    <EM.RestrictionsTableHeaderBreastfeed>Breastfeed</EM.RestrictionsTableHeaderBreastfeed>
+    <EM.RestrictionsTableHeaderBreastfeedTip>Allow this pawn to breastfeed/suckle directly.</EM.RestrictionsTableHeaderBreastfeedTip>
+    <EM.RestrictionsTableHeaderMilking>Milking</EM.RestrictionsTableHeaderMilking>
+    <EM.RestrictionsTableHeaderMilkingTip>Allow this pawn to use a milker on this producer.</EM.RestrictionsTableHeaderMilkingTip>
+    <EM.RestrictionsTableHeaderSuckle>Suckle/milk</EM.RestrictionsTableHeaderSuckle>
+    <EM.RestrictionsTableHeaderSuckleTip>Allow this pawn to suckle or use a milker on this producer.</EM.RestrictionsTableHeaderSuckleTip>
+    <EM.RestrictionsTableHeaderConsume>Use products</EM.RestrictionsTableHeaderConsume>
+    <EM.RestrictionsTableHeaderConsumeTip>Allow this pawn to consume this producer's milk/cum products (including cooked food).</EM.RestrictionsTableHeaderConsumeTip>
+    <EM.RestrictionsFilterEmpty>No pawns match the current filter.</EM.RestrictionsFilterEmpty>
+    <EM.RestrictionsFilterEmptyHint>Switch the tab above (All / Colonists / Prisoners) or wait for pawns of that type to join the map.</EM.RestrictionsFilterEmptyHint>
+    <EM.RestrictionsAllowSelfSection>Allow self (actions on self)</EM.RestrictionsAllowSelfSection>
+    <EM.RestrictionsAllowOthersSection>Allow others (others' actions on you)</EM.RestrictionsAllowOthersSection>
+    <EM.RestrictionsAllowSelf_Milking>Milking</EM.RestrictionsAllowSelf_Milking>
+    <EM.RestrictionsAllowSelf_MilkingTip>Allow self to use a milker or take the self-milking job.</EM.RestrictionsAllowSelf_MilkingTip>
+    <EM.RestrictionsAllowSelf_Consume>Consume</EM.RestrictionsAllowSelf_Consume>
+    <EM.RestrictionsAllowSelf_ConsumeTip>Allow self to consume your milk/cum products (including cooked food). Off = you cannot eat your own products.</EM.RestrictionsAllowSelf_ConsumeTip>
     <EM.Specify>Specify</EM.Specify>
     <EM.DrugRoleHint>To enter lactation: Prolactin or Lucilactin. To boost milk output when already lactating: Galactogogues.</EM.DrugRoleHint>
     <EM.AnimalAdultFemaleAlwaysLactating>Animals: adult females always lactating</EM.AnimalAdultFemaleAlwaysLactating>
@@ -64,11 +131,15 @@
     <EM.RjwBreastCapacityCoefficient>Breast capacity coefficient: {0}</EM.RjwBreastCapacityCoefficient>
     <EM.RjwBreastCapacityCoefficientDesc>Left/right pool capacity = RJW breast Severity × this value (1 = unchanged). Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
     <EM.RjwBreastCapacityCoefficientDescLong>Left/right pool capacity = RJW breast Severity × this value; total capacity = left + right. Higher = larger pool, longer to fill; default 2 with Severity 0.5 gives total capacity 2. See Docs.</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.RjwLactatingSeverityBonus>Lactating Severity bonus: {0}</EM.RjwLactatingSeverityBonus>
+    <EM.RjwLactatingSeverityBonusDesc>Added to base RJW breast Severity while lactating (pool 0–1). Default 0.15.</EM.RjwLactatingSeverityBonusDesc>
+    <EM.RjwLactatingStretchSeverityBonus>Stretch Severity bonus: {0}</EM.RjwLactatingStretchSeverityBonus>
+    <EM.RjwLactatingStretchSeverityBonusDesc>Added when pool is in stretch range (1–1.2). Default 0.05.</EM.RjwLactatingStretchSeverityBonusDesc>
     <EM.DefaultFlowMultiplierForHumanlikeDescLong>Global multiplier for milk flow (pool units/day). With capacity and baseline days, determines fill time and remaining days for a single dose. Default 2 ≈ single dose fills in ~1 game day.</EM.DefaultFlowMultiplierForHumanlikeDescLong>
     <EM.BaselineMilkDurationDays>Drug-induced baseline days: {0}</EM.BaselineMilkDurationDays>
     <EM.BaselineMilkDurationDaysDesc>Drives L decay: remaining days for a single dose (L≈0.5) ≈ this value. Default 5 ≈ 5 days; multi-dose total &lt; doses × this.</EM.BaselineMilkDurationDaysDesc>
     <EM.BirthInducedMilkDurationDays>Birth-induced baseline days: {0}</EM.BirthInducedMilkDurationDays>
-    <EM.BirthInducedMilkDurationDaysDesc>Reference duration for birth-induced lactation (display only; L decay uses drug baseline).</EM.BirthInducedMilkDurationDaysDesc>
+    <EM.BirthInducedMilkDurationDaysDesc>Duration for birth-induced lactation (used for L birth-component decay, separate from drug baseline).</EM.BirthInducedMilkDurationDaysDesc>
     <EM.BreastPoolParamsHint>Capacity, fill time and remaining days are determined by the sliders above; see parameter table and breast capacity doc.</EM.BreastPoolParamsHint>
     <EM.BreastPoolParamsInToleranceHint>Drug/birth baseline days are under Integration → Breast &amp; pool, with capacity and flow.</EM.BreastPoolParamsInToleranceHint>
     <EM.RjwLustFromNursing>Nursing adds lust (Need_Sex)</EM.RjwLustFromNursing>
@@ -84,6 +155,8 @@
     <EM.RjwSexAddsLactationBoost>Sex adds lactation pool boost</EM.RjwSexAddsLactationBoost>
     <EM.RjwSexAddsLactationBoostDesc>When enabled, lactating pawns who have sex gain a small milk pool increase (ΔL). Uses tolerance and race multiplier.</EM.RjwSexAddsLactationBoostDesc>
     <EM.RjwSexLactationBoostDeltaS>Sex lactation Δs: {0}</EM.RjwSexLactationBoostDeltaS>
+    <EM.RjwSexCountsAsStimulus>Sex counts as drain stimulus</EM.RjwSexCountsAsStimulus>
+    <EM.RjwSexCountsAsStimulusDesc>When enabled with "Sex adds lactation pool boost" above, sex also updates last-drain time and stimulus buffer, slowing L decay (similar to milking/nursing).</EM.RjwSexCountsAsStimulusDesc>
     <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene (mastitis hygiene trigger) ---</EM.DubsBadHygieneSection>
     <EM.UseDubsBadHygieneForMastitis>Use DBH Hygiene need for mastitis risk</EM.UseDubsBadHygieneForMastitis>
     <EM.UseDubsBadHygieneForMastitisDesc>When enabled, low Hygiene (from Dubs Bad Hygiene) increases mastitis/clog risk. When disabled, room cleanliness is used instead.</EM.UseDubsBadHygieneForMastitisDesc>
@@ -93,6 +166,8 @@
     <EM.MastitisBaseMtbDays>Mastitis base MTB (days): {0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>Over-fullness risk multiplier: {0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>Hygiene risk multiplier: {0}</EM.HygieneRiskMultiplier>
+    <EM.MastitisInfectionRiskFactor>Infection risk factor: {0}</EM.MastitisInfectionRiskFactor>
+    <EM.MastitisInfectionRiskFactorDesc>Medical alignment: when hygiene is bad AND (pool long full or torso/breast injury), MTB is further divided by this factor (higher mastitis risk, mimics bacterial entry). 1 = no extra; suggest 1.1–1.5.</EM.MastitisInfectionRiskFactorDesc>
     <EM.MastitisMtbDaysMultiplierHumanlike>Humanlike mastitis MTB multiplier: {0}</EM.MastitisMtbDaysMultiplierHumanlike>
     <EM.MastitisMtbDaysMultiplierHumanlikeDesc>Multiply base mastitis MTB for humanlike pawns. &gt;1 = less frequent mastitis.</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
     <EM.MastitisMtbDaysMultiplierAnimal>Animal mastitis MTB multiplier: {0}</EM.MastitisMtbDaysMultiplierAnimal>
@@ -102,28 +177,39 @@
     <EM.ToleranceFlowImpactExponent>Tolerance impact exponent: {0}</EM.ToleranceFlowImpactExponent>
     <EM.OverflowFilthSection>Overflow filth</EM.OverflowFilthSection>
     <EM.OverflowFilthDefName>Filth def name when pool overflows</EM.OverflowFilthDefName>
-    <EM.BaselineMilkDurationReference>Reference: drug-induced baseline {0} days, birth-induced {1} days (pool model).</EM.BaselineMilkDurationReference>
+    <EM.BaselineMilkDurationReference>Reference: drug baseline {0} days, birth-induced {1} days (each component decays with its own baseline).</EM.BaselineMilkDurationReference>
     <EM.AiPreferHighFullnessTargets>Prioritize fuller targets when milking</EM.AiPreferHighFullnessTargets>
     <EM.AiPreferHighFullnessTargetsDesc>When enabled, colonists will prefer to milk pawns with higher pool fullness first (reduces overflow risk).</EM.AiPreferHighFullnessTargetsDesc>
     <EM.RaceOverridesSection>Race overrides (whitelist / blacklist)</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>Races that can always lactate (defName, comma-separated)</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>Races that cannot lactate (defName, comma-separated)</EM.RaceCannotLactate>
-    <EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
-    <EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+<EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
+	<EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+	<EM.LactationLevelCap>Lactation level cap: {0}</EM.LactationLevelCap>
+	<EM.LactationLevelCapDesc>When &gt; 0, drug intake above this L value no longer increases flow rate; the excess only extends lactation duration. More realistic: body needs time to use the drug. 0 = disabled.</EM.LactationLevelCapDesc>
+	<EM.LactationLevelCapDurationMultiplier>Cap overflow → duration multiplier: {0}</EM.LactationLevelCapDurationMultiplier>
+	<EM.LactationLevelCapDurationMultiplierDesc>When L is capped, the overflow is converted to Severity (duration) times this factor. &gt;1 = longer duration to compensate for no flow increase. Default 1.5.</EM.LactationLevelCapDurationMultiplierDesc>
     <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
-    <EM.DevModeNotLactating>{0} is not lactating (no Equal Milking lactation hediff).</EM.DevModeNotLactating>
+    <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>
     <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
-    <EM.LoadDefaultsFromDef>Load defaults from Def</EM.LoadDefaultsFromDef>
-    <EM.LoadDefaultsFromDefDesc>Apply key default values from the EM_Defaults Def (other mods can patch that Def to change defaults). Does not overwrite race lists.</EM.LoadDefaultsFromDefDesc>
-    <EM.DefaultsDefLabel>Equal Milking defaults</EM.DefaultsDefLabel>
+    <EM.LactationLog>Lactation key-path log: birth, drug inflow, hediff add/remove (DevMode)</EM.LactationLog>
+    <EM.LactationPoolTickLog>Log each 60-tick: nutrition deducted, pool added, reabsorbed, sucked (DevMode)</EM.LactationPoolTickLog>
+    <EM.LactationDrugIntakeLog>Drug intake debug: log Δs, inflow ΔL, remaining days change on each dose</EM.LactationDrugIntakeLog>
+    <EM.DefaultsDefLabel>MilkCum defaults</EM.DefaultsDefLabel>
     <EM.MilkOverflowMote>Milk overflow</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>Needs milking</EM.FullPoolLetterTitle>
     <EM.FullPoolLetterText>{0} has been at full milk pool for over a day; consider milking to avoid discomfort or overflow.</EM.FullPoolLetterText>
+    <EM.EnableFullPoolLetter>Send letter when milk pool full too long</EM.EnableFullPoolLetter>
+    <EM.EnableFullPoolLetterDesc>When enabled, a reminder letter is sent if a colonist's milk pool stays full for over one day. Cooldown below limits how often the same pawn can trigger another letter.</EM.EnableFullPoolLetterDesc>
+    <EM.FullPoolLetterCooldownDays>Full-pool letter cooldown (days): {0}</EM.FullPoolLetterCooldownDays>
+    <EM.FullPoolLetterCooldownDaysDesc>Minimum days between two reminder letters for the same pawn. Default 2.</EM.FullPoolLetterCooldownDaysDesc>
     <EM.AlertLactatingButFluidZero>Lactating but RJW breast fluid multiplier 0; use Dev Mode, RJW: Edit parts.</EM.AlertLactatingButFluidZero>
     <!-- 水池模型 hediff 悬停 -->
     <EM.PoolRemainingDays>Remaining days</EM.PoolRemainingDays>
+    <EM.PoolSuppressionHint>Long time without draining → lactation suppression ↑ → natural end</EM.PoolSuppressionHint>
     <EM.PoolDaysPrefix>Days: </EM.PoolDaysPrefix>
+    <EM.PoolDaysSuffix> days</EM.PoolDaysSuffix>
     <EM.EquivalentDose>Equivalent dose: {0}</EM.EquivalentDose>
     <EM.EquivalentDoseColumn>Equiv. dose</EM.EquivalentDoseColumn>
     <EM.ItemProducer>Producer: {0}</EM.ItemProducer>
@@ -134,19 +220,20 @@
     <EM.LactatingStateFullShrinking>Pool full, shrinking (reabsorbed milk adds to food)</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>Pool full (consider milking)</EM.LactatingStateFull>
     <EM.MilkFlowStoppedFull>No inflow (pool full)</EM.MilkFlowStoppedFull>
+    <EM.MilkFlowPressureWhenFull>(when full, pressure reduces flow; small inflow continues)</EM.MilkFlowPressureWhenFull>
     <EM.PoolCurrentLactation>Current lactation</EM.PoolCurrentLactation>
     <EM.MilkFlowPerDay>Milk flow: {0}/day</EM.MilkFlowPerDay>
     <EM.MilkFlowValuePercent>Milk flow: {0}({1})/day</EM.MilkFlowValuePercent>
     <EM.MilkFlowValuePercentLine>Total flow: {0} / day ({1})</EM.MilkFlowValuePercentLine>
     <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
-    <EM.MilkFlowDrive>Drive</EM.MilkFlowDrive>
+    <EM.MilkFlowDrive>Prolactin level</EM.MilkFlowDrive>
     <EM.MilkFlowHunger>Hunger</EM.MilkFlowHunger>
     <EM.MilkFlowConditions>Conditions</EM.MilkFlowConditions>
     <EM.MilkFlowGenes>Genes</EM.MilkFlowGenes>
     <EM.MilkFlowSetting>Setting</EM.MilkFlowSetting>
     <EM.MilkFlowRjw>L+R</EM.MilkFlowRjw>
     <EM.MilkFlowPressure>Pressure</EM.MilkFlowPressure>
-    <EM.MilkFlowLetdown>Letdown</EM.MilkFlowLetdown>
+    <EM.MilkFlowLetdown>Letdown reflex (oxytocin)</EM.MilkFlowLetdown>
     <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
     <EM.PoolPairFlowLine>{0}: {1}(Left: {2}; Right: {3})</EM.PoolPairFlowLine>
     <EM.PoolLeftFlowLine>Left flow: {0} / day</EM.PoolLeftFlowLine>
@@ -182,6 +269,7 @@
     <EM.PoolBreastPairSummaryLine2>Flow: {0} / day</EM.PoolBreastPairSummaryLine2>
     <EM.PoolBreastDevModeOnly>DevMode only</EM.PoolBreastDevModeOnly>
     <EM.PoolBreastMechanismLabel>Mechanism:</EM.PoolBreastMechanismLabel>
+    <EM.PoolFlowEstrogenNote>(Capacity and flow are affected by mammary development and other factors, including estrogen and related physiology.)</EM.PoolFlowEstrogenNote>
     <EM.MilkFlowBreastVolume>Breast volume</EM.MilkFlowBreastVolume>
     <EM.PoolBreastPairSummary>Total: milk {0} / cap {1}({2}) / flow {3}/day</EM.PoolBreastPairSummary>
     <EM.PoolBreastSideMilk>Milk: {0} ({1})</EM.PoolBreastSideMilk>
@@ -195,7 +283,7 @@
     <EM.PoolBreastLabelSuffix>: </EM.PoolBreastLabelSuffix>
     <EM.MilkQuality>Milk quality: {0}</EM.MilkQuality>
     <EM.LactatingProductRate>Product rate: {0} x{1}</EM.LactatingProductRate>
-    <EM.LactatingProductLine>{0}: x{1}</EM.LactatingProductLine>
+    <EM.LactatingProductLine>{0}: {1}</EM.LactatingProductLine>
     <EM.LactatingExtraNutrition>Extra nutrition: {0} / day</EM.LactatingExtraNutrition>
     <EM.LactatingExtraNutritionShort>Extra nutrition: {0} / day</EM.LactatingExtraNutritionShort>
     <EM.PoolRemainingDaysLine>Remaining days: {0}</EM.PoolRemainingDaysLine>
