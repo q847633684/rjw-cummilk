@@ -26,14 +26,6 @@ public partial class CompEquallyMilkable
     /// <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
     private const bool PreferLeftWhenEqual = true;
 
-    /// <summary>该侧是否处于溢出状态（已触发溢出且当前高于基础容量），用于停泌乳与回缩判定。</summary>
-    private bool IsOverflowState(string key, float cur, float baseCap)
-        => overflowTriggeredByKey.TryGetValue(key, out bool ov) && ov && cur > baseCap;
-
-    /// <summary>与 IsOverflowState 一致，供 UI 流速显示使用：处于回缩状态的侧实际不进水，显示流速时应将该侧计为 0。</summary>
-    internal bool IsOverflowStateForDisplay(string key, float cur, float baseCap)
-        => IsOverflowState(key, cur, baseCap);
-
     /// <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
     public float GetFullnessForKey(string key)
     {

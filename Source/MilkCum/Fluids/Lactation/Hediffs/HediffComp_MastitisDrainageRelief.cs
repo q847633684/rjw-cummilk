@@ -22,7 +22,7 @@ public class HediffComp_MastitisDrainageRelief : HediffComp
         var milkComp = parent.pawn.CompEquallyMilkable();
         if (milkComp == null) return;
 
-        float maxF = Mathf.Max(0.001f, milkComp.maxFullness);
+        float maxF = Mathf.Max(0.001f, milkComp.GetPoolStretchCapacityTotal());
         float ratio = milkComp.Fullness / maxF;
         float threshold = Props.fullnessThreshold >= 0f ? Props.fullnessThreshold : PoolModelConstants.MastitisDrainageReliefFullnessThreshold;
         if (ratio >= threshold) return;

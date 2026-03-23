@@ -120,6 +120,14 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
             CleanupDeadPawns();
     }
 
+    /// <summary>RJW 乳房 Hediff 的合法 Severity 上限：优先用 def.maxSeverity，避免硬编码 1f 截断泌乳/撑大增益。</summary>
+    private static float BreastPartSeverityCap(Hediff hediff)
+    {
+        if (hediff?.def == null) return 1f;
+        float m = hediff.def.maxSeverity;
+        return m > 0.001f ? m : 1f;
+    }
+
     private static bool HasAnyKeyForPawn(Pawn pawn)
     {
         if (pawn == null) return false;
@@ -140,7 +148,9 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
         {
             string key = KeyFor(pawn, i);
             if (key == null || !BreastBaseSeverity.TryGetValue(key, out float baseSev)) continue;
-            float newBase = Mathf.Min(1f, baseSev + delta);
+            Hediff h = list[i];
+            float cap = BreastPartSeverityCap(h);
+            float newBase = Mathf.Min(cap, baseSev + delta);
             BreastBaseSeverity[key] = newBase;
         }
         SyncRJWBreastSeverityFromPool(pawn);
@@ -201,7 +211,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
             if (BreastBaseSeverity.TryGetValue(key, out float baseSev))
             {
                 float target = baseSev + MilkCumSettings.rjwLactatingSeverityBonus * t_L + MilkCumSettings.rjwLactatingStretchSeverityBonus * t_pool;
-                comp.SetSeverity(Mathf.Min(1f, target));
+                comp.SetSeverity(Mathf.Min(BreastPartSeverityCap(hediff), target));
             }
         }
     }

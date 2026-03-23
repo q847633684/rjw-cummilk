@@ -15,7 +15,6 @@ namespace MilkCum.Fluids.Lactation.Comps;
 /// <summary>池进水、溢出、回缩、满池信件。见 Docs/泌乳系统逻辑图。</summary>
 public partial class CompEquallyMilkable
 {
-    private const float CapacityHysteresisForOverflowClear = 0.98f;
     private const float OverflowAccumulatorCap = 100f;
 
     /// <summary>营养折算系数（泌乳消耗/回缩加回）。lactationExtraNutritionBasis 以 NutritionBasisDenominator 为 100% 基准。</summary>
@@ -145,10 +144,6 @@ public partial class CompEquallyMilkable
                 float letdownRight = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f;
                 float flowLeft = Mathf.Max(0f, leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft * leftE.Density);
                 float flowRight = Mathf.Max(0f, rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight * rightE.Density);
-                if (IsOverflowState(leftE.Key, curLeft, leftCap))
-                    flowLeft = 0f;
-                if (IsOverflowState(rightE.Key, curRight, rightCap))
-                    flowRight = 0f;
                 totalFlowThisStep += flowLeft + flowRight;
                 pressureWeightedSum += flowLeft * pressureLeft + flowRight * pressureRight;
                 letdownWeightedSum += flowLeft * letdownLeft + flowRight * letdownRight;
@@ -166,20 +161,14 @@ public partial class CompEquallyMilkable
                     reabsorbedPoolThisStep += excessL * (1f - shrinkFactor);
                     reabsorbedPerKeyCache[leftE.Key] = excessL * (1f - shrinkFactor);
                     leftNew = leftCap + excessL * shrinkFactor;
-                    overflowTriggeredByKey[leftE.Key] = true;
                 }
-                else if (leftNew <= leftCap * CapacityHysteresisForOverflowClear)
-                    overflowTriggeredByKey[leftE.Key] = false;
                 if (rightNew > rightCap)
                 {
                     float excessR = rightNew - rightCap;
                     reabsorbedPoolThisStep += excessR * (1f - shrinkFactor);
                     reabsorbedPerKeyCache[rightE.Key] = excessR * (1f - shrinkFactor);
                     rightNew = rightCap + excessR * shrinkFactor;
-                    overflowTriggeredByKey[rightE.Key] = true;
                 }
-                else if (rightNew <= rightCap * CapacityHysteresisForOverflowClear)
-                    overflowTriggeredByKey[rightE.Key] = false;
                 breastFullness[leftE.Key] = leftNew;
                 breastFullness[rightE.Key] = rightNew;
                 overflowTotal += overflow;
@@ -198,8 +187,6 @@ public partial class CompEquallyMilkable
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
                     float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
                     float flowPerTick = Mathf.Max(0f, e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE * e.Density);
-                    if (IsOverflowState(e.Key, current, e.Capacity))
-                        flowPerTick = 0f;
                     totalFlowThisStep += flowPerTick;
                     pressureWeightedSum += flowPerTick * pressure;
                     letdownWeightedSum += flowPerTick * letdownE;
@@ -214,12 +201,8 @@ public partial class CompEquallyMilkable
                         reabsorbedPoolThisStep += excess * (1f - shrinkFactor);
                         reabsorbedPerKeyCache[e.Key] = excess * (1f - shrinkFactor);
                         newFullness = e.Capacity + excess * shrinkFactor;
-                        overflowTriggeredByKey[e.Key] = true;
                     }
-                    else if (newFullness <= e.Capacity * CapacityHysteresisForOverflowClear)
-                        overflowTriggeredByKey[e.Key] = false;
                     breastFullness[e.Key] = newFullness;
-                    if (overflow > 0f) overflowTriggeredByKey[e.Key] = true;
                     overflowTotal += overflow;
                 }
             }
@@ -231,21 +214,6 @@ public partial class CompEquallyMilkable
         CachedPressureForDisplay = totalFlowThisStep >= PoolModelConstants.DisplayEpsilon ? pressureWeightedSum / denom : 1f;
         CachedLetdownForDisplay = totalFlowThisStep >= PoolModelConstants.DisplayEpsilon ? letdownWeightedSum / denom : 1f;
         CachedConditionsForDisplay = totalFlowThisStep >= PoolModelConstants.DisplayEpsilon ? conditionsWeightedSum / denom : (Pawn != null ? Pawn.GetMilkFlowMultiplierFromConditions() : 1f);
-        // 清理溢出标记中已不存在的 key，防止字典无限增长
-        if (overflowTriggeredByKey != null && overflowTriggeredByKey.Count > 0)
-        {
-            var validKeys = new HashSet<string>();
-            foreach (var e in entries)
-                if (!string.IsNullOrEmpty(e.Key))
-                    validKeys.Add(e.Key);
-            var keys = new List<string>(overflowTriggeredByKey.Keys);
-            for (int i = 0; i < keys.Count; i++)
-            {
-                string k = keys[i];
-                if (!validKeys.Contains(k))
-                    overflowTriggeredByKey.Remove(k);
-            }
-        }
 
         hadShrinkLastStep = reabsorbedPoolThisStep > 0f;
         cachedReabsorbedNutritionPerDay = hadShrinkLastStep

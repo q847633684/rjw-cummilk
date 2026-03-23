@@ -1,5 +1,7 @@
 using MilkCum.Core;
+using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Comps;
 using MilkCum.Fluids.Lactation.Helpers;
 using RimWorld;
 using Verse;
@@ -13,6 +15,16 @@ namespace MilkCum.Fluids.Lactation.Hediffs;
 
 public class HediffWithComps_MilkCumLactating : HediffWithComps
 {
+    /// <summary>乳池是否达到「物理满」（撑大总容量×满池阈值）；与进水/TickGrowth 判定一致。</summary>
+    private static bool IsPoolPhysicallyFull(CompEquallyMilkable comp)
+    {
+        if (comp == null) return false;
+        float stretch = comp.GetPoolStretchCapacityTotal();
+        if (stretch < 0.01f)
+            return comp.Fullness >= Mathf.Max(0.01f, comp.maxFullness);
+        return comp.Fullness >= stretch * PoolModelConstants.FullnessThresholdFactor;
+    }
+
     /// <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage. maxSteps=81, count=162; if future allows severity>20 (e.g. large dose), display stays at last stage—not a bug, just a note.</summary>
     private const int SeverityStepsPerUnit = 4;
     private const int MaxSeverityForStages = 20;
@@ -27,7 +39,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
             try
             {
                 var comp = pawn.CompEquallyMilkable();
-                int raw = GetStageIndex(this.Severity, (comp?.Fullness ?? 0f) >= Mathf.Max(0.01f, comp?.maxFullness ?? 1f));
+                int raw = GetStageIndex(this.Severity, IsPoolPhysicallyFull(comp));
                 // 信息�?原版会用 CurStageIndex 访问 def.stages[index]，必须落�?[0, def.stages.Count-1]，否则闪退
                 if (def.stages == null || def.stages.Count == 0)
                     return 0;
@@ -152,7 +164,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
                 return vanillaStage ?? (vanillaStage = new HediffStage { fertilityFactor = 0.05f });
             }
             var comp = pawn.CompEquallyMilkable();
-            int raw = GetStageIndex(this.Severity, (comp?.Fullness ?? 0f) >= Mathf.Max(0.01f, comp?.maxFullness ?? 1f));
+            int raw = GetStageIndex(this.Severity, IsPoolPhysicallyFull(comp));
             int idx = Mathf.Clamp(raw, 0, hediffStages.Length - 1);
             HediffStage stage = hediffStages[idx];
             // 营养→乳池：不再用饥饿率乘数（易出 bug），改由 Need_Food.NeedInterval 补丁直接扣/加饱食度；此处不设 offset。
@@ -753,9 +765,9 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             if (!Pawn.IsMilkable())
                 return base.CompTipStringExtra;
             var lines = new List<string>();
-            float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
+            float stretchCap = Mathf.Max(0.01f, CompEquallyMilkable?.GetPoolStretchCapacityTotal() ?? 1f);
             float totalMilk = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : Charge;
-            bool isFull = totalMilk >= maxF;
+            bool isFull = totalMilk >= stretchCap * PoolModelConstants.FullnessThresholdFactor;
             float reabsorbed = CompEquallyMilkable != null ? CompEquallyMilkable.GetReabsorbedNutritionPerDay() : 0f;
             bool isShrinking = reabsorbed > 0f;
             float growthSpeed = PawnUtility.BodyResourceGrowthSpeed(Pawn);
@@ -773,13 +785,13 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             lines.Add("EM.PoolSectionStorage".Translate());
             if (CompEquallyMilkable != null)
             {
-                float baseTotal = Mathf.Max(0.01f, Pawn.GetLeftBreastCapacityFactor() + Pawn.GetRightBreastCapacityFactor());
-                string totalPercentStr = baseTotal >= 0.001f ? (totalMilk / baseTotal).ToStringPercent() : "0%";
+                float poolBase = Mathf.Max(0.01f, CompEquallyMilkable.GetPoolBaseCapacityTotal());
+                string totalPercentStr = poolBase >= 0.001f ? (totalMilk / poolBase).ToStringPercent() : "0%";
                 lines.Add("  " + "EM.PoolBreastTotalMilkLine".Translate(
                     totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                    baseTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                    poolBase.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
                     totalPercentStr));
-                lines.Add("  " + "EM.PoolBreastStretchCapLine".Translate(maxF.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+                lines.Add("  " + "EM.PoolBreastStretchCapLine".Translate(stretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
             };
 
             // 3. 产奶流速（池/天）：总流速仅读池逻辑在 UpdateMilkPools 中写入的缓存，保证 UI 与池逻辑单一数据源一致
@@ -834,10 +846,10 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         get
         {
-            float maxF = Mathf.Max(0.01f, CompEquallyMilkable?.maxFullness ?? 1f);
+            float denom = Mathf.Max(0.01f, CompEquallyMilkable?.GetPoolStretchCapacityTotal() ?? 1f);
             float fullness = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : Charge;
             string head = IsPermanentLactation ? "" : ("EM.PoolDaysPrefix".Translate() + RemainingDays.ToString("F1") + "EM.PoolDaysSuffix".Translate() + " ");
-            return base.CompLabelInBracketsExtra + head + Lang.MilkFullness + ": " + (fullness / maxF).ToStringPercent();
+            return base.CompLabelInBracketsExtra + head + Lang.MilkFullness + ": " + (fullness / denom).ToStringPercent();
         }
     }
     public override string CompDebugString()

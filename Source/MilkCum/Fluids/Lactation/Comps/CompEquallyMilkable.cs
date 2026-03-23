@@ -91,8 +91,6 @@ public partial class CompEquallyMilkable : CompMilkable
     private bool hadShrinkLastStep = false;
     /// <summary>上一轮回缩时折算的「每日回缩吸收营养」，供 GetReabsorbedNutritionPerDay 直接返回，避免 UI/Needs 读取时再次遍历 entries。</summary>
     private float cachedReabsorbedNutritionPerDay = 0f;
-    /// <summary>按池：该侧是否已触发溢出逻辑（本步或之前溢出且尚未回缩到基础容量）；为 true 时该侧停止泌乳进水并每 60 tick 回缩，直到该侧满度≤基础容量后清除。</summary>
-    private Dictionary<string, bool> overflowTriggeredByKey = new Dictionary<string, bool>();
     /// <summary>用于 PoolTickLog：记录每侧本步前的满度，避免每次 UpdateMilkPools 分配新字典。</summary>
     private readonly Dictionary<string, float> fullnessBeforePerKeyCache = new Dictionary<string, float>();
     /// <summary>用于 PoolTickLog：记录每侧本步回缩量，避免每次 UpdateMilkPools 分配新字典。</summary>
@@ -129,6 +127,12 @@ public partial class CompEquallyMilkable : CompMilkable
     }
     /// <summary>池撑大总容量（= 基础×StretchCapFactor），供 RJW 撑大/回缩同步用。</summary>
     internal float GetPoolStretchTotal() => GetPoolBaseTotal() * PoolModelConstants.StretchCapFactor;
+    /// <summary>池基础总容量（含组织适应摊入各侧后的 entries 之和），与 maxFullness 一致；供 UI/外部读取。</summary>
+    public float GetPoolBaseCapacityTotal() => GetPoolBaseTotal();
+    /// <summary>物理撑大总容量（池内可蓄满上限）；UI 满度分母、乳腺炎比例等应优先用本值而非仅 maxFullness。</summary>
+    public float GetPoolStretchCapacityTotal() => GetPoolStretchTotal();
+    /// <summary>组织适应增量（只读）；由 GetBreastPoolEntries 按比例摊入各 FluidPoolEntry.Capacity。</summary>
+    internal float CapacityAdaptation => capacityAdaptation;
     /// <summary>取指定 key 的缓存流速（池单位/天），无缓存或 key 不存在则返回 0。</summary>
     internal float GetCachedFlowPerDayForKey(string key) => CachedFlowPerDayByKey != null && CachedFlowPerDayByKey.TryGetValue(key, out float v) ? v : 0f;
     /// <summary>获取缓存的总流速（池单位/天），缓存无效时返回 0。</summary>
@@ -260,6 +264,8 @@ public partial class CompEquallyMilkable : CompMilkable
                 capacityAdaptation = Mathf.Clamp(capacityAdaptation, 0f, capMax);
             }
             maxFullness = baseMax + capacityAdaptation;
+            if (MilkCumSettings.enableTissueAdaptation)
+                SetEntriesCacheDirty();
             // 池子上限统一为撑大总容量（开/关压力因子都在此处停产、允许填到撑大、溢出）
             var entriesForCap = GetCachedEntries();
             float stretchTotal = maxFullness;

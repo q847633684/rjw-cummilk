@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using MilkCum.Core;
+using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Comps;
 using MilkCum.RJW;
 using RimWorld;
 using rjw;
@@ -106,12 +108,32 @@ public static class PawnMilkPoolExtensions
                 result.Add(new FluidPoolEntry(key + "_R", cap, mult, false, currentPair, density));
                 currentPair++;
             }
+            ApplyCapacityAdaptationToEntries(pawn, result);
         }
         catch
         {
             result.Clear();
         }
         return result;
+    }
+
+    /// <summary>将 Comp 上的组织适应增量按各侧体基容量比例摊入 Capacity，使 sum(Capacity)≈maxFullness，与进水、回缩、GetPoolBaseTotal、UI 一致。</summary>
+    private static void ApplyCapacityAdaptationToEntries(Pawn pawn, List<FluidPoolEntry> result)
+    {
+        if (result == null || result.Count == 0) return;
+        float sumCap = 0f;
+        for (int i = 0; i < result.Count; i++)
+            sumCap += result[i].Capacity;
+        if (sumCap < 0.01f) return;
+        var milkComp = pawn?.CompEquallyMilkable();
+        float adapt = milkComp != null ? milkComp.CapacityAdaptation : 0f;
+        if (adapt <= PoolModelConstants.Epsilon) return;
+        for (int i = 0; i < result.Count; i++)
+        {
+            var e = result[i];
+            float add = adapt * (e.Capacity / sumCap);
+            result[i] = new FluidPoolEntry(e.Key, e.Capacity + add, e.FlowMultiplier, e.IsLeft, e.PairIndex, e.Density);
+        }
     }
 
     public static ThingDef MilkDef(this Pawn pawn) => MilkCumSettings.GetMilkProductDef(pawn);
