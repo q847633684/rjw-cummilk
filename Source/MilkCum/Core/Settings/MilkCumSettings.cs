@@ -136,8 +136,14 @@ internal class MilkCumSettings : ModSettings
 	public static float lactationLevelCapDurationMultiplier = 1.5f;
 	/// <summary>泌乳药物单次在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 一并叠加），默认 0.044；若改 XML 请同步更新此处说明。</summary>
 	public static float ProlactinToleranceGainPerDose = 0.044f;
-	/// <summary>溢出/回缩状态侧保留的残余进水倍率（0~1），0 = 完全停进水（默认），0.1～0.2 = 轻微「半堵塞」仍有少量进入。</summary>
-	public static float overflowResidualFlowFactor = 0f;
+	/// <summary>近满/顶满撑大时（≥满池阈值×撑大容量）压力系数下限抬升倍率（0~1）：模拟腺泡持续分泌与渗漏；与关压力曲线组合时可将顶满后 0 流速抬到微量。默认 0.04；存档缺键时读档亦为 0.04。</summary>
+	public static float overflowResidualFlowFactor = 0.04f;
+	/// <summary>残余压力是否随泌乳量 L、炎症 I 缩放；关闭时仅用 overflowResidualFlowFactor。</summary>
+	public static bool overflowResidualDynamicScaling = true;
+	/// <summary>L 缩放参考：scaleL = L/(L+refL)，refL 越大则需更高 L 才达到同等残余。</summary>
+	public static float overflowResidualLactationRefL = 1f;
+	/// <summary>炎症倍率：multI = 1 + 本值×Clamp01(I/I_crit)；I_crit 同炎症设置。</summary>
+	public static float overflowResidualInflammationBoost = 0.5f;
 
 	/// <summary>药物泌乳容量用有效数 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≥0.5、E=1）时剩余天数 ≥ 基准天数。B=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
 	public static float GetEffectiveBaseValueTForDecay()
@@ -172,6 +178,30 @@ internal class MilkCumSettings : ModSettings
 		float logistic = 1f / (1f + Mathf.Exp(k * (P - pc)));
 		return fMin + (1f - fMin) * logistic;
 	}
+
+	/// <summary>有效残余压力系数（已含 L/I 动态缩放），上限 Clamp 至 1。</summary>
+	public static float GetEffectiveOverflowResidualPressure(float lactationL, float inflammationI)
+	{
+		float r = Mathf.Clamp01(overflowResidualFlowFactor);
+		if (r <= 0f) return 0f;
+		if (!overflowResidualDynamicScaling) return r;
+		float lRef = Mathf.Max(0.01f, overflowResidualLactationRefL);
+		float scaleL = lactationL <= 0f ? 0f : lactationL / (lactationL + lRef);
+		float crit = Mathf.Max(0.01f, inflammationCrit);
+		float boost = Mathf.Clamp(overflowResidualInflammationBoost, 0f, 3f);
+		float scaleI = 1f + boost * Mathf.Clamp01(inflammationI / crit);
+		return Mathf.Clamp01(r * scaleL * scaleI);
+	}
+
+	/// <summary>当该侧池量 ≥ 满池阈值×撑大容量时，将压力系数至少抬到有效残余值；进水与 UI 压力行共用。</summary>
+	public static void ApplyOverflowResidualFlow(ref float pressureFactor, float currentFullness, float stretchCap, float lactationL, float inflammationI)
+	{
+		float rEff = GetEffectiveOverflowResidualPressure(lactationL, inflammationI);
+		if (rEff <= 0f || stretchCap < 0.001f) return;
+		if (currentFullness >= stretchCap * PoolModelConstants.FullnessThresholdFactor)
+			pressureFactor = Mathf.Max(pressureFactor, rEff);
+	}
+
 	/// <summary>驱动强度模型：有效驱动力 D_eff = L×H(L)，H(L)=1−exp(−aL)；如 L_ref&gt;0 则做归一化：D_eff = L×(1−e^{−aL})/(1−e^{−aL_ref})，高 L 时趋于饱和。</summary>
 	public static float GetEffectiveDrive(float L)
 	{
@@ -208,13 +238,24 @@ internal class MilkCumSettings : ModSettings
 	public static float letdownReflexStimulusDeltaR = 0.45f;
 	/// <summary>射出反射的乘数上限：流速倍率 = 1 + R×(本值−1)；R=1 时为最大倍率（建议 1.5～2.5），R=0 时为 1。</summary>
 	public static float letdownReflexBoostMultiplier = 2f;
-	// 炎症模型：状态量 I(t)；启用时每 60 tick 更新 I，当 I&gt;I_crit 时触发乳腺炎事件，L 衰减项增加 ~I。
+	// 炎症模型：每侧 I；淤积项仅当该侧满度/撑大上限 &gt; 阈值；卫生项与淤积程度耦合；排空扣 I。见 Docs/泌乳系统-全部说明。
 	public static bool enableInflammationModel = true;
-	public static float inflammationAlpha = 0.1f;
+	/// <summary>淤积强度系数：该项 = α×max(0,P−P_stasis)^exp，P=该侧奶量/该侧撑大容量。</summary>
+	public static float inflammationAlpha = 2.2f;
 	public static float inflammationBeta = 0.15f;
 	public static float inflammationGamma = 0.2f;
 	public static float inflammationRho = 0.05f;
 	public static float inflammationCrit = 1f;
+	/// <summary>单侧淤积阈值：P（对该侧撑大上限归一）超过此值才开始明显积 I。</summary>
+	public static float inflammationStasisFullnessThreshold = 0.85f;
+	/// <summary>淤积超出部分的指数：2=平方，1=线性。</summary>
+	public static float inflammationStasisExponent = 2f;
+	/// <summary>无淤积时卫生项乘数（0~1）：模拟「脏环境需叠加淤积/破损才易转感染」。</summary>
+	public static float inflammationHygieneBaselineFactor = 0.2f;
+	/// <summary>排空缓解：每事件每侧 I 减少 min(上限, 本值×(移出量/该侧撑大上限))。</summary>
+	public static float inflammationDrainReliefScale = 0.35f;
+	/// <summary>单次排空事件单侧 I 最大下降量。</summary>
+	public static float inflammationDrainReliefMaxPerEvent = 0.14f;
 	/// <summary>炎症对 L 衰减的额外系数 η：L += −η×I。</summary>
 	public static float lactationDecayInflammationEta = 0.1f;
 	// 刺激累积模型：挤奶/吸奶时 L 会短期上升并带有上限，避免无限循环堆高。
@@ -368,16 +409,39 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref pressureFactorPc, "EM.PressureFactorPc", 0.9f);
 		Scribe_Values.Look(ref pressureFactorB, "EM.PressureFactorB", 6f);
 		Scribe_Values.Look(ref pressureFactorMin, "EM.PressureFactorMin", 0.02f);
+		Scribe_Values.Look(ref overflowResidualFlowFactor, "EM.OverflowResidualFlowFactor", 0.04f);
+		Scribe_Values.Look(ref overflowResidualDynamicScaling, "EM.OverflowResidualDynamicScaling", true);
+		Scribe_Values.Look(ref overflowResidualLactationRefL, "EM.OverflowResidualLactationRefL", 1f);
+		Scribe_Values.Look(ref overflowResidualInflammationBoost, "EM.OverflowResidualInflammationBoost", 0.5f);
+		if (Scribe.mode == LoadSaveMode.LoadingVars)
+		{
+			overflowResidualFlowFactor = Mathf.Clamp01(overflowResidualFlowFactor);
+			overflowResidualLactationRefL = Mathf.Clamp(overflowResidualLactationRefL, 0.01f, 10f);
+			overflowResidualInflammationBoost = Mathf.Clamp(overflowResidualInflammationBoost, 0f, 3f);
+		}
 		Scribe_Values.Look(ref enableLetdownReflex, "EM.EnableLetdownReflex", true);
 		Scribe_Values.Look(ref letdownReflexDecayLambda, "EM.LetdownReflexDecayLambda", 0.03f);
 		Scribe_Values.Look(ref letdownReflexStimulusDeltaR, "EM.LetdownReflexStimulusDeltaR", 0.45f);
 		Scribe_Values.Look(ref letdownReflexBoostMultiplier, "EM.LetdownReflexBoostMultiplier", 2f);
 		Scribe_Values.Look(ref enableInflammationModel, "EM.EnableInflammationModel", true);
-		Scribe_Values.Look(ref inflammationAlpha, "EM.InflammationAlpha", 0.1f);
+		Scribe_Values.Look(ref inflammationAlpha, "EM.InflammationAlpha", 2.2f);
 		Scribe_Values.Look(ref inflammationBeta, "EM.InflammationBeta", 0.15f);
 		Scribe_Values.Look(ref inflammationGamma, "EM.InflammationGamma", 0.2f);
 		Scribe_Values.Look(ref inflammationRho, "EM.InflammationRho", 0.05f);
 		Scribe_Values.Look(ref inflammationCrit, "EM.InflammationCrit", 1f);
+		Scribe_Values.Look(ref inflammationStasisFullnessThreshold, "EM.InflammationStasisFullnessThreshold", 0.85f);
+		Scribe_Values.Look(ref inflammationStasisExponent, "EM.InflammationStasisExponent", 2f);
+		Scribe_Values.Look(ref inflammationHygieneBaselineFactor, "EM.InflammationHygieneBaselineFactor", 0.2f);
+		Scribe_Values.Look(ref inflammationDrainReliefScale, "EM.InflammationDrainReliefScale", 0.35f);
+		Scribe_Values.Look(ref inflammationDrainReliefMaxPerEvent, "EM.InflammationDrainReliefMaxPerEvent", 0.14f);
+		if (Scribe.mode == LoadSaveMode.LoadingVars)
+		{
+			inflammationStasisFullnessThreshold = Mathf.Clamp(inflammationStasisFullnessThreshold, 0.5f, 0.99f);
+			inflammationStasisExponent = Mathf.Clamp(inflammationStasisExponent, 1f, 4f);
+			inflammationHygieneBaselineFactor = Mathf.Clamp01(inflammationHygieneBaselineFactor);
+			inflammationDrainReliefScale = Mathf.Clamp(inflammationDrainReliefScale, 0f, 2f);
+			inflammationDrainReliefMaxPerEvent = Mathf.Clamp(inflammationDrainReliefMaxPerEvent, 0f, 0.5f);
+		}
 		Scribe_Values.Look(ref lactationDecayInflammationEta, "EM.LactationDecayInflammationEta", 0.1f);
 		Scribe_Values.Look(ref milkingLStimulusPerEvent, "EM.MilkingLStimulusPerEvent", 0.03f);
 		Scribe_Values.Look(ref milkingLStimulusCapPerEvent, "EM.MilkingLStimulusCapPerEvent", 0.05f);

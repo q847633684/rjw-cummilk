@@ -284,9 +284,14 @@ public static class PawnMilkPoolExtensions
         if (string.IsNullOrEmpty(e.Key)) return 1f;
         float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
         float fullE = milkComp.GetFullnessForKey(sideKey);
-        return MilkCumSettings.enablePressureFactor
+        float pressure = MilkCumSettings.enablePressureFactor
             ? MilkCumSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
             : (fullE >= stretch ? 0f : 1f);
+        var lact = pawn.LactatingHediffComp();
+        float resL = lact?.CurrentLactationAmount ?? 0f;
+        float resI = lact?.GetInflammationForKey(sideKey) ?? 0f;
+        MilkCumSettings.ApplyOverflowResidualFlow(ref pressure, fullE, stretch, resL, resI);
+        return pressure;
     }
 
     /// <summary>健康页悬停（多乳）：返回�?hediff 对应的所有池条目�? 条为单侧乳，2 条为拆成 _L/_R 的一对），用于显示「左乳：奶量/容量, 右乳：奶�?容量」</summary>

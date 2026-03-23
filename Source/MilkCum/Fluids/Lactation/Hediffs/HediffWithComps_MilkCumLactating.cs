@@ -189,7 +189,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>四层模型：喷乳反�?R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key �?breastFullness 一致，�?HumanBreast_L）。挤�?吸奶某侧仅提升该�?R</summary>
     private Dictionary<string, float> letdownReflexByKey;
     /// <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
-    private float currentInflammation;
+    private Dictionary<string, float> inflammationByKey;
+    private float inflammationLegacyMigratePending;
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置</summary>
     private float milkingLStimulusAccumulatedThisDay;
     private int lastMilkingLStimulusDayTick = -1;
@@ -248,6 +249,16 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
     public float CurrentLactationAmount => currentLactationAmount;
 
+    /// <summary>各侧 I 的最大值，供 L 衰减、品质等全局读取。</summary>
+    public float CurrentInflammation => GetInflammationMax();
+
+    /// <summary>指定池侧 key 的炎症 I（无记录为 0）。</summary>
+    public float GetInflammationForKey(string sideKey)
+    {
+        if (string.IsNullOrEmpty(sideKey) || inflammationByKey == null) return 0f;
+        return inflammationByKey.TryGetValue(sideKey, out float v) ? v : 0f;
+    }
+
     /// <summary>用于流速/驱动力计算的 L：当 lactationLevelCap&gt;0 时取 min(L, cap)，避免超上限时流速过高。</summary>
     public float EffectiveLactationAmountForFlow
     {
@@ -294,7 +305,30 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 if (!string.IsNullOrEmpty(letdownKeys[i]))
                     letdownReflexByKey[letdownKeys[i]] = Mathf.Clamp01(letdownVals[i]);
         }
-        Scribe_Values.Look(ref currentInflammation, "EM.Inflammation", 0f);
+        float inflammationFileLegacy = 0f;
+        if (Scribe.mode == LoadSaveMode.Saving)
+            inflammationFileLegacy = GetInflammationMax();
+        Scribe_Values.Look(ref inflammationFileLegacy, "EM.Inflammation", 0f);
+        if (Scribe.mode == LoadSaveMode.LoadingVars)
+            inflammationLegacyMigratePending = inflammationFileLegacy;
+        List<string> inflammationKeys = null;
+        List<float> inflammationVals = null;
+        if (Scribe.mode == LoadSaveMode.Saving && inflammationByKey != null && inflammationByKey.Count > 0)
+        {
+            inflammationKeys = inflammationByKey.Keys.ToList();
+            inflammationVals = inflammationByKey.Values.ToList();
+        }
+        Scribe_Collections.Look(ref inflammationKeys, "EM.InflammationByKeyKeys", LookMode.Value);
+        Scribe_Collections.Look(ref inflammationVals, "EM.InflammationByKeyVals", LookMode.Value);
+        if (Scribe.mode == LoadSaveMode.LoadingVars && inflammationKeys != null && inflammationVals != null && inflammationKeys.Count == inflammationVals.Count && inflammationKeys.Count > 0)
+        {
+            inflammationByKey ??= new Dictionary<string, float>();
+            inflammationByKey.Clear();
+            for (int i = 0; i < inflammationKeys.Count; i++)
+                if (!string.IsNullOrEmpty(inflammationKeys[i]))
+                    inflammationByKey[inflammationKeys[i]] = Mathf.Max(0f, inflammationVals[i]);
+            inflammationLegacyMigratePending = 0f;
+        }
         Scribe_Values.Look(ref milkingLStimulusAccumulatedThisDay, "EM.MilkingLStimulusAccumulatedThisDay", 0f);
         Scribe_Values.Look(ref lastMilkingLStimulusDayTick, "EM.LastMilkingLStimulusDayTick", -1);
         Scribe_Values.Look(ref effectiveToleranceE, "EM.EffectiveToleranceE", 0f);
@@ -308,7 +342,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lactationAmountFromDrug = Parent.Severity;
                 lactationAmountFromBirth = 0f;
             }
-            currentInflammation = Mathf.Max(0f, currentInflammation);
             effectiveToleranceE = Mathf.Clamp01(effectiveToleranceE);
             if (effectiveToleranceE <= 0f && Pawn != null && MilkCumSettings.GetProlactinTolerance(Pawn) > 0f)
                 effectiveToleranceE = Mathf.Clamp01(MilkCumSettings.GetProlactinTolerance(Pawn));
@@ -329,17 +362,125 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public float GetEffectiveToleranceE() => Mathf.Clamp01(effectiveToleranceE);
 
     /// <summary>四层模型：炎�?I 离散更新。dI/dt = α·P² + β·Injury + γ·BadHygiene �?ρ·I；Δt 单位：小时</summary>
-    public void UpdateInflammation(float P, float deltaTHours)
+    private float GetInflammationMax()
     {
-        if (!MilkCumSettings.enableInflammationModel || deltaTHours <= 0f) return;
+        if (inflammationByKey == null || inflammationByKey.Count == 0) return 0f;
+        float m = 0f;
+        foreach (float v in inflammationByKey.Values)
+            if (v > m) m = v;
+        return m;
+    }
+
+    /// <summary>炎症/排空用池条目：优先 Comp 有效缓存，否则按 Pawn 重建（GetCachedEntries 对 Comp 外不可见）。</summary>
+    private List<FluidPoolEntry> GetPoolEntriesForInflammation(CompEquallyMilkable comp)
+    {
+        var v = comp?.GetCachedEntriesIfValid();
+        if (v != null && v.Count > 0) return v;
+        return Pawn?.GetBreastPoolEntries() ?? new List<FluidPoolEntry>();
+    }
+
+    private void SetInflammationForKeyInternal(string key, float value)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+        inflammationByKey ??= new Dictionary<string, float>();
+        if (value <= 0f)
+        {
+            inflammationByKey.Remove(key);
+            return;
+        }
+        inflammationByKey[key] = value;
+    }
+
+    private void TryConsumeLegacyInflammationMigrate(CompEquallyMilkable comp)
+    {
+        if (inflammationLegacyMigratePending <= 0f || comp == null) return;
+        var entries = GetPoolEntriesForInflammation(comp);
+        int n = 0;
+        for (int i = 0; i < entries.Count; i++)
+            if (!string.IsNullOrEmpty(entries[i].Key)) n++;
+        if (n <= 0) return;
+        float per = inflammationLegacyMigratePending / n;
+        inflammationLegacyMigratePending = 0f;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (string.IsNullOrEmpty(entries[i].Key)) continue;
+            float cur = GetInflammationForKey(entries[i].Key);
+            SetInflammationForKeyInternal(entries[i].Key, Mathf.Max(cur, per));
+        }
+    }
+
+    private void PruneInflammationToValidKeys(HashSet<string> validKeys)
+    {
+        if (inflammationByKey == null || inflammationByKey.Count == 0) return;
+        var keys = inflammationByKey.Keys.ToList();
+        for (int i = 0; i < keys.Count; i++)
+            if (!validKeys.Contains(keys[i]))
+                inflammationByKey.Remove(keys[i]);
+    }
+
+    /// <summary>排空后按移出量/该侧撑大上限降低该侧 I。</summary>
+    public void ApplyDrainInflammationRelief(Dictionary<string, float> drainedByKey, CompEquallyMilkable comp)
+    {
+        if (!MilkCumSettings.enableInflammationModel || drainedByKey == null || drainedByKey.Count == 0 || comp == null) return;
+        float scale = Mathf.Max(0f, MilkCumSettings.inflammationDrainReliefScale);
+        float maxDrop = Mathf.Max(0f, MilkCumSettings.inflammationDrainReliefMaxPerEvent);
+        if (scale <= 0f && maxDrop <= 0f) return;
+        var entries = GetPoolEntriesForInflammation(comp);
+        foreach (var kv in drainedByKey)
+        {
+            if (kv.Value <= 0f || string.IsNullOrEmpty(kv.Key)) continue;
+            float stretch = 0.01f;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (entries[i].Key != kv.Key) continue;
+                stretch = Mathf.Max(0.001f, entries[i].Capacity * PoolModelConstants.StretchCapFactor);
+                break;
+            }
+            float ratio = kv.Value / stretch;
+            float drop = Mathf.Min(maxDrop, scale * ratio);
+            if (drop <= 0f) continue;
+            float cur = GetInflammationForKey(kv.Key);
+            SetInflammationForKeyInternal(kv.Key, Mathf.Max(0f, cur - drop));
+        }
+    }
+
+    /// <summary>按侧更新 I：淤积仅当 P 超阈值；卫生×淤积耦合；ρ·I 回落。Δt 小时。</summary>
+    public void UpdateInflammation(CompEquallyMilkable comp, float deltaTHours)
+    {
+        if (!MilkCumSettings.enableInflammationModel || deltaTHours <= 0f || comp == null) return;
+        TryConsumeLegacyInflammationMigrate(comp);
+        var entries = GetPoolEntriesForInflammation(comp);
+        var validKeys = new HashSet<string>();
+        for (int i = 0; i < entries.Count; i++)
+            if (!string.IsNullOrEmpty(entries[i].Key))
+                validKeys.Add(entries[i].Key);
+        PruneInflammationToValidKeys(validKeys);
         float alpha = Mathf.Max(0f, MilkCumSettings.inflammationAlpha);
         float beta = Mathf.Max(0f, MilkCumSettings.inflammationBeta);
         float gamma = Mathf.Max(0f, MilkCumSettings.inflammationGamma);
         float rho = Mathf.Max(0.001f, MilkCumSettings.inflammationRho);
-        float injury = CompEquallyMilkable != null && CompEquallyMilkable.HasTorsoOrBreastInjury(Pawn) ? 1f : 0f;
+        float stasisTh = Mathf.Clamp01(MilkCumSettings.inflammationStasisFullnessThreshold);
+        float stasisExp = Mathf.Clamp(MilkCumSettings.inflammationStasisExponent, 1f, 4f);
+        float hygieneBase = Mathf.Clamp01(MilkCumSettings.inflammationHygieneBaselineFactor);
+        float denomHygiene = Mathf.Max(1e-4f, 1f - stasisTh);
+        float injury = MilkRelatedHealthHelper.HasTorsoOrBreastInjury(Pawn) ? 1f : 0f;
         float badHygiene = Pawn != null ? DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Pawn) : 0f;
-        float dI = (alpha * P * P + beta * injury + gamma * badHygiene - rho * currentInflammation) * deltaTHours;
-        currentInflammation = Mathf.Max(0f, currentInflammation + dI);
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            float stretch = Mathf.Max(0.001f, e.Capacity * PoolModelConstants.StretchCapFactor);
+            float fk = comp.GetFullnessForKey(e.Key);
+            float pk = fk / stretch;
+            float excess = Mathf.Max(0f, pk - stasisTh);
+            float stasisTerm = alpha * Mathf.Pow(excess, stasisExp);
+            float normStasis = Mathf.Clamp01(excess / denomHygiene);
+            float hygieneMult = Mathf.Lerp(hygieneBase, 1f, normStasis);
+            float hygTerm = gamma * badHygiene * hygieneMult;
+            float ik = GetInflammationForKey(e.Key);
+            float dik = (stasisTerm + beta * injury + hygTerm - rho * ik) * deltaTHours;
+            SetInflammationForKeyInternal(e.Key, Mathf.Max(0f, ik + dik));
+        }
     }
 
     /// <summary>四层模型：若 I>I_crit 且允许乳腺炎，则�?EM_Mastitis（与现有 MTB 判定并存）。启用质量时有效 I_crit �?MilkQuality 提高</summary>
@@ -350,7 +491,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         float crit = Mathf.Max(0.01f, MilkCumSettings.inflammationCrit);
         if (MilkCumSettings.enableMilkQuality)
             crit *= 1f + MilkCumSettings.milkQualityProtectionFactor * GetMilkQuality();
-        if (currentInflammation < crit) return;
+        if (GetInflammationMax() < crit) return;
         var existing = Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
         if (existing != null)
         {
@@ -359,7 +500,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         }
         else
             Pawn.health.AddHediff(MilkCumDefOf.EM_Mastitis, Pawn.GetBreastOrChestPart());
-        currentInflammation = Mathf.Max(0f, currentInflammation - crit * 0.5f);
+        float relief = crit * 0.5f;
+        if (inflammationByKey == null || inflammationByKey.Count == 0) return;
+        var inflKeys = inflammationByKey.Keys.ToList();
+        for (int i = 0; i < inflKeys.Count; i++)
+        {
+            float v = GetInflammationForKey(inflKeys[i]);
+            SetInflammationForKeyInternal(inflKeys[i], Mathf.Max(0f, v - relief));
+        }
     }
 
     /// <summary>四层模型（阶�?.3）：MilkQuality = f(Hunger, I) �?[0,1]。饱食度高、炎症低则质量高；未启用质量时返�?1</summary>
@@ -368,7 +516,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         if (!MilkCumSettings.enableMilkQuality || Pawn == null) return 1f;
         float hunger = Pawn.needs?.food != null ? Mathf.Clamp01(Pawn.needs.food.CurLevel) : 1f;
         float w = Mathf.Clamp(MilkCumSettings.milkQualityInflammationWeight, 0f, 2f);
-        float fromInflammation = Mathf.Clamp01(1f - w * currentInflammation);
+        float fromInflammation = Mathf.Clamp01(1f - w * GetInflammationMax());
         return Mathf.Clamp01(hunger * fromInflammation);
     }
 
@@ -504,7 +652,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         if (eff <= 0f) return 0f;
         float D = 1f / (bT * eff) + PoolModelConstants.NegativeFeedbackK * lactationAmount;
         if (MilkCumSettings.enableInflammationModel)
-            D += MilkCumSettings.lactationDecayInflammationEta * Mathf.Max(0f, currentInflammation);
+            D += MilkCumSettings.lactationDecayInflammationEta * Mathf.Max(0f, GetInflammationMax());
         return D;
     }
 
@@ -804,7 +952,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 {
                     if (isShrinking)
                         lines.Add("  " + "EM.ReabsorbedNutritionPerDay".Translate(reabsorbed.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-                    if (MilkCumSettings.enablePressureFactor && b.TotalFlow >= 0.001f)
+                    if (b.TotalFlow >= 0.001f && (MilkCumSettings.enablePressureFactor || MilkCumSettings.overflowResidualFlowFactor > 0.0001f))
                         lines.Add("  " + "EM.MilkFlowPressureWhenFull".Translate());
                 }
             }
@@ -866,6 +1014,20 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             {
                 stringBuilder.AppendLine("pool L: " + CompEquallyMilkable.LeftFullness.ToString("F3") + " R: " + CompEquallyMilkable.RightFullness.ToString("F3"));
                 stringBuilder.AppendLine("overflowAccumulator: " + CompEquallyMilkable.OverflowAccumulator.ToString("F3"));
+            }
+            if (MilkCumSettings.enableInflammationModel)
+            {
+                stringBuilder.AppendLine("inflammation I max: " + CurrentInflammation.ToString("F3"));
+                var ent = Pawn?.GetBreastPoolEntries();
+                if (ent != null)
+                {
+                    for (int i = 0; i < ent.Count; i++)
+                    {
+                        string k = ent[i].Key;
+                        if (string.IsNullOrEmpty(k)) continue;
+                        stringBuilder.AppendLine("  I[" + k + "]: " + GetInflammationForKey(k).ToString("F3"));
+                    }
+                }
             }
             if (Pawn?.RaceProps?.Humanlike == true)
             {

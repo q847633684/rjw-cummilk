@@ -162,6 +162,29 @@
     <EM.MastitisAndToleranceSection>Mastitis &amp; tolerance (tunable)</EM.MastitisAndToleranceSection>
     <EM.AllowMastitis>Allow mastitis / clog risk</EM.AllowMastitis>
     <EM.AllowMastitisDesc>When disabled, mastitis will not be triggered by full pool, hygiene or injury.</EM.AllowMastitisDesc>
+    <EM.EnableInflammationModel>Enable lactation inflammation model (per-side I)</EM.EnableInflammationModel>
+    <EM.EnableInflammationModelDesc>When off, per-side inflammation I, drain relief, and mastitis-from-I are skipped. MTB mastitis (full pool, hygiene, injury) still follows Allow mastitis.</EM.EnableInflammationModelDesc>
+    <EM.InflammationModelSection>--- Inflammation I (per breast side) ---</EM.InflammationModelSection>
+    <EM.InflammationAlpha>Stasis strength (alpha): {0}</EM.InflammationAlpha>
+    <EM.InflammationAlphaDesc>Multiplier for stasis term: alpha times (excess above threshold) to the exponent; excess is side fullness P minus stasis threshold (vs stretch cap).</EM.InflammationAlphaDesc>
+    <EM.InflammationBeta>Injury term (beta): {0}</EM.InflammationBeta>
+    <EM.InflammationBetaDesc>Per in-game hour added to I on each side when torso/breast injury is present.</EM.InflammationBetaDesc>
+    <EM.InflammationGamma>Hygiene term (gamma): {0}</EM.InflammationGamma>
+    <EM.InflammationGammaDesc>Scales hygiene risk into I; hygiene coupling rises as stasis (excess fullness) increases.</EM.InflammationGammaDesc>
+    <EM.InflammationRho>Natural decay (rho): {0}</EM.InflammationRho>
+    <EM.InflammationRhoDesc>Per in-game hour fractional decay of I (higher = faster recovery without draining).</EM.InflammationRhoDesc>
+    <EM.InflammationCrit>I_crit (mastitis from I): {0}</EM.InflammationCrit>
+    <EM.InflammationCritDesc>When max I across sides reaches this, mastitis can trigger if Allow mastitis is on. Milk quality can raise effective crit.</EM.InflammationCritDesc>
+    <EM.InflammationStasisFullnessThreshold>Stasis fullness threshold: {0}</EM.InflammationStasisFullnessThreshold>
+    <EM.InflammationStasisFullnessThresholdDesc>Side fullness P (vs stretch) below this adds little stasis-driven I; above it, stasis ramps up.</EM.InflammationStasisFullnessThresholdDesc>
+    <EM.InflammationStasisExponent>Stasis exponent: {0}</EM.InflammationStasisExponent>
+    <EM.InflammationStasisExponentDesc>Higher means stasis penalty rises sharply only when very full.</EM.InflammationStasisExponentDesc>
+    <EM.InflammationHygieneBaselineFactor>Hygiene coupling baseline: {0}</EM.InflammationHygieneBaselineFactor>
+    <EM.InflammationHygieneBaselineFactorDesc>At low stasis, hygiene term is scaled toward this (0 = hygiene barely affects I unless quite full).</EM.InflammationHygieneBaselineFactorDesc>
+    <EM.InflammationDrainReliefScale>Drain relief scale: {0}</EM.InflammationDrainReliefScale>
+    <EM.InflammationDrainReliefScaleDesc>Per drain event, I drops about scale times (drained amount / side stretch cap), capped below.</EM.InflammationDrainReliefScaleDesc>
+    <EM.InflammationDrainReliefMaxPerEvent>Drain relief cap per event: {0}</EM.InflammationDrainReliefMaxPerEvent>
+    <EM.InflammationDrainReliefMaxPerEventDesc>Maximum I reduction per side per single milking or drain pass.</EM.InflammationDrainReliefMaxPerEventDesc>
     <EM.MastitisBaseMtbDays>Mastitis base MTB (days): {0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>Over-fullness risk multiplier: {0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>Hygiene risk multiplier: {0}</EM.HygieneRiskMultiplier>
@@ -184,6 +207,15 @@
     <EM.RaceCannotLactate>Races that cannot lactate (defName, comma-separated)</EM.RaceCannotLactate>
 <EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>
 	<EM.DefaultFlowMultiplierForHumanlikeDesc>Multiplier for milk flow for all pawns (1 = normal). Use with RJW/Race mods for balance.</EM.DefaultFlowMultiplierForHumanlikeDesc>
+	<EM.OverflowResidualSection>Near-full pool: residual secretion (leak)</EM.OverflowResidualSection>
+	<EM.OverflowResidualFlowFactor>Residual pressure floor: {0}</EM.OverflowResidualFlowFactor>
+	<EM.OverflowResidualFlowFactorDesc>When a side reaches the near-full threshold of stretched capacity, flow pressure is at least this value (0–100%), so milk can still trickle in and overflow filth can build. Turn off by setting to 0%.</EM.OverflowResidualFlowFactorDesc>
+	<EM.OverflowResidualDynamicScaling>Scale residual by lactation L and inflammation I</EM.OverflowResidualDynamicScaling>
+	<EM.OverflowResidualDynamicScalingDesc>When on: effective residual = base × L/(L+L_ref) × (1 + boost×I/I_crit), clamped to 1. Low L reduces leak; high inflammation increases it (duct congestion / infection).</EM.OverflowResidualDynamicScalingDesc>
+	<EM.OverflowResidualLactationRefL>L reference for residual scale: {0}</EM.OverflowResidualLactationRefL>
+	<EM.OverflowResidualLactationRefLDesc>Higher values require more lactation level L before residual leak reaches full strength.</EM.OverflowResidualLactationRefLDesc>
+	<EM.OverflowResidualInflammationBoost>Inflammation boost at I_crit: {0}</EM.OverflowResidualInflammationBoost>
+	<EM.OverflowResidualInflammationBoostDesc>At inflammation I equal to I_crit, the residual multiplier is (1 + this value). 0 = no extra leak from inflammation.</EM.OverflowResidualInflammationBoostDesc>
 	<EM.LactationLevelCap>Lactation level cap: {0}</EM.LactationLevelCap>
 	<EM.LactationLevelCapDesc>When &gt; 0, drug intake above this L value no longer increases flow rate; the excess only extends lactation duration. More realistic: body needs time to use the drug. 0 = disabled.</EM.LactationLevelCapDesc>
 	<EM.LactationLevelCapDurationMultiplier>Cap overflow → duration multiplier: {0}</EM.LactationLevelCapDurationMultiplier>

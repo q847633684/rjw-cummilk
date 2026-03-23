@@ -62,8 +62,11 @@ public static class MilkRelatedHealthHelper
     public static void UpdateInflammationAndTryTriggerMastitis(HediffComp_EqualMilkingLactating lactatingComp, float fullness, float maxFullness)
     {
         if (!MilkCumSettings.enableInflammationModel || lactatingComp == null) return;
-        float maxF = UnityEngine.Mathf.Max(0.001f, maxFullness);
-        lactatingComp.UpdateInflammation(fullness / maxF, 60f / 3600f);
+        var milkComp = lactatingComp.CompEquallyMilkable;
+        if (milkComp == null) return;
+        _ = fullness;
+        _ = maxFullness;
+        lactatingComp.UpdateInflammation(milkComp, 60f / 3600f);
         lactatingComp.TryTriggerMastitisFromInflammation();
     }
 

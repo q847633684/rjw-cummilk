@@ -11,6 +11,12 @@ namespace MilkCum.Fluids.Lactation.Comps;
 /// <summary>池扣量：手挤/吸奶/机器挤的 Drain 与按比例缩减。见 Docs/泌乳系统逻辑图、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
+    private static void AccumulateDrainByKey(Dictionary<string, float> map, string key, float amount)
+    {
+        if (map == null || amount <= 0f || string.IsNullOrEmpty(key)) return;
+        map.TryGetValue(key, out float x);
+        map[key] = x + amount;
+    }
     /// <summary>
     /// 吸奶/挤奶时从池中扣量。
     /// singleSideOnly=false（默认）：按「哪对最满」优先，同对内先扣较满的一侧，相同时先左，直到扣满 amount；含浮点余量吸收。用于手挤奶。
@@ -41,6 +47,7 @@ public partial class CompEquallyMilkable
         int tick = Find.TickManager.TicksGame;
         float fullnessBeforeTotal = Fullness;
         breastFullness ??= new Dictionary<string, float>();
+        var drainedByKey = new Dictionary<string, float>();
         float remaining = amount;
         var pairGroups = BuildPairGroupsByFullnessDescending(entries);
         for (int g = 0; g < pairGroups.Count; g++)
@@ -64,6 +71,7 @@ public partial class CompEquallyMilkable
                 {
                     breastFullness[firstKey] = Mathf.Max(0f, firstF - take1);
                     drainedKeys?.Add(firstKey);
+                    AccumulateDrainByKey(drainedByKey, firstKey, take1);
                     remaining -= take1;
                 }
                 if (remaining > 0f && secondF > 0f)
@@ -71,6 +79,7 @@ public partial class CompEquallyMilkable
                     float take2 = Mathf.Min(remaining, secondF);
                     breastFullness[secondKey] = Mathf.Max(0f, secondF - take2);
                     drainedKeys?.Add(secondKey);
+                    AccumulateDrainByKey(drainedByKey, secondKey, take2);
                     remaining -= take2;
                 }
             }
@@ -86,6 +95,7 @@ public partial class CompEquallyMilkable
                     {
                         breastFullness[e.Key] = Mathf.Max(0f, f - take);
                         drainedKeys?.Add(e.Key);
+                        AccumulateDrainByKey(drainedByKey, e.Key, take);
                         remaining -= take;
                     }
                 }
@@ -101,11 +111,14 @@ public partial class CompEquallyMilkable
                 float take = Mathf.Min(remaining, f);
                 breastFullness[e.Key] = Mathf.Max(0f, f - take);
                 if (drainedKeys != null && !drainedKeys.Contains(e.Key)) drainedKeys.Add(e.Key);
+                AccumulateDrainByKey(drainedByKey, e.Key, take);
                 remaining -= take;
             }
         }
         SyncBaseFullness();
         float drained = amount - remaining;
+        if (drained > 0f)
+            NotifyInflammationDrain(drainedByKey);
         if (MilkCumSettings.milkingActionLog && Pawn != null && drained > 0f)
         {
             float fullnessAfterTotal = Fullness;
@@ -129,6 +142,7 @@ public partial class CompEquallyMilkable
             SyncBaseFullness();
             return 0f;
         }
+        var drainedByKey = new Dictionary<string, float>();
         float totalWouldTake = 0f;
         var takes = new List<float>(entries.Count);
         for (int i = 0; i < entries.Count && i < maxTakePerSide.Count; i++)
@@ -155,6 +169,7 @@ public partial class CompEquallyMilkable
             {
                 breastFullness[e.Key] = Mathf.Max(0f, cur - take);
                 drainedKeys?.Add(e.Key);
+                AccumulateDrainByKey(drainedByKey, e.Key, take);
                 totalDrained += take;
             }
         }
@@ -170,11 +185,14 @@ public partial class CompEquallyMilkable
                 float take = Mathf.Min(remainingRequest, f);
                 breastFullness[e.Key] = Mathf.Max(0f, f - take);
                 drainedKeys?.Add(e.Key);
+                AccumulateDrainByKey(drainedByKey, e.Key, take);
                 totalDrained += take;
                 remainingRequest -= take;
             }
         }
         SyncBaseFullness();
+        if (totalDrained > 0f)
+            NotifyInflammationDrain(drainedByKey);
         if (MilkCumSettings.milkingActionLog && Pawn != null && totalDrained > 0f)
         {
             float fullnessAfterTotal = Fullness;

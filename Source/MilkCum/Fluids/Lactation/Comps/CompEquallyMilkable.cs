@@ -355,4 +355,11 @@ public partial class CompEquallyMilkable : CompMilkable
             action = () => { }
         };
     }
+
+    /// <summary>挤奶/吸奶扣池后按侧降低炎症 I。</summary>
+    public void NotifyInflammationDrain(Dictionary<string, float> drainedByKey)
+    {
+        if (drainedByKey == null || drainedByKey.Count == 0) return;
+        Pawn?.LactatingHediffComp()?.ApplyDrainInflammationRelief(drainedByKey, this);
+    }
 }

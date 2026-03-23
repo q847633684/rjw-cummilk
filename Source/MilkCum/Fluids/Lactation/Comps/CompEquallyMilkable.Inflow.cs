@@ -32,7 +32,7 @@ public partial class CompEquallyMilkable
         return cachedReabsorbedNutritionPerDay;
     }
 
-    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。撑大后仍按压力曲线进水，超出撑大部分算溢出（持续微量溢出）。仅当本步发生溢出时才执行池水位回缩与回缩吸收；回缩后满度降低、下一轮压力减小流速恢复，效果上从满池微量进水转为明显泌乳，形成逻辑闭环。回缩时超出基础容量部分每 60 tick 按 ShrinkPerStep 向基础容量收敛，回缩吸收由 GetReabsorbedNutritionPerDay 折算饱食度。</summary>
+    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。TickGrowth 将超过撑大上限部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
@@ -78,6 +78,7 @@ public partial class CompEquallyMilkable
         if (MilkCumSettings.enableLetdownReflex)
             lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
         MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
+        float residualL = lactatingComp.CurrentLactationAmount;
         if (MilkCumSettings.enableToleranceDynamic)
             lactatingComp.UpdateToleranceDynamic(currentLactation, PoolModelConstants.Interval60PerDay);
         float extraFall60 = 0f;
@@ -138,6 +139,8 @@ public partial class CompEquallyMilkable
                 float pressureRight = MilkCumSettings.enablePressureFactor
                     ? MilkCumSettings.GetPressureFactor(curRight / Mathf.Max(0.001f, stretchRight))
                     : (curRight >= stretchRight ? 0f : 1f);
+                MilkCumSettings.ApplyOverflowResidualFlow(ref pressureLeft, curLeft, stretchLeft, residualL, lactatingComp.GetInflammationForKey(leftE.Key));
+                MilkCumSettings.ApplyOverflowResidualFlow(ref pressureRight, curRight, stretchRight, residualL, lactatingComp.GetInflammationForKey(rightE.Key));
                 float conditionsLeft = Pawn.GetConditionsForSide(leftE.Key);
                 float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
                 float letdownLeft = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f;
@@ -184,6 +187,7 @@ public partial class CompEquallyMilkable
                     float pressure = MilkCumSettings.enablePressureFactor
                         ? MilkCumSettings.GetPressureFactor(current / Mathf.Max(0.001f, stretchCap))
                         : (current >= stretchCap ? 0f : 1f);
+                    MilkCumSettings.ApplyOverflowResidualFlow(ref pressure, current, stretchCap, residualL, lactatingComp.GetInflammationForKey(e.Key));
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
                     float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
                     float flowPerTick = Mathf.Max(0f, e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE * e.Density);
@@ -294,8 +298,10 @@ public partial class CompEquallyMilkable
     /// <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定</summary>
     private void HandleOverflow(float overflowThisTick)
     {
-        if (overflowThisTick <= 0f || Pawn == null || !Pawn.Spawned || Pawn.Map == null) { return; }
+        if (overflowThisTick <= 0f || Pawn == null) return;
         overflowAccumulator += overflowThisTick;
+        overflowAccumulator = Mathf.Min(overflowAccumulator, OverflowAccumulatorCap);
+        if (!Pawn.Spawned || Pawn.Map == null) return;
         var filthDef = !string.IsNullOrEmpty(MilkCumSettings.overflowFilthDefName)
             ? DefDatabase<ThingDef>.GetNamedSilentFail(MilkCumSettings.overflowFilthDefName)
             : null;
@@ -314,13 +320,12 @@ public partial class CompEquallyMilkable
             if (filthSpawned > 0 && Pawn.RaceProps.Humanlike && Pawn.needs?.mood?.thoughts?.memories != null
                 && MilkCumDefOf.EM_MilkOverflow != null)
                 Pawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_MilkOverflow);
-            if (filthSpawned > 0 && Pawn.Spawned && Pawn.Map != null)
+            if (filthSpawned > 0)
             {
                 string moteText = "EM.MilkOverflowMote".Translate();
                 if (!string.IsNullOrEmpty(moteText) && moteText != "EM.MilkOverflowMote")
                     MoteMaker.ThrowText(Pawn.DrawPos, Pawn.Map, moteText, 2.5f);
             }
         }
-        overflowAccumulator = Mathf.Min(overflowAccumulator, OverflowAccumulatorCap);
     }
 }
