@@ -1100,7 +1100,7 @@
             <summary>未满一瓶的人奶 Comp：fillAmount 为已取池单位（&lt;1），用于营养计算与存档。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Data.MilkSettings.allowSelfConsumeProducts">
-            <summary>允许自己食用产出的奶/精液制品。关则自己也不能吃自己的制品。默认关，由「允许自己」里的「吃奶」勾选。</summary>
+            <summary>允许自己食用产出的奶/精液制品。默认开。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Givers.JobGiver_ActiveSuckle">
             <summary>
@@ -1901,7 +1901,7 @@
             <returns></returns>
         </member>
         <member name="M:MilkCum.UI.PawnColumnWorker_ProducerRestrictions.ShouldShowFor(Verse.Pawn)">
-            <summary>仅泌乳者（女性）显示「谁可以使用我的奶」；男性显示「谁可以吃我的精液制品」；非哺乳者不显示产奶限制列。</summary>
+            <summary>只要该 Pawn 有泌乳/等量挤奶组件就显示入口按钮：女性忽略当前是否泌乳，以便提前配置权限。</summary>
         </member>
         <member name="F:MilkCum.UI.Widget_AdvancedSettings.SectionScrollContentHeight">
             <summary>Fixed height for settings section scroll content. If users report truncation on very high DPI or many options, consider content-based height or ListView (if RimWorld API supports it).</summary>
@@ -1955,10 +1955,10 @@
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.GetRelationLabel(Verse.Pawn,Verse.Pawn)">
             <summary>产奶者与另一人的关系标签；无关系或异常时返回「—」。兼容无 GetGenderSpecificLabel 的 RimWorld 版本。</summary>
         </member>
-        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedBreastfeed(Verse.Pawn,System.Collections.Generic.List{Verse.Pawn})">
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedBreastfeed(Verse.Pawn,System.Collections.Generic.ISet{Verse.Pawn})">
             <summary>是否在「可以吸奶」上显示为允许。名单非空时看名单；空时看 defaultBreastfeedersWhenEmpty（若为 null 则现场取默认）。</summary>
         </member>
-        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedMilking(Verse.Pawn,System.Collections.Generic.List{Verse.Pawn})">
+        <member name="M:MilkCum.UI.Window_ProducerRestrictions.IsAllowedMilking(Verse.Pawn,System.Collections.Generic.ISet{Verse.Pawn})">
             <summary>是否在「可以挤奶」上显示为允许。名单非空时看名单；空时看 defaultMilkersWhenEmpty（若为 null 则现场取默认）。</summary>
         </member>
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.DrawAllowSelfSection(System.Single,System.Single@,System.Single)">

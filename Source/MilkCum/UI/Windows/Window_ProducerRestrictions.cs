@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using Verse;
 using UnityEngine;
 using System.Collections.Generic;
@@ -22,7 +22,6 @@ public class Window_ProducerRestrictions : Window
     private const float CheckboxColWidth = 28f;
     private const float IconSize = 24f;
     private const float ScrollGap = 16f;
-    private const float TabRowHeight = 36f;
     /// <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
     private const float AllowSelfNarrowThreshold = 520f;
 
@@ -33,7 +32,6 @@ public class Window_ProducerRestrictions : Window
     private Vector2 tableScrollPosition;
 
     private static readonly List<Pawn> tmpFiltered = new();
-    private static readonly List<TabRecord> filterTabs = new();
 
     public Window_ProducerRestrictions(Pawn pawn)
     {
@@ -103,7 +101,7 @@ public class Window_ProducerRestrictions : Window
     }
 
     /// <summary>是否在「可以吸奶」上显示为允许。名单非空时看名单；空时看 defaultBreastfeedersWhenEmpty（若为 null 则现场取默认）。</summary>
-    private bool IsAllowedBreastfeed(Pawn p, List<Pawn> defaultBreastfeedersWhenEmpty)
+    private bool IsAllowedBreastfeed(Pawn p, ISet<Pawn> defaultBreastfeedersWhenEmpty)
     {
         if (comp?.allowedBreastfeeders == null) return false;
         if (comp.allowedBreastfeeders.Count > 0) return comp.allowedBreastfeeders.Contains(p);
@@ -114,30 +112,11 @@ public class Window_ProducerRestrictions : Window
     private void SetAllowedBreastfeed(Pawn p, bool allow)
     {
         if (comp == null) return;
-        comp.EnsureAllowedLists();
-        if (allow)
-        {
-            if (!comp.allowedBreastfeeders.Contains(p))
-            {
-                comp.allowedBreastfeeders.Add(p);
-                SoundDefOf.Click.PlayOneShotOnCamera();
-            }
-        }
-        else
-        {
-            if (comp.allowedBreastfeeders.Count == 0)
-            {
-                foreach (Pawn x in MilkPermissionExtensions.GetDefaultSucklers(producer))
-                    if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !comp.allowedBreastfeeders.Contains(x))
-                        comp.allowedBreastfeeders.Add(x);
-            }
-            if (comp.allowedBreastfeeders.Remove(p))
-                SoundDefOf.Click.PlayOneShotOnCamera();
-        }
+        SetAllowedWithDefaults(comp.allowedBreastfeeders, p, allow, MilkPermissionExtensions.GetDefaultSucklers(producer));
     }
 
     /// <summary>是否在「可以挤奶」上显示为允许。名单非空时看名单；空时看 defaultMilkersWhenEmpty（若为 null 则现场取默认）。</summary>
-    private bool IsAllowedMilking(Pawn p, List<Pawn> defaultMilkersWhenEmpty)
+    private bool IsAllowedMilking(Pawn p, ISet<Pawn> defaultMilkersWhenEmpty)
     {
         if (comp?.allowedMilkers == null) return false;
         if (comp.allowedMilkers.Count > 0) return comp.allowedMilkers.Contains(p);
@@ -148,26 +127,38 @@ public class Window_ProducerRestrictions : Window
     private void SetAllowedMilking(Pawn p, bool allow)
     {
         if (comp == null) return;
+        SetAllowedWithDefaults(comp.allowedMilkers, p, allow, MilkPermissionExtensions.GetDefaultSucklers(producer));
+    }
+
+    private void SetAllowedWithDefaults(List<Pawn> allowedList, Pawn p, bool allow, IEnumerable<Pawn> defaults)
+    {
+        if (comp == null || allowedList == null || p == null) return;
         comp.EnsureAllowedLists();
+
         if (allow)
         {
-            if (!comp.allowedMilkers.Contains(p))
+            if (!allowedList.Contains(p))
             {
-                comp.allowedMilkers.Add(p);
+                allowedList.Add(p);
                 SoundDefOf.Click.PlayOneShotOnCamera();
             }
+            return;
         }
-        else
+
+        // 取消勾选：如果当前名单为空，就先恢复默认名单，再尝试移除 p
+        if (allowedList.Count == 0)
         {
-            if (comp.allowedMilkers.Count == 0)
+            foreach (Pawn x in defaults)
             {
-                foreach (Pawn x in MilkPermissionExtensions.GetDefaultSucklers(producer))
-                    if (x != null && !x.Destroyed && (producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld) && !comp.allowedMilkers.Contains(x))
-                        comp.allowedMilkers.Add(x);
+                if (x == null || x.Destroyed) continue;
+                if (!(producer.MapHeld == null || x.MapHeld == null || x.MapHeld == producer.MapHeld)) continue;
+                if (!allowedList.Contains(x))
+                    allowedList.Add(x);
             }
-            if (comp.allowedMilkers.Remove(p))
-                SoundDefOf.Click.PlayOneShotOnCamera();
         }
+
+        if (allowedList.Remove(p))
+            SoundDefOf.Click.PlayOneShotOnCamera();
     }
 
     private bool IsAllowedConsumer(Pawn p) => comp?.allowedConsumers != null && comp.allowedConsumers.Contains(p);
@@ -224,12 +215,12 @@ public class Window_ProducerRestrictions : Window
         comp.EnsureAllowedLists();
 
         // 名单为空时缓存默认吸奶名单，避免每行重复计算
-        List<Pawn> cachedDefaultBreastfeeders = null;
-        List<Pawn> cachedDefaultMilkers = null;
+        ISet<Pawn> cachedDefaultBreastfeeders = null;
+        ISet<Pawn> cachedDefaultMilkers = null;
         if (showBreastfeedColumn && comp.allowedBreastfeeders.Count == 0)
-            cachedDefaultBreastfeeders = MilkPermissionExtensions.GetDefaultSucklers(producer).ToList();
+            cachedDefaultBreastfeeders = MilkPermissionExtensions.GetDefaultSucklers(producer).ToHashSet();
         if (showMilkingColumn && comp.allowedMilkers.Count == 0)
-            cachedDefaultMilkers = MilkPermissionExtensions.GetDefaultSucklers(producer).ToList();
+            cachedDefaultMilkers = MilkPermissionExtensions.GetDefaultSucklers(producer).ToHashSet();
 
         // 表头：姓名 | 关系 | 吸奶 | 挤奶 | 可以使用制品
         float nameW = Mathf.Max(80f, inRect.width * 0.35f);
@@ -366,60 +357,79 @@ public class Window_ProducerRestrictions : Window
         float rowHeight = 24f;
         float gap = 12f;
         var sealComp = producer?.TryGetComp<Comp_SealCum>();
-        bool narrow = width < AllowSelfNarrowThreshold;
 
-        // 第一行：挤奶、吃奶（窄屏时仅此一行；宽屏时泄精、塞住同行）
+        // 窄屏溢出修复：每个 checkbox 在宽度不足时自动换行，确保不会画到窗口右侧之外。
+        bool narrow = width < AllowSelfNarrowThreshold;
         float rowY = y;
         float cx = x;
+        float maxX = x + width;
 
-        if (comp?.MilkSettings != null)
+        // 用 narrow 保留“先画完挤奶/吃奶，再进入第二行”的视觉结构
+        void EnsureRowStartIfNarrow(bool condition)
         {
-            Rect r = new Rect(cx, rowY, 160f, rowHeight);
-            bool val = producer.AllowMilkingSelf();
-            bool oldVal = val;
-            Widgets.CheckboxLabeled(r, "EM.RestrictionsAllowSelf_Milking".Translate(), ref val);
-            TooltipHandler.TipRegion(r, "EM.RestrictionsAllowSelf_MilkingTip".Translate());
-            if (val != oldVal) producer.SetAllowMilkingSelf(val);
-            cx = r.xMax + gap;
-        }
-
-        if (comp?.MilkSettings != null)
-        {
-            Rect r = new Rect(cx, rowY, 140f, rowHeight);
-            bool val = producer.AllowSelfConsumeProducts();
-            bool oldVal = val;
-            Widgets.CheckboxLabeled(r, "EM.RestrictionsAllowSelf_Consume".Translate(), ref val);
-            TooltipHandler.TipRegion(r, "EM.RestrictionsAllowSelf_ConsumeTip".Translate());
-            if (val != oldVal) producer.SetAllowSelfConsumeProducts(val);
-            cx = r.xMax + gap;
-        }
-
-        if (narrow)
-        {
+            if (!condition) return;
             rowY += rowHeight + 4f;
             cx = x;
         }
 
-        // 不再依赖“成人/能否 cumflated/可塞住”这些显示判断：只要有泄漏/塞住组件就给出权限开关。
-        if (sealComp != null)
+        void DrawCheckbox(string labelKey, string tipKey, float desiredWidth, System.Func<bool> getter, System.Action<bool> setter)
         {
-            Rect r = new Rect(cx, rowY, 120f, rowHeight);
-            bool val = sealComp.CanDeflate();
+            if (desiredWidth <= 0f) return;
+            // 宽度不足时换行
+            if (cx + desiredWidth > maxX && cx > x)
+            {
+                rowY += rowHeight + 4f;
+                cx = x;
+            }
+
+            float w = Mathf.Min(desiredWidth, maxX - cx);
+            if (w <= 0.01f) return;
+
+            Rect r = new Rect(cx, rowY, w, rowHeight);
+            bool val = getter();
             bool oldVal = val;
-            Widgets.CheckboxLabeled(r, "EM.Milk_AllowDeflate".Translate(), ref val);
-            TooltipHandler.TipRegion(r, "EM.Milk_AllowDeflateTip".Translate());
-            if (val != oldVal) sealComp.SetCanDeflate(val);
+            Widgets.CheckboxLabeled(r, labelKey.Translate(), ref val);
+            TooltipHandler.TipRegion(r, tipKey.Translate());
+            if (val != oldVal) setter(val);
             cx = r.xMax + gap;
         }
 
+        // 第一行：挤奶、吃奶
+        if (comp?.MilkSettings != null)
+        {
+            DrawCheckbox(
+                "EM.RestrictionsAllowSelf_Milking",
+                "EM.RestrictionsAllowSelf_MilkingTip",
+                160f,
+                producer.AllowMilkingSelf,
+                v => producer.SetAllowMilkingSelf(v));
+
+            DrawCheckbox(
+                "EM.RestrictionsAllowSelf_Consume",
+                "EM.RestrictionsAllowSelf_ConsumeTip",
+                140f,
+                producer.AllowSelfConsumeProducts,
+                v => producer.SetAllowSelfConsumeProducts(v));
+        }
+
+        EnsureRowStartIfNarrow(narrow);
+
+        // 第二行：泄精、塞住（若组件存在）
         if (sealComp != null)
         {
-            Rect r = new Rect(cx, rowY, 100f, rowHeight);
-            bool val = sealComp.IsSealed();
-            bool oldVal = val;
-            Widgets.CheckboxLabeled(r, "EM.Milk_SealCum".Translate(), ref val);
-            TooltipHandler.TipRegion(r, "EM.Milk_SealCumTip".Translate());
-            if (val != oldVal) sealComp.SetSealed(val);
+            DrawCheckbox(
+                "EM.Milk_AllowDeflate",
+                "EM.Milk_AllowDeflateTip",
+                120f,
+                sealComp.CanDeflate,
+                v => sealComp.SetCanDeflate(v));
+
+            DrawCheckbox(
+                "EM.Milk_SealCum",
+                "EM.Milk_SealCumTip",
+                100f,
+                sealComp.IsSealed,
+                v => sealComp.SetSealed(v));
         }
 
         y = rowY + rowHeight + 8f;

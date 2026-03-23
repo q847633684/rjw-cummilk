@@ -14,13 +14,11 @@ public class PawnColumnWorker_ProducerRestrictions : PawnColumnWorker
             Find.WindowStack.Add(new Window_ProducerRestrictions(pawn));
     }
 
-    /// <summary>仅泌乳者（女性）显示「谁可以使用我的奶」；男性显示「谁可以吃我的精液制品」；非哺乳者不显示产奶限制列。</summary>
+    /// <summary>只要该 Pawn 有泌乳/等量挤奶组件就显示入口按钮：女性忽略当前是否泌乳，以便提前配置权限。</summary>
     internal static bool ShouldShowFor(Pawn pawn)
     {
-        if (pawn?.CompEquallyMilkable() == null) return false;
-        if (pawn.IsLactating()) return true;
-        if (pawn.RaceProps?.Humanlike == true && pawn.gender == Gender.Male) return true;
-        return false;
+        // 只要拥有等量挤奶组件，就允许打开“指定权限”窗口；不再区分性别/是否当前处于泌乳状态。
+        return pawn?.CompEquallyMilkable() != null;
     }
 
     protected override string GetHeaderTip(PawnTable table)
