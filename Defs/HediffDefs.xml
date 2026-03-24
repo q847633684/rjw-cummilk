@@ -3,8 +3,8 @@
     <HediffDef>
         <defName>EM_Prolactin_Tolerance</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>催乳素耐受</label>
-        <description>Developing tolerance to Prolactin</description>
+        <label>Prolactin tolerance</label>
+        <description>The body adapts to prolactin: each dose does less, and when the drug fades, lactation eases faster. Tolerance wears off after long breaks. Very strong tolerance (75% or more) can strain the kidneys over years of use.</description>
         <initialSeverity>0.01</initialSeverity>
         <maxSeverity>1.0</maxSeverity>
         <isBad>false</isBad>
@@ -19,7 +19,7 @@
         <stages>
             <li>
                 <minSeverity>0</minSeverity>
-                <label>small tolerance</label>
+                <label>mild tolerance</label>
             </li>
             <li>
                 <minSeverity>0.3</minSeverity>
@@ -52,8 +52,8 @@
     <HediffDef>
         <defName>EM_Prolactin_High</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>催乳素兴奋</label>
-        <description>Short-term euphoria from Prolactin; slight impairment to coordination and awareness.</description>
+        <label>Prolactin rush</label>
+        <description>A warm, floaty lift from prolactin, with slightly clumsy hands and a fuzzy head.</description>
         <defaultLabelColor>(1,0.6,0.8)</defaultLabelColor>
         <maxSeverity>1.0</maxSeverity>
         <isBad>false</isBad>
@@ -87,8 +87,8 @@
     <HediffDef>
         <defName>EM_Prolactin_Addiction</defName>
         <hediffClass>Hediff_Addiction</hediffClass>
-        <label>催乳素成瘾</label>
-        <description>Addicted to Prolactin</description>
+        <label>Prolactin dependence</label>
+        <description>The body expects regular prolactin; going without brings a harsh, restless crash.</description>
         <chemicalNeed>Chemical_EM_Prolactin_Chemical</chemicalNeed>
         <initialSeverity>0.5</initialSeverity>
         <maxSeverity>1.0</maxSeverity>
@@ -109,7 +109,7 @@
         </comps>
         <stages>
             <li>
-                <label>satisfied</label>
+                <label>steady</label>
             </li>
             <li>
                 <label>withdrawal</label>
@@ -130,61 +130,18 @@
         </stages>
     </HediffDef>
     
-    <!-- 医学贴近：对应乳汁淤积（堵奶）→ 非感染性乳腺炎 → 重度乳腺炎。触发：长时间满池、卫生差、胸部/乳头损伤；排空乳房（池位低）加速恢复。见 Docs/泌乳系统-全部说明 医学对照。 -->
-    <HediffDef>
-        <defName>EM_Mastitis</defName>
-        <hediffClass>HediffWithComps</hediffClass>
-        <label>乳腺炎</label>
-        <description>对应医学上的乳汁淤积与哺乳期乳腺炎：先为堵奶/淤积（非感染），可进展为乳腺炎症；卫生差或胸部损伤时感染风险升高。诱因：排空不全（长时间满池）、环境不洁、躯干/乳房损伤。治疗要点：及时挤奶、保持乳房排空可明显缓解；严重时需休息与护理。</description>
-        <defaultLabelColor>(0.9,0.6,0.4)</defaultLabelColor>
-        <initialSeverity>0.2</initialSeverity>
-        <maxSeverity>1.0</maxSeverity>
-        <isBad>true</isBad>
-        <comps>
-            <li Class="HediffCompProperties_SeverityPerDay">
-                <severityPerDay>-0.02</severityPerDay>
-            </li>
-            <li Class="MilkCum.Fluids.Lactation.Hediffs.HediffCompProperties_MastitisDrainageRelief" />
-        </comps>
-        <stages>
-            <li>
-                <minSeverity>0</minSeverity>
-                <label>堵奶/乳汁淤积</label>
-            </li>
-            <li>
-                <minSeverity>0.5</minSeverity>
-                <label>乳腺炎（炎症）</label>
-                <capMods>
-                    <li>
-                        <capacity>Consciousness</capacity>
-                        <offset>-0.02</offset>
-                    </li>
-                </capMods>
-            </li>
-            <li>
-                <minSeverity>0.8</minSeverity>
-                <label>乳腺炎（重度）</label>
-                <capMods>
-                    <li>
-                        <capacity>Consciousness</capacity>
-                        <offset>-0.05</offset>
-                    </li>
-                </capMods>
-            </li>
-        </stages>
-    </HediffDef>
-    <!-- 满池时身体影响：行动不便，移动与操作略降。Fullness>=0.95 时由 CompEquallyMilkable 添加，<0.9 时移除。 -->
+    <!-- Lactation breast conditions; logic in MilkRelatedHealthHelper -->
     <HediffDef>
         <defName>EM_BreastsEngorged</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>乳房胀满</label>
-        <description>乳房奶水过满，行动略有不便；挤奶或吸奶后可缓解。</description>
+        <label>Engorged breasts</label>
+        <description>The breasts are heavy and tight with milk, making it awkward to move or work. Usually from not emptying them in time. Draining them properly usually brings relief.</description>
         <defaultLabelColor>(0.95,0.85,0.6)</defaultLabelColor>
         <isBad>true</isBad>
         <stages>
             <li>
                 <minSeverity>0</minSeverity>
-                <label>胀满</label>
+                <label>Tight and sore</label>
                 <capMods>
                     <li>
                         <capacity>Moving</capacity>
@@ -198,18 +155,170 @@
             </li>
         </stages>
     </HediffDef>
-    <!-- 药物诱发泌乳时的身体负担：有催乳素耐受或成瘾且正在泌乳时添加，表示激素/身体负担。可与设置中的「泌乳增益」叠加，净效果可为正。 -->
+    <HediffDef>
+        <defName>EM_LactationalMilkStasis</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>Backed-up milk</label>
+        <description>Milk is building inside with nowhere to go; the breast feels dense and tender, and even a light touch hurts. If milk keeps getting left behind, it can turn into inflammation. Frequent, thorough emptying is the way to ease it.</description>
+        <defaultLabelColor>(0.92,0.7,0.45)</defaultLabelColor>
+        <initialSeverity>0.15</initialSeverity>
+        <maxSeverity>1.0</maxSeverity>
+        <isBad>true</isBad>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-0.03</severityPerDay>
+            </li>
+            <li Class="MilkCum.Fluids.Lactation.Hediffs.HediffCompProperties_MastitisDrainageRelief" />
+        </comps>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>Dull ache</label>
+                <capMods>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <offset>-0.02</offset>
+                    </li>
+                </capMods>
+            </li>
+            <li>
+                <minSeverity>0.5</minSeverity>
+                <label>Deep ache, lumpy</label>
+                <capMods>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <offset>-0.04</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.02</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    <HediffDef>
+        <defName>EM_Mastitis</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>Mastitis</label>
+        <description>The breast is hot, red, and painfully swollen; you feel drained and feverish, as if burning up. Lingering backed-up milk, poor cleanliness, or chest injuries all invite it. Rest, keep emptying the breast, and keep wounds clean—or it may fester into something worse.</description>
+        <defaultLabelColor>(0.9,0.55,0.35)</defaultLabelColor>
+        <initialSeverity>0.2</initialSeverity>
+        <maxSeverity>1.0</maxSeverity>
+        <isBad>true</isBad>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-0.02</severityPerDay>
+            </li>
+            <li Class="MilkCum.Fluids.Lactation.Hediffs.HediffCompProperties_MastitisDrainageRelief" />
+        </comps>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>Early swelling</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.01</offset>
+                    </li>
+                </capMods>
+            </li>
+            <li>
+                <minSeverity>0.4</minSeverity>
+                <label>Spreading redness</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.03</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.03</offset>
+                    </li>
+                </capMods>
+            </li>
+            <li>
+                <minSeverity>0.72</minSeverity>
+                <label>High fever, worsening</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.06</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.05</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    <HediffDef>
+        <defName>EM_BreastAbscess</defName>
+        <hediffClass>HediffWithComps</hediffClass>
+        <label>Breast abscess</label>
+        <description>It feels like pus has gathered in the breast; the pain is severe and chills and fever wrack the body. Often follows inflammation that was not curbed while living filthy and exhausted. Milking alone may not be enough—good care helps; skilled surgery to drain it speeds recovery.</description>
+        <defaultLabelColor>(0.85,0.35,0.3)</defaultLabelColor>
+        <initialSeverity>0.38</initialSeverity>
+        <maxSeverity>1.0</maxSeverity>
+        <isBad>true</isBad>
+        <comps>
+            <li Class="HediffCompProperties_SeverityPerDay">
+                <severityPerDay>-0.008</severityPerDay>
+            </li>
+            <li Class="MilkCum.Fluids.Lactation.Hediffs.HediffCompProperties_MastitisDrainageRelief" />
+        </comps>
+        <stages>
+            <li>
+                <minSeverity>0</minSeverity>
+                <label>Localized pus</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.08</offset>
+                    </li>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <offset>-0.08</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.06</offset>
+                    </li>
+                </capMods>
+            </li>
+            <li>
+                <minSeverity>0.55</minSeverity>
+                <label>Spreading abscess</label>
+                <capMods>
+                    <li>
+                        <capacity>Consciousness</capacity>
+                        <offset>-0.12</offset>
+                    </li>
+                    <li>
+                        <capacity>Moving</capacity>
+                        <offset>-0.12</offset>
+                    </li>
+                    <li>
+                        <capacity>Manipulation</capacity>
+                        <offset>-0.10</offset>
+                    </li>
+                </capMods>
+            </li>
+        </stages>
+    </HediffDef>
+    <!-- Drug-driven lactation strain; stacks with EM_LactatingGain -->
     <HediffDef>
         <defName>EM_DrugLactationBurden</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>药物泌乳负担</label>
-        <description>长期使用泌乳药物带来的轻微身体负担，行动与操作略受影响。</description>
+        <label>Prolactin drag</label>
+        <description>The dose keeps the breasts producing, but the body lags: limbs feel leaden and focus comes hard.</description>
         <defaultLabelColor>(0.85,0.75,0.9)</defaultLabelColor>
         <isBad>true</isBad>
         <stages>
             <li>
                 <minSeverity>0</minSeverity>
-                <label>负担</label>
+                <label>Heavy and tired</label>
                 <capMods>
                     <li>
                         <capacity>Moving</capacity>
@@ -223,27 +332,27 @@
             </li>
         </stages>
     </HediffDef>
-    <!-- 药物诱发泌乳时的能力增益（意识/操纵/移动），健康页显示。由设置与 Lactating severity 动态算 capMods，条件满足时 CompEquallyMilkable 添加。 -->
+    <!-- Positive lactation buff; capMods from CompEquallyMilkable -->
     <HediffDef>
         <defName>EM_LactatingGain</defName>
         <hediffClass>MilkCum.Fluids.Lactation.Hediffs.Hediff_LactatingGain</hediffClass>
-        <label>泌乳增益</label>
-        <description>药物诱发泌乳时，设置开启后给予的意识、操纵、移动轻微加成。</description>
+        <label>Milking vigor</label>
+        <description>With milk flowing smoothly, you feel oddly sharp—lighter on your feet, steadier in the hands.</description>
         <defaultLabelColor>(0.6,0.9,0.7)</defaultLabelColor>
         <isBad>false</isBad>
         <stages>
             <li>
                 <minSeverity>0</minSeverity>
-                <label>增益</label>
+                <label>Light and steady</label>
             </li>
         </stages>
     </HediffDef>
-    <!-- 吸收延迟：吃药后尚未挂上 Lactating 的等待期，健康页显示。ScheduleLactating 时添加，ApplyDelayedLactating 时移除。悬停显示剩余时间由 HediffComp_AbsorptionDelayTip 提供。 -->
+    <!-- Waiting for lactation drug to take effect; tooltip from HediffComp_AbsorptionDelayTip -->
     <HediffDef>
         <defName>EM_AbsorptionDelay</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>吸收延迟</label>
-        <description>泌乳药物尚未完全吸收，泌乳即将生效。</description>
+        <label>Drug still taking hold</label>
+        <description>The lactation dose is still working through the blood; the chest flushes with warmth before the milk truly comes in.</description>
         <defaultLabelColor>(0.7,0.85,1)</defaultLabelColor>
         <isBad>false</isBad>
         <comps>
@@ -252,43 +361,43 @@
         <stages>
             <li>
                 <minSeverity>0</minSeverity>
-                <label>吸收中</label>
+                <label>Absorbing dose</label>
             </li>
         </stages>
     </HediffDef>
 
-    <!-- 原 rjw-milkable-colonists 系：供 RJWLactatingGainPatch 为 stages/li 添加意识/操纵/移动 +10% 增益。 -->
+    <!-- rjw-milkable-colonists compat; RJWLactatingGainPatch may add cap mods -->
     <HediffDef>
         <defName>Lactating_Drug</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>药物泌乳</label>
-        <description>Drug-induced lactation.</description>
+        <label>Drug-induced lactation</label>
+        <description>Lactation from medication; milk still fills the pools in the usual way for milking or nursing.</description>
         <defaultLabelColor>(1,0.41,0.81)</defaultLabelColor>
         <isBad>false</isBad>
         <stages>
-            <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
+            <li><minSeverity>0</minSeverity><label>Producing milk</label></li>
         </stages>
     </HediffDef>
     <HediffDef>
         <defName>Lactating_Permanent</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>永久泌乳</label>
-        <description>Permanent lactation.</description>
+        <label>Permanent lactation</label>
+        <description>The body simply keeps making milk unless something else suppresses it.</description>
         <defaultLabelColor>(1,0.41,0.81)</defaultLabelColor>
         <isBad>false</isBad>
         <stages>
-            <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
+            <li><minSeverity>0</minSeverity><label>Producing milk</label></li>
         </stages>
     </HediffDef>
     <HediffDef>
         <defName>Heavy_Lactating_Permanent</defName>
         <hediffClass>HediffWithComps</hediffClass>
-        <label>重度永久泌乳</label>
-        <description>Heavy permanent lactation.</description>
+        <label>Heavy permanent lactation</label>
+        <description>Milk production is intense and relentless; the breasts rarely rest—more taxing than ordinary permanent lactation.</description>
         <defaultLabelColor>(1,0.41,0.81)</defaultLabelColor>
         <isBad>false</isBad>
         <stages>
-            <li><minSeverity>0</minSeverity><label>泌乳中</label></li>
+            <li><minSeverity>0</minSeverity><label>Producing milk</label></li>
         </stages>
     </HediffDef>
 </Defs>

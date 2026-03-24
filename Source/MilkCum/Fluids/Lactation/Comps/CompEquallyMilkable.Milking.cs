@@ -97,8 +97,12 @@ public partial class CompEquallyMilkable
     private static float GetMilkQualityForProducer(Pawn producer)
     {
         if (producer?.health?.hediffSet == null) return 0.7f;
+        if (MilkCumDefOf.EM_BreastAbscess != null && producer.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess) != null)
+            return 0.12f;
         if (MilkCumDefOf.EM_Mastitis != null && producer.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis) != null)
             return 0.3f;
+        if (MilkCumDefOf.EM_LactationalMilkStasis != null && producer.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactationalMilkStasis) != null)
+            return 0.48f;
         var lactating = producer.LactatingHediffComp();
         float effectiveL = lactating?.EffectiveLactationAmountForFlow ?? 0f;
         return effectiveL >= 0.5f ? 0.9f : 0.6f;
@@ -165,47 +169,7 @@ public partial class CompEquallyMilkable
                 milkedPawn.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_ForcedMilking);
         }
         lastGatheredTick = Find.TickManager.TicksGame;
-        if (parent is Pawn pawnForMastitis && MilkCumDefOf.EM_Mastitis != null)
-        {
-            var mastitisHediffs = pawnForMastitis.health?.hediffSet?.hediffs;
-            if (mastitisHediffs != null)
-            {
-                const float perSideDecay = 0.02f;
-                const float globalDecay = 0.05f;
-                var partsRelieved = new HashSet<BodyPartRecord>();
-                if (drainedKeys != null && drainedKeys.Count > 0)
-                {
-                    foreach (string sideKey in drainedKeys)
-                    {
-                        string poolKey = PawnMilkPoolExtensions.GetPoolKeyFromSideKey(sideKey);
-                        BodyPartRecord part = pawnForMastitis.GetPartForPoolKey(poolKey);
-                        if (part == null || partsRelieved.Contains(part)) continue;
-                        partsRelieved.Add(part);
-                        Hediff mastitisOnPart = null;
-                        for (int i = 0; i < mastitisHediffs.Count; i++)
-                        {
-                            if (mastitisHediffs[i].def == MilkCumDefOf.EM_Mastitis && mastitisHediffs[i].Part == part)
-                            {
-                                mastitisOnPart = mastitisHediffs[i];
-                                break;
-                            }
-                        }
-                        if (mastitisOnPart != null && mastitisOnPart.Severity > 0.01f)
-                        {
-                            mastitisOnPart.Severity = Mathf.Max(0f, mastitisOnPart.Severity - perSideDecay);
-                            if (mastitisOnPart.Severity <= 0f)
-                                pawnForMastitis.health.RemoveHediff(mastitisOnPart);
-                        }
-                    }
-                }
-                Hediff anyMastitis = pawnForMastitis.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
-                if (anyMastitis != null && anyMastitis.Severity > 0.01f)
-                {
-                    anyMastitis.Severity = Mathf.Max(0f, anyMastitis.Severity - globalDecay);
-                    if (anyMastitis.Severity <= 0f)
-                        pawnForMastitis.health.RemoveHediff(anyMastitis);
-                }
-            }
-        }
+        if (parent is Pawn pawnForRelief)
+            MilkRelatedHealthHelper.ApplyMilkingPhysicalRelief(pawnForRelief, drainedKeys);
     }
 }

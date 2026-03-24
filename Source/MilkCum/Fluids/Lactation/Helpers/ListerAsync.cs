@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Verse;
 using RimWorld;
 using System.Linq;
-using System.Threading;
 using UnityEngine;
 
 namespace MilkCum.Fluids.Lactation.Helpers;
@@ -31,10 +30,7 @@ public static class ListerAsync
         }
 
         if (NeedsUpdate(allColonyPawns[map]))
-        {
-            //TODO find why async not working
             UpdateAllColonyPawns(map);
-        }
 
         return allColonyPawns[map].Active;
     }

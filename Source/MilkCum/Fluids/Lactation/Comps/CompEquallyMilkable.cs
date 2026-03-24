@@ -192,32 +192,31 @@ public partial class CompEquallyMilkable : CompMilkable
         allowedBreastfeeders ??= new List<Pawn>();
         allowedMilkers ??= new List<Pawn>();
         allowedConsumers ??= new List<Pawn>();
-        allowedBreastfeeders.RemoveAll(p => p == null || p.Destroyed);
-        allowedMilkers.RemoveAll(p => p == null || p.Destroyed);
-        allowedConsumers.RemoveAll(p => p == null || p.Destroyed);
-        // 新逻辑：名单为空时预填子女/伴侣
+        RemoveDestroyedFromAllowedList(allowedBreastfeeders);
+        RemoveDestroyedFromAllowedList(allowedMilkers);
+        RemoveDestroyedFromAllowedList(allowedConsumers);
         if (parent is Pawn p)
         {
-            if (allowedBreastfeeders.Count == 0)
-            {
-                var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
-                foreach (Pawn pawn in defaults)
-                {
-                    if (pawn == null || pawn.Destroyed || allowedBreastfeeders.Contains(pawn)) continue;
-                    if (p.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != p.MapHeld) continue;
-                    allowedBreastfeeders.Add(pawn);
-                }
-            }
-            if (allowedMilkers.Count == 0)
-            {
-                var defaults = MilkPermissionExtensions.GetDefaultSucklers(p);
-                foreach (Pawn pawn in defaults)
-                {
-                    if (pawn == null || pawn.Destroyed || allowedMilkers.Contains(pawn)) continue;
-                    if (p.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != p.MapHeld) continue;
-                    allowedMilkers.Add(pawn);
-                }
-            }
+            TryFillAllowedListFromDefaults(p, allowedBreastfeeders);
+            TryFillAllowedListFromDefaults(p, allowedMilkers);
+        }
+    }
+
+    private static void RemoveDestroyedFromAllowedList(List<Pawn> list)
+    {
+        if (list == null) return;
+        list.RemoveAll(p => p == null || p.Destroyed);
+    }
+
+    /// <summary>名单为空时从默认吸奶对象预填（同地图）。</summary>
+    private static void TryFillAllowedListFromDefaults(Pawn owner, List<Pawn> list)
+    {
+        if (list.Count != 0) return;
+        foreach (Pawn pawn in MilkPermissionExtensions.GetDefaultSucklers(owner))
+        {
+            if (pawn == null || pawn.Destroyed || list.Contains(pawn)) continue;
+            if (owner.MapHeld != null && pawn.MapHeld != null && pawn.MapHeld != owner.MapHeld) continue;
+            list.Add(pawn);
         }
     }
 
@@ -278,13 +277,14 @@ public partial class CompEquallyMilkable : CompMilkable
             if (Fullness > stretchTotal)
                 SetFullness(stretchTotal, stretchTotal);
         }
-        // 基因/物种/设置驱动的 Lactating 维护、药物泌乳增益、胀满 hediff 变化很慢，20 tick（约 1 秒）足够
+        // 基因/物种/设置驱动的 Lactating 维护、EM_LactatingGain、胀满 hediff 变化很慢，20 tick（约 1 秒）足够
         if (parent.IsHashIntervalTick(120))
         {
             EnsureEntriesCacheDirtyIfBreastCountChanged();
             MilkRelatedHealthHelper.EnsureLactatingHediffFromConditions(Pawn);
             ApplyDrugInducedLactationEffects();
             MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, Fullness, maxFullness);
+            MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Pawn, Fullness, GetPoolStretchCapacityTotal(), ticksFullPool);
         }
         if (!cachedActive) { return; }
         // LOD：当前地图每 60 tick；非当前地图 300 tick；未载入地图（商队等）600 tick，降低多档负担
@@ -297,18 +297,22 @@ public partial class CompEquallyMilkable : CompMilkable
             if (MilkCumSettings.rjwBreastSizeEnabled && Pawn != null && Pawn.IsInLactatingState())
                 RJWLactatingBreastSizeGameComponent.SyncRJWBreastSeverityFromPool(Pawn);
         }
-        if (parent.IsHashIntervalTick(2000)) MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, Fullness, ticksFullPool);
+        if (parent.IsHashIntervalTick(2000))
+        {
+            MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, Fullness, ticksFullPool);
+            MilkRelatedHealthHelper.TryTriggerBreastAbscessFromMtb(Pawn, Fullness, ticksFullPool);
+        }
     }
 
     /// <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowed 列表引用。</summary>
     internal void CleanupAllowedLists()
     {
-        allowedBreastfeeders?.RemoveAll(p => p == null || p.Destroyed);
-        allowedMilkers?.RemoveAll(p => p == null || p.Destroyed);
-        allowedConsumers?.RemoveAll(p => p == null || p.Destroyed);
+        RemoveDestroyedFromAllowedList(allowedBreastfeeders);
+        RemoveDestroyedFromAllowedList(allowedMilkers);
+        RemoveDestroyedFromAllowedList(allowedConsumers);
     }
 
-    /// <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
+    /// <summary>药物诱发泌乳时仅添加 EM_LactatingGain。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
     private void ApplyDrugInducedLactationEffects()
     {
         if (Pawn == null || !Pawn.RaceProps.Humanlike) return;
@@ -331,30 +335,8 @@ public partial class CompEquallyMilkable : CompMilkable
 
     /// <summary>是否有躯干/乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
     public static bool HasTorsoOrBreastInjury(Pawn pawn) => MilkRelatedHealthHelper.HasTorsoOrBreastInjury(pawn);
-    /// <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表</summary>
-    public bool AllowedToBeAutoFedBy(Pawn pawn)
-    {
-        return this.MilkSettings?.canBeFed == true;
-    }
-
-    /// <summary>开发模式下显示池 P/L/C、overflow、reabsorb 等，便于调参。</summary>
-    public override IEnumerable<Gizmo> CompGetGizmosExtra()
-    {
-        foreach (var g in base.CompGetGizmosExtra())
-            yield return g;
-        if (!Prefs.DevMode || !cachedActive || Pawn == null) yield break;
-        string label = "池 P=" + CachedPressureForDisplay.ToString("F2") + " L=" + CachedLetdownForDisplay.ToString("F2") + " C=" + CachedConditionsForDisplay.ToString("F2");
-        string tip = "overflow=" + overflowAccumulator.ToString("F3") + " 满=" + Fullness.ToString("F3") + "/" + maxFullness.ToString("F3") + " 流/天=" + CachedFlowPerDayForDisplay.ToString("F3");
-        tip += " | 累计产奶=" + totalDrainedLifetime.ToString("F1") + " 挤奶次数=" + gatherCountLifetime + " 溢出次数=" + overflowEventCount;
-        if (hadShrinkLastStep)
-            tip += " 回缩吸收/天=" + cachedReabsorbedNutritionPerDay.ToString("F3");
-        yield return new Command_Action
-        {
-            defaultLabel = label,
-            defaultDesc = tip,
-            action = () => { }
-        };
-    }
+    /// <summary>是否允许被该泌乳者自动喂食。仅看 canBeFed 开关；不再使用「谁可以喂我」列表（参数保留供调用方语义，未参与判定）。</summary>
+    public bool AllowedToBeAutoFedBy(Pawn _) => MilkSettings?.canBeFed == true;
 
     /// <summary>挤奶/吸奶扣池后按侧降低炎症 I。</summary>
     public void NotifyInflammationDrain(Dictionary<string, float> drainedByKey)

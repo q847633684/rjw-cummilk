@@ -43,14 +43,17 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         }
     }
 
-    /// <summary>加载后移�?pawn �?null 或已销毁的条目，避免跨存档/地图引用。见 Docs/泌乳系统逻辑图</summary>
+    /// <summary>待生效队列中应丢弃的 pawn：无引用、已销毁、或未生成且已死亡。</summary>
+    private static bool IsInvalidPendingPawn(Pawn p) =>
+        p == null || p.Destroyed || (!p.Spawned && p.Dead);
+
+    /// <summary>加载后移除无效条目，避免跨存档/地图坏引用。见 Docs/泌乳系统逻辑图</summary>
     private void RemoveInvalidPendingEntries()
     {
         if (pending == null) return;
         for (int i = pending.Count - 1; i >= 0; i--)
         {
-            var e = pending[i];
-            if (e.pawn == null || e.pawn.Destroyed || (e.pawn.Spawned == false && e.pawn.Dead))
+            if (IsInvalidPendingPawn(pending[i].pawn))
                 pending.RemoveAt(i);
         }
     }
@@ -83,7 +86,7 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         for (int i = pending.Count - 1; i >= 0; i--)
         {
             var e = pending[i];
-            if (e.pawn == null || e.pawn.Destroyed || (!e.pawn.Spawned && e.pawn.Dead))
+            if (IsInvalidPendingPawn(e.pawn))
             {
                 pending.RemoveAt(i);
                 continue;

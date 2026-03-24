@@ -33,7 +33,7 @@ public static class PawnMilkStateExtensions
     public static bool IsMilkable(this Pawn pawn) => MilkCumSettings.IsMilkable(pawn);
     public static bool IsLactating(this Pawn pawn) => pawn?.health?.hediffSet?.HasHediff(HediffDefOf.Lactating) ?? false;
 
-    /// <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于 UI 显示与添加「药物泌乳负担」等。</summary>
+    /// <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾）；用于 UI 与添加 EM_DrugLactationBurden 等。</summary>
     public static bool HasDrugInducedLactation(this Pawn pawn)
     {
         if (pawn?.health?.hediffSet == null) return false;

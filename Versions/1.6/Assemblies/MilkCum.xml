@@ -998,7 +998,7 @@
             <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowed 列表引用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ApplyDrugInducedLactationEffects">
-            <summary>药物诱发泌乳时仅添加泌乳增益 Hediff。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
+            <summary>药物诱发泌乳时仅添加 EM_LactatingGain。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.HasTorsoOrBreastInjury(Verse.Pawn)">
             <summary>是否有躯干/乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
@@ -1475,24 +1475,32 @@
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper">
             <summary>
-            泌乳相关健康状态更新：胀满、炎症、乳腺炎（炎症触发与 MTB 触发）、Lactating hediff 维护。
-            主流程只调本 Helper 的入口，逻辑集中在此，避免 CompEquallyMilkable 膨胀。
+            泌乳相关健康：乳房胀满、奶水瘀积、乳腺炎、乳房化脓；炎症 I 与 MTB；Lactating 维护。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.EnsureLactatingHediffFromConditions(Verse.Pawn)">
             <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity）。由 CompTick 每 120 tick 调用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateBreastsEngorged(Verse.Pawn,System.Single,System.Single)">
-            <summary>满池时添加「乳房胀满」hediff；低于 90% maxFullness 时移除（滞后避免抖动）。由 CompTick 每 tick 调用</summary>
+            <summary>满池时添加乳房胀满（EM_BreastsEngorged）；低于 90% maxFullness 时移除。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Verse.Pawn,System.Single,System.Single,System.Int32)">
+            <summary>奶水瘀积：久满/胀满+时间/炎症 I 达带宽时添加；乳腺炎或化脓出现时清除；排空后缓解。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating,System.Single,System.Single)">
-            <summary>四层模型：更新炎�?I 并尝试按 I&gt;I_crit 触发乳腺炎。由 UpdateMilkPools �?60 tick 调用</summary>
+            <summary>更新炎症 I 并尝试 I 阈值触发乳腺炎。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Verse.Pawn,System.Single,System.Int32)">
-            <summary>规格：乳腺炎/堵塞可由长时间满池、卫生、受伤等触发。每 2000 tick 判定一次；参数�?MilkCumSettings 可调</summary>
+            <summary>MTB 触发或加重乳腺炎；已有乳房化脓时不触发。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.TryTriggerBreastAbscessFromMtb(Verse.Pawn,System.Single,System.Int32)">
+            <summary>重度乳腺炎在卫生差且（久满或伤）时 MTB 可进展为乳房化脓（移除乳腺炎，换化脓条）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.ApplyMilkingPhysicalRelief(Verse.Pawn,System.Collections.Generic.List{System.String})">
+            <summary>挤奶结束：按侧与全局略降瘀积/乳腺炎/化脓严重度（与排空缓解 Comp 叠加）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.HasTorsoOrBreastInjury(Verse.Pawn)">
-            <summary>是否有躯�?乳房损伤，用于乳腺炎 MTB 风险判定</summary>
+            <summary>是否有躯干/乳房损伤（乳腺炎 MTB 风险）</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions">
             <summary>
@@ -1572,7 +1580,7 @@
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions.HasDrugInducedLactation(Verse.Pawn)">
-            <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾），用于 UI 显示与添加「药物泌乳负担」等。</summary>
+            <summary>是否有药物诱发的泌乳（催乳素耐受或成瘾）；用于 UI 与添加 EM_DrugLactationBurden 等。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkStateExtensions.IsInLactatingState(Verse.Pawn)">
             <summary>统一泌乳判断：本 mod Lactating、或 RJW 的 Lactating_Drug / Lactating_Permanent / Heavy_Lactating_Permanent。带 60 tick 缓存。</summary>

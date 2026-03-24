@@ -45,6 +45,8 @@ public static class MilkCumDefOf
     public static ThoughtDef EM_MilkPoolFull;
     public static ThoughtDef EM_LongTimeNotMilked;
     public static HediffDef EM_Mastitis;
+    public static HediffDef EM_LactationalMilkStasis;
+    public static HediffDef EM_BreastAbscess;
     public static ThoughtDef EM_Mastitis_Thought;
     public static HediffDef EM_BreastsEngorged;
     public static ThoughtDef EM_MilkOverflow;

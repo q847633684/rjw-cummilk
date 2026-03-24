@@ -488,10 +488,12 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     {
         if (!MilkCumSettings.enableInflammationModel || !MilkCumSettings.allowMastitis) return;
         if (MilkCumDefOf.EM_Mastitis == null || Pawn == null || !Pawn.RaceProps.Humanlike || !Pawn.IsLactating()) return;
+        if (MilkCumDefOf.EM_BreastAbscess != null && Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess) != null) return;
         float crit = Mathf.Max(0.01f, MilkCumSettings.inflammationCrit);
         if (MilkCumSettings.enableMilkQuality)
             crit *= 1f + MilkCumSettings.milkQualityProtectionFactor * GetMilkQuality();
         if (GetInflammationMax() < crit) return;
+        MilkRelatedHealthHelper.RemoveLactationalMilkStasis(Pawn);
         var existing = Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
         if (existing != null)
         {

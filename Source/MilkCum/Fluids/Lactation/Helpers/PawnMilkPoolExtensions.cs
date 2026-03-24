@@ -14,27 +14,10 @@ namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
 /// 乳池与流速：池条目、容量、MilkDef、泌乳 Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压奶满度、身体部位、距离等。
-/// 设计：仅使用 RJW 乳房 Hediff 的 Severity / fluidMultiplier / sizeProfile.density，不乘 BodySize、不调用 PartSizeCalculator，避免重复计算体型。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
+/// 设计：容量用 Severity×系数；流速倍率用 HediffComp_SexPart.GetFluidMultiplier()（含 partFluidMultiplier，与催乳补品等一致），密度用 sizeProfile.density。不乘 BodySize。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
 /// </summary>
 public static class PawnMilkPoolExtensions
 {
-    /// <summary>虚拟左右池容量（仅计算层，不修改任何 Hediff）。每�?hediff 表示一对乳房：�?右各为该 hediff �?Severity×系数；多 hediff 时左右均为所�?hediff 容量之和（总容�?2×和）。容量允�?0（乳退化）</summary>
-    public static (float leftCapacity, float rightCapacity) GetVirtualBreastPools(this Pawn pawn)
-    {
-        if (pawn == null) return (0f, 0f);
-        var list = pawn.GetBreastListOrEmpty();
-        if (list.Count == 0) return (0f, 0f);
-        float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
-        float totalCap = 0f;
-        for (int i = 0; i < list.Count; i++)
-        {
-            var h = list[i];
-            if (h?.def == null) continue;
-            totalCap += Mathf.Clamp(h.Severity * coeff, 0f, 10f);
-        }
-        return (totalCap, totalCap);
-    }
-
     /// <summary>左池容量：虚拟左池，不修�?Hediff</summary>
     public static float GetLeftBreastCapacityFactor(this Pawn pawn)
     {
@@ -75,6 +58,16 @@ public static class PawnMilkPoolExtensions
         catch { }
     }
 
+    /// <summary>单条乳房 Hediff 的进水倍率：与 RJW 一致（含药品对 partFluidMultiplier 的修正，如 Cumpilation_ActiveMammaries）。</summary>
+    private static float GetBreastHediffFlowMultiplier(Hediff h)
+    {
+        if (h?.def is not HediffDef_SexPart d) return 1f;
+        var comp = h.TryGetComp<HediffComp_SexPart>();
+        if (comp != null)
+            return Mathf.Clamp(comp.GetFluidMultiplier(), 0.1f, 3f);
+        return Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f);
+    }
+
     /// <summary>RJW PartSizeConfigDef.density：仅用于「奶量增加」时放大进池量（泌乳进水、高潮产液等），不参与容量/流速倍率。人类 1.0，未配置按 1。</summary>
     public static float GetBreastDensity(HediffDef def)
     {
@@ -102,7 +95,7 @@ public static class PawnMilkPoolExtensions
                 string baseKey = !string.IsNullOrEmpty(partName) ? partName : h.def.defName;
                 string key = baseKey + "_" + i;
                 float cap = Mathf.Clamp(h.Severity * coeff, 0f, 10f);
-                float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
+                float mult = GetBreastHediffFlowMultiplier(h);
                 float density = GetBreastDensity(h.def);
                 result.Add(new FluidPoolEntry(key + "_L", cap, mult, true, currentPair, density));
                 result.Add(new FluidPoolEntry(key + "_R", cap, mult, false, currentPair, density));
@@ -149,12 +142,20 @@ public static class PawnMilkPoolExtensions
     public static float GetMilkFlowMultiplierFromConditions(this Pawn pawn, BodyPartRecord part = null)
     {
         if (pawn?.health?.hediffSet == null) return 1f;
-        if (MilkCumDefOf.EM_Mastitis == null) return 1f;
-        var mastitis = pawn.health.hediffSet.hediffs.Where(x => x.def == MilkCumDefOf.EM_Mastitis);
-        Hediff h = part == null ? mastitis.FirstOrDefault() : mastitis.FirstOrDefault(m => m.Part == part);
-        if (h == null) return 1f;
-        float penalty = h.Severity * 0.5f;
-        return Mathf.Clamp(1f - penalty, 0.5f, 1f);
+        float eff = 0f;
+        void Acc(HediffDef def, float weight)
+        {
+            if (def == null) return;
+            Hediff h = part == null
+                ? pawn.health.hediffSet.GetFirstHediffOfDef(def)
+                : pawn.health.hediffSet.hediffs.FirstOrDefault(x => x.def == def && x.Part == part);
+            if (h != null) eff = Mathf.Max(eff, h.Severity * weight);
+        }
+        Acc(MilkCumDefOf.EM_LactationalMilkStasis, 0.32f);
+        Acc(MilkCumDefOf.EM_Mastitis, 0.5f);
+        Acc(MilkCumDefOf.EM_BreastAbscess, 0.62f);
+        if (eff <= 0f) return 1f;
+        return Mathf.Clamp(1f - eff, 0.35f, 1f);
     }
 
     /// <summary>从侧 key（如 HumanBreast_L）得到池 key（HumanBreast）</summary>
@@ -216,8 +217,7 @@ public static class PawnMilkPoolExtensions
             foreach (var h in list)
             {
                 if (h?.def == null) continue;
-                float mult = (h.def is HediffDef_SexPart d) ? Mathf.Clamp(d.fluidMultiplier, 0.1f, 3f) : 1f;
-                totalMult += mult;
+                totalMult += GetBreastHediffFlowMultiplier(h);
             }
             if (totalMult > 0f)
             {

@@ -32,16 +32,22 @@ public partial class CompEquallyMilkable
         return cachedReabsorbedNutritionPerDay;
     }
 
+    /// <summary>泌乳未进水时重置流速/UI 缓存，避免重复分支。</summary>
+    private void ResetMilkFlowDisplayCache()
+    {
+        CachedFlowPerDayForDisplay = 0f;
+        CachedFlowPerDayByKey = null;
+        CachedPressureForDisplay = CachedLetdownForDisplay = CachedConditionsForDisplay = 1f;
+        CachedFlowTick = Find.TickManager.TicksGame;
+    }
+
     /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。TickGrowth 将超过撑大上限部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
         if (lactatingComp == null || lactatingComp.RemainingDays <= 0f)
         {
-            CachedFlowPerDayForDisplay = 0f;
-            CachedFlowPerDayByKey = null;
-            CachedPressureForDisplay = CachedLetdownForDisplay = CachedConditionsForDisplay = 1f;
-            CachedFlowTick = Find.TickManager.TicksGame;
+            ResetMilkFlowDisplayCache();
             return;
         }
         float currentLactation = lactatingComp.CurrentLactationAmount;
@@ -49,10 +55,7 @@ public partial class CompEquallyMilkable
         float hungerFactor = PawnUtility.BodyResourceGrowthSpeed(Pawn);
         if (currentLactation <= 0f || hungerFactor <= 0f)
         {
-            CachedFlowPerDayForDisplay = 0f;
-            CachedFlowPerDayByKey = null;
-            CachedPressureForDisplay = CachedLetdownForDisplay = CachedConditionsForDisplay = 1f;
-            CachedFlowTick = Find.TickManager.TicksGame;
+            ResetMilkFlowDisplayCache();
             return;
         }
         float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
