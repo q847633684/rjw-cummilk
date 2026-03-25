@@ -59,9 +59,9 @@ public partial class CompEquallyMilkable
             return;
         }
         float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
-        float condFactor = Pawn.GetMilkFlowMultiplierFromConditions();
         float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
-        float basePerDay = drive * hungerFactor * condFactor * raceFlow;
+        // 仅按侧乘 GetConditionsForSide（按乳房部位），不再在此处乘全局 cond，避免与每侧 conditions 双重惩罚。
+        float basePerDay = drive * hungerFactor * raceFlow;
         var entries = GetCachedEntries();
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
@@ -71,9 +71,9 @@ public partial class CompEquallyMilkable
             var sb = new StringBuilder();
             sb.Append("[MilkCum][INFO][MilkFlow] 小人=").Append(Pawn.LabelShort).Append(" 泌乳量L=").Append(currentLactation.ToString("F3"))
                 .Append(" 驱动力drive=").Append(drive.ToString("F3")).Append(" 饥饿系数hunger=").Append(hungerFactor.ToString("F3"))
-                .Append(" 状态系数cond=").Append(condFactor.ToString("F3")).Append(" 种族流速倍率raceFlow=").Append(raceFlow.ToString("F3")).Append("; ");
+                .Append(" 种族流速倍率raceFlow=").Append(raceFlow.ToString("F3")).Append("; ");
             sb.Append("每日基础流速basePerDay=drive(").Append(drive.ToString("F3")).Append(")×hunger(").Append(hungerFactor.ToString("F3"))
-                .Append(")×cond(").Append(condFactor.ToString("F3")).Append(")×raceFlow(").Append(raceFlow.ToString("F3")).Append(")=").Append(basePerDay.ToString("F3")).Append("; ");
+                .Append(")×raceFlow(").Append(raceFlow.ToString("F3")).Append(")=").Append(basePerDay.ToString("F3")).Append("; ");
             sb.Append("每60tick进池量flowPer60tick=basePerDay(").Append(basePerDay.ToString("F3")).Append(")/60000×60=").Append(flowPerTickScale.ToString("F5")).Append("；");
             sb.Append("单侧实际流速≈flowPer60tick×条目流速倍率×该侧状态修正×压力因子×喷乳反射");
             MilkCumSettings.PoolTickLog(sb.ToString());
@@ -120,7 +120,6 @@ public partial class CompEquallyMilkable
         var pairGroups = GetCachedPairGroups();
         float totalFlowThisStep = 0f;
         float pressureWeightedSum = 0f, letdownWeightedSum = 0f, conditionsWeightedSum = 0f;
-        bool anyFullThisStep = false;
         CachedFlowPerDayByKey ??= new Dictionary<string, float>();
         for (int g = 0; g < pairGroups.Count; g++)
         {
@@ -148,8 +147,8 @@ public partial class CompEquallyMilkable
                 float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
                 float letdownLeft = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f;
                 float letdownRight = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f;
-                float flowLeft = Mathf.Max(0f, leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft * leftE.Density);
-                float flowRight = Mathf.Max(0f, rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight * rightE.Density);
+                float flowLeft = Mathf.Max(0f, leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft);
+                float flowRight = Mathf.Max(0f, rightE.FlowMultiplier * flowPerTickScale * conditionsRight * pressureRight * letdownRight);
                 totalFlowThisStep += flowLeft + flowRight;
                 pressureWeightedSum += flowLeft * pressureLeft + flowRight * pressureRight;
                 letdownWeightedSum += flowLeft * letdownLeft + flowRight * letdownRight;
@@ -178,8 +177,6 @@ public partial class CompEquallyMilkable
                 breastFullness[leftE.Key] = leftNew;
                 breastFullness[rightE.Key] = rightNew;
                 overflowTotal += overflow;
-                if (leftNew >= leftCap * PoolModelConstants.FullnessThresholdFactor && rightNew >= rightCap * PoolModelConstants.FullnessThresholdFactor)
-                    anyFullThisStep = true;
             }
             else
             {
@@ -193,15 +190,13 @@ public partial class CompEquallyMilkable
                     MilkCumSettings.ApplyOverflowResidualFlow(ref pressure, current, stretchCap, residualL, lactatingComp.GetInflammationForKey(e.Key));
                     float conditionsE = Pawn.GetConditionsForSide(e.Key);
                     float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
-                    float flowPerTick = Mathf.Max(0f, e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE * e.Density);
+                    float flowPerTick = Mathf.Max(0f, e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE);
                     totalFlowThisStep += flowPerTick;
                     pressureWeightedSum += flowPerTick * pressure;
                     letdownWeightedSum += flowPerTick * letdownE;
                     conditionsWeightedSum += flowPerTick * conditionsE;
                     CachedFlowPerDayByKey[e.Key] = flowPerTick * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);
                     var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
-                    if (newFullness >= e.Capacity * PoolModelConstants.FullnessThresholdFactor)
-                        anyFullThisStep = true;
                     if (newFullness > e.Capacity)
                     {
                         float excess = newFullness - e.Capacity;
@@ -238,10 +233,7 @@ public partial class CompEquallyMilkable
             else if (Pawn.needs?.energy != null)
                 Pawn.needs.energy.CurLevel = Mathf.Clamp(Pawn.needs.energy.CurLevel + addBack / MilkCumSettings.nutritionToEnergyFactor, 0f, Pawn.needs.energy.MaxLevel);
         }
-        if (anyFullThisStep)
-            ticksFullPool += 60;
-        else
-            ticksFullPool = Mathf.Max(0, ticksFullPool - 120);
+        UpdateTicksFullPoolForEntries(entries);
         SyncBaseFullness();
         HandleOverflow(overflowTotal);
         TrySendFullPoolLetter();
@@ -283,7 +275,7 @@ public partial class CompEquallyMilkable
     private void TrySendFullPoolLetter()
     {
         if (!MilkCumSettings.enableFullPoolLetter || Pawn == null || !Pawn.Spawned || !Pawn.IsColonyPawn()
-            || ticksFullPool < (int)PoolModelConstants.TicksPerGameDay) return;
+            || GetMaxTicksFullPoolAcrossSides() < (int)PoolModelConstants.TicksPerGameDay) return;
         int currentDay = GenDate.DaysPassed;
         if (lastFullPoolLetterDay >= 0 && lastFullPoolLetterDay == currentDay) return;
         int now = Find.TickManager.TicksGame;

@@ -127,9 +127,21 @@
     <EM.RJWSection>--- RJW (when rim.job.world active) ---</EM.RJWSection>
     <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>When on: lactating temporarily adds to RJW breast Severity (visual size), and pool capacity plus milk flow use RJW breast data (Severity × capacity coefficient, fluidMultiplier). When off: no size change and capacity/flow do not use RJW breasts.</EM.RjwBreastSizeDesc>
+    <EM.RjwBreastPoolCapacityMode>Pool base capacity from: {0}</EM.RjwBreastPoolCapacityMode>
+    <EM.RjwBreastPoolCapacityModeTip>Base per-side pool capacity before tissue adaptation, then × capacity coefficient (capped). Default Volume: RJW BreastSize.volume (L); if no positive volume, falls back to Severity—separate from flow (GetFluidMultiplier). Weight mode uses estimated mass (kg), else Severity.</EM.RjwBreastPoolCapacityModeTip>
+    <EM.RjwCapacityMode_Severity>Severity × coefficient</EM.RjwCapacityMode_Severity>
+    <EM.RjwCapacityMode_Weight>Breast weight × coefficient</EM.RjwCapacityMode_Weight>
+    <EM.RjwCapacityMode_Max>Max of severity and weight (each × coefficient)</EM.RjwCapacityMode_Max>
+    <EM.RjwCapacityMode_Volume>Breast volume (L) × coefficient (default)</EM.RjwCapacityMode_Volume>
+    <EM.RjwCapacityMode_MaxSevVol>Max of severity and volume (each × coefficient)</EM.RjwCapacityMode_MaxSevVol>
+    <EM.RjwCapacityMode_BlendSevVol>Blend severity and volume caps (α slider)</EM.RjwCapacityMode_BlendSevVol>
+    <EM.RjwBreastCapBlendSevWeight>Blend: severity weight α: {0}</EM.RjwBreastCapBlendSevWeight>
+    <EM.RjwBreastCapBlendSevWeightDesc>For “Blend severity &amp; volume” mode only: α×(severity×coeff) + (1−α)×(volume×coeff). Ignored for other modes.</EM.RjwBreastCapBlendSevWeightDesc>
+    <EM.RjwNippleStageFlowBonusPct>Nipple-stage flow bonus %: {0}</EM.RjwNippleStageFlowBonusPct>
+    <EM.RjwNippleStageFlowBonusPctDesc>When RJW breast stage label contains “Nipple”, multiply lactation inflow / orgasm milk fluid bonus by (1 + this%/100). 0 = off. Clamped to about ±15%.</EM.RjwNippleStageFlowBonusPctDesc>
     <EM.RjwBreastCapacityCoefficient>Breast capacity coefficient: {0}</EM.RjwBreastCapacityCoefficient>
-    <EM.RjwBreastCapacityCoefficientDesc>Left/right pool capacity = RJW breast Severity × this value (1 = unchanged). Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
-    <EM.RjwBreastCapacityCoefficientDescLong>Left/right pool capacity = RJW breast Severity × this value; total capacity = left + right. Higher = larger pool, longer to fill; default 2 with Severity 0.5 gives total capacity 2. See Docs.</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.RjwBreastCapacityCoefficientDesc>Scales the base from the mode above (default: RJW volume in liters; or Severity, weight, blend, etc.). 1 = unchanged scale. Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
+    <EM.RjwBreastCapacityCoefficientDescLong>Per-side capacity = base from selected mode × this coefficient (capped); total = left + right. Default Volume mode maps RJW liter scale into pool units; tune to taste. See Docs.</EM.RjwBreastCapacityCoefficientDescLong>
     <EM.RjwLactatingSeverityBonus>Lactating Severity bonus: {0}</EM.RjwLactatingSeverityBonus>
     <EM.RjwLactatingSeverityBonusDesc>Added to base RJW breast Severity while lactating (pool 0–1). Default 0.15.</EM.RjwLactatingSeverityBonusDesc>
     <EM.RjwLactatingStretchSeverityBonus>Stretch Severity bonus: {0}</EM.RjwLactatingStretchSeverityBonus>
@@ -287,6 +299,7 @@
     <EM.PoolRightEfficiencyHeader>Right milk flow: {0}({1}%)/day</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>({0})</EM.PoolEfficiencyFactorsBracket>
     <EM.PoolBreastSectionHeader>[{0}]</EM.PoolBreastSectionHeader>
+    <EM.PoolBreastUnifiedLayoutLine>Layout: one pool per breast hediff (no L/R split)</EM.PoolBreastUnifiedLayoutLine>
     <EM.PoolSectionStorage>Storage</EM.PoolSectionStorage>
     <EM.PoolSectionFlow>Flow</EM.PoolSectionFlow>
     <EM.PoolSectionProduct>Product</EM.PoolSectionProduct>

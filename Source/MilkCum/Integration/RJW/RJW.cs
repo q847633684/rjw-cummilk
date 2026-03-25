@@ -122,19 +122,21 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
         var list = pawn.GetBreastListOrEmpty();
         if (list.Count == 0) return;
         var entries = pawn.GetBreastPoolEntries();
-        if (entries == null || entries.Count < 2 * list.Count) return;
+        if (entries == null || entries.Count == 0) return;
         var toAdd = new List<(string key, float addAmount, float cap)>();
         for (int i = 0; i < list.Count; i++)
         {
             var h = list[i];
             if (h?.def is not HediffDef_SexPart def || !def.produceFluidOnOrgasm) continue;
-            int idxL = 2 * i;
-            int idxR = 2 * i + 1;
-            if (idxR >= entries.Count) break;
-            float density = PawnMilkPoolExtensions.GetBreastDensity(h.def);
-            float amount = PoolUnitsPerOrgasmPerBreastSide * density;
-            toAdd.Add((entries[idxL].Key, amount, entries[idxL].Capacity));
-            toAdd.Add((entries[idxR].Key, amount, entries[idxR].Capacity));
+            string pk = RjwBreastPoolEconomy.BuildPoolKey(h, i);
+            if (string.IsNullOrEmpty(pk)) continue;
+            string keyL = pk + "_L", keyR = pk + "_R";
+            float amount = PoolUnitsPerOrgasmPerBreastSide;
+            var eL = entries.FirstOrDefault(e => e.Key == keyL);
+            var eR = entries.FirstOrDefault(e => e.Key == keyR);
+            if (string.IsNullOrEmpty(eL.Key) || string.IsNullOrEmpty(eR.Key)) continue;
+            toAdd.Add((eL.Key, amount, eL.Capacity));
+            toAdd.Add((eR.Key, amount, eR.Capacity));
         }
         if (toAdd.Count > 0)
             comp.AddMilkToKeys(toAdd);

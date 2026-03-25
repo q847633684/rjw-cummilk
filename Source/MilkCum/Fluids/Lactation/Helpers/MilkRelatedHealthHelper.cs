@@ -3,6 +3,7 @@ using MilkCum.Core;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Comps;
+using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -46,47 +47,74 @@ public static class MilkRelatedHealthHelper
         }
     }
 
-    /// <summary>满池时添加乳房胀满（EM_BreastsEngorged）；低于 90% maxFullness 时移除。</summary>
-    public static void UpdateBreastsEngorged(Pawn pawn, float fullness, float maxFullness)
+    /// <summary>任一侧虚拟乳（poolKey_L/R）满度 ≥ 基础容量×满阈时添加胀满；当每一侧都 &lt; 0.9×该侧基础容量时移除。</summary>
+    public static void UpdateBreastsEngorged(Pawn pawn, CompEquallyMilkable comp)
     {
         if (MilkCumDefOf.EM_BreastsEngorged == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
+        if (comp == null) return;
+        var entries = PoolEntriesForHealth(comp, pawn);
+        if (entries.Count == 0) return;
+        float th = PoolModelConstants.FullnessThresholdFactor;
+        bool anyAtEngorgedLevel = false;
+        bool allSidesUnderRelief = true;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            float cur = comp.GetFullnessForKey(e.Key);
+            if (cur >= e.Capacity * th)
+                anyAtEngorgedLevel = true;
+            if (cur >= 0.9f * e.Capacity)
+                allSidesUnderRelief = false;
+        }
         var engorged = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastsEngorged);
-        float fullThreshold = PoolModelConstants.FullnessThresholdFactor * maxFullness;
-        float lowThreshold = 0.9f * maxFullness;
-        if (fullness >= fullThreshold && engorged == null)
+        if (anyAtEngorgedLevel && engorged == null)
             pawn.health.AddHediff(MilkCumDefOf.EM_BreastsEngorged, pawn.GetBreastOrChestPart());
-        else if (fullness < lowThreshold && engorged != null)
+        else if (allSidesUnderRelief && engorged != null)
             pawn.health.RemoveHediff(engorged);
     }
 
-    /// <summary>奶水瘀积：久满/胀满+时间/炎症 I 达带宽时添加；乳腺炎或化脓出现时清除；排空后缓解。</summary>
-    public static void UpdateLactationalMilkStasis(Pawn pawn, float fullness, float stretchCapacityTotal, int ticksFullPool)
+    /// <summary>奶水瘀积：各侧满池 tick 取最大参与久满判定；缓解要求每一侧相对撑大容量比例均 &lt; 0.56。</summary>
+    public static void UpdateLactationalMilkStasis(Pawn pawn, CompEquallyMilkable comp)
     {
         if (MilkCumDefOf.EM_LactationalMilkStasis == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
         if (!MilkCumSettings.allowMastitis) return;
+        if (comp == null) return;
         if (pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis) != null
             || (MilkCumDefOf.EM_BreastAbscess != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess) != null))
         {
             RemoveLactationalMilkStasis(pawn);
             return;
         }
-        float stretch = Mathf.Max(0.001f, stretchCapacityTotal);
-        float poolRatio = fullness / stretch;
+        var entries = PoolEntriesForHealth(comp, pawn);
+        if (entries.Count == 0) return;
+        int maxTicks = 0;
+        bool allSidesPoolLow = true;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            int t = comp.GetTicksFullPoolForKey(e.Key);
+            if (t > maxTicks) maxTicks = t;
+            float stretch = Mathf.Max(0.001f, e.Capacity * PoolModelConstants.StretchCapFactor);
+            float cur = comp.GetFullnessForKey(e.Key);
+            if (cur / stretch >= 0.56f)
+                allSidesPoolLow = false;
+        }
         float iMax = pawn.LactatingHediffComp()?.CurrentInflammation ?? 0f;
         float crit = Mathf.Max(0.01f, MilkCumSettings.inflammationCrit);
         bool inflamBand = MilkCumSettings.enableInflammationModel && iMax >= crit * 0.38f;
         bool engorged = MilkCumDefOf.EM_BreastsEngorged != null
                         && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastsEngorged) != null;
-        bool longStasisWindow = ticksFullPool >= 16000;
-        bool engorgedAndBuilding = engorged && ticksFullPool >= 7000;
+        bool longStasisWindow = maxTicks >= 16000;
+        bool engorgedAndBuilding = engorged && maxTicks >= 7000;
         var stasis = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactationalMilkStasis);
         if (stasis == null && (longStasisWindow || engorgedAndBuilding || inflamBand))
             pawn.health.AddHediff(MilkCumDefOf.EM_LactationalMilkStasis, pawn.GetBreastOrChestPart());
         else if (stasis != null)
         {
-            bool lowPool = poolRatio < 0.56f;
             bool lowI = !MilkCumSettings.enableInflammationModel || iMax < crit * 0.28f;
-            if (lowPool && lowI)
+            if (allSidesPoolLow && lowI)
                 pawn.health.RemoveHediff(stasis);
         }
     }
@@ -110,29 +138,56 @@ public static class MilkRelatedHealthHelper
         lactatingComp.TryTriggerMastitisFromInflammation();
     }
 
-    /// <summary>MTB 触发或加重乳腺炎；已有乳房化脓时不触发。</summary>
-    public static void TryTriggerMastitisFromMtb(Pawn pawn, float fullness, int ticksFullPool)
+    /// <summary>MTB 乳腺炎：任一侧「满池计数 ≥1 天」单独过 MTB；卫生/伤仍全局一次，避免多侧重复乘概率。</summary>
+    public static void TryTriggerMastitisFromMtb(Pawn pawn, CompEquallyMilkable comp)
     {
         if (MilkCumDefOf.EM_Mastitis == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
         if (!MilkCumSettings.allowMastitis) return;
+        if (comp == null) return;
         if (MilkCumDefOf.EM_BreastAbscess != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess) != null) return;
-        bool longFull = ticksFullPool >= (int)PoolModelConstants.TicksPerGameDay;
         float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(pawn);
         bool badHygiene = hygieneRisk >= 0.4f;
         bool torsoInjury = HasTorsoOrBreastInjury(pawn);
-        if (!longFull && !badHygiene && !torsoInjury) return;
+        var entries = PoolEntriesForHealth(comp, pawn);
+        if (entries.Count == 0) return;
+        int dayTicks = (int)PoolModelConstants.TicksPerGameDay;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            if (comp.GetTicksFullPoolForKey(e.Key) < dayTicks) continue;
+            float mtbDays = ComputeMastitisMtbDays(true, hygieneRisk, badHygiene, torsoInjury, pawn);
+            if (!Rand.MTBEventOccurs(mtbDays, PoolModelConstants.TicksPerGameDay, 2000f)) continue;
+            ApplyMastitisFromMtb(pawn);
+            return;
+        }
+        if (!badHygiene && !torsoInjury) return;
+        float mtbDaysGlobal = ComputeMastitisMtbDays(false, hygieneRisk, badHygiene, torsoInjury, pawn);
+        if (!Rand.MTBEventOccurs(mtbDaysGlobal, PoolModelConstants.TicksPerGameDay, 2000f)) return;
+        ApplyMastitisFromMtb(pawn);
+    }
+
+    private static float ComputeMastitisMtbDays(bool fullnessRisk, float hygieneRisk, bool badHygiene, bool torsoInjury, Pawn pawn)
+    {
         float mtbDays = MilkCumSettings.mastitisBaseMtbDays;
         if (mtbDays < 0.1f) mtbDays = 0.1f;
-        if (longFull) mtbDays /= Mathf.Max(0.1f, MilkCumSettings.overFullnessRiskMultiplier);
-        if (badHygiene) mtbDays /= Mathf.Max(0.1f, (0.5f + hygieneRisk) * MilkCumSettings.hygieneRiskMultiplier);
-        if (torsoInjury) mtbDays /= 1.3f;
-        if (badHygiene && (longFull || torsoInjury))
+        if (fullnessRisk)
+            mtbDays /= Mathf.Max(0.1f, MilkCumSettings.overFullnessRiskMultiplier);
+        if (badHygiene)
+            mtbDays /= Mathf.Max(0.1f, (0.5f + hygieneRisk) * MilkCumSettings.hygieneRiskMultiplier);
+        if (torsoInjury)
+            mtbDays /= 1.3f;
+        if (badHygiene && (fullnessRisk || torsoInjury))
             mtbDays /= Mathf.Max(0.1f, MilkCumSettings.mastitisInfectionRiskFactor);
         float nutritionFactor = 0.5f + 0.5f * Mathf.Clamp(PawnUtility.BodyResourceGrowthSpeed(pawn), 0f, 1f);
         mtbDays *= Mathf.Max(0.3f, nutritionFactor);
         float raceMultiplier = pawn.RaceProps.Humanlike ? MilkCumSettings.mastitisMtbDaysMultiplierHumanlike : MilkCumSettings.mastitisMtbDaysMultiplierAnimal;
         mtbDays *= Mathf.Max(0.01f, raceMultiplier);
-        if (!Rand.MTBEventOccurs(mtbDays, PoolModelConstants.TicksPerGameDay, 2000f)) return;
+        return mtbDays;
+    }
+
+    private static void ApplyMastitisFromMtb(Pawn pawn)
+    {
         RemoveLactationalMilkStasis(pawn);
         var existing = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
         if (existing != null)
@@ -144,20 +199,30 @@ public static class MilkRelatedHealthHelper
             pawn.health.AddHediff(MilkCumDefOf.EM_Mastitis, pawn.GetBreastOrChestPart());
     }
 
-    /// <summary>重度乳腺炎在卫生差且（久满或伤）时 MTB 可进展为乳房化脓（移除乳腺炎，换化脓条）。</summary>
-    public static void TryTriggerBreastAbscessFromMtb(Pawn pawn, float fullness, int ticksFullPool)
+    /// <summary>重度乳腺炎在卫生差且（任一侧久满或伤）时 MTB 可进展为乳房化脓。</summary>
+    public static void TryTriggerBreastAbscessFromMtb(Pawn pawn, CompEquallyMilkable comp)
     {
-        _ = fullness;
         if (MilkCumDefOf.EM_BreastAbscess == null || MilkCumDefOf.EM_Mastitis == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
         if (!MilkCumSettings.allowMastitis) return;
+        if (comp == null) return;
         if (pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess) != null) return;
         var mastitis = pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_Mastitis);
         if (mastitis == null || mastitis.Severity < 0.66f) return;
-        bool longFull = ticksFullPool >= (int)PoolModelConstants.TicksPerGameDay;
+        int dayTicks = (int)PoolModelConstants.TicksPerGameDay;
+        bool anySideLongFull = false;
+        foreach (var e in PoolEntriesForHealth(comp, pawn))
+        {
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            if (comp.GetTicksFullPoolForKey(e.Key) >= dayTicks)
+            {
+                anySideLongFull = true;
+                break;
+            }
+        }
         float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(pawn);
         bool badHygiene = hygieneRisk >= 0.4f;
         bool torsoInjury = HasTorsoOrBreastInjury(pawn);
-        if (!badHygiene || (!longFull && !torsoInjury)) return;
+        if (!badHygiene || (!anySideLongFull && !torsoInjury)) return;
         float mtbDays = 11f;
         mtbDays /= Mathf.Max(0.1f, MilkCumSettings.mastitisInfectionRiskFactor);
         if (!Rand.MTBEventOccurs(mtbDays, PoolModelConstants.TicksPerGameDay, 2000f)) return;
@@ -203,6 +268,12 @@ public static class MilkRelatedHealthHelper
             BumpDown(pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess), 0.04f);
         if (MilkCumDefOf.EM_LactationalMilkStasis != null)
             BumpDown(pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactationalMilkStasis), 0.025f);
+    }
+
+    private static List<FluidPoolEntry> PoolEntriesForHealth(CompEquallyMilkable comp, Pawn pawn)
+    {
+        if (comp == null || pawn == null) return new List<FluidPoolEntry>();
+        return comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
     }
 
     /// <summary>是否有躯干/乳房损伤（乳腺炎 MTB 风险）</summary>

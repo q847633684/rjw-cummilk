@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Fluids.Shared.Data;
@@ -26,6 +27,47 @@ public partial class CompEquallyMilkable
     /// <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
     private const bool PreferLeftWhenEqual = true;
 
+    /// <summary>该侧「达基础满阈」连续累计的 tick（与 UpdateMilkPools 同步）。</summary>
+    internal int GetTicksFullPoolForKey(string key) =>
+        ticksFullPoolByKey != null && ticksFullPoolByKey.TryGetValue(key, out int t) ? t : 0;
+
+    /// <summary>所有虚拟乳侧满池计数的最大值（满池信件、化脓 MTB 等）。</summary>
+    internal int GetMaxTicksFullPoolAcrossSides()
+    {
+        if (ticksFullPoolByKey == null || ticksFullPoolByKey.Count == 0) return 0;
+        int m = 0;
+        foreach (int v in ticksFullPoolByKey.Values)
+            if (v > m) m = v;
+        return m;
+    }
+
+    /// <summary>每 60tick 进水结束后：按各侧是否 ≥ 基础容量×满阈 更新/衰减计数并剔除无效 key。</summary>
+    internal void UpdateTicksFullPoolForEntries(List<FluidPoolEntry> entries)
+    {
+        if (entries == null) return;
+        ticksFullPoolByKey ??= new Dictionary<string, int>();
+        var valid = new HashSet<string>();
+        float th = PoolModelConstants.FullnessThresholdFactor;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            valid.Add(e.Key);
+            float cur = GetFullnessForKey(e.Key);
+            bool sideFull = cur >= e.Capacity * th;
+            int t = GetTicksFullPoolForKey(e.Key);
+            if (sideFull) t += 60;
+            else t = Mathf.Max(0, t - 120);
+            ticksFullPoolByKey[e.Key] = t;
+        }
+        if (ticksFullPoolByKey.Count == 0) return;
+        var toRemove = new List<string>();
+        foreach (var k in ticksFullPoolByKey.Keys)
+            if (!valid.Contains(k)) toRemove.Add(k);
+        for (int i = 0; i < toRemove.Count; i++)
+            ticksFullPoolByKey.Remove(toRemove[i]);
+    }
+
     /// <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
     public float GetFullnessForKey(string key)
     {
@@ -42,8 +84,10 @@ public partial class CompEquallyMilkable
         for (int i = 0; i < entries.Count; i++)
         {
             var e = entries[i];
-            if (e.IsLeft != left || string.IsNullOrEmpty(e.Key)) continue;
-            if (breastFullness.TryGetValue(e.Key, out float v)) sum += v;
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            if (!breastFullness.TryGetValue(e.Key, out float v)) continue;
+            if (e.IsLeft == left)
+                sum += v;
         }
         return sum;
     }
@@ -195,6 +239,7 @@ public partial class CompEquallyMilkable
     public void ClearPools()
     {
         breastFullness?.Clear();
+        ticksFullPoolByKey?.Clear();
         cachedEntries = null;
         cachedPairGroups = null;
         cachedEntriesDirty = true;

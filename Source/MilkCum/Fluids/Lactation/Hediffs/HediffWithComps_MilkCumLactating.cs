@@ -190,7 +190,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private Dictionary<string, float> letdownReflexByKey;
     /// <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
     private Dictionary<string, float> inflammationByKey;
-    private float inflammationLegacyMigratePending;
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置</summary>
     private float milkingLStimulusAccumulatedThisDay;
     private int lastMilkingLStimulusDayTick = -1;
@@ -279,15 +278,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         base.CompExposeData();
         Scribe_Values.Look(ref lactationAmountFromDrug, "EM.PoolLactationFromDrug", 0f);
         Scribe_Values.Look(ref lactationAmountFromBirth, "EM.PoolLactationFromBirth", 0f);
-        float legacyTotal = 0f;
-        if (Scribe.mode == LoadSaveMode.Saving)
-            legacyTotal = lactationAmountFromDrug + lactationAmountFromBirth;
-        Scribe_Values.Look(ref legacyTotal, "PoolCurrentLactationAmount", 0f);
-        if (Scribe.mode == LoadSaveMode.LoadingVars && lactationAmountFromDrug <= 0f && lactationAmountFromBirth <= 0f && legacyTotal > 0f)
-        {
-            lactationAmountFromDrug = legacyTotal;
-            lactationAmountFromBirth = 0f;
-        }
         List<string> letdownKeys = null;
         List<float> letdownVals = null;
         if (Scribe.mode == LoadSaveMode.Saving && letdownReflexByKey != null && letdownReflexByKey.Count > 0)
@@ -305,12 +295,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 if (!string.IsNullOrEmpty(letdownKeys[i]))
                     letdownReflexByKey[letdownKeys[i]] = Mathf.Clamp01(letdownVals[i]);
         }
-        float inflammationFileLegacy = 0f;
-        if (Scribe.mode == LoadSaveMode.Saving)
-            inflammationFileLegacy = GetInflammationMax();
-        Scribe_Values.Look(ref inflammationFileLegacy, "EM.Inflammation", 0f);
-        if (Scribe.mode == LoadSaveMode.LoadingVars)
-            inflammationLegacyMigratePending = inflammationFileLegacy;
         List<string> inflammationKeys = null;
         List<float> inflammationVals = null;
         if (Scribe.mode == LoadSaveMode.Saving && inflammationByKey != null && inflammationByKey.Count > 0)
@@ -320,14 +304,13 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         }
         Scribe_Collections.Look(ref inflammationKeys, "EM.InflammationByKeyKeys", LookMode.Value);
         Scribe_Collections.Look(ref inflammationVals, "EM.InflammationByKeyVals", LookMode.Value);
-        if (Scribe.mode == LoadSaveMode.LoadingVars && inflammationKeys != null && inflammationVals != null && inflammationKeys.Count == inflammationVals.Count && inflammationKeys.Count > 0)
+        if (Scribe.mode == LoadSaveMode.LoadingVars && inflammationKeys != null && inflammationVals != null && inflammationKeys.Count == inflammationVals.Count)
         {
             inflammationByKey ??= new Dictionary<string, float>();
             inflammationByKey.Clear();
             for (int i = 0; i < inflammationKeys.Count; i++)
                 if (!string.IsNullOrEmpty(inflammationKeys[i]))
                     inflammationByKey[inflammationKeys[i]] = Mathf.Max(0f, inflammationVals[i]);
-            inflammationLegacyMigratePending = 0f;
         }
         Scribe_Values.Look(ref milkingLStimulusAccumulatedThisDay, "EM.MilkingLStimulusAccumulatedThisDay", 0f);
         Scribe_Values.Look(ref lastMilkingLStimulusDayTick, "EM.LastMilkingLStimulusDayTick", -1);
@@ -335,17 +318,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         Scribe_Values.Look(ref lactationTicksAccumulated, "EM.LactationTicksAccumulated", 0);
         Scribe_Values.Look(ref permanentBreastGainMilestonesDone, "EM.PermanentBreastGainMilestonesDone", 0);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
-        {
-            // 原版逻辑下 L 与 Severity 同步，读档后若 L≤0 且 Severity>0 则从 Severity 恢复 L
-            if (currentLactationAmount <= 0f && Parent.Severity > 0f)
-            {
-                lactationAmountFromDrug = Parent.Severity;
-                lactationAmountFromBirth = 0f;
-            }
             effectiveToleranceE = Mathf.Clamp01(effectiveToleranceE);
-            if (effectiveToleranceE <= 0f && Pawn != null && MilkCumSettings.GetProlactinTolerance(Pawn) > 0f)
-                effectiveToleranceE = Mathf.Clamp01(MilkCumSettings.GetProlactinTolerance(Pawn));
-        }
     }
 
     /// <summary>耐受动态：dE/dt = μ·L �?ν·E。Δt 单位：游戏日</summary>
@@ -391,24 +364,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         inflammationByKey[key] = value;
     }
 
-    private void TryConsumeLegacyInflammationMigrate(CompEquallyMilkable comp)
-    {
-        if (inflammationLegacyMigratePending <= 0f || comp == null) return;
-        var entries = GetPoolEntriesForInflammation(comp);
-        int n = 0;
-        for (int i = 0; i < entries.Count; i++)
-            if (!string.IsNullOrEmpty(entries[i].Key)) n++;
-        if (n <= 0) return;
-        float per = inflammationLegacyMigratePending / n;
-        inflammationLegacyMigratePending = 0f;
-        for (int i = 0; i < entries.Count; i++)
-        {
-            if (string.IsNullOrEmpty(entries[i].Key)) continue;
-            float cur = GetInflammationForKey(entries[i].Key);
-            SetInflammationForKeyInternal(entries[i].Key, Mathf.Max(cur, per));
-        }
-    }
-
     private void PruneInflammationToValidKeys(HashSet<string> validKeys)
     {
         if (inflammationByKey == null || inflammationByKey.Count == 0) return;
@@ -448,7 +403,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     public void UpdateInflammation(CompEquallyMilkable comp, float deltaTHours)
     {
         if (!MilkCumSettings.enableInflammationModel || deltaTHours <= 0f || comp == null) return;
-        TryConsumeLegacyInflammationMigrate(comp);
         var entries = GetPoolEntriesForInflammation(comp);
         var validKeys = new HashSet<string>();
         for (int i = 0; i < entries.Count; i++)
@@ -832,7 +786,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return milkComp?.GetTotalFlowPerDayCached() ?? 0f;
     }
 
-    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；因子仍按侧计算供 UI 显示。</summary>
+    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；RJW 乳房体积倍率在逐对 Tooltip 中由 GetFlowPerDayForBreastPair 的 mult 提供。</summary>
     internal FlowBreakdown GetFlowPerDayBreakdown()
     {
         var r = new FlowBreakdown();
@@ -844,9 +798,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         r.Hunger = hungerFactor;
         r.Conditions = Pawn.GetMilkFlowMultiplierFromConditions();
         r.Setting = MilkCumSettings.defaultFlowMultiplierForHumanlike;
-        float flowLeftMult = Pawn.GetMilkFlowMultiplierFromRJW_Left();
-        float flowRightMult = Pawn.GetMilkFlowMultiplierFromRJW_Right();
-        r.RjwSum = flowLeftMult + flowRightMult;
         if (!milkComp.IsCachedFlowValid())
         {
             r.TotalFlow = 0f;
@@ -867,7 +818,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         public float Hunger;
         public float Conditions;
         public float Setting;
-        public float RjwSum;
         public float Pressure;
         public float Letdown;
     }

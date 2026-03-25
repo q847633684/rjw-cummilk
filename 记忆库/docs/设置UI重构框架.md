@@ -1,6 +1,6 @@
 # Equal Milking 设置 UI 重构框架
 
-**当前实现**：已采用方案 B（4 个主 Tab：精液 / 母乳 / 基因与种族 / 权限与默认），完整结构见 [design/模组设置窗口完整UI结构](../design/模组设置窗口完整UI结构.md)。下文「三、四」为框架目标/可选方案，与现实现状并存供参考。
+**当前实现**：已采用方案 B（4 个主 Tab：精液 / 母乳 / 基因与种族 / 权限与默认）。UI 现状与问题结论以 [design/UI审阅结论](../design/UI审阅结论.md) 为准。下文「三、四」为框架目标/可选方案，与现实现状并存供参考。
 
 ## 一、现状问题
 
@@ -170,7 +170,7 @@
 
 ## 七、文件与引用关系（重构后）
 
-- **MilkCumSettings.cs**（当前 Equal Milking 设置类）：DoWindowContents 绘制主 Tab 栏、子 Tab 栏，contentRect 根据 mainTabIndex + subTabIndex 调用对应 Widget。见 [模组设置窗口完整UI结构](../design/模组设置窗口完整UI结构.md)。
+- **MilkCumSettings.cs**（当前 Equal Milking 设置类）：DoWindowContents 绘制主 Tab 栏、子 Tab 栏，contentRect 根据 mainTabIndex + subTabIndex 调用对应 Widget。现状可对照 [design/UI审阅结论](../design/UI审阅结论.md)。
 - **Widget_***.cs**：每个（主 Tab, 子 Tab）组合对应一个 Widget 或同一 Widget 内分支；方案 B 下母乳 4–9 由 Widget_AdvancedSettings.DrawSection 分支。
 - **Languages/**：Keyed 中 EM.Section.*、EM.Tab.*、各选项的 Desc；DefInjected 若有设置相关注入可保持。
 
@@ -182,7 +182,7 @@
 
 | 步骤 | 内容 |
 |------|------|
-| **Phase 2** | 将 Widget_AdvancedSettings 按区块拆成 Widget_HealthSettings、Widget_EfficiencySettings、Widget_IntegrationSettings 等，减轻单文件负担（见 [模组设置UI系统整理与优化方案](../design/模组设置UI系统整理与优化方案.md) 方案 C）。 |
+| **Phase 2** | 将 Widget_AdvancedSettings 按区块拆成 Widget_HealthSettings、Widget_EfficiencySettings、Widget_IntegrationSettings 等，减轻单文件负担。 |
 | **Phase 3** | 补全缺失 Tooltip：例如「耐受与溢出」页的 `EM.OverflowFilthDefName` 仅有标签无 TipRegion，可增 `EM.OverflowFilthDefNameDesc`；其余项多数已有 *Desc，可逐项对照 UI 检查。 |
 | **Phase 4** | 整理 Languages：中英 Keyed 键一致、无空描述；DefInjected 若有设置相关注入可一并检查。 |
-| **文档同步** | 若再调整主/子 Tab 结构，需同步更新 [模组设置窗口完整UI结构](../design/模组设置窗口完整UI结构.md)、本框架第四节与第七节。 |
+| **文档同步** | 若再调整主/子 Tab 结构，需同步更新本框架与 `design/UI审阅结论.md`。 |

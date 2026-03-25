@@ -126,7 +126,7 @@
 
 ### 3.3 与 rjw-genes
 
-- 流速倍率通过 `GetMilkFlowMultipliersFromRJW` 等与基因（如 rjw_genes_big_breasts）兼容；基因倍率在 `ExtensionHelper` 中集中读取，无重复逻辑。
+- 流速倍率经 `RjwBreastPoolEconomy` / `GetBreastPoolEntries` / `GetFlowPerDayForBreastPair` 与基因（如 rjw_genes_big_breasts）一致；基因倍率在 `ExtensionHelper` 中集中读取，无重复逻辑。
 
 ### 3.4 补丁顺序与优先级
 

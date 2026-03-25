@@ -13,6 +13,7 @@
 | 参数联动表 | [docs/参数联动表](docs/参数联动表.md) | 设置参数—影响逻辑—建议联动 |
 | 游戏已接管变量与机制清单 | [docs/游戏已接管变量与机制清单](docs/游戏已接管变量与机制清单.md) | 原版/RJW 已接管项，本 mod 只读不重写 |
 | 药品Def变量参考 | [docs/药品Def变量参考](docs/药品Def变量参考.md) | 药品 ThingDef/ingestible 与本 mod 三种药品 |
+| RJW 乳房定义参数与使用说明 | [docs/RJW乳房定义与rjw-cummilk使用说明](docs/RJW乳房定义与rjw-cummilk使用说明.md) | RJW 乳房 Def/API 参数与本 mod 的读写边界、代码映射 |
 | 耐受系统重构设计 | [docs/耐受系统重构设计](docs/耐受系统重构设计.md) | E_tol、进水/衰减公式、落地修改清单 |
 | 与游戏本体及RJW的冲突与优化总结 | [docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) | 冲突与优化 |
 | 与游戏机制对齐清单（泌乳与药品） | [docs/与游戏机制对齐清单-泌乳与药品](docs/与游戏机制对齐清单-泌乳与药品.md) | 已用/未用原版机制对照（SeverityPerDay、剩余时间、药品配置），对齐 RJW Humpshroom 建议 |
@@ -56,9 +57,6 @@
 | 排乳反馈与原有系统不兼容说明 | [design/排乳反馈与原有系统不兼容说明](design/排乳反馈与原有系统不兼容说明.md) | #排乳反馈 #兼容 #原有系统 #L衰减 |
 | 乳汁系统内子系统划分与目录建议 | [design/乳汁系统内子系统划分与目录建议](design/乳汁系统内子系统划分与目录建议.md) | #乳汁 #泌乳 #池系统 #挤奶吸奶 #目录 |
 | 系统结构总览 | [design/系统结构总览](design/系统结构总览.md) | #系统结构 #母乳 #精液 #妹汁 #UI #建筑物品 |
-| 模组设置UI系统整理与优化方案 | [design/模组设置UI系统整理与优化方案](design/模组设置UI系统整理与优化方案.md) | #UI #模组设置 #Tab #基因种族 #精液母乳妹汁 |
-| 模组设置窗口完整UI结构 | [design/模组设置窗口完整UI结构](design/模组设置窗口完整UI结构.md) | #UI #模组设置 #完整结构 #模拟显示 |
-| 模组设置UI专业级重构方案 | [design/模组设置UI专业级重构方案](design/模组设置UI专业级重构方案.md) | #UI #模组设置 #专业级 #7主Tab #按系统类型分层 |
 | 列表滚动与固定 contentHeight | [design/列表滚动与固定contentHeight](design/列表滚动与固定contentHeight.md) | #UI #滚动 #BeginScrollView #contentHeight |
 | 代码审阅：泌乳系统核心逻辑 | [design/代码审阅-泌乳系统核心逻辑](design/代码审阅-泌乳系统核心逻辑.md) | #审阅 #泌乳 #双池 #UpdateMilkPools #CompEquallyMilkable |
 | 代码审阅：药物系统实现确认 | [design/代码审阅-药物系统实现确认](design/代码审阅-药物系统实现确认.md) | #审阅 #药物 #吸收延迟 #耐受公式 #WorldComponent_MilkCumAbsorptionDelay |

@@ -20,6 +20,7 @@
 |------|------|
 | [参数联动表.md](参数联动表.md) | 设置参数—影响逻辑—建议联动、默认值参考。 |
 | [药品Def变量参考.md](药品Def变量参考.md) | 药品 ThingDef、ingestible/outcomeDoers/comps 变量与本 mod 三种药品汇总。 |
+| [RJW乳房定义与rjw-cummilk使用说明.md](RJW乳房定义与rjw-cummilk使用说明.md) | RJW 乳房 Def/API 与本 mod 使用映射，包含读写边界与关键代码入口。 |
 | [游戏已接管变量与机制清单.md](游戏已接管变量与机制清单.md) | 原版/RJW 已接管的变量与机制，本 mod 只读不重写。 |
 | [HarmonyPatch主题清单.md](HarmonyPatch主题清单.md) | 主 mod / RJW / VME / Pipe 的 Patch 按主题分类与注册顺序。 |
 | [Integrations索引.md](Integrations索引.md) | RJW、PipeSystem、VME、Dubs 路径/命名空间/Harmony ID 收口。 |
@@ -36,7 +37,6 @@
 | 文档 | 说明 |
 |------|------|
 | [设置UI重构框架.md](设置UI重构框架.md) | 模组设置 UI 重构的整体框架与分层。 |
-| [设置UI模拟显示.md](设置UI模拟显示.md) | 设置界面模拟显示与布局说明。 |
 | [UI文案前后对照.md](UI文案前后对照.md) | 术语统一、健康页悬停、硬编码冒号、改文建议与实施顺序。 |
 
 ### 建议、待办与代码结构

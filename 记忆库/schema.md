@@ -68,7 +68,7 @@
 - **type**: design | convention | domain | decision
 - **date**: YYYY-MM-DD 或版本
 - **tags**: #标签1 #标签2
-- **related_docs**: [记忆库/docs/xxx](docs/xxx#锚点)
+- **related_docs**: `记忆库/docs/xxx.md#锚点`
 
 （正文：context / conclusion / definition / decision 等）
 
@@ -89,7 +89,7 @@
 
 ## 五、废弃与替代约定
 
-- 某条决策或设计被推翻时，**在原文顶部**注明：`**已废弃**，由 [新条目标题](相对路径) 替代。`
+- 某条决策或设计被推翻时，**在原文顶部**注明：`**已废弃**，由新条目标题（相对路径）替代。`
 - 在 [index.md](index.md) 中该行链接后标注「(已废弃)」，便于检索时区分。
 - 不删除旧条目，保留以便追溯「为何不再采用」。
 

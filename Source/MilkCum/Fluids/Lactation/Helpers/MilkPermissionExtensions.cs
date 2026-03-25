@@ -213,7 +213,7 @@ public static class MilkPermissionExtensions
         return comp.allowedMilkers.Contains(doer);
     }
 
-    /// <summary>兼容旧 API：返回吸奶或挤奶任一允许。</summary>
+    /// <summary>返回吸奶或挤奶任一允许（聚合判断）。</summary>
     public static bool IsAllowedSuckler(Pawn producer, Pawn doer) => IsAllowedBreastfeed(producer, doer) || IsAllowedMilking(producer, doer);
 
     /// <summary>指定谁可以使用产出的奶/精液制品：无 producer 允许；自己始终允许；否则看产主 allowedConsumers，空=仅产主本人。优先走 CanConsumeMilkProductHandlers 开放接口。</summary>

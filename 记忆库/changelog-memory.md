@@ -20,6 +20,32 @@
   - 确认耐受公式 `E_tol(t) = [max(1−t, 0.05)]^exponent` 准确实现
   - 确认双池系统、定时器系统等核心逻辑与设计一致
 
+## 2026-03-24
+
+- **清理**：修复记忆库中的无效/过时链接与占位链接，消除整理时的“假链接噪音”。
+  - `design/泌乳刷新策略与性能.md`：`decisions/ADR-001...` 改为正确相对路径 `../decisions/...`
+  - `design/激素模型-催乳素与排乳反馈.md`：`docs/...` 改为 `../docs/...`
+  - `domain/mod定位-流体系统三大系统.md`：`design/...` 改为 `../design/...`
+  - `domain/快速参考.md`：旧 `../../Docs/...` 迁移路径改为 `../docs/...`
+- **整理**：将模板中的占位超链接改为纯文本/代码样式，避免出现不可点击的伪链接：
+  - `README.md`、`建议与改进.md`：占位链接写法改为「新条目（相对路径）」
+  - `schema.md`：模板示例改为代码样式 `记忆库/docs/xxx.md#锚点`，不再使用占位超链接
+- **补全索引**：将 `docs/RJW乳房定义与rjw-cummilk使用说明.md` 收录到 `index.md` 与 `docs/README.md`。
+- **一致性修正**：`docs/RJW乳房定义与rjw-cummilk使用说明.md` 修正文内前后矛盾（补充 `TryGetBreastSize(...).weight` 的实际使用场景），并增加「最后与代码核对」。
+- **激进清理（UI 历史方案收口）**：删除重复且与当前实现冲突的旧 UI 方案文档，保留单一入口与审阅结论。
+  - 删除：`design/模组设置UI系统整理与优化方案.md`
+  - 删除：`design/模组设置窗口完整UI结构.md`
+  - 删除：`design/模组设置UI专业级重构方案.md`
+  - 删除：`docs/设置UI模拟显示.md`
+  - 同步：`index.md`、`docs/README.md`、`docs/设置UI重构框架.md` 移除/替换上述引用，统一改为以 `design/UI审阅结论.md` + `docs/设置UI重构框架.md` 为入口。
+
+## 2026-03-24
+
+- **修正**：`docs/RJW乳房定义与rjw-cummilk使用说明.md` 中关于 `PartSizeCalculator` 的描述与现代码不一致，已改为：
+  - `TryGetBreastSize` 在容量模式为「重量/取大」时用于读取 `weight`
+  - `TryGetCupSize` 等其余接口未使用
+- **整理**：将该文档补充进 `docs/README.md` 与 `index.md` 的 docs 索引，避免“存在但不可检索”的无效记忆。
+
 ## 2026-03
 
 - **整理**：记忆库索引与 docs 入口统一整理。① **docs/README.md**：补全 docs 下全部文档索引，按「泌乳系统 / 参数与清单 / 冲突与报错 / UI与文案 / 建议与待办 / 模拟与脚本」分类，并增加快速查找项（报错记录、Patch/集成）。② **index.md**：新增「记忆库根目录」节，收录 README、架构说明、建议与改进、changelog-memory 的链接与说明；docs 节「其它」说明补充「报错记录、Integrations」；按标签快速跳转增加 `#报错` → docs/报错修复记录。

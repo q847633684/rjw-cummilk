@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Hediffs;
@@ -75,8 +76,8 @@ public partial class CompEquallyMilkable : CompMilkable
     private float overflowAccumulator = 0f;
     /// <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定</summary>
     private int lastGatheredTick = -1;
-    /// <summary>规格：连续满池（Fullness ≥ 5% maxFullness）的 tick 数，用于乳腺炎堵塞触发</summary>
-    private int ticksFullPool;
+    /// <summary>各虚拟乳侧（poolKey_L/R）连续「达基础容量满阈」的累计 tick，用于瘀积/MTB/信件；与 breastFullness 同周期更新。</summary>
+    private Dictionary<string, int> ticksFullPoolByKey = new Dictionary<string, int>();
     /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏</summary>
     private int lastFullPoolLetterTick = -1;
     /// <summary>3.3 满池信件：上次发送时的游戏日，用于「每 Pawn 每日最多一封」限制</summary>
@@ -146,7 +147,15 @@ public partial class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref breastfedAmount, "BreastfedAmount", 0f);
         Scribe_Values.Look(ref overflowAccumulator, "PoolOverflowAccumulator", 0f);
         Scribe_Values.Look(ref lastGatheredTick, "PoolLastGatheredTick", -1);
-        Scribe_Values.Look(ref ticksFullPool, "PoolTicksFull", 0);
+        List<string> ticksFullKeys = null;
+        List<int> ticksFullVals = null;
+        if (Scribe.mode == LoadSaveMode.Saving && ticksFullPoolByKey != null && ticksFullPoolByKey.Count > 0)
+        {
+            ticksFullKeys = ticksFullPoolByKey.Keys.ToList();
+            ticksFullVals = ticksFullPoolByKey.Values.ToList();
+        }
+        Scribe_Collections.Look(ref ticksFullKeys, "EM.PoolTicksFullKeys", LookMode.Value);
+        Scribe_Collections.Look(ref ticksFullVals, "EM.PoolTicksFullVals", LookMode.Value);
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
         Scribe_Values.Look(ref lastFullPoolLetterDay, "EM.LastFullPoolLetterDay", -1);
         Scribe_Values.Look(ref capacityAdaptation, "EM.CapacityAdaptation", 0f);
@@ -155,25 +164,21 @@ public partial class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref overflowEventCount, "EM.OverflowEventCount", 0);
         Scribe_Collections.Look(ref breastFullness, "BreastFullness", LookMode.Value, LookMode.Value);
         if (Scribe.mode != LoadSaveMode.Saving)
-        {
             breastFullness ??= new Dictionary<string, float>();
-            List<string> breastKeys = null;
-            List<float> breastVals = null;
-            Scribe_Collections.Look(ref breastKeys, "BreastFullnessKeys", LookMode.Value);
-            Scribe_Collections.Look(ref breastVals, "BreastFullnessValues", LookMode.Value);
-            if (breastFullness.Count == 0 && breastKeys != null && breastVals != null && breastKeys.Count == breastVals.Count)
-            {
-                for (int i = 0; i < breastKeys.Count; i++)
-                    if (!string.IsNullOrEmpty(breastKeys[i]))
-                        breastFullness[breastKeys[i]] = breastVals[i];
-            }
-        }
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
         Scribe_Collections.Look(ref allowedBreastfeeders, "AllowedBreastfeeders", LookMode.Reference);
         Scribe_Collections.Look(ref allowedMilkers, "AllowedMilkers", LookMode.Reference);
         Scribe_Collections.Look(ref allowedConsumers, "AllowedConsumers", LookMode.Reference);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
+            ticksFullPoolByKey ??= new Dictionary<string, int>();
+            ticksFullPoolByKey.Clear();
+            if (ticksFullKeys != null && ticksFullVals != null && ticksFullKeys.Count == ticksFullVals.Count)
+            {
+                for (int i = 0; i < ticksFullKeys.Count; i++)
+                    if (!string.IsNullOrEmpty(ticksFullKeys[i]))
+                        ticksFullPoolByKey[ticksFullKeys[i]] = Mathf.Max(0, ticksFullVals[i]);
+            }
             EnsureAllowedLists();
             if (milkSettings == null && parent is Pawn pawn)
                 milkSettings = pawn.GetDefaultMilkSetting();
@@ -283,8 +288,9 @@ public partial class CompEquallyMilkable : CompMilkable
             EnsureEntriesCacheDirtyIfBreastCountChanged();
             MilkRelatedHealthHelper.EnsureLactatingHediffFromConditions(Pawn);
             ApplyDrugInducedLactationEffects();
-            MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, Fullness, maxFullness);
-            MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Pawn, Fullness, GetPoolStretchCapacityTotal(), ticksFullPool);
+            var milkComp120 = Pawn.CompEquallyMilkable();
+            MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, milkComp120);
+            MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Pawn, milkComp120);
         }
         if (!cachedActive) { return; }
         // LOD：当前地图每 60 tick；非当前地图 300 tick；未载入地图（商队等）600 tick，降低多档负担
@@ -299,8 +305,9 @@ public partial class CompEquallyMilkable : CompMilkable
         }
         if (parent.IsHashIntervalTick(2000))
         {
-            MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, Fullness, ticksFullPool);
-            MilkRelatedHealthHelper.TryTriggerBreastAbscessFromMtb(Pawn, Fullness, ticksFullPool);
+            var milkComp2k = Pawn.CompEquallyMilkable();
+            MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, milkComp2k);
+            MilkRelatedHealthHelper.TryTriggerBreastAbscessFromMtb(Pawn, milkComp2k);
         }
     }
 
