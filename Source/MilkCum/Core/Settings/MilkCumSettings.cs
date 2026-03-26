@@ -8,21 +8,15 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。</summary>
+/// <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。仅存三档：纯严重度 / 纯重量 / 纯体积。</summary>
 public enum RjwBreastPoolCapacityMode : byte
 {
     /// <summary>严重度×系数。</summary>
     Severity = 0,
-    /// <summary>RJW PartSize 估算乳房重量（kg）×系数；无重量数据时回退严重度。</summary>
+    /// <summary>RJW PartSize 估算乳房重量（kg）×系数；无有效重量数据时为 0（不进池）。</summary>
     RjwBreastWeight = 1,
-    /// <summary>取「严重度×系数」与「重量×系数」clamp 后的较大值。</summary>
-    MaxOfSeverityAndWeight = 2,
-    /// <summary>RJW <c>BreastSize.volume</c>（升）×系数；无体积数据时回退严重度。新安装默认，容积隐喻更贴储奶上限。</summary>
-    RjwBreastVolume = 3,
-    /// <summary>严重度×系数 与 体积×系数 取大。</summary>
-    MaxOfSeverityAndVolume = 4,
-    /// <summary>α×（严重度×系数）+ (1−α)×（体积×系数，无体积则用严重度项）；α 为设置项「混合模式严重度权重」。</summary>
-    BlendedSeverityAndVolume = 5,
+    /// <summary>RJW <c>BreastSize.volume</c>（升）×系数；无有效体积数据时为 0（不进池）。新安装默认。</summary>
+    RjwBreastVolume = 2,
 }
 
 /// <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
@@ -98,10 +92,8 @@ internal class MilkCumSettings : ModSettings
 	public static bool rjwBreastSizeEnabled = true;
 	/// <summary>RJW 胸围容量系数：单侧基容量 =（由 <see cref="rjwBreastPoolCapacityMode"/> 选定的严重度/体积/重量等基值）× 本系数，默认 2。</summary>
 	public static float rjwBreastCapacityCoefficient = 2f;
-	/// <summary>乳池单侧基容量来源：默认 <see cref="RjwBreastPoolCapacityMode.RjwBreastVolume"/>（RJW 估算体积，无则严重度）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
+	/// <summary>乳池单侧基容量来源：默认 <see cref="RjwBreastPoolCapacityMode.RjwBreastVolume"/>（体积/重量无有效 RJW 尺寸则为 0）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
 	public static RjwBreastPoolCapacityMode rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastVolume;
-	/// <summary>混合容量模式（<see cref="RjwBreastPoolCapacityMode.BlendedSeverityAndVolume"/>）中严重度项权重 α∈[0,1]；其余给体积项。</summary>
-	public static float rjwBreastCapacityBlendSeverityWeight = 0.5f;
 	/// <summary>RJW 乳房阶段标签含 “Nipple” 时，对进水/高潮产液流速倍率施加的百分比修正（0=关闭）；限制在约 ±15% 内。</summary>
 	public static float rjwNippleStageFlowBonusPercent = 0f;
 	/// <summary>泌乳期临时体型增益（0~1 段）：RJW Severity 增量，满 L 时生效；默认 0.15。</summary>
@@ -149,10 +141,6 @@ internal class MilkCumSettings : ModSettings
 	public static float mastitisMtbDaysMultiplierAnimal { get => Risk.mastitisMtbDaysMultiplierAnimal; set => Risk.mastitisMtbDaysMultiplierAnimal = value; }
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
-	// 基准泌乳持续天数（药物）：仅用于当 SeverityPerDay 时的 RemainingDays 与 GetDailyLactationDecay 显示；主流程已由 LactatingPatch 的 severityPerDay 决定，不再暴露到 UI。
-	public static float baselineMilkDurationDays = 5f;
-	// 分娩诱发泌乳持续天数：仅用于当 SeverityPerDay 时的 RemainingDays 与 GetDailyLactationDecay；主流程同上，不再暴露到 UI。
-	public static float birthInducedMilkDurationDays = 30f;
 	/// <summary>泌乳水平上限（L_cap）：&gt;0 时，吃药超过此值的部分不再增加进水量 L，只增加 Severity（延长泌乳时间），流速由 min(L, cap) 决定，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</summary>
 	public static float lactationLevelCap = 0f;
 	/// <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
@@ -168,24 +156,6 @@ internal class MilkCumSettings : ModSettings
 	/// <summary>炎症倍率：multI = 1 + 本值×Clamp01(I/I_crit)；I_crit 同炎症设置。</summary>
 	public static float overflowResidualInflammationBoost = 0.5f;
 
-	/// <summary>药物泌乳容量用有效数 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≥0.5、E=1）时剩余天数 ≥ 基准天数。B=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
-	public static float GetEffectiveBaseValueTForDecay()
-	{
-		float baseline = baselineMilkDurationDays;
-		if (baseline <= 0f) return PoolModelConstants.BaseValueT;
-		float denom = 0.5f / baseline - PoolModelConstants.NegativeFeedbackK * 0.5f;
-		if (denom <= 0.01f) return 100f;
-		return 1f / denom;
-	}
-	/// <summary>分娩泌乳容量用有效数 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
-	public static float GetEffectiveBaseValueTForDecayBirth()
-	{
-		float baseline = birthInducedMilkDurationDays;
-		if (baseline <= 0f) return PoolModelConstants.BaseValueT;
-		float denom = 0.5f / baseline - PoolModelConstants.NegativeFeedbackK * 0.5f;
-		if (denom <= 0.01f) return 100f;
-		return 1f / denom;
-	}
 	/// <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降压，最小 f_min 永不为零。默认 k=6、Pc=0.9、f_min=0.02，奶量达 90% 才开始往下压。</summary>
 	/// <param name="P">该侧满度/该侧最大容量，0～1（可略大于 1 时仍按公式算）。</param>
 	public static float GetPressureFactor(float P)
@@ -384,8 +354,7 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
 		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
 		Scribe_Values.Look(ref rjwBreastPoolCapacityMode, "EM.RjwBreastPoolCapMode", RjwBreastPoolCapacityMode.RjwBreastVolume);
-		rjwBreastPoolCapacityMode = (RjwBreastPoolCapacityMode)Mathf.Clamp((int)rjwBreastPoolCapacityMode, 0, 5);
-		Scribe_Values.Look(ref rjwBreastCapacityBlendSeverityWeight, "EM.RjwBreastCapBlendSevWeight", 0.5f);
+		rjwBreastPoolCapacityMode = (RjwBreastPoolCapacityMode)Mathf.Clamp((int)rjwBreastPoolCapacityMode, 0, 2);
 		Scribe_Values.Look(ref rjwNippleStageFlowBonusPercent, "EM.RjwNippleStageFlowBonusPct", 0f);
 		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "EM.RjwLactatingSeverityBonus", 0.15f);
 		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "EM.RjwLactatingStretchSeverityBonus", 0.05f);
@@ -415,7 +384,6 @@ internal class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);
 		Scribe_Values.Look(ref _risk.mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
-		Scribe_Values.Look(ref baselineMilkDurationDays, "EM.BaselineMilkDurationDays", 5f);
 		Scribe_Values.Look(ref lactationLevelCap, "EM.LactationLevelCap", 0f);
 		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "EM.LactationLevelCapDurationMultiplier", 1.5f);
 		if (Scribe.mode == LoadSaveMode.LoadingVars)
@@ -424,10 +392,8 @@ internal class MilkCumSettings : ModSettings
 			lactationLevelCapDurationMultiplier = Mathf.Clamp(lactationLevelCapDurationMultiplier, 0.1f, 10f);
 			rjwLactatingSeverityBonus = Mathf.Clamp(rjwLactatingSeverityBonus, 0f, 1f);
 			rjwLactatingStretchSeverityBonus = Mathf.Clamp(rjwLactatingStretchSeverityBonus, 0f, 1f);
-			rjwBreastCapacityBlendSeverityWeight = Mathf.Clamp01(rjwBreastCapacityBlendSeverityWeight);
 			rjwNippleStageFlowBonusPercent = Mathf.Clamp(rjwNippleStageFlowBonusPercent, -15f, 15f);
 		}
-		Scribe_Values.Look(ref birthInducedMilkDurationDays, "EM.BirthInducedMilkDurationDays", 30f);
 		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);

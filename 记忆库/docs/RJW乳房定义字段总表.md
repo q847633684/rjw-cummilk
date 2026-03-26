@@ -1,4 +1,4 @@
-# RJW（1.6）乳房相关定义 — 字段总表
+﻿# RJW（1.6）乳房相关定义 — 字段总表
 
 本文档按 **RJW 源码与 Def** 归纳「乳房」在框架内的**全部可用定义**；解剖上的乳头/乳晕在 RJW 中**无独立数值字段**（仅有阶段文案等）。路径以本地 mod 为准：`rjw/1.6/Source`、`rjw/1.6/Defs`。
 
@@ -124,8 +124,8 @@ RjwBreastVolume
 | rjw-cummilk 概念 | 对应 RJW 来源 |
 |------------------|----------------|
 | 进池 Hediff | `HediffDef_SexPart.genitalTags` 含 **`GenitalTag.CanLactate`**（与 RJW 泌乳标签一致；无则不进虚拟池） |
-| 容量公式中的「严重度」 | 优先 **`HediffComp_SexPart.GetSeverity()`**，否则回退 `Hediff.Severity`（体积模式无正体积时用之） |
-| 容量默认模式（新档） | **`RjwBreastVolume`**：`BreastSize.volume`（升）×系数，无则严重度 |
+| 容量公式中的「严重度」 | 优先 **`HediffComp_SexPart.GetSeverity()`**，否则回退 `Hediff.Severity`；**仅**设置选「纯严重度」档时使用 |
+| 容量三档（`RjwBreastPoolCapacityMode`） | **`Severity`** / **`RjwBreastWeight`** / **`RjwBreastVolume`**（新档默认体积）；重量/体积档无有效 RJW 尺寸则为 0（不进池） |
 | `FlowMultiplier`（每对） | **`HediffComp_SexPart.GetFluidMultiplier()`**（与 RJW 相同、**无**额外 0.1–3 上限）× 乳头阶段装饰；无 Comp 时回退 `Def.GetFluidMultiplier(...)` |
 | `PartSizeConfigDef.density` | **RJW 内**用于 `weight = volume × density` 等；**rjw-cummilk 不在进水/高潮灌池上乘密度**（与 `GetFluidMultiplier` 分工一致） |
 | 虚拟池 `poolKey_L/R` | 基于 `GetBreastList` 每条乳房 Hediff **拆两侧**，非 RJW 原版字段 |

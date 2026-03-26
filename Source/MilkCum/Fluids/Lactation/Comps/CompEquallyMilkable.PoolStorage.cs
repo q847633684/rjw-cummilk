@@ -13,15 +13,17 @@ namespace MilkCum.Fluids.Lactation.Comps;
 /// <summary>池存储与同步：缓存条目、按 key/左右汇总、选侧分组、清空/设置总水量。见 Docs/双池与PairIndex、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
-    /// <summary>缓存 GetBreastPoolEntries()，脏或超过 EntriesCacheMaxTicks 时失效，减少分配与 GC。</summary>
+    /// <summary>缓存乳池条目（与侧行同次构建）；脏或超过 <see cref="GetEntriesCacheMaxTicksForPawn"/> 时失效。</summary>
     private List<FluidPoolEntry> cachedEntries;
+    /// <summary>与 <see cref="cachedEntries"/> 同次构建，避免 UI/联动再调 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>。</summary>
+    private List<RjwBreastPoolSideRow> cachedSideRows;
     private int cachedEntriesTick = -1;
     /// <summary>为 true 时下次 GetCachedEntries 强制重建；120-tick 比较乳房数量或 ClearPools 时设脏。</summary>
     private bool cachedEntriesDirty = true;
     /// <summary>上次重建缓存时的乳房 Hediff 数量，用于 120-tick 检测变化并设脏。</summary>
     private int lastBreastListCount = -1;
-    /// <summary>缓存最长有效 tick 数，超时则重建；与脏标记一起使用，避免长期不刷新。</summary>
-    private const int EntriesCacheMaxTicks = 300;
+    /// <summary>当前地图小人：池条目缓存 TTL（tick）。非当前地图/未载入地图用更长 TTL，与 LOD 一致。</summary>
+    private const int EntriesCacheMaxTicksOnCurrentMap = 300;
     /// <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效。</summary>
     private List<List<FluidPoolEntry>> cachedPairGroups;
     /// <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
@@ -31,7 +33,7 @@ public partial class CompEquallyMilkable
     internal int GetTicksFullPoolForKey(string key) =>
         ticksFullPoolByKey != null && ticksFullPoolByKey.TryGetValue(key, out int t) ? t : 0;
 
-    /// <summary>所有虚拟乳侧满池计数的最大值（满池信件、化脓 MTB 等）。</summary>
+    /// <summary>各池 key 满池计数中的最大值（满池信件、化脓 MTB 等）。</summary>
     internal int GetMaxTicksFullPoolAcrossSides()
     {
         if (ticksFullPoolByKey == null || ticksFullPoolByKey.Count == 0) return 0;
@@ -75,7 +77,7 @@ public partial class CompEquallyMilkable
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
-    /// <summary>按 entries 汇总左侧或右侧总水位（LeftFullness/RightFullness 用），便于多乳/不对称。</summary>
+    /// <summary>按 <see cref="FluidPoolEntry.IsLeft"/> 汇总该侧水位（每条真实池独立 key）。</summary>
     private float GetLeftOrRightFullness(bool left)
     {
         if (breastFullness == null || breastFullness.Count == 0) return 0f;
@@ -92,12 +94,35 @@ public partial class CompEquallyMilkable
         return sum;
     }
 
+    /// <summary>非当前地图殖民者：条目缓存稍长，减少切地图/多地图时重复算 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>。</summary>
+    private const int EntriesCacheMaxTicksOtherMap = 600;
+
+    /// <summary>未载入地图（商队等）：与 <see cref="PoolModelConstants.LODIntervalNotOnMapTicks"/> 同量级，避免频繁重建。</summary>
+    private const int EntriesCacheMaxTicksNotOnMap = 1800;
+
+    private int GetEntriesCacheMaxTicksForPawn()
+    {
+        if (Pawn == null) return EntriesCacheMaxTicksOnCurrentMap;
+        if (Pawn.MapHeld == null) return EntriesCacheMaxTicksNotOnMap;
+        return Find.CurrentMap == Pawn.MapHeld ? EntriesCacheMaxTicksOnCurrentMap : EntriesCacheMaxTicksOtherMap;
+    }
+
     private List<FluidPoolEntry> GetCachedEntries()
     {
         int now = Find.TickManager.TicksGame;
-        if (cachedEntries != null && !cachedEntriesDirty && (now - cachedEntriesTick) <= EntriesCacheMaxTicks)
+        int ttl = GetEntriesCacheMaxTicksForPawn();
+        if (cachedEntries != null && !cachedEntriesDirty && (now - cachedEntriesTick) <= ttl)
             return cachedEntries;
-        cachedEntries = Pawn != null ? Pawn.GetBreastPoolEntries() : new List<FluidPoolEntry>();
+        if (Pawn != null)
+        {
+            cachedSideRows = RjwBreastPoolEconomy.GetBreastPoolSideRows(Pawn);
+            cachedEntries = PawnMilkPoolExtensions.BuildBreastPoolEntriesFromSideRows(Pawn, cachedSideRows);
+        }
+        else
+        {
+            cachedSideRows = null;
+            cachedEntries = new List<FluidPoolEntry>();
+        }
         cachedEntriesTick = now;
         cachedEntriesDirty = false;
         lastBreastListCount = Pawn != null ? Pawn.GetBreastListOrEmpty().Count : 0;
@@ -126,9 +151,20 @@ public partial class CompEquallyMilkable
         if (cachedEntries == null || Find.TickManager == null) return null;
         if (cachedEntriesDirty) return null;
         int now = Find.TickManager.TicksGame;
-        if ((now - cachedEntriesTick) > EntriesCacheMaxTicks)
+        if ((now - cachedEntriesTick) > GetEntriesCacheMaxTicksForPawn())
             return null;
         return cachedEntries;
+    }
+
+    /// <summary>与 <see cref="GetCachedEntriesIfValid"/> 同生命周期；供 RJW 联动等需 <see cref="RjwBreastPoolSideRow.BreastHediff"/> 的路径，避免再算一遍侧行。</summary>
+    internal List<RjwBreastPoolSideRow> GetCachedSideRowsIfValid()
+    {
+        if (cachedEntries == null || Find.TickManager == null) return null;
+        if (cachedEntriesDirty) return null;
+        int now = Find.TickManager.TicksGame;
+        if ((now - cachedEntriesTick) > GetEntriesCacheMaxTicksForPawn())
+            return null;
+        return cachedSideRows;
     }
 
     /// <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>

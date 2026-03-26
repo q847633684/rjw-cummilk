@@ -127,19 +127,14 @@
     <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>勾上：泌乳时胸形会临时胀大一圈，奶池能装多少、流得多快，都跟着 RJW 那套胸形尺寸走。不勾：外表不动，奶池也不吃胸形尺寸，只按左右对称那一套算。</EM.RjwBreastSizeDesc>
     <EM.RjwBreastPoolCapacityMode>乳池基容量来源：{0}</EM.RjwBreastPoolCapacityMode>
-    <EM.RjwBreastPoolCapacityModeTip>每一对乳房、单侧虚拟池的「基容量」先按此处规则算，再乘下面的容量系数（并受上限裁剪）。默认「体积」：用 RJW BreastSize.volume（升），算不出正体积则退回严重度；与流速（GetFluidMultiplier）分开。重量模式用估算质量（千克），无则退回严重度。</EM.RjwBreastPoolCapacityModeTip>
+    <EM.RjwBreastPoolCapacityModeTip>仅三档：严重度×系数、RJW 估算重量（千克）×系数、RJW BreastSize.volume（升）×系数。重量/体积档无有效 RJW 尺寸时该侧基容量为 0、不进虚拟池。严重度档始终用部位严重度。再乘下方容量系数（并受上限裁剪）；流速由 GetFluidMultiplier 等单独决定。</EM.RjwBreastPoolCapacityModeTip>
     <EM.RjwCapacityMode_Severity>严重度×系数</EM.RjwCapacityMode_Severity>
     <EM.RjwCapacityMode_Weight>乳房重量×系数</EM.RjwCapacityMode_Weight>
-    <EM.RjwCapacityMode_Max>严重度与重量各自×系数后取大</EM.RjwCapacityMode_Max>
     <EM.RjwCapacityMode_Volume>乳房体积（升）×系数（默认）</EM.RjwCapacityMode_Volume>
-    <EM.RjwCapacityMode_MaxSevVol>严重度与体积各自×系数后取大</EM.RjwCapacityMode_MaxSevVol>
-    <EM.RjwCapacityMode_BlendSevVol>严重度与体积容量混合（α 滑条）</EM.RjwCapacityMode_BlendSevVol>
-    <EM.RjwBreastCapBlendSevWeight>混合模式严重度权重 α：{0}</EM.RjwBreastCapBlendSevWeight>
-    <EM.RjwBreastCapBlendSevWeightDesc>仅「严重度与体积混合」模式生效：α×(严重度×系数) + (1−α)×(体积×系数)。其它模式可忽略。</EM.RjwBreastCapBlendSevWeightDesc>
     <EM.RjwNippleStageFlowBonusPct>乳头阶段流速修正 %：{0}</EM.RjwNippleStageFlowBonusPct>
     <EM.RjwNippleStageFlowBonusPctDesc>RJW 乳房当前阶段标签含 “Nipple” 时，泌乳进水与高潮产液倍率乘以 (1+本值/100)。0 为关闭；约 ±15% 内裁剪。</EM.RjwNippleStageFlowBonusPctDesc>
     <EM.RjwBreastCapacityCoefficient>乳房容量系数：{0}</EM.RjwBreastCapacityCoefficient>
-    <EM.RjwBreastCapacityCoefficientDesc>把上面选定的「基值」（默认体积升；亦可严重度/重量/混合等）再乘上这个数；1 表示不额外放大缩小。跟流速、挤奶劲头一起拧。</EM.RjwBreastCapacityCoefficientDesc>
+    <EM.RjwBreastCapacityCoefficientDesc>把上面选定的「基值」（默认体积升；亦可严重度或重量）再乘上这个数；1 表示不额外放大缩小。跟流速、挤奶劲头一起拧。</EM.RjwBreastCapacityCoefficientDesc>
     <EM.RjwBreastCapacityCoefficientDescLong>左一池、右一池各自容量 = 基值×系数（再裁剪上限）；两边加起来是总肚量。默认体积模式下系数 2 将 RJW 升标度映射进池子；想细算可翻容量笔谈。</EM.RjwBreastCapacityCoefficientDescLong>
     <EM.RjwLactatingSeverityBonus>泌乳时胸形额外胀：{0}</EM.RjwLactatingSeverityBonus>
     <EM.RjwLactatingSeverityBonusDesc>泌着奶时，在 RJW 胸形原本胀度的基础上再加一截（奶池还没撑到极限那段）。默认 0.15。</EM.RjwLactatingSeverityBonusDesc>
@@ -311,7 +306,7 @@
     <EM.PoolBreastDevModeOnly>仅开发模式可见</EM.PoolBreastDevModeOnly>
     <EM.PoolBreastMechanismLabel>生产机制:</EM.PoolBreastMechanismLabel>
     <EM.PoolFlowEstrogenNote>（容量与产奶效率受乳腺发育等因素影响，含雌激素等生理因素。）</EM.PoolFlowEstrogenNote>
-    <EM.MilkFlowBreastVolume>乳房体积</EM.MilkFlowBreastVolume>
+    <EM.MilkFlowBreastVolume>RJW 流体量倍率（GetFluidMultiplier）</EM.MilkFlowBreastVolume>
     <EM.PoolBreastPairSummary>总：奶量 {0} / 容量 {1}({2}) / 流速 {3}/天</EM.PoolBreastPairSummary>
     <EM.PoolBreastSideMilk>奶量：{0} ({1})</EM.PoolBreastSideMilk>
     <EM.PoolBreastSideMilkLine>奶量：{0} / {1}（{2}）</EM.PoolBreastSideMilkLine>

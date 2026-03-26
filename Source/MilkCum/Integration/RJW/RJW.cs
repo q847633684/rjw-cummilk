@@ -108,6 +108,7 @@ public static class Hediff_BasePregnancy_Patch
 [HarmonyPatch(typeof(JobDriver_Sex), nameof(JobDriver_Sex.Orgasm))]
 public static class JobDriver_Sex_OrgasmMilk_Patch
 {
+    /// <summary>每条侧池各追加的池单位（双池时两侧各加一次）。</summary>
     private const float PoolUnitsPerOrgasmPerBreastSide = 0.05f;
 
     [HarmonyPostfix]
@@ -121,22 +122,22 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
         if (!MilkCumSettings.rjwBreastSizeEnabled) return;
         var list = pawn.GetBreastListOrEmpty();
         if (list.Count == 0) return;
-        var entries = pawn.GetBreastPoolEntries();
+        var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
         if (entries == null || entries.Count == 0) return;
+        var sideRows = comp.GetCachedSideRowsIfValid() ?? RjwBreastPoolEconomy.GetBreastPoolSideRows(pawn);
         var toAdd = new List<(string key, float addAmount, float cap)>();
         for (int i = 0; i < list.Count; i++)
         {
             var h = list[i];
             if (h?.def is not HediffDef_SexPart def || !def.produceFluidOnOrgasm) continue;
-            string pk = RjwBreastPoolEconomy.BuildPoolKey(h, i);
-            if (string.IsNullOrEmpty(pk)) continue;
-            string keyL = pk + "_L", keyR = pk + "_R";
-            float amount = PoolUnitsPerOrgasmPerBreastSide;
-            var eL = entries.FirstOrDefault(e => e.Key == keyL);
-            var eR = entries.FirstOrDefault(e => e.Key == keyR);
-            if (string.IsNullOrEmpty(eL.Key) || string.IsNullOrEmpty(eR.Key)) continue;
-            toAdd.Add((eL.Key, amount, eL.Capacity));
-            toAdd.Add((eR.Key, amount, eR.Capacity));
+            for (int r = 0; r < sideRows.Count; r++)
+            {
+                if (sideRows[r].BreastHediff != h) continue;
+                string pk = sideRows[r].PoolKey;
+                var e = entries.FirstOrDefault(x => x.Key == pk);
+                if (string.IsNullOrEmpty(e.Key)) continue;
+                toAdd.Add((pk, PoolUnitsPerOrgasmPerBreastSide, e.Capacity));
+            }
         }
         if (toAdd.Count > 0)
             comp.AddMilkToKeys(toAdd);

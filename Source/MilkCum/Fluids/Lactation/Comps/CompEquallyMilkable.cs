@@ -33,7 +33,7 @@ public partial class CompEquallyMilkable : CompMilkable
     private int lastBaseCapacityTick = -1;
     private const int BaseCapacityCacheInterval = 600;
 
-    /// <summary>按 key（如 defName_i_L/R）的水位，唯一写入口；Fullness = Sum(Values)。支持多乳、不对称。</summary>
+    /// <summary>按稳定池键（<see cref="RjwBreastPoolEconomy.MakeStablePoolKey"/>）的水位；Fullness = Sum(Values)。</summary>
     private Dictionary<string, float> breastFullness = new Dictionary<string, float>();
 
     /// <summary>当前总奶量（0~maxFullness），= breastFullness.Values.Sum()；对外只读。</summary>
@@ -76,7 +76,7 @@ public partial class CompEquallyMilkable : CompMilkable
     private float overflowAccumulator = 0f;
     /// <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定</summary>
     private int lastGatheredTick = -1;
-    /// <summary>各虚拟乳侧（poolKey_L/R）连续「达基础容量满阈」的累计 tick，用于瘀积/MTB/信件；与 breastFullness 同周期更新。</summary>
+    /// <summary>各物理池 key 连续「达基础容量满阈」的累计 tick，用于瘀积/MTB/信件；与 breastFullness 同周期更新。</summary>
     private Dictionary<string, int> ticksFullPoolByKey = new Dictionary<string, int>();
     /// <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏</summary>
     private int lastFullPoolLetterTick = -1;
@@ -236,7 +236,10 @@ public partial class CompEquallyMilkable : CompMilkable
             cachedActive = false;
             return false;
         }
-        cachedActive = pawn.IsLactating() && pawn.IsMilkable() && (pawn == Pawn ? GetCachedEntries().Count : pawn.GetBreastPoolEntries().Count) > 0;
+        int entryCount = pawn == Pawn
+            ? GetCachedEntries().Count
+            : (pawn.CompEquallyMilkable()?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries()).Count;
+        cachedActive = pawn.IsLactating() && pawn.IsMilkable() && entryCount > 0;
         return cachedActive;
     }
 

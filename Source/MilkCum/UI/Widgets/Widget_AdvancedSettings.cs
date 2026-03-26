@@ -16,10 +16,7 @@ public class Widget_AdvancedSettings
 	private static string RjwBreastPoolCapacityModeLabel(RjwBreastPoolCapacityMode mode) => mode switch
 	{
 		RjwBreastPoolCapacityMode.RjwBreastWeight => "EM.RjwCapacityMode_Weight".Translate(),
-		RjwBreastPoolCapacityMode.MaxOfSeverityAndWeight => "EM.RjwCapacityMode_Max".Translate(),
 		RjwBreastPoolCapacityMode.RjwBreastVolume => "EM.RjwCapacityMode_Volume".Translate(),
-		RjwBreastPoolCapacityMode.MaxOfSeverityAndVolume => "EM.RjwCapacityMode_MaxSevVol".Translate(),
-		RjwBreastPoolCapacityMode.BlendedSeverityAndVolume => "EM.RjwCapacityMode_BlendSevVol".Translate(),
 		_ => "EM.RjwCapacityMode_Severity".Translate(),
 	};
 
@@ -434,10 +431,7 @@ public class Widget_AdvancedSettings
 			{
 				new FloatMenuOption("EM.RjwCapacityMode_Severity".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.Severity),
 				new FloatMenuOption("EM.RjwCapacityMode_Weight".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastWeight),
-				new FloatMenuOption("EM.RjwCapacityMode_Max".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.MaxOfSeverityAndWeight),
 				new FloatMenuOption("EM.RjwCapacityMode_Volume".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastVolume),
-				new FloatMenuOption("EM.RjwCapacityMode_MaxSevVol".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.MaxOfSeverityAndVolume),
-				new FloatMenuOption("EM.RjwCapacityMode_BlendSevVol".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.BlendedSeverityAndVolume),
 			};
 			Find.WindowStack.Add(new FloatMenu(opts));
 		}
@@ -448,12 +442,6 @@ public class Widget_AdvancedSettings
 		Widgets.HorizontalSlider(rCapCoeff, ref capCoeff, new FloatRange(0.25f, 4f), "EM.RjwBreastCapacityCoefficient".Translate(MilkCumSettings.rjwBreastCapacityCoefficient.ToString("F2")), 0.05f);
 		MilkCumSettings.rjwBreastCapacityCoefficient = capCoeff;
 		TooltipHandler.TipRegion(rCapCoeff, "EM.RjwBreastCapacityCoefficientDescLong".Translate());
-		list.Gap(4f);
-		Rect rBlendSev = list.GetRect(UNIT_SIZE);
-		float blendSev = MilkCumSettings.rjwBreastCapacityBlendSeverityWeight;
-		Widgets.HorizontalSlider(rBlendSev, ref blendSev, new FloatRange(0f, 1f), "EM.RjwBreastCapBlendSevWeight".Translate(blendSev.ToString("F2")), 0.01f);
-		MilkCumSettings.rjwBreastCapacityBlendSeverityWeight = blendSev;
-		TooltipHandler.TipRegion(rBlendSev, "EM.RjwBreastCapBlendSevWeightDesc".Translate());
 		list.Gap(4f);
 		Rect rNipplePct = list.GetRect(UNIT_SIZE);
 		float nipplePct = MilkCumSettings.rjwNippleStageFlowBonusPercent;

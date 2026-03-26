@@ -39,10 +39,14 @@
   - 删除：`docs/设置UI模拟显示.md`
   - 同步：`index.md`、`docs/README.md`、`docs/设置UI重构框架.md` 移除/替换上述引用，统一改为以 `design/UI审阅结论.md` + `docs/设置UI重构框架.md` 为入口。
 
+## 2026-03-25
+
+- **乳池基容量模式**：代码与 UI 仅保留三档（严重度 / 重量 / 体积），已移除取大与混合；无旧档精细迁移承诺。Keyed 中已删未再使用的模式标签；`RJW乳房定义与rjw-cummilk使用说明.md` 中与「取大/混合」相关的表述已对齐。
+
 ## 2026-03-24
 
 - **修正**：`docs/RJW乳房定义与rjw-cummilk使用说明.md` 中关于 `PartSizeCalculator` 的描述与现代码不一致，已改为：
-  - `TryGetBreastSize` 在容量模式为「重量/取大」时用于读取 `weight`
+  - `TryGetBreastSize` 在容量模式为「重量」时用于读取 `weight`
   - `TryGetCupSize` 等其余接口未使用
 - **整理**：将该文档补充进 `docs/README.md` 与 `index.md` 的 docs 索引，避免“存在但不可检索”的无效记忆。
 

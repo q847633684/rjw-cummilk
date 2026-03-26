@@ -47,7 +47,7 @@ public static class MilkRelatedHealthHelper
         }
     }
 
-    /// <summary>任一侧虚拟乳（poolKey_L/R）满度 ≥ 基础容量×满阈时添加胀满；当每一侧都 &lt; 0.9×该侧基础容量时移除。</summary>
+    /// <summary>任一乳池条目满度 ≥ 基础容量×满阈时添加胀满；当所有池条目都 &lt; 0.9×基础容量时移除。</summary>
     public static void UpdateBreastsEngorged(Pawn pawn, CompEquallyMilkable comp)
     {
         if (MilkCumDefOf.EM_BreastsEngorged == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
@@ -250,8 +250,7 @@ public static class MilkRelatedHealthHelper
             foreach (string sk in drainedKeys)
             {
                 if (string.IsNullOrEmpty(sk)) continue;
-                string pk = PawnMilkPoolExtensions.GetPoolKeyFromSideKey(sk);
-                BodyPartRecord part = pawn.GetPartForPoolKey(pk);
+                BodyPartRecord part = pawn.GetPartForPoolKey(sk);
                 if (part == null || !partsDone.Add(part)) continue;
                 for (int i = 0; i < hed.Count; i++)
                 {

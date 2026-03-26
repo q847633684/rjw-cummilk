@@ -299,10 +299,10 @@ internal static class BreastPoolTooltipHelper
 {
     private const string Tab = "  ";
 
-    /// <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
-    public static string BuildBreastPairBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, string poolKey, Pawn pawn)
+    /// <summary>构建一对乳房的 tooltip：总览 + 左/右真实池各行与按池键的因子。</summary>
+    public static string BuildBreastPairBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, Pawn pawn)
     {
-        if ((entries?.Count ?? 0) == 0 || string.IsNullOrEmpty(poolKey) || pawn == null) return "";
+        if ((entries?.Count ?? 0) == 0 || pawn == null) return "";
         var comp = pawn.LactatingHediffComp();
         if (comp == null) return "";
         var left = entries.FirstOrDefault(e => e.isLeft);
@@ -314,14 +314,14 @@ internal static class BreastPoolTooltipHelper
         float totalMilk = leftFull + rightFull;
         float totalBaseCap = leftCap + rightCap;
         float totalStretchCap = leftCap * PoolModelConstants.StretchCapFactor + rightCap * PoolModelConstants.StretchCapFactor;
-        var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastPair(poolKey);
+        var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastSides(left.key, right.key);
         float flowPair = flowL + flowR;
-        float letdownL = comp.GetLetdownReflexFlowMultiplier(poolKey + "_L");
-        float letdownR = comp.GetLetdownReflexFlowMultiplier(poolKey + "_R");
-        float pressureL = pawn.GetPressureFactorForSide(poolKey + "_L");
-        float pressureR = pawn.GetPressureFactorForSide(poolKey + "_R");
-        float conditionsL = pawn.GetConditionsForSide(poolKey + "_L");
-        float conditionsR = pawn.GetConditionsForSide(poolKey + "_R");
+        float letdownL = string.IsNullOrEmpty(left.key) ? 1f : comp.GetLetdownReflexFlowMultiplier(left.key);
+        float letdownR = string.IsNullOrEmpty(right.key) ? 1f : comp.GetLetdownReflexFlowMultiplier(right.key);
+        float pressureL = string.IsNullOrEmpty(left.key) ? 1f : pawn.GetPressureFactorForPool(left.key);
+        float pressureR = string.IsNullOrEmpty(right.key) ? 1f : pawn.GetPressureFactorForPool(right.key);
+        float conditionsL = string.IsNullOrEmpty(left.key) ? 1f : pawn.GetConditionsForPoolKey(left.key);
+        float conditionsR = string.IsNullOrEmpty(right.key) ? 1f : pawn.GetConditionsForPoolKey(right.key);
         var b = comp.GetFlowPerDayBreakdown();
         string leftPercent = leftCap >= 0.001f ? (leftFull / leftCap).ToStringPercent() : "0%";
         string rightPercent = rightCap >= 0.001f ? (rightFull / rightCap).ToStringPercent() : "0%";
@@ -394,11 +394,9 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
             string sectionLabel = parent.LabelCap;
             string blockHeader = "EM.PoolBreastSectionHeader".Translate(sectionLabel);
             if (!string.IsNullOrEmpty(__result) && __result.Contains(blockHeader)) return;
-            string poolKey = pawn.GetPoolKeyForBreastHediff(parent);
-            if (string.IsNullOrEmpty(poolKey)) return;
             var entries = pawn.GetPoolEntriesForBreastHediff(parent);
             if (entries.Count == 0) return;
-            string block = BreastPoolTooltipHelper.BuildBreastPairBlock(sectionLabel, entries, poolKey, pawn);
+            string block = BreastPoolTooltipHelper.BuildBreastPairBlock(sectionLabel, entries, pawn);
             if (!string.IsNullOrEmpty(block))
                 __result = (__result ?? "") + "\n" + block;
         }

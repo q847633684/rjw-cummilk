@@ -60,7 +60,7 @@ public partial class CompEquallyMilkable
         }
         float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
         float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
-        // 仅按侧乘 GetConditionsForSide（按乳房部位），不再在此处乘全局 cond，避免与每侧 conditions 双重惩罚。
+        // 每条池乘 GetConditionsForPoolKey（按该 Hediff Part），不再乘全局 cond，避免双重惩罚。
         float basePerDay = drive * hungerFactor * raceFlow;
         var entries = GetCachedEntries();
         breastFullness ??= new Dictionary<string, float>();
@@ -143,8 +143,8 @@ public partial class CompEquallyMilkable
                     : (curRight >= stretchRight ? 0f : 1f);
                 MilkCumSettings.ApplyOverflowResidualFlow(ref pressureLeft, curLeft, stretchLeft, residualL, lactatingComp.GetInflammationForKey(leftE.Key));
                 MilkCumSettings.ApplyOverflowResidualFlow(ref pressureRight, curRight, stretchRight, residualL, lactatingComp.GetInflammationForKey(rightE.Key));
-                float conditionsLeft = Pawn.GetConditionsForSide(leftE.Key);
-                float conditionsRight = Pawn.GetConditionsForSide(rightE.Key);
+                float conditionsLeft = Pawn.GetConditionsForPoolKey(leftE.Key);
+                float conditionsRight = Pawn.GetConditionsForPoolKey(rightE.Key);
                 float letdownLeft = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(leftE.Key) : 1f;
                 float letdownRight = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(rightE.Key) : 1f;
                 float flowLeft = Mathf.Max(0f, leftE.FlowMultiplier * flowPerTickScale * conditionsLeft * pressureLeft * letdownLeft);
@@ -188,7 +188,7 @@ public partial class CompEquallyMilkable
                         ? MilkCumSettings.GetPressureFactor(current / Mathf.Max(0.001f, stretchCap))
                         : (current >= stretchCap ? 0f : 1f);
                     MilkCumSettings.ApplyOverflowResidualFlow(ref pressure, current, stretchCap, residualL, lactatingComp.GetInflammationForKey(e.Key));
-                    float conditionsE = Pawn.GetConditionsForSide(e.Key);
+                    float conditionsE = Pawn.GetConditionsForPoolKey(e.Key);
                     float letdownE = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(e.Key) : 1f;
                     float flowPerTick = Mathf.Max(0f, e.FlowMultiplier * flowPerTickScale * conditionsE * pressure * letdownE);
                     totalFlowThisStep += flowPerTick;

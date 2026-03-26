@@ -128,19 +128,14 @@
     <EM.RjwBreastSize>Lactating enlarges RJW breasts</EM.RjwBreastSize>
     <EM.RjwBreastSizeDesc>When on: lactating temporarily adds to RJW breast Severity (visual size), and pool capacity plus milk flow use RJW breast data (Severity × capacity coefficient, fluidMultiplier). When off: no size change and capacity/flow do not use RJW breasts.</EM.RjwBreastSizeDesc>
     <EM.RjwBreastPoolCapacityMode>Pool base capacity from: {0}</EM.RjwBreastPoolCapacityMode>
-    <EM.RjwBreastPoolCapacityModeTip>Base per-side pool capacity before tissue adaptation, then × capacity coefficient (capped). Default Volume: RJW BreastSize.volume (L); if no positive volume, falls back to Severity—separate from flow (GetFluidMultiplier). Weight mode uses estimated mass (kg), else Severity.</EM.RjwBreastPoolCapacityModeTip>
+    <EM.RjwBreastPoolCapacityModeTip>Three modes only: Severity×coeff, RJW breast weight (kg)×coeff, or RJW BreastSize.volume (L)×coeff. Weight/Volume modes yield 0 capacity (no pool entries) without valid RJW size. Severity mode uses part severity only. Then × capacity coefficient (capped). Flow is separate (GetFluidMultiplier).</EM.RjwBreastPoolCapacityModeTip>
     <EM.RjwCapacityMode_Severity>Severity × coefficient</EM.RjwCapacityMode_Severity>
     <EM.RjwCapacityMode_Weight>Breast weight × coefficient</EM.RjwCapacityMode_Weight>
-    <EM.RjwCapacityMode_Max>Max of severity and weight (each × coefficient)</EM.RjwCapacityMode_Max>
     <EM.RjwCapacityMode_Volume>Breast volume (L) × coefficient (default)</EM.RjwCapacityMode_Volume>
-    <EM.RjwCapacityMode_MaxSevVol>Max of severity and volume (each × coefficient)</EM.RjwCapacityMode_MaxSevVol>
-    <EM.RjwCapacityMode_BlendSevVol>Blend severity and volume caps (α slider)</EM.RjwCapacityMode_BlendSevVol>
-    <EM.RjwBreastCapBlendSevWeight>Blend: severity weight α: {0}</EM.RjwBreastCapBlendSevWeight>
-    <EM.RjwBreastCapBlendSevWeightDesc>For “Blend severity &amp; volume” mode only: α×(severity×coeff) + (1−α)×(volume×coeff). Ignored for other modes.</EM.RjwBreastCapBlendSevWeightDesc>
     <EM.RjwNippleStageFlowBonusPct>Nipple-stage flow bonus %: {0}</EM.RjwNippleStageFlowBonusPct>
     <EM.RjwNippleStageFlowBonusPctDesc>When RJW breast stage label contains “Nipple”, multiply lactation inflow / orgasm milk fluid bonus by (1 + this%/100). 0 = off. Clamped to about ±15%.</EM.RjwNippleStageFlowBonusPctDesc>
     <EM.RjwBreastCapacityCoefficient>Breast capacity coefficient: {0}</EM.RjwBreastCapacityCoefficient>
-    <EM.RjwBreastCapacityCoefficientDesc>Scales the base from the mode above (default: RJW volume in liters; or Severity, weight, blend, etc.). 1 = unchanged scale. Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
+    <EM.RjwBreastCapacityCoefficientDesc>Scales the base from the mode above (default: RJW volume in liters; or Severity or weight). 1 = unchanged scale. Tune together with flow multiplier and lactation efficiency.</EM.RjwBreastCapacityCoefficientDesc>
     <EM.RjwBreastCapacityCoefficientDescLong>Per-side capacity = base from selected mode × this coefficient (capped); total = left + right. Default Volume mode maps RJW liter scale into pool units; tune to taste. See Docs.</EM.RjwBreastCapacityCoefficientDescLong>
     <EM.RjwLactatingSeverityBonus>Lactating Severity bonus: {0}</EM.RjwLactatingSeverityBonus>
     <EM.RjwLactatingSeverityBonusDesc>Added to base RJW breast Severity while lactating (pool 0–1). Default 0.15.</EM.RjwLactatingSeverityBonusDesc>
@@ -314,7 +309,7 @@
     <EM.PoolBreastDevModeOnly>DevMode only</EM.PoolBreastDevModeOnly>
     <EM.PoolBreastMechanismLabel>Mechanism:</EM.PoolBreastMechanismLabel>
     <EM.PoolFlowEstrogenNote>(Capacity and flow are affected by mammary development and other factors, including estrogen and related physiology.)</EM.PoolFlowEstrogenNote>
-    <EM.MilkFlowBreastVolume>Breast volume</EM.MilkFlowBreastVolume>
+    <EM.MilkFlowBreastVolume>RJW fluid mult (GetFluidMultiplier)</EM.MilkFlowBreastVolume>
     <EM.PoolBreastPairSummary>Total: milk {0} / cap {1}({2}) / flow {3}/day</EM.PoolBreastPairSummary>
     <EM.PoolBreastSideMilk>Milk: {0} ({1})</EM.PoolBreastSideMilk>
     <EM.PoolBreastSideMilkLine>Milk: {0} / {1} ({2})</EM.PoolBreastSideMilkLine>

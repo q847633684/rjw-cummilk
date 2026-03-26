@@ -1,3 +1,4 @@
+using MilkCum.Core;
 using RimWorld;
 using Verse;
 
@@ -11,6 +12,8 @@ public class PawnColumnWorker_MilkRemainingDays : PawnColumnWorker_Text
 		var hediff = pawn?.LactatingHediffWithComps();
 		var comp = hediff?.comps?.Find(c => c is HediffComp_EqualMilkingLactating) as HediffComp_EqualMilkingLactating;
 		if (comp == null || comp.RemainingDays <= 0f) return "-";
+		if (comp.IsPermanentLactation || float.IsPositiveInfinity(comp.RemainingDays))
+			return Lang.Permanent;
 		return comp.RemainingDays.ToString("F1") + "d";
 	}
 	protected override string GetHeaderTip(PawnTable table)

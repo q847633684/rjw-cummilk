@@ -27,7 +27,7 @@
 
 | 成员 | 说明 | **rjw-cummilk 是否使用** | **用途** |
 |------|------|--------------------------|----------|
-| **Severity** | 体型严重度（0.01～2+） | **✅ 使用** | **乳池基容量**：由 `rjwBreastPoolCapacityMode` 在严重度/重量/体积/取大/混合中选路，再 `Clamp(...,0,10)`；**泌乳期临时放大**：`RJWLactatingBreastSizeGameComponent` 按池与 L 驱动 `SetSeverity`，离乳恢复 |
+| **Severity** | 体型严重度（0.01～2+） | **✅ 使用** | **乳池基容量**：由 `rjwBreastPoolCapacityMode` 在**严重度 / 重量 / 体积**三档中选一路，再 `Clamp(...,0,10)`；**泌乳期临时放大**：`RJWLactatingBreastSizeGameComponent` 按池与 L 驱动 `SetSeverity`，离乳恢复 |
 | **Part** (BodyPartRecord) | 挂载身体部位 | **✅ 使用** | 池 key 的 fallback（`part.def.defName`）、`GetPartForPoolKey`、乳腺炎按部位判定 |
 | **def** | HediffDef | **✅ 使用** | 判断 `HediffDef_SexPart` 取 fluidMultiplier，以及 def.defName 做池 key |
 
@@ -42,7 +42,7 @@
 | bodysizescale | bool | 是否按 bodySize 缩放 | 未使用 | - |
 | **density** | float? | 密度（重量用） | **❌ 不直连进池** | RJW 内参与 `BreastSize.weight` 等；**容量模式含「重量」时**经 `TryGetBreastSize` 的 `weight` 间接体现。**泌乳进水、高潮灌池不再乘密度** |
 | lengths / girths | List\<float\> | 阴茎等用 | 未使用 | - |
-| cupSizes | List\<float\> | 罩杯索引曲线 | **✅ 间接** | 经 `PartSizeCalculator.TryGetBreastSize` 参与 **volume/weight/cup/band**；容量模式含体积或混合时使用 `volume` |
+| cupSizes | List\<float\> | 罩杯索引曲线 | **✅ 间接** | 经 `PartSizeCalculator.TryGetBreastSize` 参与 **volume/weight/cup/band**；容量模式为「体积」时使用 `volume` |
 
 ---
 
@@ -54,7 +54,7 @@
 |-----------|------|--------------------------|----------|
 | bandSizeBase | 底围基准 | 未使用 | - |
 | cupSizeLabels | 罩杯字母列表 | 未使用 | - |
-| BreastSize (cupSize, bandSize, volume, weight) | 运行时计算出的罩杯/体积/重量 | **✅** | 快照字段 + 容量：`weight` / `volume` / 混合模式；`RJWLactatingBreastSize` 仍只调 Severity，与 RJW API 一致 |
+| BreastSize (cupSize, bandSize, volume, weight) | 运行时计算出的罩杯/体积/重量 | **✅** | 快照字段 + 容量：按模式取 `weight` 或 `volume`（纯严重度档不读）；`RJWLactatingBreastSize` 仍只调 Severity，与 RJW API 一致 |
 
 ---
 
@@ -75,7 +75,7 @@
 
 ### 产品句（验收）
 
-**容量与 RJW 展示对齐**：单侧基容量由 `MilkCumSettings.rjwBreastPoolCapacityMode` 在「严重度×系数 / RJW 重量×系数 / RJW 体积×系数 / 取大 / 严重度与体积混合」中选一路，再 `Clamp(...,0,10)`；**默认（新档）为 RJW 体积模式**（`BreastSize.volume`，无正体积则回退严重度），与储奶「空间」隐喻一致，与流速解耦。**流速**与 RJW 一致走 `HediffComp_SexPart.GetFluidMultiplier()`（及 def 回退），并可选乘乳头阶段小修饰；**组织密度不参与进水/高潮灌池乘数**（仅在 RJW 侧影响重量等，容量选重量模式时间接体现）；**L** 仍只表示还能泌多久（水池模型其余文档不变）。
+**容量与 RJW 展示对齐**：单侧基容量由 `MilkCumSettings.rjwBreastPoolCapacityMode` **三档选一**：纯严重度×系数、纯 RJW 重量×系数、纯 `BreastSize.volume`×系数（新档默认体积），再 `Clamp(...,0,10)`；重量/体积档无有效 RJW 尺寸则该侧为 0、不进虚拟池。**流速**与 RJW 一致走 `HediffComp_SexPart.GetFluidMultiplier()`（及 def 回退），并可选乘乳头阶段小修饰；**组织密度不参与进水/高潮灌池乘数**（容量选重量模式时间接体现）；**L** 仍只表示还能泌多久。
 
 ### 阶段 0：读乳房入口与公式映射（维护者表）
 
@@ -114,14 +114,13 @@
 
 ### 阶段 5：建议手测场景（非自动化）
 
-人类单对乳、多乳房种族（多条 Hediff 时每条仍拆 _L/_R）、无乳房、永久泌乳、催乳药、**炎症/胀满/瘀积/满池 tick/MTB 均按虚拟侧或取侧上 max**、容量模式切换为体积/混合。
+人类单对乳、多乳房种族（多条 Hediff 时每条仍拆 _L/_R）、无乳房、永久泌乳、催乳药、**炎症/胀满/瘀积/满池 tick/MTB 均按虚拟侧或取侧上 max**、容量模式切换严重度/重量/体积。
 
 | 设置项 | 类型 | 说明 | 影响的 RJW 相关逻辑 |
 |--------|------|------|----------------------|
 | **rjwBreastSizeEnabled** | bool | 是否启用「按 RJW 乳房体型参与乳池/容量/流速」 | 关闭后 GetBreastCapacityFactors、GetBreastPoolEntries 等直接 return 或返回空；RJWLactatingBreastSize 的 Severity 增益也不执行 |
-| **rjwBreastPoolCapacityMode** | enum | 严重度 / 重量 / 取大 / **体积（新档默认）** / 严重度与体积取大 / 混合 | `RjwBreastPoolEconomy.ComputeBaseCapacityPerSide`；旧档已存 `EM.RjwBreastPoolCapMode` 者保持原枚举 |
+| **rjwBreastPoolCapacityMode** | enum | **三档**：`Severity` / `RjwBreastWeight` / `RjwBreastVolume`（新档默认体积） | `RjwBreastPoolEconomy.ComputeBaseCapacityPerSide`；读档时非法枚举值会 Clamp 到 0–2 |
 | **rjwBreastCapacityCoefficient** | float | 乳池容量系数，默认 2 | 单侧基容量 = `Clamp(基值 * 本系数, 0, 10)` |
-| **rjwBreastCapacityBlendSeverityWeight** | float | 混合模式中严重度项权重 α∈[0,1] | 仅 `BlendedSeverityAndVolume` |
 | **rjwNippleStageFlowBonusPercent** | float | 阶段标签含 “Nipple” 时流速倍率 ±%（0=关） | `GetBreastHediffFlowMultiplier` |
 
 ---
@@ -191,14 +190,14 @@ RJW 已完整定义并维护「乳房大小」：
 - **PartSizeCalculator**：在需要罩杯/底围/体积/重量时，用 `(def, severity, bodySize)` 和 sizeProfile 曲线现场计算。
 
 因此 **体型（bodySize）、阶段、曲线等都已由 RJW 算好并体现在 Severity 上**。  
-本 mod 只使用 RJW 的**结果**：`Hediff.Severity`、`def.fluidMultiplier`、`sizeProfile.density`；并仅在容量模式为「重量」或「取大」时读取一次 `PartSizeCalculator.TryGetBreastSize(...).weight`，避免重复计算与逻辑不一致。
+本 mod 只使用 RJW 的**结果**：`Hediff.Severity`、`def.fluidMultiplier`、`sizeProfile.density`；并仅在容量模式为「重量」时读取一次 `PartSizeCalculator.TryGetBreastSize(...).weight`，避免重复计算与逻辑不一致。
 
 ---
 
 ## 七、未使用的 RJW 乳房相关项（摘要）
 
 - **PartSizeConfigDef**：cupSizes、bodysizescale 未使用；**density 已接入**（见上）。  
-- **BraSizeConfigDef / BreastSize**：罩杯字母、底围、体积在本 mod 未直接使用；`weight` 仅在容量模式为「重量/取大」时间接读取。  
+- **BraSizeConfigDef / BreastSize**：罩杯字母、底围、体积在本 mod 未直接使用；`weight` 仅在容量模式为「重量」时间接读取。  
 - **PartSizeCalculator**：`TryGetCupSize` 等未调用；`TryGetBreastSize` 在 `RjwBreastPoolEconomy.ComputeBaseCapacityPerSide` 中用于读取 `weight`。  
 - **HediffDef_SexPart**：fluid、stages、defaultBodyPart、sizeMultiplier 未直接参与本 mod 的乳池或 UI 逻辑（fluid 通过 Comp 的 Fluid 间接用于奶制品类型；sizeProfile.density 已用于奶量增加倍率）。
 

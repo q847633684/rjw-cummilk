@@ -95,25 +95,16 @@
             <summary>3.1：哺乳者获得「哺乳了某人」记忆，用于社交/关系。</summary>
         </member>
         <member name="T:MilkCum.Core.Settings.RjwBreastPoolCapacityMode">
-            <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。</summary>
+            <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。仅存三档：纯严重度 / 纯重量 / 纯体积。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.Severity">
             <summary>严重度×系数。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastWeight">
-            <summary>RJW PartSize 估算乳房重量（kg）×系数；无重量数据时回退严重度。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.MaxOfSeverityAndWeight">
-            <summary>取「严重度×系数」与「重量×系数」clamp 后的较大值。</summary>
+            <summary>RJW PartSize 估算乳房重量（kg）×系数；无有效重量数据时为 0（不进池）。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastVolume">
-            <summary>RJW <c>BreastSize.volume</c>（升）×系数；无体积数据时回退严重度。新安装默认，容积隐喻更贴储奶上限。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.MaxOfSeverityAndVolume">
-            <summary>严重度×系数 与 体积×系数 取大。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.BlendedSeverityAndVolume">
-            <summary>α×（严重度×系数）+ (1−α)×（体积×系数，无体积则用严重度项）；α 为设置项「混合模式严重度权重」。</summary>
+            <summary>RJW <c>BreastSize.volume</c>（升）×系数；无有效体积数据时为 0（不进池）。新安装默认。</summary>
         </member>
         <member name="T:MilkCum.Core.Settings.MainTabIndex">
             <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
@@ -167,10 +158,7 @@
             <summary>RJW 胸围容量系数：单侧基容量 =（由 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode"/> 选定的严重度/体积/重量等基值）× 本系数，默认 2。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode">
-            <summary>乳池单侧基容量来源：默认 <see cref="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastVolume"/>（RJW 估算体积，无则严重度）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityBlendSeverityWeight">
-            <summary>混合容量模式（<see cref="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.BlendedSeverityAndVolume"/>）中严重度项权重 α∈[0,1]；其余给体积项。</summary>
+            <summary>乳池单侧基容量来源：默认 <see cref="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastVolume"/>（体积/重量无有效 RJW 尺寸则为 0）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwNippleStageFlowBonusPercent">
             <summary>RJW 乳房阶段标签含 “Nipple” 时，对进水/高潮产液流速倍率施加的百分比修正（0=关闭）；限制在约 ±15% 内。</summary>
@@ -228,12 +216,6 @@
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.overflowResidualInflammationBoost">
             <summary>炎症倍率：multI = 1 + 本值×Clamp01(I/I_crit)；I_crit 同炎症设置。</summary>
-        </member>
-        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecay">
-            <summary>药物泌乳容量用有效数 B_T：由 baselineMilkDurationDays 反推，使单次剂量（L≥0.5、E=1）时剩余天数 ≥ 基准天数。B=0.5/baseline ⇒ B_T_eff=1/(0.5/baseline−k×0.5)。</summary>
-        </member>
-        <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetEffectiveBaseValueTForDecayBirth">
-            <summary>分娩泌乳容量用有效数 B_T：由 birthInducedMilkDurationDays 反推，公式同药物。</summary>
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetPressureFactor(System.Single)">
             <summary>带下限 Logistic：f(P)=f_min+(1−f_min)×1/(1+exp(k×(P−Pc)))，P 大时平滑降压，最小 f_min 永不为零。默认 k=6、Pc=0.9、f_min=0.02，奶量达 90% 才开始往下压。</summary>
@@ -899,7 +881,7 @@
             <summary>缓存基础容量（GetLeft+GetRight），每 600 tick 刷新，减少每 60 tick 重复计算。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.breastFullness">
-            <summary>按 key（如 defName_i_L/R）的水位，唯一写入口；Fullness = Sum(Values)。支持多乳、不对称。</summary>
+            <summary>按稳定池键（<see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>）的水位；Fullness = Sum(Values)。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Fullness">
             <summary>当前总奶量（0~maxFullness），= breastFullness.Values.Sum()；对外只读。</summary>
@@ -926,7 +908,7 @@
             <summary>10.8-6：最近一次被挤奶的游戏 tick，用于「长时间未挤奶」心情判定</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ticksFullPoolByKey">
-            <summary>各虚拟乳侧（poolKey_L/R）连续「达基础容量满阈」的累计 tick，用于瘀积/MTB/信件；与 breastFullness 同周期更新。</summary>
+            <summary>各物理池 key 连续「达基础容量满阈」的累计 tick，用于瘀积/MTB/信件；与 breastFullness 同周期更新。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastFullPoolLetterTick">
             <summary>3.3 满池事件：上次发送「需要挤奶」信件的 tick，避免刷屏</summary>
@@ -1103,7 +1085,10 @@
             <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。drainedKeys 非空时对被扣量侧对应的乳腺炎做额外排空缓解。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedEntries">
-            <summary>缓存 GetBreastPoolEntries()，脏或超过 EntriesCacheMaxTicks 时失效，减少分配与 GC。</summary>
+            <summary>缓存乳池条目（与侧行同次构建）；脏或超过 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetEntriesCacheMaxTicksForPawn"/> 时失效。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedSideRows">
+            <summary>与 <see cref="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedEntries"/> 同次构建，避免 UI/联动再调 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedEntriesDirty">
             <summary>为 true 时下次 GetCachedEntries 强制重建；120-tick 比较乳房数量或 ClearPools 时设脏。</summary>
@@ -1111,8 +1096,8 @@
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastBreastListCount">
             <summary>上次重建缓存时的乳房 Hediff 数量，用于 120-tick 检测变化并设脏。</summary>
         </member>
-        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EntriesCacheMaxTicks">
-            <summary>缓存最长有效 tick 数，超时则重建；与脏标记一起使用，避免长期不刷新。</summary>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EntriesCacheMaxTicksOnCurrentMap">
+            <summary>当前地图小人：池条目缓存 TTL（tick）。非当前地图/未载入地图用更长 TTL，与 LOD 一致。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedPairGroups">
             <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效。</summary>
@@ -1124,7 +1109,7 @@
             <summary>该侧「达基础满阈」连续累计的 tick（与 UpdateMilkPools 同步）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMaxTicksFullPoolAcrossSides">
-            <summary>所有虚拟乳侧满池计数的最大值（满池信件、化脓 MTB 等）。</summary>
+            <summary>各池 key 满池计数中的最大值（满池信件、化脓 MTB 等）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.UpdateTicksFullPoolForEntries(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
             <summary>每 60tick 进水结束后：按各侧是否 ≥ 基础容量×满阈 更新/衰减计数并剔除无效 key。</summary>
@@ -1133,7 +1118,13 @@
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetLeftOrRightFullness(System.Boolean)">
-            <summary>按 entries 汇总左侧或右侧总水位（LeftFullness/RightFullness 用），便于多乳/不对称。</summary>
+            <summary>按 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.IsLeft"/> 汇总该侧水位（每条真实池独立 key）。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EntriesCacheMaxTicksOtherMap">
+            <summary>非当前地图殖民者：条目缓存稍长，减少切地图/多地图时重复算 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EntriesCacheMaxTicksNotOnMap">
+            <summary>未载入地图（商队等）：与 <see cref="F:MilkCum.Core.Constants.PoolModelConstants.LODIntervalNotOnMapTicks"/> 同量级，避免频繁重建。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SetEntriesCacheDirty">
             <summary>立即标记 entries 缓存为脏，下次 GetCachedEntries 将重建。泌乳/乳房 hediff 增删时调用。</summary>
@@ -1143,6 +1134,9 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedEntriesIfValid">
             <summary>缓存有效时返回已缓存的池条目列表（只读使用），避免 Hediff/UI 重复分配；无效时返回 null，调用方需 fallback 到 GetBreastPoolEntries。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedSideRowsIfValid">
+            <summary>与 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedEntriesIfValid"/> 同生命周期；供 RJW 联动等需 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.BreastHediff"/> 的路径，避免再算一遍侧行。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedPairGroups">
             <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
@@ -1256,7 +1250,7 @@
             <summary>Granularity: 4 steps per severity (0.25). Stage table covers 0..MaxSeverityForStages; higher severity uses last stage. maxSteps=81, count=162; if future allows severity>20 (e.g. large dose), display stays at last stage—not a bug, just a note.</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.OnGatheredLetdownByKeys(System.Collections.Generic.IEnumerable{System.String})">
-            <summary>挤奶/吸奶后按被扣量的池侧添加喷乳反射刺激（仅被操作的该侧 R 升高）</summary>
+            <summary>挤奶/吸奶后按被扣量的池 key 添加喷乳反射（与 breastFullness / MakeStablePoolKey 一致）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffWithComps_MilkCumLactating.GenStages">
             <summary>设计原则 5：stages �?XML 移除，此�?C# 动态生成；capMods �?GenStage 内设置（当前 Clear �?EM_LactatingGain 等独�?Hediff 提供能力），避免�?Def 静态阶段冲突</summary>
@@ -1274,7 +1268,7 @@
             <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.letdownReflexByKey">
-            <summary>四层模型：喷乳反�?R∈[0,1]，按「哪对乳房的哪一侧」分别存储（key �?breastFullness 一致，�?HumanBreast_L）。挤�?吸奶某侧仅提升该�?R</summary>
+            <summary>喷乳反射 R∈[0,1]，按稳定池键存储（与 breastFullness 一致）。挤奶/吸奶对该 key 提升 R。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.inflammationByKey">
             <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
@@ -1304,10 +1298,7 @@
             <summary>抑制本 tick 内 AddFromDrug 的「吃药进水」调试日志，用于在上层聚合为「每次吃药一条」。不存档。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.RemainingDays">
-            <summary>剩余天数（游戏日）。有 SeverityPerDay 时用 Parent.Severity÷|severityPerDay| 与信息面板一致；否则用 L÷每日衰减。</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetEffectiveBaseValueTForRemaining">
-            <summary>剩余天数用加权 B_T：L_drug/B_T_drug + L_birth/B_T_birth 反推 B_T_eff = L_total / (L_drug/B_T_drug + L_birth/B_T_birth)。</summary>
+            <summary>剩余天数（游戏日）：仅按原版 <see cref="T:Verse.HediffCompProperties_SeverityPerDay"/>（&lt;0）→ Severity÷|severityPerDay|；与原版日衰减一致。无该 comp 时返回 0。永久泌乳→正无穷（表格列单独显示「永久」）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CurrentLactationAmount">
             <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
@@ -1355,7 +1346,7 @@
             <summary>四层模型：当前喷乳反射 R∈[0,1]（用于总览显示）。未启用时返回 1；启用时为各侧 R 的算术平均，无数据时返回 0。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexRaw(System.String)">
-            <summary>指定侧（poolKey_L / poolKey_R）的 R 值；无记录时返回 0（流速倍率里会�?min 合并）</summary>
+            <summary>指定池 key 的 R 原始值；无记录时返回 0。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetLetdownReflexForSide(System.String)">
             <summary>指定侧的 R，无记录时为 0（用于显�?平均）</summary>
@@ -1381,15 +1372,6 @@
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FormatFlowFactor(System.Single)">
             <summary>流速因子显示用：整数显示为 "1"，否则保�?1�? 位小数</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecayWithBT(System.Single,System.Single)">
-            <summary>每日衰减 D(L,E) = 1/(B_T×E) + k×L + η·I（启用炎症时）。B_T 由参数传入（药物/分娩分别用各自基准）。</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay(System.Single)">
-            <summary>每日衰减（药物分量用药物 B_T）；用于显示总衰减量。</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.GetDailyLactationDecay">
-            <summary>当前 L 下的每日衰减（仅用于显示/调试；实际衰减由原版 SeverityPerDay 驱动）。</summary>
-        </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddFromDrug(System.Single,System.Boolean)">
             <summary>吃药时进水：ΔL = Δs × C_dose；若 syncSeverity 为 true 则同时增加 parent.Severity，供原版 SeverityPerDay 驱动衰减与面板显示。合并时调用 syncSeverity: false（Severity 已由 TryMergeWith 更新）。
             封顶+倍数逻辑与 AddRemainingDays 共用 ApplyDeltaLToLAndSeverity。</summary>
@@ -1398,7 +1380,7 @@
             <summary>分娩时累加：L 与 Severity 均加上基础值（不乘有效药效系数），原版 SeverityPerDay 对总 severity 生效。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddRemainingDays(System.Single)">
-            <summary>一次吸奶或挤奶增加若干天泌乳时间：将 L 与 Severity 增加对应量。有 SeverityPerDay 时用 days×|severityPerDay| 与原版一致；否则用原每日衰减公式。启用 lactationLevelCap 时与 AddFromDrug 一致：L 封顶，超出部分按倍数转为 Severity。</summary>
+            <summary>一次吸奶或挤奶增加若干天泌乳时间：仅当 Def 含负的 severityPerDay 时，按 days×|severityPerDay| 增加 L 与 Severity（与原版 RemainingDays 一致）。无该 comp 时不做任何事。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.ApplyDeltaLToLAndSeverity(System.Single)">
             <summary>将 ΔL 应用到 L 与 Severity；启用 lactationLevelCap 时 L 封顶，超出部分按 lactationLevelCapDurationMultiplier 转为 Severity（与 AddFromDrug 一致）。</summary>
@@ -1428,7 +1410,7 @@
             <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
-            <summary>健康页乳房悬�?DevMode：返回「生产机制」顺序的因子行（乳房体积、基因、设置、状态、驱动、饥饿、压力、喷乳反射）</summary>
+            <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（RJW GetFluidMultiplier 侧倍率、营规、状态、泌乳素、饥饿、压力、喷乳反射）</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
             <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开见下方详情。</summary>
@@ -1524,7 +1506,7 @@
             <summary>根据基因/物种/设置维护 Lactating Hediff（增删与 Severity）。由 CompTick 每 120 tick 调用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateBreastsEngorged(Verse.Pawn,MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable)">
-            <summary>任一侧虚拟乳（poolKey_L/R）满度 ≥ 基础容量×满阈时添加胀满；当每一侧都 &lt; 0.9×该侧基础容量时移除。</summary>
+            <summary>任一乳池条目满度 ≥ 基础容量×满阈时添加胀满；当所有池条目都 &lt; 0.9×基础容量时移除。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Verse.Pawn,MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable)">
             <summary>奶水瘀积：各侧满池 tick 取最大参与久满判定；缓解要求每一侧相对撑大容量比例均 &lt; 0.56。</summary>
@@ -1547,53 +1529,47 @@
         <member name="T:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions">
             <summary>
             乳池与流速：池条目、容量、MilkDef、泌乳 Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压奶满度、身体部位、距离等。
-            设计：乳房对与池键以 <see cref="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot"/> / <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPairSnapshots(Verse.Pawn)"/> 为 SSOT。不乘 BodySize。由 ExtensionHelper 拆出，见 记忆库/design/架构原则与重组建议。
+            设计：泌乳乳房条目的经济快照以 <see cref="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot"/> 为 SSOT；左右真实池与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/> / <see cref="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry"/> 对齐。不乘 BodySize。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetLeftBreastCapacityFactor(Verse.Pawn)">
-            <summary>左池容量：虚拟左池，不修改 Hediff</summary>
+            <summary>左侧各池基容量之和（组织适应前因子，由 <see cref="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastCapacityFactors(Verse.Pawn,System.Single@,System.Single@)"/>）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetRightBreastCapacityFactor(Verse.Pawn)">
-            <summary>右池容量：虚拟右池，不修改 Hediff</summary>
+            <summary>右侧各池基容量之和。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastCapacityFactors(Verse.Pawn,System.Single@,System.Single@)">
-            <summary>左池/右池容量（汇总用）。无 RJW 乳房 hediff 时返回 0；否则为所有乳房对的单侧基容量之和，左右各写同值（多对乳时非解剖「仅左胸」语义，见记忆库文档「汇总 API 注意」）。不修改 Hediff</summary>
+            <summary>左/右汇总基容量因子（各侧乳池 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.Capacity"/> 之和，适应前由侧行加总）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastPoolEntries(Verse.Pawn)">
-            <summary>枚举虚拟左/右乳池条目（不修改 Hediff）。前提：GetBreastList 非空才建池。每条乳房 Hediff 生成 poolKey_L / poolKey_R，共用 PairIndex。永不返回 null。见记忆库 design/泌乳前提、双池与 PairIndex</summary>
+            <summary>每条侧池一行：<see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>；同 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.PairIndex"/> 双行由 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,MilkCum.Fluids.Shared.Data.BreastPairCapacities)"/> 耦合进水。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.BuildBreastPoolEntriesFromSideRows(Verse.Pawn,System.Collections.Generic.List{MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow})">
+            <summary>由已算好的侧行构建池条目（与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastPoolEntries(Verse.Pawn)"/> 同逻辑）；供 <see cref="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable"/> 单次算行、复用行与条目。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.ApplyCapacityAdaptationToEntries(Verse.Pawn,System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
             <summary>将 Comp 上的组织适应增量按各侧体基容量比例摊入 Capacity，使 sum(Capacity)≈maxFullness，与进水、回缩、GetPoolBaseTotal、UI 一致。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetMilkFlowMultiplierFromConditions(Verse.Pawn,Verse.BodyPartRecord)">
-            <summary>乳腺炎/瘀积等对流速的惩罚：返回 1 减去有关 Def 的 severity×权重，有下限。part 为 null 时查全身任一条；part 非空时仅匹配该部位（虚拟 _L/_R 共用该对 Part，故共敏同一乳腺炎 Hediff）</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolKeyFromSideKey(System.String)">
-            <summary>从侧 key（如 HumanBreast_L）得到池 key（HumanBreast）</summary>
+            <summary>乳腺炎/瘀积等对流速的惩罚：返回 1 减去有关 Def 的 severity×权重，有下限。part 非空时仅匹配该部位。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPartForPoolKey(Verse.Pawn,System.String)">
-            <summary>该对乳房（poolKey）对应的身体部位，用于按部位的状态（如乳腺炎）判定。无对应 hediff 时返回 null</summary>
+            <summary>稳定池键对应的 RJW 乳房 <see cref="P:Verse.Hediff.Part"/>。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetConditionsForSide(Verse.Pawn,System.String)">
-            <summary>指定侧（sideKey，如 poolKey_L）的状态系数，用于流速与 UI 按「该乳房该侧」显示</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetConditionsForPoolKey(Verse.Pawn,System.String)">
+            <summary>稳定池键上的状态系数（乳腺炎/瘀积等）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolKeyForBreastHediff(Verse.Pawn,Verse.Hediff)">
-            <summary>健康页悬停：给定乳房 hediff（须属于 GetBreastList 或与列表项 def+Part 一致），返回 poolKey（与 GetBreastPoolEntries / BuildPoolKey 一致）</summary>
+            <summary>给定乳房 hediff，返回其某一侧池键（优先左）。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetFlowPerDayForBreastPair(Verse.Pawn,System.String)">
-            <summary>该对乳房的左右乳产奶流速（池单位/天）及各自流速倍率；仅读池逻辑每侧缓存，缓存未刷新时返回 0 流速（逻辑由 UpdateMilkPools 统一维护）。entries 优先复用 Comp 的缓存，避免重复构建列表。</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetFlowPerDayForBreastSides(Verse.Pawn,System.String,System.String)">
+            <summary>左右池各自的日流速与 RJW 倍率（读 <see cref="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable"/> 缓存）。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPressureFactorForSide(Verse.Pawn,System.String)">
-            <summary>指定侧（poolKey_L / poolKey_R）的压力系数，用于健康页因子行按侧显示。P = 该侧满度/该侧撑大容量</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPressureFactorForPool(Verse.Pawn,System.String)">
+            <summary>该池键满度 / 撑大上限 的压力因子。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolEntriesForBreastHediff(Verse.Pawn,Verse.Hediff)">
-            <summary>健康页悬停：该乳房 hediff 对应池条目，正常为 2 条（poolKey_L、poolKey_R）</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolEntriesForPoolKey(Verse.Pawn,System.String)">
-            <summary>健康页悬停（身体部位）：按 poolKey（如 part.def.defName）取该对乳房池条目。用于悬停部位时显示左/右乳奶量</summary>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetPoolEntriesForBreastPart(Verse.Pawn,Verse.BodyPartRecord)">
-            <summary>健康页悬停（身体部位）：由 BodyPartRecord 取池条目，以 part.def.defName 作 poolKey。无对应 RJW 乳房 hediff 时返回空</summary>
+            <summary>该乳房 Hediff 对应的各侧真实池（若有合成左右则两行）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastOrChestPart(Verse.Pawn)">
             <summary>获取「乳房/胸部」身体部位，用于挂乳房类 hediff。优先 Breast，否则 Chest（RJW），再否则 Torso。无合适部位时返回 null</summary>
@@ -1617,18 +1593,21 @@
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy">
             <summary>
-            RJW 乳房 Hediff 与乳池经济共用：基容量（严重度 / RJW 体积或重量 / 混合）、流速倍率（HediffComp_SexPart × 可选乳头阶段修饰）、池键与按对快照。
+            RJW 乳房 Hediff 与乳池经济共用：基容量（纯严重度 / 纯 RJW 体积 / 纯 RJW 重量三档）、流速倍率（HediffComp_SexPart × 可选乳头阶段修饰）、池键与按对快照。
             <see cref="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot"/> 为验收要求的「乳房快照」SSOT：容量/流速/UI/RJW Severity 同步均应对齐此结构中的量，避免多文件各写一遍 Severity×系数。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.IsBreastHediffForPool(Verse.Hediff)">
-            <summary>与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPairSnapshots(Verse.Pawn)"/> / 池条目一致：RJW 乳房定义含 <see cref="F:rjw.GenitalTag.CanLactate"/> 才参与虚拟池（与 RJW 泌乳标签一致）。</summary>
+            <summary>与乳池一致：RJW 乳房定义含 <see cref="F:rjw.GenitalTag.CanLactate"/> 才参与（与 RJW 泌乳标签一致）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetSeverityForPoolEconomy(Verse.Hediff)">
             <summary>容量等经济计算用的「部位严重度」：与 <see cref="M:rjw.HediffComp_SexPart.GetFluidMultiplier"/> 一致优先 <see cref="M:rjw.HediffComp_SexPart.GetSeverity"/>，否则回退 <see cref="P:Verse.Hediff.Severity"/>。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.BuildPoolKey(Verse.Hediff,System.Int32)">
-            <summary>与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastPoolEntries(Verse.Pawn)"/> 一致：part.defName 优先，否则 hediff.defName，后缀为乳房在 GetBreastList 中的下标。</summary>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)">
+            <summary>
+            乳池字典的稳定键：自根到 <see cref="P:Verse.Hediff.Part"/> 的 <c>BodyPartDef.defName</c> 路径（<c>/</c> 分隔）。
+            可与真实左/右子部位对齐；无 Part 时退化为 <c>hediffDef#index</c>。
+            </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastHediffFlowMultiplier(Verse.Hediff)">
             <summary>单条乳房 Hediff 的进水倍率：<see cref="M:rjw.HediffComp_SexPart.GetFluidMultiplier"/> 与 RJW 一致（无额外 0.1–3 夹断），再乘可选乳头阶段修饰；下限仅防 0/负值。</summary>
@@ -1638,9 +1617,9 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.ComputeBaseCapacityPerSide(Verse.Hediff,System.Single,System.Single,System.Boolean)">
             <summary>
-            单侧虚拟池基容量（组织适应前）：由 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode"/> 在严重度、RJW 重量、RJW 体积与混合之间选择。
-            默认安装为 RJW BreastSize.volume（升）×系数；泌乳流速仍由 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastHediffFlowMultiplier(Verse.Hediff)"/>（GetFluidMultiplier）单独决定。
-            重量/体积模式在无法得到正值时回退严重度。
+            单侧虚拟池基容量（组织适应前）：由 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode"/> 在「纯严重度 / 纯 RJW 重量 / 纯 RJW 体积」三选一。
+            泌乳流速仍由 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastHediffFlowMultiplier(Verse.Hediff)"/>（GetFluidMultiplier）单独决定。
+            体积/重量档在无法得到有效 RJW 尺寸时结果为 0、不进池。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.ComputeBaseCapacityPerSide(Verse.Hediff)">
@@ -1651,10 +1630,20 @@
             当前小人、在启用 RJW 胸池时的乳房对快照列表；顺序与池条目中 PairIndex 一致。无乳房或关闭设置时返回空表（非 null）。
             </summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)">
+            <summary>
+            左右两条真实池：同一 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.PairIndex"/> 的两行由 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,MilkCum.Fluids.Shared.Data.BreastPairCapacities)"/> 耦合进水。
+            键：解剖左/右乳为各自 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>；单 Hediff 无法区分侧时为 baseKey+|L| / +|R|。
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow">
+            <summary>一条「侧」乳池行：与 <see cref="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry"/> 一一对应。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot">
             <summary>
             一条 RJW 乳房 Hediff 在乳池经济中的只读快照（验收：阶段 1 乳房快照）。
-            ListIndex 为 GetBreastList 下标；PoolKey 无 _L/_R 后缀。
+            ListIndex 为 GetBreastList 下标；PoolKey 为 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>（部位路径，不含合成 |L|/|R|）。
+            PairIndex 仍为每条泌乳乳房递增的序数；左右真实池与双池耦合见 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>。
             </summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.amountToTake">
@@ -1727,13 +1716,16 @@
             <summary>鐗╁搧鎮诞/妫€鏌ラ潰鏉匡細鏄剧ず浜т富涓庡厑璁镐娇鐢ㄥ悕鍗曪紙濂朵骇涓荤敤 CompEquallyMilkable.allowedConsumers锛涚簿娑茬瓑鏃?Comp 鏃朵粎鏄剧ず浜т富锛夈€</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry">
-            <summary>单侧池条目：稳定 key、容量、流速倍率、是否左侧、对序号（乳汁/精液共享）。</summary>
+            <summary>乳池条目：稳定 key（身体部位路径字符串）、容量、流速倍率、左右汇总用标记、对序号、可选 RJW 乳房部位。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.FlowMultiplier">
-            <summary>该虚拟乳侧的 RJW/基因等流速倍率（与乳房对快照 <c>RjwBreastPairSnapshot.FlowMultiplier</c> 同源）；调用方 × basePerDay 得每日流速。</summary>
+            <summary>该池的 RJW/基因等流速倍率；调用方 × basePerDay 得每日流速。合并双侧虚拟池时为原单侧倍率的 2 倍以保持总进水量不变。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.PairIndex">
-            <summary>第几对乳房（0=第一对）；同一对的左乳与右乳共享同一值，用于按对撑大与挤奶从第一对开始选侧。</summary>
+            <summary>第几对乳房（0=第一对）；解剖左/右乳各一条 Hediff 时二者共享同一 PairIndex，用于 TickGrowth 成对处理。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.SourcePart">
+            <summary>挂乳房 Hediff 的身体部位；乳腺炎等与部位绑定的倍率用此解析。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.BreastPairCapacities">
             <summary>双池基础容量与撑大容量，用于 TickGrowth 参数封装。</summary>
@@ -1934,8 +1926,8 @@
         <member name="T:MilkCum.Harmony.BreastPoolTooltipHelper">
             <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
         </member>
-        <member name="M:MilkCum.Harmony.BreastPoolTooltipHelper.BuildBreastPairBlock(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.Single,System.Single,System.Boolean}},System.String,Verse.Pawn)">
-            <summary>构建一对乳房的 tooltip 块：【sectionLabel】、总奶量/容量/效率、左乳/右乳分行与因子。</summary>
+        <member name="M:MilkCum.Harmony.BreastPoolTooltipHelper.BuildBreastPairBlock(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.Single,System.Single,System.Boolean}},Verse.Pawn)">
+            <summary>构建一对乳房的 tooltip：总览 + 左/右真实池各行与按池键的因子。</summary>
         </member>
         <member name="T:MilkCum.Harmony.HediffComp_SexPart_CompTipStringExtra_Patch">
             <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块。仅当「有泌乳且当前为 RJW 乳房行」时追加；没有泌乳不追加，非乳房行不追加（genitalFamily != Breasts 已 return）。若 __result 中已包含本块（同一 getter 被调用两次并拼接时会重复），则不再追加以免同一悬浮内出现两份相同内容。</summary>
@@ -1980,6 +1972,9 @@
         </member>
         <member name="T:MilkCum.RJW.JobDriver_Sex_OrgasmMilk_Patch">
             <summary>RJW 高潮产液（produceFluidOnOrgasm）：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量（AddMilkToKeys）。性行为后 L 增量见 RJWSexAndFertility.ApplyPostSexLactationBoost（rjwSexAddsLactationBoost）。</summary>
+        </member>
+        <member name="F:MilkCum.RJW.JobDriver_Sex_OrgasmMilk_Patch.PoolUnitsPerOrgasmPerBreastSide">
+            <summary>每条侧池各追加的池单位（双池时两侧各加一次）。</summary>
         </member>
         <member name="T:MilkCum.RJW.RJWLactatingBreastSizeGameComponent">
             <summary>泌乳期临时增大 RJW 乳房 Severity，离乳后恢复。基准 Severity 存静态字典；随游戏存档为键值对列表（<see cref="T:MilkCum.RJW.RJWLactatingBreastSizeGameComponent.BreastBaseSeveritySavePair"/>），读入时一次性灌回字典。</summary>
