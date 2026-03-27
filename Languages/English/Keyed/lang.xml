@@ -66,7 +66,6 @@
     <EM.SectionDesc_NutritionIntegration>Food ↔ milk pool: mechanoid nutrition→energy factor; lactation extra hunger; reabsorb on shrink. Same logic as in Core → Breastfeed.</EM.SectionDesc_NutritionIntegration>
     <EM.BreastfeedOverviewDesc>Who can feed whom is set below by humanlike / animal / mechanoid. Single feeding duration and mechanoid nutrition→energy here.</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>Lactation extra hunger: {0} (0=off, 150=1:1, 300=double)</EM.LactationExtraNutritionFactor>
-    <EM.BreastfeedCapacityFactor>Breastfeed capacity factor</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>Milking work total base</EM.MilkingWorkTotalBase>
     <EM.LactatingGain>Lactation vigor (Consciousness / Manipulation / Moving)</EM.LactatingGain>
     <EM.LactatingGainDesc>When enabled, prolactin-driven lactation steadies the body: clearer head, surer hands. The percentage sets strength (0–20%).</EM.LactatingGainDesc>
@@ -355,4 +354,31 @@
     <EM.BodyPartRightBreast>right breast</EM.BodyPartRightBreast>
     <EM.BodyPartLeftMechBreast>left mech breast</EM.BodyPartLeftMechBreast>
     <EM.BodyPartRightMechBreast>right mech breast</EM.BodyPartRightMechBreast>
+    <EM.NPoolAdvancedSection>N-pool advanced</EM.NPoolAdvancedSection>
+    <EM.AdaptationSlowTheta>Slow remodel grow theta: {0}</EM.AdaptationSlowTheta>
+    <EM.AdaptationSlowOmega>Slow remodel decay omega: {0}</EM.AdaptationSlowOmega>
+    <EM.InflowEventSubsteps>Event inflow substeps: {0}</EM.InflowEventSubsteps>
+    <EM.InflowEventBurstDurationTicks>Event burst ticks: {0}</EM.InflowEventBurstDurationTicks>
+    <EM.DuctHopPenaltyPerEdge>Duct hop penalty: {0}</EM.DuctHopPenaltyPerEdge>
+    <EM.DuctInflowInflammationResistance>Inflow inflammation resistance: {0}</EM.DuctInflowInflammationResistance>
+    <EM.DuctDrainInflammationResistanceManual>Drain manual resistance: {0}</EM.DuctDrainInflammationResistanceManual>
+    <EM.DuctDrainInflammationResistanceMachine>Drain machine resistance: {0}</EM.DuctDrainInflammationResistanceMachine>
+    <EM.DuctMachineSuctionBonus>Machine suction bonus: {0}</EM.DuctMachineSuctionBonus>
+    <EM.DuctDrainPressureBase>Drain pressure base: {0}</EM.DuctDrainPressureBase>
+    <EM.DuctDrainPressureScale>Drain pressure scale: {0}</EM.DuctDrainPressureScale>
+    <EM.DuctConductanceMin>Duct conductance min: {0}</EM.DuctConductanceMin>
+    <EM.DuctConductanceMax>Duct conductance max: {0}</EM.DuctConductanceMax>
+    <EM.AdaptationSlowThetaDesc>Slow-phase growth of structural capacity. Higher value means long-term capacity climbs faster under sustained fullness.</EM.AdaptationSlowThetaDesc>
+    <EM.AdaptationSlowOmegaDesc>Slow-phase decay of structural capacity. Higher value means long-term remodeling falls back faster when stimulus is low.</EM.AdaptationSlowOmegaDesc>
+    <EM.InflowEventSubstepsDesc>When event burst is active, each 60-tick update is split into N substeps for smoother inflow and pressure feedback.</EM.InflowEventSubstepsDesc>
+    <EM.InflowEventBurstDurationTicksDesc>How long event-driven burst mode stays active after stimulation (nursing/milking/orgasm), in ticks.</EM.InflowEventBurstDurationTicksDesc>
+    <EM.DuctHopPenaltyPerEdgeDesc>Network distance penalty per edge from outlet. Higher value makes deeper pools harder to pass through.</EM.DuctHopPenaltyPerEdgeDesc>
+    <EM.DuctInflowInflammationResistanceDesc>How strongly inflammation reduces inflow conductance.</EM.DuctInflowInflammationResistanceDesc>
+    <EM.DuctDrainInflammationResistanceManualDesc>How strongly inflammation resists manual drain/suck.</EM.DuctDrainInflammationResistanceManualDesc>
+    <EM.DuctDrainInflammationResistanceMachineDesc>How strongly inflammation resists machine pumping.</EM.DuctDrainInflammationResistanceMachineDesc>
+    <EM.DuctMachineSuctionBonusDesc>Extra suction multiplier for machine pumping compared with manual extraction.</EM.DuctMachineSuctionBonusDesc>
+    <EM.DuctDrainPressureBaseDesc>Base pressure term used by drain model, independent of current fullness pressure.</EM.DuctDrainPressureBaseDesc>
+    <EM.DuctDrainPressureScaleDesc>Pressure gain term. Higher value makes high-pressure pools drain faster.</EM.DuctDrainPressureScaleDesc>
+    <EM.DuctConductanceMinDesc>Lower clamp for conductance/take factor to prevent complete lockup.</EM.DuctConductanceMinDesc>
+    <EM.DuctConductanceMaxDesc>Upper clamp for conductance/take factor to prevent runaway drain speed.</EM.DuctConductanceMaxDesc>
 </LanguageData>

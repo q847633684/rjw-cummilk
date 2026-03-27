@@ -65,7 +65,6 @@
     <EM.SectionDesc_NutritionIntegration>吃进去的东西与乳房里的奶怎么互相拆借：机械族把营养换成电、泌乳让人更容易饿、涨满的奶回缩时能不能填一点肚子。和「核心机制 → 哺乳」里是同一套说法。</EM.SectionDesc_NutritionIntegration>
     <EM.BreastfeedOverviewDesc>谁准喂谁、喂多久，在下方按人形、畜生、机械分开定。这里只管一次叼住多久、机械喝奶怎么换算成能量。</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>泌乳额外饥饿：{0}（0=关闭，150=1:1，300=双倍）</EM.LactationExtraNutritionFactor>
-    <EM.BreastfeedCapacityFactor>吸奶容量系数</EM.BreastfeedCapacityFactor>
     <EM.MilkingWorkTotalBase>挤奶工作量基准</EM.MilkingWorkTotalBase>
     <EM.LactatingGain>泌乳劲头（意识/操纵/移动）</EM.LactatingGain>
     <EM.LactatingGainDesc>开启后，催乳药催起的泌乳会让人更清醒、手脚更稳；下方百分比调节强弱（0%～20%）。</EM.LactatingGainDesc>
@@ -352,4 +351,31 @@
     <EM.BodyPartRightBreast>右乳</EM.BodyPartRightBreast>
     <EM.BodyPartLeftMechBreast>左机械乳</EM.BodyPartLeftMechBreast>
     <EM.BodyPartRightMechBreast>右机械乳</EM.BodyPartRightMechBreast>
+    <EM.NPoolAdvancedSection>N 池高级参数</EM.NPoolAdvancedSection>
+    <EM.AdaptationSlowTheta>慢重塑增长 theta：{0}</EM.AdaptationSlowTheta>
+    <EM.AdaptationSlowOmega>慢重塑衰减 omega：{0}</EM.AdaptationSlowOmega>
+    <EM.InflowEventSubsteps>事件进水亚步长：{0}</EM.InflowEventSubsteps>
+    <EM.InflowEventBurstDurationTicks>事件爆发持续 ticks：{0}</EM.InflowEventBurstDurationTicks>
+    <EM.DuctHopPenaltyPerEdge>导管跳点惩罚：{0}</EM.DuctHopPenaltyPerEdge>
+    <EM.DuctInflowInflammationResistance>进水炎症阻力：{0}</EM.DuctInflowInflammationResistance>
+    <EM.DuctDrainInflammationResistanceManual>手动排空炎症阻力：{0}</EM.DuctDrainInflammationResistanceManual>
+    <EM.DuctDrainInflammationResistanceMachine>机器排空炎症阻力：{0}</EM.DuctDrainInflammationResistanceMachine>
+    <EM.DuctMachineSuctionBonus>机器吸力加成：{0}</EM.DuctMachineSuctionBonus>
+    <EM.DuctDrainPressureBase>排空压力基值：{0}</EM.DuctDrainPressureBase>
+    <EM.DuctDrainPressureScale>排空压力缩放：{0}</EM.DuctDrainPressureScale>
+    <EM.DuctConductanceMin>导管导通下限：{0}</EM.DuctConductanceMin>
+    <EM.DuctConductanceMax>导管导通上限：{0}</EM.DuctConductanceMax>
+    <EM.AdaptationSlowThetaDesc>慢相重塑的增长系数。越高表示在持续高满度下，长期结构容量增长越快。</EM.AdaptationSlowThetaDesc>
+    <EM.AdaptationSlowOmegaDesc>慢相重塑的回落系数。越高表示刺激变弱后，长期结构容量回落越快。</EM.AdaptationSlowOmegaDesc>
+    <EM.InflowEventSubstepsDesc>事件爆发期间，把每 60 tick 的进水拆成 N 个亚步长，进水与压力反馈更平滑。</EM.InflowEventSubstepsDesc>
+    <EM.InflowEventBurstDurationTicksDesc>刺激事件（哺乳/挤奶/高潮）触发后，事件驱动爆发模式持续的 ticks。</EM.InflowEventBurstDurationTicksDesc>
+    <EM.DuctHopPenaltyPerEdgeDesc>每跨一个网络边的跳点惩罚。越高表示深层池到出口越难导通。</EM.DuctHopPenaltyPerEdgeDesc>
+    <EM.DuctInflowInflammationResistanceDesc>炎症对进水导通的抑制强度。</EM.DuctInflowInflammationResistanceDesc>
+    <EM.DuctDrainInflammationResistanceManualDesc>炎症对手动吸奶/排空的阻力强度。</EM.DuctDrainInflammationResistanceManualDesc>
+    <EM.DuctDrainInflammationResistanceMachineDesc>炎症对机器抽吸的阻力强度。</EM.DuctDrainInflammationResistanceMachineDesc>
+    <EM.DuctMachineSuctionBonusDesc>机器抽吸相对手动的额外吸力倍率。</EM.DuctMachineSuctionBonusDesc>
+    <EM.DuctDrainPressureBaseDesc>排空模型中的基础压力项，与当前满度压力无关。</EM.DuctDrainPressureBaseDesc>
+    <EM.DuctDrainPressureScaleDesc>排空模型中的压力增益项。越高表示高压池排空越快。</EM.DuctDrainPressureScaleDesc>
+    <EM.DuctConductanceMinDesc>导通/扣量因子的下限，避免完全锁死。</EM.DuctConductanceMinDesc>
+    <EM.DuctConductanceMaxDesc>导通/扣量因子的上限，避免排空速度失控。</EM.DuctConductanceMaxDesc>
 </LanguageData>

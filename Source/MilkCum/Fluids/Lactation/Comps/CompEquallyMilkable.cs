@@ -82,8 +82,12 @@ public partial class CompEquallyMilkable : CompMilkable
     private int lastFullPoolLetterTick = -1;
     /// <summary>3.3 满池信件：上次发送时的游戏日，用于「每 Pawn 每日最多一封」限制</summary>
     private int lastFullPoolLetterDay = -1;
-    /// <summary>四层模型（阶段 0.2）：组织适应导致的容量增量，maxFullness = 基础容量 + 本值</summary>
-    private float capacityAdaptation;
+    /// <summary>双相组织适应：快速可逆分量（短期涨落）。</summary>
+    private float capacityAdaptationFast;
+    /// <summary>双相组织适应：慢速重塑分量（长期结构变化）。</summary>
+    private float capacityRemodelSlow;
+    /// <summary>事件驱动进水子步长突发剩余 tick；&gt;0 时使用高频子步推进。</summary>
+    private int inflowEventBurstTicksRemaining;
     /// <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick</summary>
     private bool cachedWasLactatingWithDrugInduced = false;
     /// <summary>满池溢出累计量（仅 Debug 显示用）</summary>
@@ -117,11 +121,11 @@ public partial class CompEquallyMilkable : CompMilkable
     /// <summary>缓存是否在 60 tick 内有效。</summary>
     internal bool IsCachedFlowValid() => CachedFlowTick >= 0 && cachedTicksGameForFlow >= 0 && (cachedTicksGameForFlow - CachedFlowTick) <= 60;
 
-    /// <summary>池基础总容量（按 entries 累加），供 RJW 撑大/回缩同步用；无条目时退回 maxFullness - capacityAdaptation。</summary>
+    /// <summary>池基础总容量（按 entries 累加），供 RJW 撑大/回缩同步用；无条目时退回 maxFullness - CapacityAdaptation。</summary>
     internal float GetPoolBaseTotal()
     {
         var entries = GetCachedEntries();
-        if (entries.Count == 0) return Mathf.Max(0.01f, maxFullness - capacityAdaptation);
+        if (entries.Count == 0) return Mathf.Max(0.01f, maxFullness - CapacityAdaptation);
         float sum = 0f;
         for (int i = 0; i < entries.Count; i++) sum += entries[i].Capacity;
         return Mathf.Max(0.01f, sum);
@@ -132,8 +136,8 @@ public partial class CompEquallyMilkable : CompMilkable
     public float GetPoolBaseCapacityTotal() => GetPoolBaseTotal();
     /// <summary>物理撑大总容量（池内可蓄满上限）；UI 满度分母、乳腺炎比例等应优先用本值而非仅 maxFullness。</summary>
     public float GetPoolStretchCapacityTotal() => GetPoolStretchTotal();
-    /// <summary>组织适应增量（只读）；由 GetBreastPoolEntries 按比例摊入各 FluidPoolEntry.Capacity。</summary>
-    internal float CapacityAdaptation => capacityAdaptation;
+    /// <summary>组织适应总增量（快适应+慢重塑）；由 GetBreastPoolEntries 按比例摊入各 FluidPoolEntry.Capacity。</summary>
+    internal float CapacityAdaptation => capacityAdaptationFast + capacityRemodelSlow;
     /// <summary>取指定 key 的缓存流速（池单位/天），无缓存或 key 不存在则返回 0。</summary>
     internal float GetCachedFlowPerDayForKey(string key) => CachedFlowPerDayByKey != null && CachedFlowPerDayByKey.TryGetValue(key, out float v) ? v : 0f;
     /// <summary>获取缓存的总流速（池单位/天），缓存无效时返回 0。</summary>
@@ -158,7 +162,8 @@ public partial class CompEquallyMilkable : CompMilkable
         Scribe_Collections.Look(ref ticksFullVals, "EM.PoolTicksFullVals", LookMode.Value);
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
         Scribe_Values.Look(ref lastFullPoolLetterDay, "EM.LastFullPoolLetterDay", -1);
-        Scribe_Values.Look(ref capacityAdaptation, "EM.CapacityAdaptation", 0f);
+        Scribe_Values.Look(ref capacityAdaptationFast, "EM.CapacityAdaptationFast", 0f);
+        Scribe_Values.Look(ref capacityRemodelSlow, "EM.CapacityRemodelSlow", 0f);
         Scribe_Values.Look(ref totalDrainedLifetime, "EM.TotalDrainedLifetime", 0f);
         Scribe_Values.Look(ref gatherCountLifetime, "EM.GatherCountLifetime", 0);
         Scribe_Values.Look(ref overflowEventCount, "EM.OverflowEventCount", 0);
@@ -260,17 +265,23 @@ public partial class CompEquallyMilkable : CompMilkable
             float baseMax = cachedBaseMaxFullness;
             if (MilkCumSettings.enableTissueAdaptation)
             {
-                float effectiveMax = baseMax + capacityAdaptation;
+                float effectiveMax = baseMax + CapacityAdaptation;
                 float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
                 float realTicksPassed = 60f;
                 float daysPassed = realTicksPassed / GenDate.TicksPerDay;
                 float theta = Mathf.Max(0f, MilkCumSettings.adaptationTheta);
                 float omega = Mathf.Max(0f, MilkCumSettings.adaptationOmega);
-                capacityAdaptation += daysPassed * (theta * Mathf.Max(P - 0.85f, 0f) - omega * (1f - P));
+                float fastGrow = theta * Mathf.Max(P - 0.80f, 0f);
+                float fastDecay = omega * (1f - P);
+                float slowGrow = Mathf.Max(0f, MilkCumSettings.adaptationSlowTheta) * Mathf.Max(P - 0.90f, 0f);
+                float slowDecay = Mathf.Max(0f, MilkCumSettings.adaptationSlowOmega) * Mathf.Max(0f, 0.95f - P);
+                capacityAdaptationFast += daysPassed * (fastGrow - fastDecay);
+                capacityRemodelSlow += daysPassed * (slowGrow - slowDecay);
                 float capMax = baseMax * Mathf.Clamp(MilkCumSettings.adaptationCapMaxRatio, 0f, 1f);
-                capacityAdaptation = Mathf.Clamp(capacityAdaptation, 0f, capMax);
+                capacityAdaptationFast = Mathf.Clamp(capacityAdaptationFast, 0f, capMax);
+                capacityRemodelSlow = Mathf.Clamp(capacityRemodelSlow, 0f, capMax);
             }
-            maxFullness = baseMax + capacityAdaptation;
+            maxFullness = baseMax + CapacityAdaptation;
             if (MilkCumSettings.enableTissueAdaptation)
                 SetEntriesCacheDirty();
             // 池子上限统一为撑大总容量（开/关压力因子都在此处停产、允许填到撑大、溢出）
@@ -303,6 +314,8 @@ public partial class CompEquallyMilkable : CompMilkable
         if (onCurrentMap || parent.IsHashIntervalTick(interval))
         {
             UpdateMilkPools();
+            if (inflowEventBurstTicksRemaining > 0)
+                inflowEventBurstTicksRemaining = Mathf.Max(0, inflowEventBurstTicksRemaining - 60);
             if (MilkCumSettings.rjwBreastSizeEnabled && Pawn != null && Pawn.IsInLactatingState())
                 RJWLactatingBreastSizeGameComponent.SyncRJWBreastSeverityFromPool(Pawn);
         }
@@ -354,4 +367,15 @@ public partial class CompEquallyMilkable : CompMilkable
         if (drainedByKey == null || drainedByKey.Count == 0) return;
         Pawn?.LactatingHediffComp()?.ApplyDrainInflammationRelief(drainedByKey, this);
     }
+
+    /// <summary>触发事件驱动进水子步长突发窗口（吸奶/挤奶/高潮等短时刺激后）。</summary>
+    internal void TriggerInflowEventBurst()
+    {
+        int dur = Mathf.Max(0, MilkCumSettings.inflowEventBurstDurationTicks);
+        if (dur <= 0) return;
+        inflowEventBurstTicksRemaining = Mathf.Max(inflowEventBurstTicksRemaining, dur);
+    }
+
+    /// <summary>当前是否处于事件驱动进水子步长突发窗口。</summary>
+    internal bool IsInflowEventBurstActive() => inflowEventBurstTicksRemaining > 0;
 }

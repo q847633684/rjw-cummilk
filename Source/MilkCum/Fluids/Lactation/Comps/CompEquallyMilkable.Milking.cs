@@ -22,6 +22,7 @@ public partial class CompEquallyMilkable
         var lactatingComp = Pawn?.LactatingHediffComp();
         breastFullness ??= new Dictionary<string, float>();
         var entries = GetCachedEntries();
+        var network = FluidPoolNetwork.Build(entries, breastFullness);
         float speedMult = 1f + (isMachine ? (building?.SpeedOffset() ?? 0f) : 0f);
         speedMult = Mathf.Max(0.01f, speedMult);
         if (lactatingComp == null)
@@ -44,7 +45,8 @@ public partial class CompEquallyMilkable
         float cap = Mathf.Max(0.01f, e.Capacity);
         float fSide = Mathf.Clamp01(fullness / cap);
         float letdownSide = Mathf.Max(0.01f, lactatingComp.GetLetdownReflexFlowMultiplier(e.Key));
-        return baseFlowPerSecond * raceMult * (fSide * fSide) * letdownSide * speedMult;
+        float duct = GetDuctTakeFactor(e, network, isMachine);
+        return baseFlowPerSecond * raceMult * (fSide * fSide) * letdownSide * speedMult * duct;
     }
 
     /// <summary>挤奶时的挤出流速（池单位/秒）：各侧按「该侧满度/该侧容量」算挤出乳压 f² 与该侧 letdown，求和后×基准×种族×机器倍率。手挤用总流速；机器挤用 GetMilkingFlowRatesPerSide 每侧独立、并行。</summary>

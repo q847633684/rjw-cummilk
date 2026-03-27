@@ -141,6 +141,9 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
             }
         }
         if (toAdd.Count > 0)
+        {
             comp.AddMilkToKeys(toAdd);
+            comp.TriggerInflowEventBurst();
+        }
     }
 }

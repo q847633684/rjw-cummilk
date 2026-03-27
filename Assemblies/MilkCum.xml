@@ -278,6 +278,45 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationCapMaxRatio">
             <summary>适应后容量上限：不超过基础容量的该比例（如 0.2=20%）。</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationSlowTheta">
+            <summary>双相模型：慢重塑增长系数（每游戏日）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.adaptationSlowOmega">
+            <summary>双相模型：慢重塑回落系数（每游戏日）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.inflowEventSubsteps">
+            <summary>事件驱动进水：突发窗口下每 60tick 的子步数量（1=关闭子步）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.inflowEventBurstDurationTicks">
+            <summary>事件驱动进水：一次刺激触发的突发窗口时长（tick）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductHopPenaltyPerEdge">
+            <summary>导管模型：网络到出口每跳的阻尼系数（越大中心池越难导出）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductInflowInflammationResistance">
+            <summary>导管模型：进水时炎症阻力系数。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductDrainInflammationResistanceManual">
+            <summary>导管模型：扣量时手动模式炎症阻力系数。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductDrainInflammationResistanceMachine">
+            <summary>导管模型：扣量时机器模式炎症阻力系数。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductMachineSuctionBonus">
+            <summary>导管模型：机器吸力加成。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductDrainPressureBase">
+            <summary>导管模型：扣量时压力基线（最终 = base + scale*pressure）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductDrainPressureScale">
+            <summary>导管模型：扣量时压力放大系数（最终 = base + scale*pressure）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductConductanceMin">
+            <summary>导管模型：导通系数下限。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.ductConductanceMax">
+            <summary>导管模型：导通系数上限（进水/扣量共用）。</summary>
+        </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkQualityInflammationWeight">
             <summary>炎症对营养值的惩罚系数：营养值≈原值×(1−本值×Inflammation)，越大则炎症时品质下降越明显。</summary>
         </member>
@@ -916,8 +955,14 @@
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastFullPoolLetterDay">
             <summary>3.3 满池信件：上次发送时的游戏日，用于「每 Pawn 每日最多一封」限制</summary>
         </member>
-        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.capacityAdaptation">
-            <summary>四层模型（阶段 0.2）：组织适应导致的容量增量，maxFullness = 基础容量 + 本值</summary>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.capacityAdaptationFast">
+            <summary>双相组织适应：快速可逆分量（短期涨落）。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.capacityRemodelSlow">
+            <summary>双相组织适应：慢速重塑分量（长期结构变化）。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.inflowEventBurstTicksRemaining">
+            <summary>事件驱动进水子步长突发剩余 tick；&gt;0 时使用高频子步推进。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedWasLactatingWithDrugInduced">
             <summary>2.3：药物泌乳状态缓存；仅状态变化时增删 EM_LactatingGain，检查间隔 60 tick</summary>
@@ -971,7 +1016,7 @@
             <summary>缓存是否在 60 tick 内有效。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetPoolBaseTotal">
-            <summary>池基础总容量（按 entries 累加），供 RJW 撑大/回缩同步用；无条目时退回 maxFullness - capacityAdaptation。</summary>
+            <summary>池基础总容量（按 entries 累加），供 RJW 撑大/回缩同步用；无条目时退回 maxFullness - CapacityAdaptation。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetPoolStretchTotal">
             <summary>池撑大总容量（= 基础×StretchCapFactor），供 RJW 撑大/回缩同步用。</summary>
@@ -983,7 +1028,7 @@
             <summary>物理撑大总容量（池内可蓄满上限）；UI 满度分母、乳腺炎比例等应优先用本值而非仅 maxFullness。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CapacityAdaptation">
-            <summary>组织适应增量（只读）；由 GetBreastPoolEntries 按比例摊入各 FluidPoolEntry.Capacity。</summary>
+            <summary>组织适应总增量（快适应+慢重塑）；由 GetBreastPoolEntries 按比例摊入各 FluidPoolEntry.Capacity。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedFlowPerDayForKey(System.String)">
             <summary>取指定 key 的缓存流速（池单位/天），无缓存或 key 不存在则返回 0。</summary>
@@ -1024,6 +1069,18 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.NotifyInflammationDrain(System.Collections.Generic.Dictionary{System.String,System.Single})">
             <summary>挤奶/吸奶扣池后按侧降低炎症 I。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TriggerInflowEventBurst">
+            <summary>触发事件驱动进水子步长突发窗口（吸奶/挤奶/高潮等短时刺激后）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsInflowEventBurstActive">
+            <summary>当前是否处于事件驱动进水子步长突发窗口。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetDuctTakeFactor(MilkCum.Fluids.Shared.Data.FluidPoolEntry,MilkCum.Fluids.Shared.Data.FluidPoolNetwork,System.Boolean)">
+            <summary>扣量导通系数：压力与导管阻力共同决定单位时间可抽取比例。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildDuctDebugString(System.Int32)">
+            <summary>DevMode 导管模型调试：输出每池压力/出口因子/导通系数（手动与机器）。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CompareDrainEntryOrder(System.Int32,System.Int32,System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
             <summary>
             扣奶顺序：满度高者优先；差在 <see cref="F:MilkCum.Core.Constants.PoolModelConstants.FloatDustEpsilon"/> 内为平局则 <see cref="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.PreferLeftWhenEqual"/>（解剖左）；仍平则优先解剖右；再比条目下标。
@@ -1063,8 +1120,11 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ResetMilkFlowDisplayCache">
             <summary>泌乳未进水时重置流速/UI 缓存，避免重复分支。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ComputeSideFlow(MilkCum.Fluids.Shared.Data.FluidPoolEntry,System.Single,System.Single,System.Single,MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating,System.Single)">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ComputeSideFlow(MilkCum.Fluids.Shared.Data.FluidPoolEntry,System.Single,System.Single,System.Single,MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating,System.Single,MilkCum.Fluids.Shared.Data.FluidPoolNetwork)">
             <summary>单池流速统一计算：倍率×基础流速×状态×压力×喷乳反射；返回流速与因子，供逐池计算复用。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ComputeDuctConductance(MilkCum.Fluids.Shared.Data.FluidPoolEntry,MilkCum.Fluids.Shared.Data.FluidPoolNetwork)">
+            <summary>压力-导管模型：导管阻力受网络拓扑、炎症与机器能力影响，返回 0~1+ 的有效导通系数。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.UpdateMilkPools">
             <summary>水池模型：按池 key 逐个进水。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。超过撑大上限的部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
@@ -1749,6 +1809,9 @@
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.SourcePart">
             <summary>挂乳房 Hediff 的身体部位；乳腺炎等与部位绑定的倍率用此解析。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolNetwork">
+            <summary>N 池器官网络：将多个独立池抽象为节点图，供进水/导管阻力/扣量统一使用。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolState">
             <summary>

@@ -48,7 +48,8 @@ public partial class CompEquallyMilkable
         float stretchCap,
         float flowPerTickScale,
         HediffComp_EqualMilkingLactating lactatingComp,
-        float residualL)
+        float residualL,
+        FluidPoolNetwork network)
     {
         float pressure = MilkCumSettings.enablePressureFactor
             ? MilkCumSettings.GetPressureFactor(currentFullness / Mathf.Max(0.001f, stretchCap))
@@ -56,8 +57,23 @@ public partial class CompEquallyMilkable
         MilkCumSettings.ApplyOverflowResidualFlow(ref pressure, currentFullness, stretchCap, residualL, lactatingComp.GetInflammationForKey(entry.Key));
         float conditions = Pawn.GetConditionsForPoolKey(entry.Key);
         float letdown = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(entry.Key) : 1f;
-        float flowPerTick = Mathf.Max(0f, entry.FlowMultiplier * flowPerTickScale * conditions * pressure * letdown);
+        float duct = ComputeDuctConductance(entry, network);
+        float flowPerTick = Mathf.Max(0f, entry.FlowMultiplier * flowPerTickScale * conditions * pressure * letdown * duct);
         return (flowPerTick, pressure, conditions, letdown);
+    }
+
+    /// <summary>压力-导管模型：导管阻力受网络拓扑、炎症与机器能力影响，返回 0~1+ 的有效导通系数。</summary>
+    private float ComputeDuctConductance(FluidPoolEntry entry, FluidPoolNetwork network)
+    {
+        if (string.IsNullOrEmpty(entry.Key)) return 1f;
+        float outlet = network?.GetOutletHopFactor(entry.Key, MilkCumSettings.ductHopPenaltyPerEdge) ?? 1f;
+        float inflammation = 0f;
+        var lactatingComp = Pawn?.LactatingHediffComp();
+        if (lactatingComp != null)
+            inflammation = Mathf.Clamp01(lactatingComp.GetInflammationForKey(entry.Key) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit));
+        float baseResistance = 1f + inflammation * MilkCumSettings.ductInflowInflammationResistance;
+        float conductance = outlet / Mathf.Max(MilkCumSettings.ductConductanceMin, baseResistance);
+        return Mathf.Clamp(conductance, MilkCumSettings.ductConductanceMin, MilkCumSettings.ductConductanceMax);
     }
 
     /// <summary>水池模型：按池 key 逐个进水。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。超过撑大上限的部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
@@ -96,7 +112,8 @@ public partial class CompEquallyMilkable
             sb.Append("每日基础流速basePerDay=drive(").Append(drive.ToString("F3")).Append(")×hunger(").Append(hungerFactor.ToString("F3"))
                 .Append(")×raceFlow(").Append(raceFlow.ToString("F3")).Append(")=").Append(basePerDay.ToString("F3")).Append("; ");
             sb.Append("每60tick进池量flowPer60tick=basePerDay(").Append(basePerDay.ToString("F3")).Append(")/60000×60=").Append(flowPerTickScale.ToString("F5")).Append("；");
-            sb.Append("单侧实际流速≈flowPer60tick×条目流速倍率×该侧状态修正×压力因子×喷乳反射");
+            sb.Append("单侧实际流速≈flowPer60tick×条目流速倍率×该侧状态修正×压力因子×喷乳反射×导管导通；");
+            sb.Append("substeps=").Append(IsInflowEventBurstActive() ? Mathf.Max(1, MilkCumSettings.inflowEventSubsteps) : 1);
             MilkCumSettings.PoolTickLog(sb.ToString());
         }
         if (MilkCumSettings.enableLetdownReflex)
@@ -107,7 +124,7 @@ public partial class CompEquallyMilkable
             lactatingComp.UpdateToleranceDynamic(currentLactation, PoolModelConstants.Interval60PerDay);
         float extraFall60 = 0f;
         float pendingNeedDelta = 0f;
-        float baseMax = Mathf.Max(0.01f, maxFullness - capacityAdaptation);
+        float baseMax = Mathf.Max(0.01f, maxFullness - CapacityAdaptation);
         if (Fullness < baseMax && Pawn != null)
         {
             float factor = GetNutritionFactorForExtra();
@@ -125,6 +142,7 @@ public partial class CompEquallyMilkable
         float stretchTotal = 0f;
         for (int i = 0; i < entries.Count; i++)
             stretchTotal += entries[i].Capacity * PoolModelConstants.StretchCapFactor;
+        var network = FluidPoolNetwork.Build(entries, breastFullness);
         fullnessBeforePerKeyCache.Clear();
         if (MilkCumSettings.lactationPoolTickLog && Pawn != null)
         {
@@ -142,29 +160,45 @@ public partial class CompEquallyMilkable
         float totalFlowThisStep = 0f;
         float pressureWeightedSum = 0f, letdownWeightedSum = 0f, conditionsWeightedSum = 0f;
         CachedFlowPerDayByKey ??= new Dictionary<string, float>();
+        int substeps = IsInflowEventBurstActive()
+            ? Mathf.Max(1, MilkCumSettings.inflowEventSubsteps)
+            : 1;
         for (int i = 0; i < entries.Count; i++)
         {
             var e = entries[i];
             if (string.IsNullOrEmpty(e.Key)) continue;
             float stretchCap = e.Capacity * PoolModelConstants.StretchCapFactor;
             float current = GetFullnessForKey(e.Key);
-            var sideFlow = ComputeSideFlow(e, current, stretchCap, flowPerTickScale, lactatingComp, residualL);
-            float flowPerTick = sideFlow.flowPerTick;
-            totalFlowThisStep += flowPerTick;
-            pressureWeightedSum += flowPerTick * sideFlow.pressure;
-            letdownWeightedSum += flowPerTick * sideFlow.letdown;
-            conditionsWeightedSum += flowPerTick * sideFlow.conditions;
-            CachedFlowPerDayByKey[e.Key] = flowPerTick * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);
-            var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
-            if (newFullness > e.Capacity)
+            float perStepFlowAcc = 0f;
+            float sideOverflowAcc = 0f;
+            float pressureAcc = 0f, letdownAcc = 0f, conditionsAcc = 0f;
+            for (int s = 0; s < substeps; s++)
             {
-                float excess = newFullness - e.Capacity;
-                reabsorbedPoolThisStep += excess * (1f - shrinkFactor);
-                reabsorbedPerKeyCache[e.Key] = excess * (1f - shrinkFactor);
-                newFullness = e.Capacity + excess * shrinkFactor;
+                var sideFlow = ComputeSideFlow(e, current, stretchCap, flowPerTickScale / substeps, lactatingComp, residualL, network);
+                float flowPerTick = sideFlow.flowPerTick;
+                perStepFlowAcc += flowPerTick;
+                pressureAcc += flowPerTick * sideFlow.pressure;
+                letdownAcc += flowPerTick * sideFlow.letdown;
+                conditionsAcc += flowPerTick * sideFlow.conditions;
+                var growth = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
+                current = growth.newFullness;
+                sideOverflowAcc += growth.overflow;
+                if (current > e.Capacity)
+                {
+                    float excess = current - e.Capacity;
+                    float reabs = excess * (1f - shrinkFactor);
+                    reabsorbedPoolThisStep += reabs;
+                    reabsorbedPerKeyCache[e.Key] = (reabsorbedPerKeyCache.TryGetValue(e.Key, out var old) ? old : 0f) + reabs;
+                    current = e.Capacity + excess * shrinkFactor;
+                }
             }
-            breastFullness[e.Key] = newFullness;
-            overflowTotal += overflow;
+            totalFlowThisStep += perStepFlowAcc;
+            pressureWeightedSum += pressureAcc;
+            letdownWeightedSum += letdownAcc;
+            conditionsWeightedSum += conditionsAcc;
+            CachedFlowPerDayByKey[e.Key] = perStepFlowAcc * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);
+            breastFullness[e.Key] = current;
+            overflowTotal += sideOverflowAcc;
         }
         // 供 UI 读取：池逻辑实际进水流速（池单位/天）与流速加权因子，与回缩/溢出等完全一致
         CachedFlowPerDayForDisplay = totalFlowThisStep * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);

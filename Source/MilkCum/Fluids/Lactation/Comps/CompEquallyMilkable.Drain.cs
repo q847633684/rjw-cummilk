@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Helpers;
@@ -12,6 +13,82 @@ namespace MilkCum.Fluids.Lactation.Comps;
 /// <summary>池扣量：手挤/吸奶/机器挤的 Drain 与按比例缩减。见 Docs/泌乳系统逻辑图、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
+    /// <summary>扣量导通系数：压力与导管阻力共同决定单位时间可抽取比例。</summary>
+    private float GetDuctTakeFactor(FluidPoolEntry entry, FluidPoolNetwork network, bool isMachine)
+    {
+        if (string.IsNullOrEmpty(entry.Key)) return 1f;
+        float pressure = network?.GetPressureRatio01(entry.Key) ?? 0f;
+        float outlet = network?.GetOutletHopFactor(entry.Key, MilkCumSettings.ductHopPenaltyPerEdge) ?? 1f;
+        float inflammation = 0f;
+        var lact = Pawn?.LactatingHediffComp();
+        if (lact != null)
+            inflammation = Mathf.Clamp01(lact.GetInflammationForKey(entry.Key) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit));
+        float resistance = 1f + inflammation * (isMachine ? MilkCumSettings.ductDrainInflammationResistanceMachine : MilkCumSettings.ductDrainInflammationResistanceManual);
+        float suction = isMachine ? MilkCumSettings.ductMachineSuctionBonus : 1f;
+        float pressureTerm = MilkCumSettings.ductDrainPressureBase + MilkCumSettings.ductDrainPressureScale * pressure;
+        float factor = suction * outlet * pressureTerm / Mathf.Max(MilkCumSettings.ductConductanceMin, resistance);
+        return Mathf.Clamp(factor, MilkCumSettings.ductConductanceMin, MilkCumSettings.ductConductanceMax);
+    }
+
+    /// <summary>DevMode 导管模型调试：输出每池压力/出口因子/导通系数（手动与机器）。</summary>
+    internal string BuildDuctDebugString(int maxRows = 8)
+    {
+        var entries = GetCachedEntriesIfValid() ?? GetCachedEntries();
+        if (entries == null || entries.Count == 0) return "[MilkCum.Duct] no pools";
+        var network = FluidPoolNetwork.Build(entries, breastFullness);
+        var sb = new StringBuilder();
+        sb.Append("[MilkCum.Duct]");
+        float sumInflow = 0f;
+        float sumDrainManual = 0f;
+        float sumDrainMachine = 0f;
+        int validCount = 0;
+        float worstInflow = float.MaxValue;
+        string worstKey = null;
+        int rows = 0;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (rows >= Mathf.Max(1, maxRows)) break;
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            float pressure = network.GetPressureRatio01(e.Key);
+            float outlet = network.GetOutletHopFactor(e.Key, MilkCumSettings.ductHopPenaltyPerEdge);
+            float inflammation = Pawn?.LactatingHediffComp() != null
+                ? Mathf.Clamp01(Pawn.LactatingHediffComp().GetInflammationForKey(e.Key) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit))
+                : 0f;
+            float inflowRes = 1f + inflammation * MilkCumSettings.ductInflowInflammationResistance;
+            float inflowCond = Mathf.Clamp(outlet / Mathf.Max(MilkCumSettings.ductConductanceMin, inflowRes), MilkCumSettings.ductConductanceMin, MilkCumSettings.ductConductanceMax);
+            float drainManual = GetDuctTakeFactor(e, network, isMachine: false);
+            float drainMachine = GetDuctTakeFactor(e, network, isMachine: true);
+            sumInflow += inflowCond;
+            sumDrainManual += drainManual;
+            sumDrainMachine += drainMachine;
+            validCount++;
+            if (inflowCond < worstInflow)
+            {
+                worstInflow = inflowCond;
+                worstKey = e.Key;
+            }
+            sb.Append("\n  ").Append(e.Key)
+              .Append(" p=").Append(pressure.ToString("F2"))
+              .Append(" hop=").Append(outlet.ToString("F2"))
+              .Append(" i=").Append(inflammation.ToString("F2"))
+              .Append(" in=").Append(inflowCond.ToString("F2"))
+              .Append(" dM=").Append(drainManual.ToString("F2"))
+              .Append(" dX=").Append(drainMachine.ToString("F2"));
+            rows++;
+        }
+        if (validCount > 0)
+        {
+            sb.Append("\n  [summary] n=").Append(validCount)
+              .Append(" avgIn=").Append((sumInflow / validCount).ToString("F2"))
+              .Append(" avgDM=").Append((sumDrainManual / validCount).ToString("F2"))
+              .Append(" avgDX=").Append((sumDrainMachine / validCount).ToString("F2"))
+              .Append(" worstIn=").Append(worstKey ?? "-")
+              .Append("(").Append(worstInflow.ToString("F2")).Append(")");
+        }
+        return sb.ToString();
+    }
+
     private static void AccumulateDrainByKey(Dictionary<string, float> map, string key, float amount)
     {
         if (map == null || amount <= 0f || string.IsNullOrEmpty(key)) return;
@@ -77,13 +154,14 @@ public partial class CompEquallyMilkable
         float remaining = amount;
         var handOrder = new List<int>(entries.Count);
         SortHandDrainEntryIndicesDescending(handOrder, entries);
+        var network = FluidPoolNetwork.Build(entries, breastFullness);
         for (int o = 0; o < handOrder.Count && remaining > PoolModelConstants.Epsilon; o++)
         {
             int i = handOrder[o];
             var e = entries[i];
             if (string.IsNullOrEmpty(e.Key)) continue;
             float f = GetFullnessForKey(e.Key);
-            float take = Mathf.Min(remaining, f);
+            float take = Mathf.Min(remaining, f) * GetDuctTakeFactor(e, network, isMachine: false);
             if (take <= 0f) continue;
             breastFullness[e.Key] = Mathf.Max(0f, f - take);
             drainedKeys?.Add(e.Key);
@@ -107,7 +185,10 @@ public partial class CompEquallyMilkable
         SyncBaseFullness();
         float drained = amount - remaining;
         if (drained > 0f)
+        {
             NotifyInflammationDrain(drainedByKey);
+            TriggerInflowEventBurst();
+        }
         if (MilkCumSettings.milkingActionLog && Pawn != null && drained > 0f)
         {
             float fullnessAfterTotal = Fullness;
@@ -146,6 +227,8 @@ public partial class CompEquallyMilkable
             return 0f;
         }
         var drainedByKey = new Dictionary<string, float>();
+        var network = FluidPoolNetwork.Build(entries, breastFullness);
+        bool isMachine = logMode == "DrainParallel";
         float totalWouldTake = 0f;
         var takes = new List<float>(entries.Count);
         for (int i = 0; i < entries.Count && i < maxTakePerSide.Count; i++)
@@ -153,7 +236,7 @@ public partial class CompEquallyMilkable
             var e = entries[i];
             if (string.IsNullOrEmpty(e.Key)) { takes.Add(0f); continue; }
             float f = GetFullnessForKey(e.Key);
-            float take = Mathf.Min(maxTakePerSide[i], f);
+            float take = Mathf.Min(maxTakePerSide[i], f) * GetDuctTakeFactor(e, network, isMachine);
             takes.Add(take);
             totalWouldTake += take;
         }
@@ -195,7 +278,10 @@ public partial class CompEquallyMilkable
         }
         SyncBaseFullness();
         if (totalDrained > 0f)
+        {
             NotifyInflammationDrain(drainedByKey);
+            TriggerInflowEventBurst();
+        }
         if (MilkCumSettings.milkingActionLog && Pawn != null && totalDrained > 0f)
         {
             float fullnessAfterTotal = Fullness;
