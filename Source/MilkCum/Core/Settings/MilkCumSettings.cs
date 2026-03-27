@@ -194,27 +194,6 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
 		Scribe_Values.Look(ref lactationLevelCap, "EM.LactationLevelCap", 0f);
 		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "EM.LactationLevelCapDurationMultiplier", 1.5f);
-		if (Scribe.mode == LoadSaveMode.LoadingVars)
-		{
-			lactationLevelCap = Mathf.Clamp(lactationLevelCap, 0f, 100f);
-			lactationLevelCapDurationMultiplier = Mathf.Clamp(lactationLevelCapDurationMultiplier, 0.1f, 10f);
-			rjwLactatingSeverityBonus = Mathf.Clamp(rjwLactatingSeverityBonus, 0f, 1f);
-			rjwLactatingStretchSeverityBonus = Mathf.Clamp(rjwLactatingStretchSeverityBonus, 0f, 1f);
-			rjwNippleStageFlowBonusPercent = Mathf.Clamp(rjwNippleStageFlowBonusPercent, -15f, 15f);
-			adaptationSlowTheta = Mathf.Clamp(adaptationSlowTheta, 0f, 0.02f);
-			adaptationSlowOmega = Mathf.Clamp(adaptationSlowOmega, 0f, 0.02f);
-			inflowEventSubsteps = Mathf.Clamp(inflowEventSubsteps, 1, 12);
-			inflowEventBurstDurationTicks = Mathf.Clamp(inflowEventBurstDurationTicks, 0, 1200);
-			ductHopPenaltyPerEdge = Mathf.Clamp(ductHopPenaltyPerEdge, 0f, 0.8f);
-			ductInflowInflammationResistance = Mathf.Clamp(ductInflowInflammationResistance, 0f, 4f);
-			ductDrainInflammationResistanceManual = Mathf.Clamp(ductDrainInflammationResistanceManual, 0f, 4f);
-			ductDrainInflammationResistanceMachine = Mathf.Clamp(ductDrainInflammationResistanceMachine, 0f, 4f);
-			ductMachineSuctionBonus = Mathf.Clamp(ductMachineSuctionBonus, 0.5f, 2f);
-			ductDrainPressureBase = Mathf.Clamp(ductDrainPressureBase, 0f, 2f);
-			ductDrainPressureScale = Mathf.Clamp(ductDrainPressureScale, 0f, 2f);
-			ductConductanceMin = Mathf.Clamp(ductConductanceMin, 0.01f, 1f);
-			ductConductanceMax = Mathf.Clamp(ductConductanceMax, ductConductanceMin, 3f);
-		}
 		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
 		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
@@ -222,11 +201,6 @@ internal partial class MilkCumSettings : ModSettings
 		ExposeModelData();
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
-		if (Scribe.mode == LoadSaveMode.PostLoadInit)
-		{
-			raceDrugDeltaSMultiplierDefNames ??= new List<string>();
-			raceDrugDeltaSMultiplierValues ??= new List<float>();
-		}
 		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
 		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);
 		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
@@ -241,36 +215,13 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Deep.Look(ref animalSetting, "EM.AnimalSetting");
 		Scribe_Deep.Look(ref mechSetting, "EM.MechSetting");
 		Scribe_Deep.Look(ref entitySetting, "EM.EntitySetting");
-		EnsureDataMappingsInitialized();
-		raceCanAlwaysLactate ??= new List<string>();
-		raceCannotLactate ??= new List<string>();
-		// Initialize widgets
-		if (Scribe.mode == LoadSaveMode.PostLoadInit)
-		{
-			pawnDefs ??= GetMilkablePawns();
-			productDefs ??= GetProductDefs();
-			humanlikeBreastfeed ??= new HumanlikeBreastfeed();
-			animalBreastfeed ??= new AnimalBreastfeed();
-			mechanoidBreastfeed ??= new MechanoidBreastfeed();
-			milkableTable = new Widget_MilkableTable(namesToProducts);
-			milkTagsTable = new Widget_MilkTagsTable(namesToProducts, productsToTags);
-			advancedSettings = new Widget_AdvancedSettings();
-			breastfeedSettings = new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
-			geneSetting = new Widget_GeneSetting(genes);
-			colonistSetting ??= new MilkSettings();
-			slaveSetting ??= new MilkSettings();
-			prisonerSetting ??= new MilkSettings();
-			animalSetting ??= new MilkSettings();
-			mechSetting ??= new MilkSettings();
-			entitySetting ??= new MilkSettings();
-		}
 	}
 
 	internal void UpdateMilkCumSettings()
 	{
 		EventHelper.TriggerSettingsChanged();
-		pawnDefs ??= GetMilkablePawns();
-		defaultMilkProducts ??= GetDefaultMilkProducts();
+		pawnDefs = GetMilkablePawns();
+		defaultMilkProducts = GetDefaultMilkProducts();
 		if (HediffDefOf.Lactating != null)
 		{
 			HediffDefOf.Lactating.maxSeverity = 100f; // 允许 severity 按公式自由提高到 100。
@@ -279,9 +230,6 @@ internal partial class MilkCumSettings : ModSettings
 		{
 			Log.Warning("[MilkCum] HediffDefOf.Lactating is null, skip maxSeverity patch.");
 		}
-		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
-		animalBreastfeed ??= new AnimalBreastfeed();
-		mechanoidBreastfeed ??= new MechanoidBreastfeed();
 		foreach (ThingDef pawnDef in pawnDefs)
 		{
 			UpdateEqualMilkableComp(pawnDef);
@@ -299,7 +247,7 @@ internal partial class MilkCumSettings : ModSettings
 			if (!productsToTags.ContainsKey("Milk"))
 				productsToTags.Add("Milk", new MilkTag("Milk", true, false));
 		}
-		// 人奶：默认开启「显示生产者」，产线有上限，但可以在标签里关掉以保持兼容。
+		// 人奶：默认开启「显示生产者」，产线有上限，可在标签里手动关闭。
 		ThingDef humanMilkDef = DefDatabase<ThingDef>.GetNamedSilentFail("EM_HumanMilk");
 		if (humanMilkDef != null && !productsToTags.ContainsKey("EM_HumanMilk"))
 			productsToTags.Add("EM_HumanMilk", new MilkTag("EM_HumanMilk", true, false));

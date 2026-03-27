@@ -129,12 +129,6 @@ internal partial class MilkCumSettings
 		Scribe_Values.Look(ref overflowResidualDynamicScaling, "EM.OverflowResidualDynamicScaling", true);
 		Scribe_Values.Look(ref overflowResidualLactationRefL, "EM.OverflowResidualLactationRefL", 1f);
 		Scribe_Values.Look(ref overflowResidualInflammationBoost, "EM.OverflowResidualInflammationBoost", 0.5f);
-		if (Scribe.mode == LoadSaveMode.LoadingVars)
-		{
-			overflowResidualFlowFactor = Mathf.Clamp01(overflowResidualFlowFactor);
-			overflowResidualLactationRefL = Mathf.Clamp(overflowResidualLactationRefL, 0.01f, 10f);
-			overflowResidualInflammationBoost = Mathf.Clamp(overflowResidualInflammationBoost, 0f, 3f);
-		}
 
 		Scribe_Values.Look(ref enableLetdownReflex, "EM.EnableLetdownReflex", true);
 		Scribe_Values.Look(ref letdownReflexDecayLambda, "EM.LetdownReflexDecayLambda", 0.03f);
@@ -152,14 +146,6 @@ internal partial class MilkCumSettings
 		Scribe_Values.Look(ref inflammationHygieneBaselineFactor, "EM.InflammationHygieneBaselineFactor", 0.2f);
 		Scribe_Values.Look(ref inflammationDrainReliefScale, "EM.InflammationDrainReliefScale", 0.35f);
 		Scribe_Values.Look(ref inflammationDrainReliefMaxPerEvent, "EM.InflammationDrainReliefMaxPerEvent", 0.14f);
-		if (Scribe.mode == LoadSaveMode.LoadingVars)
-		{
-			inflammationStasisFullnessThreshold = Mathf.Clamp(inflammationStasisFullnessThreshold, 0.5f, 0.99f);
-			inflammationStasisExponent = Mathf.Clamp(inflammationStasisExponent, 1f, 4f);
-			inflammationHygieneBaselineFactor = Mathf.Clamp01(inflammationHygieneBaselineFactor);
-			inflammationDrainReliefScale = Mathf.Clamp(inflammationDrainReliefScale, 0f, 2f);
-			inflammationDrainReliefMaxPerEvent = Mathf.Clamp(inflammationDrainReliefMaxPerEvent, 0f, 0.5f);
-		}
 
 		Scribe_Values.Look(ref milkingLStimulusPerEvent, "EM.MilkingLStimulusPerEvent", 0.03f);
 		Scribe_Values.Look(ref milkingLStimulusCapPerEvent, "EM.MilkingLStimulusCapPerEvent", 0.05f);

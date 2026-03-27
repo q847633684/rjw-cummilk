@@ -22,37 +22,12 @@ internal partial class MilkCumSettings
 	private static Widget_CumpilationSettings cumpilationSettings;
 	private static Widget_RaceOverrides raceOverridesWidget;
 
-	private static void EnsureScribeDeepTypes()
-	{
-		if (_risk == null || _risk.GetType() != typeof(MilkRiskSettings)) _risk = new MilkRiskSettings();
-		if (humanlikeBreastfeed == null || humanlikeBreastfeed.GetType() != typeof(HumanlikeBreastfeed)) humanlikeBreastfeed = new HumanlikeBreastfeed();
-		if (animalBreastfeed == null || animalBreastfeed.GetType() != typeof(AnimalBreastfeed)) animalBreastfeed = new AnimalBreastfeed();
-		if (mechanoidBreastfeed == null || mechanoidBreastfeed.GetType() != typeof(MechanoidBreastfeed)) mechanoidBreastfeed = new MechanoidBreastfeed();
-		if (colonistSetting == null || colonistSetting.GetType() != typeof(MilkSettings)) colonistSetting = new MilkSettings();
-		if (slaveSetting == null || slaveSetting.GetType() != typeof(MilkSettings)) slaveSetting = new MilkSettings();
-		if (prisonerSetting == null || prisonerSetting.GetType() != typeof(MilkSettings)) prisonerSetting = new MilkSettings();
-		if (animalSetting == null || animalSetting.GetType() != typeof(MilkSettings)) animalSetting = new MilkSettings();
-		if (mechSetting == null || mechSetting.GetType() != typeof(MilkSettings)) mechSetting = new MilkSettings();
-		if (entitySetting == null || entitySetting.GetType() != typeof(MilkSettings)) entitySetting = new MilkSettings();
-		genes ??= new List<Gene_MilkTypeData>();
-	}
-
 	public void DoWindowContents(Rect inRect)
 	{
-		EnsureScribeDeepTypes();
 		inRect.yMin += unitSize;
 
-		pawnDefs ??= GetMilkablePawns();
-		defaultMilkProducts ??= GetDefaultMilkProducts();
-		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
-		animalBreastfeed ??= new AnimalBreastfeed();
-		mechanoidBreastfeed ??= new MechanoidBreastfeed();
-		colonistSetting ??= new MilkSettings();
-		slaveSetting ??= new MilkSettings();
-		prisonerSetting ??= new MilkSettings();
-		animalSetting ??= new MilkSettings();
-		mechSetting ??= new MilkSettings();
-		entitySetting ??= new MilkSettings();
+		pawnDefs = GetMilkablePawns();
+		defaultMilkProducts = GetDefaultMilkProducts();
 
 		List<TabRecord> mainTabs = new()
 		{
@@ -82,13 +57,13 @@ internal partial class MilkCumSettings
 
 		bool useAdvancedSettings = mainTabIndex == (int)MainTabIndex.HealthRisk || mainTabIndex == (int)MainTabIndex.Permissions
 			|| mainTabIndex == (int)MainTabIndex.Balance || mainTabIndex == (int)MainTabIndex.Integrations || mainTabIndex == (int)MainTabIndex.DevTools;
-		if (useAdvancedSettings) advancedSettings ??= new Widget_AdvancedSettings();
+		if (useAdvancedSettings) advancedSettings = new Widget_AdvancedSettings();
 
 		switch (mainTabIndex)
 		{
 			case (int)MainTabIndex.CoreSystems:
-				breastfeedSettings ??= new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
-				cumpilationSettings ??= new Widget_CumpilationSettings();
+				breastfeedSettings = new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
+				cumpilationSettings = new Widget_CumpilationSettings();
 				if (subTabIndex == 0) breastfeedSettings.DrawBreastfeedSystemFull(contentRect);
 				else if (subTabIndex == 1) cumpilationSettings.Draw(contentRect);
 				else
@@ -102,7 +77,7 @@ internal partial class MilkCumSettings
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.HealthRisk, subTabIndex);
 				break;
 			case (int)MainTabIndex.Permissions:
-				defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
+				defaultSettingWidget = new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
 				if (subTabIndex == 0) advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Permissions, 0);
 				else defaultSettingWidget.Draw(contentRect);
 				break;
@@ -113,10 +88,10 @@ internal partial class MilkCumSettings
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Integrations, subTabIndex);
 				break;
 			case (int)MainTabIndex.DataRaces:
-				milkableTable ??= new Widget_MilkableTable(namesToProducts);
-				milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
-				raceOverridesWidget ??= new Widget_RaceOverrides();
-				geneSetting ??= new Widget_GeneSetting(genes);
+				milkableTable = new Widget_MilkableTable(namesToProducts);
+				milkTagsTable = new Widget_MilkTagsTable(namesToProducts, productsToTags);
+				raceOverridesWidget = new Widget_RaceOverrides();
+				geneSetting = new Widget_GeneSetting(genes);
 				if (subTabIndex == 0) milkableTable.Draw(contentRect);
 				else if (subTabIndex == 1) milkTagsTable.Draw(contentRect);
 				else if (subTabIndex == 2) raceOverridesWidget.Draw(contentRect);

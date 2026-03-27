@@ -2,7 +2,7 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>乳腺炎与耐受相关的设置分组；保留原有存档键以确保旧存档兼容。</summary>
+/// <summary>乳腺炎与耐受相关的设置分组。</summary>
 public class MilkRiskSettings : IExposable
 {
 	public bool allowMastitis = true;

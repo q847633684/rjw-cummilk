@@ -20,12 +20,6 @@ internal partial class MilkCumSettings
 		Scribe_Collections.Look(ref productsToTags, "EM.ProductsToTags", LookMode.Value, LookMode.Deep);
 	}
 
-	private static void EnsureDataMappingsInitialized()
-	{
-		genes ??= new List<Gene_MilkTypeData>();
-		namesToProducts ??= new Dictionary<string, RaceMilkType>();
-	}
-
 	private static IEnumerable<ThingDef> GetMilkablePawns()
 	{
 		return DefDatabase<ThingDef>.AllDefs.Where(x => x.race != null && !x.IsCorpse)
