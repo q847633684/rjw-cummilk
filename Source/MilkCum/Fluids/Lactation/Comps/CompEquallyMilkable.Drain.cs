@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
+using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using UnityEngine;
@@ -17,10 +18,35 @@ public partial class CompEquallyMilkable
         map.TryGetValue(key, out float x);
         map[key] = x + amount;
     }
+
+    /// <summary>
+    /// 扣奶顺序：满度高者优先；差在 <see cref="PoolModelConstants.FloatDustEpsilon"/> 内为平局则 <see cref="PreferLeftWhenEqual"/>（解剖左）；仍平则优先解剖右；再比条目下标。
+    /// 返回值 &lt; 0 表示 <paramref name="ia"/> 应先于 <paramref name="ib"/>（与降序 Sort 一致）。
+    /// </summary>
+    private int CompareDrainEntryOrder(int ia, int ib, List<FluidPoolEntry> entries)
+    {
+        if (entries == null || ia < 0 || ib < 0 || ia >= entries.Count || ib >= entries.Count) return ia.CompareTo(ib);
+        float fa = GetFullnessForKey(entries[ia].Key);
+        float fb = GetFullnessForKey(entries[ib].Key);
+        if (fa > fb + PoolModelConstants.FloatDustEpsilon) return -1;
+        if (fb > fa + PoolModelConstants.FloatDustEpsilon) return 1;
+        if (PreferLeftWhenEqual)
+        {
+            if (entries[ia].IsLeft && !entries[ib].IsLeft) return -1;
+            if (entries[ib].IsLeft && !entries[ia].IsLeft) return 1;
+        }
+
+        bool ra = RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(entries[ia].SourcePart);
+        bool rb = RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(entries[ib].SourcePart);
+        if (ra && !rb) return -1;
+        if (rb && !ra) return 1;
+
+        return ia.CompareTo(ib);
+    }
     /// <summary>
     /// 吸奶/挤奶时从池中扣量。
-    /// singleSideOnly=false（默认）：按「哪对最满」优先，同对内先扣较满的一侧，相同时先左，直到扣满 amount；含浮点余量吸收。用于手挤奶。
-    /// singleSideOnly=true：只从「当前最满的一侧」扣，最多扣 amount。用于吸奶（一口只吸一侧）。见 Docs/泌乳系统逻辑图；ADR-003-选侧先左。
+    /// singleSideOnly=false（默认）：按<strong>每条池单 key 满度</strong>全局从高到低依次扣，直到扣满 amount；满度相同则先左（ADR-003）。用于手挤奶（与吸奶同属「按单池满度」规则，手挤可连续扣多条）。
+    /// singleSideOnly=true：只从当前全局最满的一条池扣，最多扣 amount。用于吸奶。见 Docs/泌乳系统逻辑图；ADR-003。
     /// </summary>
     /// <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
     /// <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激）</param>
@@ -49,57 +75,20 @@ public partial class CompEquallyMilkable
         breastFullness ??= new Dictionary<string, float>();
         var drainedByKey = new Dictionary<string, float>();
         float remaining = amount;
-        var pairGroups = BuildPairGroupsByFullnessDescending(entries);
-        for (int g = 0; g < pairGroups.Count; g++)
+        var handOrder = new List<int>(entries.Count);
+        SortHandDrainEntryIndicesDescending(handOrder, entries);
+        for (int o = 0; o < handOrder.Count && remaining > PoolModelConstants.Epsilon; o++)
         {
-            var list = pairGroups[g];
-            if (remaining <= 0f) break;
-            if (list.Count == 2)
-            {
-                FluidPoolEntry leftE = list[0].IsLeft ? list[0] : list[1];
-                FluidPoolEntry rightE = list[0].IsLeft ? list[1] : list[0];
-                if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
-                float leftF = GetFullnessForKey(leftE.Key);
-                float rightF = GetFullnessForKey(rightE.Key);
-                bool drainLeftFirst = leftF > rightF || (Mathf.Approximately(leftF, rightF) && PreferLeftWhenEqual);
-                string firstKey = drainLeftFirst ? leftE.Key : rightE.Key;
-                string secondKey = drainLeftFirst ? rightE.Key : leftE.Key;
-                float firstF = drainLeftFirst ? leftF : rightF;
-                float secondF = drainLeftFirst ? rightF : leftF;
-                float take1 = Mathf.Min(remaining, firstF);
-                if (take1 > 0f)
-                {
-                    breastFullness[firstKey] = Mathf.Max(0f, firstF - take1);
-                    drainedKeys?.Add(firstKey);
-                    AccumulateDrainByKey(drainedByKey, firstKey, take1);
-                    remaining -= take1;
-                }
-                if (remaining > 0f && secondF > 0f)
-                {
-                    float take2 = Mathf.Min(remaining, secondF);
-                    breastFullness[secondKey] = Mathf.Max(0f, secondF - take2);
-                    drainedKeys?.Add(secondKey);
-                    AccumulateDrainByKey(drainedByKey, secondKey, take2);
-                    remaining -= take2;
-                }
-            }
-            else
-            {
-                for (int j = 0; j < list.Count; j++)
-                {
-                    var e = list[j];
-                    if (remaining <= 0f || string.IsNullOrEmpty(e.Key)) continue;
-                    float f = GetFullnessForKey(e.Key);
-                    float take = Mathf.Min(remaining, f);
-                    if (take > 0f)
-                    {
-                        breastFullness[e.Key] = Mathf.Max(0f, f - take);
-                        drainedKeys?.Add(e.Key);
-                        AccumulateDrainByKey(drainedByKey, e.Key, take);
-                        remaining -= take;
-                    }
-                }
-            }
+            int i = handOrder[o];
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            float f = GetFullnessForKey(e.Key);
+            float take = Mathf.Min(remaining, f);
+            if (take <= 0f) continue;
+            breastFullness[e.Key] = Mathf.Max(0f, f - take);
+            drainedKeys?.Add(e.Key);
+            AccumulateDrainByKey(drainedByKey, e.Key, take);
+            remaining -= take;
         }
         if (remaining > PoolModelConstants.Epsilon && remaining < PoolModelConstants.FloatDustEpsilon)
         {
@@ -125,6 +114,20 @@ public partial class CompEquallyMilkable
             MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainForConsume amountReq={amount:F3} drained={drained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
         }
         return drained;
+    }
+
+    /// <summary>手挤：条目下标按单 key 满度降序；差在 FloatDust 内视为平局则先左；再比下标。</summary>
+    private void SortHandDrainEntryIndicesDescending(List<int> order, List<FluidPoolEntry> entries)
+    {
+        order.Clear();
+        if (entries == null) return;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (!string.IsNullOrEmpty(entries[i].Key))
+                order.Add(i);
+        }
+
+        order.Sort((ia, ib) => CompareDrainEntryOrder(ia, ib, entries));
     }
 
     /// <summary>

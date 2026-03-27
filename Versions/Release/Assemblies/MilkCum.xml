@@ -887,10 +887,10 @@
             <summary>当前总奶量（0~maxFullness），= breastFullness.Values.Sum()；对外只读。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.LeftFullness">
-            <summary>左侧总水位（按 GetCachedEntries 中 IsLeft 的 key 汇总），用于 UI/调试。</summary>
+            <summary>解剖左乳池水位之和；未标注侧不计入。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.RightFullness">
-            <summary>右侧总水位（按 GetCachedEntries 中非 IsLeft 的 key 汇总），用于 UI/调试。</summary>
+            <summary>解剖右乳池水位之和；未标注侧不计入（总奶量见 <see cref="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Fullness"/>）。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.allowedBreastfeeders">
             <summary>谁可以对我进行「吸奶/哺乳」（直接吸奶）。名单为空时会预填子女/伴侣。</summary>
@@ -1024,16 +1024,25 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.NotifyInflammationDrain(System.Collections.Generic.Dictionary{System.String,System.Single})">
             <summary>挤奶/吸奶扣池后按侧降低炎症 I。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CompareDrainEntryOrder(System.Int32,System.Int32,System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>
+            扣奶顺序：满度高者优先；差在 <see cref="F:MilkCum.Core.Constants.PoolModelConstants.FloatDustEpsilon"/> 内为平局则 <see cref="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.PreferLeftWhenEqual"/>（解剖左）；仍平则优先解剖右；再比条目下标。
+            返回值 &lt; 0 表示 <paramref name="ia"/> 应先于 <paramref name="ib"/>（与降序 Sort 一致）。
+            </summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsume(System.Single,System.Collections.Generic.List{System.String},System.Boolean)">
             <summary>
             吸奶/挤奶时从池中扣量。
-            singleSideOnly=false（默认）：按「哪对最满」优先，同对内先扣较满的一侧，相同时先左，直到扣满 amount；含浮点余量吸收。用于手挤奶。
-            singleSideOnly=true：只从「当前最满的一侧」扣，最多扣 amount。用于吸奶（一口只吸一侧）。见 Docs/泌乳系统逻辑图；ADR-003-选侧先左。
+            singleSideOnly=false（默认）：按<strong>每条池单 key 满度</strong>全局从高到低依次扣，直到扣满 amount；满度相同则先左（ADR-003）。用于手挤奶（与吸奶同属「按单池满度」规则，手挤可连续扣多条）。
+            singleSideOnly=true：只从当前全局最满的一条池扣，最多扣 amount。用于吸奶。见 Docs/泌乳系统逻辑图；ADR-003。
             </summary>
             <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
             <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激）</param>
             <param name="singleSideOnly">true=只从当前最满的一侧扣（吸奶）；false=按顺序多侧扣至 amount（手挤奶）</param>
             <returns>实际扣掉的量</returns>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SortHandDrainEntryIndicesDescending(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>手挤：条目下标按单 key 满度降序；差在 FloatDust 内视为平局则先左；再比下标。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.DrainForConsumeByRates(System.Collections.Generic.IList{System.Single},System.Single,System.Collections.Generic.List{System.String},System.String,System.Nullable{System.Int32})">
             <summary>
@@ -1096,6 +1105,9 @@
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastBreastListCount">
             <summary>上次重建缓存时的乳房 Hediff 数量，用于 120-tick 检测变化并设脏。</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastBreastPoolKeySignature">
+            <summary>与乳房条数配套的 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.BuildBreastListPoolKeySignature(Verse.Pawn)"/>，条数不变但 Part/键路径变化时设脏。</summary>
+        </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EntriesCacheMaxTicksOnCurrentMap">
             <summary>当前地图小人：池条目缓存 TTL（tick）。非当前地图/未载入地图用更长 TTL，与 LOD 一致。</summary>
         </member>
@@ -1103,7 +1115,7 @@
             <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.PreferLeftWhenEqual">
-            <summary>同对满度相等时先扣左侧，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
+            <summary>同对满度相等时先扣解剖左，仍平则优先解剖右，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetTicksFullPoolForKey(System.String)">
             <summary>该侧「达基础满阈」连续累计的 tick（与 UpdateMilkPools 同步）。</summary>
@@ -1118,7 +1130,10 @@
             <summary>按 key 取该乳当前水位，用于健康页悬停等；无该 key 时返回 0</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetLeftOrRightFullness(System.Boolean)">
-            <summary>按 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.IsLeft"/> 汇总该侧水位（每条真实池独立 key）。</summary>
+            <summary>
+            左：仅 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.IsLeft"/>（解剖左）。右：仅解剖右（<see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(Verse.BodyPartRecord)"/>）。
+            未标注侧不计入左/右栏；<see cref="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Fullness"/> 仍为各 key 之和。
+            </summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EntriesCacheMaxTicksOtherMap">
             <summary>非当前地图殖民者：条目缓存稍长，减少切地图/多地图时重复算 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>。</summary>
@@ -1130,7 +1145,7 @@
             <summary>立即标记 entries 缓存为脏，下次 GetCachedEntries 将重建。泌乳/乳房 hediff 增删时调用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.EnsureEntriesCacheDirtyIfBreastCountChanged">
-            <summary>每 120 tick 在 CompTick 中调用：乳房数量变化时设脏，下次 GetCachedEntries 将重建。</summary>
+            <summary>每 120 tick 在 CompTick 中调用：乳房数量或池键签名变化时设脏，下次 GetCachedEntries 将重建。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetCachedEntriesIfValid">
             <summary>缓存有效时返回已缓存的池条目列表（只读使用），避免 Hediff/UI 重复分配；无效时返回 null，调用方需 fallback 到 GetBreastPoolEntries。</summary>
@@ -1142,16 +1157,13 @@
             <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BreastSideCount">
-            <summary>池侧数量（左+右等），用于机器挤奶并行扣量时算每侧速率。使用缓存，避免每 tick 分配。</summary>
+            <summary>乳池行数（每条可泌乳叶一行），与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/> 一致；严格一对为 2，单侧/多乳为 1 或更多。用于机器挤奶并行扣量时算每侧速率。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildPairGroupsByPairIndex(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
             <summary>按 PairIndex 分组并按 PairIndex 顺序排列，用于 UpdateMilkPools。无 LINQ，减少 GC。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.BuildPairGroupsByFullnessDescending(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
-            <summary>按 PairIndex 分组并按该对总满度降序排列，用于 Drain 选侧（最满的对先扣）。无 LINQ，减少 GC。</summary>
-        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetFirstDrainSideIndex">
-            <summary>吸奶/单侧扣量时「第一个会被扣」的侧在 GetCachedEntries() 中的下标；与 DrainForConsume(..., singleSideOnly: true) 选侧一致。</summary>
+            <summary>吸奶/单侧扣量：在所有池条目中选<strong>单 key 满度最大</strong>的一条。顺序规则与手挤排序共用 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.CompareDrainEntryOrder(System.Int32,System.Int32,System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})"/>。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SyncBaseFullness">
             <summary>将总池量同步到基类 fullness，供可能读取基类字段的代码使用。</summary>
@@ -1259,10 +1271,10 @@
             <summary>Stage 名（括号内）：仅当真正不衰减时显示「永久」，否则留空；具体「天数：X」在 CompLabelInBracketsExtra 动态显示</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lactationAmountFromDrug">
-            <summary>水池模型（L 驱动）：药物诱发的 L 分量；衰减用药物基准 B_T。</summary>
+            <summary>水池模型：药物诱发的 L 分量；与 parent.Severity 同步维护，日变化由原版 SeverityPerDay 驱动。</summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lactationAmountFromBirth">
-            <summary>水池模型：分娩诱发的 L 分量；衰减用分娩基准 B_T。</summary>
+            <summary>水池模型：分娩诱发的 L 分量；同上，与 Severity 同步。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.currentLactationAmount">
             <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
@@ -1542,7 +1554,7 @@
             <summary>左/右汇总基容量因子（各侧乳池 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.Capacity"/> 之和，适应前由侧行加总）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastPoolEntries(Verse.Pawn)">
-            <summary>每条侧池一行：<see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>；同 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.PairIndex"/> 双行由 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,MilkCum.Fluids.Shared.Data.BreastPairCapacities)"/> 耦合进水。</summary>
+            <summary>每条侧池一行：<see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>；同 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.PairIndex"/> 下若有两行且成左右对则 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,MilkCum.Fluids.Shared.Data.BreastPairCapacities)"/>，否则单行 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.SingleBreastTickGrowth(System.Single,System.Single,System.Single,System.Single)"/>。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.BuildBreastPoolEntriesFromSideRows(Verse.Pawn,System.Collections.Generic.List{MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow})">
             <summary>由已算好的侧行构建池条目（与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.PawnMilkPoolExtensions.GetBreastPoolEntries(Verse.Pawn)"/> 同逻辑）；供 <see cref="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable"/> 单次算行、复用行与条目。</summary>
@@ -1597,6 +1609,9 @@
             <see cref="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot"/> 为验收要求的「乳房快照」SSOT：容量/流速/UI/RJW Severity 同步均应对齐此结构中的量，避免多文件各写一遍 Severity×系数。
             </summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.LogDev(System.String,System.Exception)">
+            <summary>开发模式下记录乳池构建异常，避免静默清空列表。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.IsBreastHediffForPool(Verse.Hediff)">
             <summary>与乳池一致：RJW 乳房定义含 <see cref="F:rjw.GenitalTag.CanLactate"/> 才参与（与 RJW 泌乳标签一致）。</summary>
         </member>
@@ -1606,8 +1621,12 @@
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)">
             <summary>
             乳池字典的稳定键：自根到 <see cref="P:Verse.Hediff.Part"/> 的 <c>BodyPartDef.defName</c> 路径（<c>/</c> 分隔）。
-            可与真实左/右子部位对齐；无 Part 时退化为 <c>hediffDef#index</c>。
+            叶部位含 <see cref="F:Verse.BodyPartRecord.customLabel"/> 时拼入，避免左右同 Def（如双 Breast）键冲突。
+            无 Part 时退化为 <c>hediffDef#index</c>。
             </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.BuildBreastListPoolKeySignature(Verse.Pawn)">
+            <summary>当前泌乳乳房列表的稳定键签名（条数不变时 Part/路径变化也会变），供条目缓存失效检测。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastHediffFlowMultiplier(Verse.Hediff)">
             <summary>单条乳房 Hediff 的进水倍率：<see cref="M:rjw.HediffComp_SexPart.GetFluidMultiplier"/> 与 RJW 一致（无额外 0.1–3 夹断），再乘可选乳头阶段修饰；下限仅防 0/负值。</summary>
@@ -1627,23 +1646,39 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPairSnapshots(Verse.Pawn)">
             <summary>
-            当前小人、在启用 RJW 胸池时的乳房对快照列表；顺序与池条目中 PairIndex 一致。无乳房或关闭设置时返回空表（非 null）。
+            当前小人、在启用 RJW 胸池时的乳房快照；与 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/> 一致。
+            同一胸腔父节点下能判出一左一右且恰好两条时共享 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot.PairIndex"/>；否则（单侧、多乳、双乳但标签不成对）每条乳房各一快照、PairIndex 递增。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)">
             <summary>
-            左右两条真实池：同一 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.PairIndex"/> 的两行由 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,MilkCum.Fluids.Shared.Data.BreastPairCapacities)"/> 耦合进水。
-            键：解剖左/右乳为各自 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>；单 Hediff 无法区分侧时为 baseKey+|L| / +|R|。
+            每条可泌乳叶一条真实池行。同一 <see cref="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.PairIndex"/> 下若有两行且能辨左右，由 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.UpdateMilkPools"/> 走双池 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.TickGrowth(System.Single,System.Single,MilkCum.Fluids.Shared.Data.BreastPairCapacities)"/>；否则该 PairIndex 仅一行，走 <see cref="M:MilkCum.Fluids.Shared.Data.FluidPoolState.SingleBreastTickGrowth(System.Single,System.Single,System.Single,System.Single)"/>。
+            Breast/MechBreast 叶；无部位、旧 Chest 单点、容量为 0 等仍不进池。
             </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.IsAnatomicallyLeftBreastPart(Verse.BodyPartRecord)">
+            <summary>部位 customLabel / Def 名可辨认为左乳（与严格成对判定一致）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(Verse.BodyPartRecord)">
+            <summary>部位可辨认为右乳；未标注侧既不左也不右（不计入左/右汇总）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.SortUnpairedGroupByAnatomicalOrder(Verse.Pawn,System.Collections.Generic.List{MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.Cand})">
+            <summary>不成对组内按 <c>body.AllParts</c> 顺序稳定排序（与严格成对前一致）；仅影响遍历/展示顺序，不赋予虚拟左右。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.TryStrictLeftRightPair(Verse.Pawn,System.Collections.Generic.List{MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.Cand},MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.Cand@,MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.Cand@)">
+            <summary>同一父节点下恰好两条泌乳乳房、且各标为左/右之一（各一侧）。组内顺序与不成对分支一致为 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.SortUnpairedGroupByAnatomicalOrder(Verse.Pawn,System.Collections.Generic.List{MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.Cand})"/>。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow">
             <summary>一条「侧」乳池行：与 <see cref="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry"/> 一一对应。</summary>
         </member>
+        <member name="P:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolSideRow.IsLeft">
+            <summary>仅解剖左为 true；解剖右与未标注为 false（与 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.IsLeft"/> 一致）。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.RjwBreastPairSnapshot">
             <summary>
             一条 RJW 乳房 Hediff 在乳池经济中的只读快照（验收：阶段 1 乳房快照）。
-            ListIndex 为 GetBreastList 下标；PoolKey 为 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>（部位路径，不含合成 |L|/|R|）。
-            PairIndex 仍为每条泌乳乳房递增的序数；左右真实池与双池耦合见 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>。
+            ListIndex 为 GetBreastList 下标；PoolKey 为 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>（叶部位路径，含 customLabel 区分左右）。
+            PairIndex：严格左右一对时两快照相同；单侧/多乳等否则每条乳房一序数。左右真实池与双池耦合见 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSideRows(Verse.Pawn)"/>。
             </summary>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Jobs.JobDriver_MilkCumMilk.amountToTake">
@@ -1716,10 +1751,13 @@
             <summary>鐗╁搧鎮诞/妫€鏌ラ潰鏉匡細鏄剧ず浜т富涓庡厑璁镐娇鐢ㄥ悕鍗曪紙濂朵骇涓荤敤 CompEquallyMilkable.allowedConsumers锛涚簿娑茬瓑鏃?Comp 鏃朵粎鏄剧ず浜т富锛夈€</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry">
-            <summary>乳池条目：稳定 key（身体部位路径字符串）、容量、流速倍率、左右汇总用标记、对序号、可选 RJW 乳房部位。</summary>
+            <summary>乳池条目：稳定 key、容量、流速倍率、解剖左右标记、对序号、RJW 乳房部位。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.FlowMultiplier">
             <summary>该池的 RJW/基因等流速倍率；调用方 × basePerDay 得每日流速。合并双侧虚拟池时为原单侧倍率的 2 倍以保持总进水量不变。</summary>
+        </member>
+        <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.IsLeft">
+            <summary>仅解剖左乳为 true；解剖右与未标注为 false。双池进水时与对侧成对；右栏汇总仅计解剖右（与 IsAnatomicallyRightBreastPart 一致）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.PairIndex">
             <summary>第几对乳房（0=第一对）；解剖左/右乳各一条 Hediff 时二者共享同一 PairIndex，用于 TickGrowth 成对处理。</summary>
@@ -2008,6 +2046,22 @@
         </member>
         <member name="M:MilkCum.RJW.RJWVersionDiffHelper.GetBreastListOrEmpty(Verse.Pawn)">
             <summary>空安全：pawn 为 null 或 GetBreastList 异常/返回 null 时返回空列表，便于链式调用。</summary>
+        </member>
+        <member name="T:MilkCum.RJW.RJW_BreastAnatomyHarmony">
+            <summary>
+            RJW 仍把 xxx.breastsDef 指向 Chest；本 mod 在补丁里增加 Breast 叶部位后，用 Harmony 衔接生成与列表逻辑（不修改 RJW 源码）。
+            </summary>
+        </member>
+        <member name="T:MilkCum.RJW.RJW_BreastAnatomyHarmony.MissingBreast_RemoveSexPartHediffs">
+            <summary>
+            RJW 的 Hediff_MissingBodyPart_RemoveParts 只认 xxx.breastsDef（Chest）；叶部位为 Breast 时单侧缺失不会清 RJW 乳房类 Hediff，此处对齐行为。
+            目标必须与 RJW 相同：<see cref="M:Verse.Hediff_MissingPart.PostAdd(System.Nullable{Verse.DamageInfo})"/>。
+            </summary>
+        </member>
+        <member name="T:MilkCum.RJW.RJW_BreastAnatomyHarmony.BodyPartRecord_Label_BreastSidesTranslate">
+            <summary>
+            解剖补丁使用英文 customLabel；此处用 Keyed 在中文等语言下显示「左乳/右乳」等。
+            </summary>
         </member>
         <member name="T:MilkCum.UI.Dialog_GeneConfig">
             <summary>奶类型基因配置弹窗。若后续增加选项导致内容超出窗口，可改为可滚动或按内容计算高度。</summary>

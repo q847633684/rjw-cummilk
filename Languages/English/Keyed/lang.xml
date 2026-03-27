@@ -350,4 +350,9 @@
     <EM.Milk_AllowDeflateTip>Whether this pawn may take deflate jobs (to bucket / clean / ground). Off = no auto deflate.</EM.Milk_AllowDeflateTip>
     <EM.DefaultSetting_CanBeFed>Allow auto-fed (nursing)</EM.DefaultSetting_CanBeFed>
     <EM.DefaultSetting_CanBeFedTip>When this pawn is a baby/child: allow caregivers to auto breastfeed them. Off = they won't be chosen as nursing targets.</EM.DefaultSetting_CanBeFedTip>
+    <!-- Breast anatomy customLabel → UI (Patch_RJW_ChestAndBreastAnatomy / MechChest) -->
+    <EM.BodyPartLeftBreast>left breast</EM.BodyPartLeftBreast>
+    <EM.BodyPartRightBreast>right breast</EM.BodyPartRightBreast>
+    <EM.BodyPartLeftMechBreast>left mech breast</EM.BodyPartLeftMechBreast>
+    <EM.BodyPartRightMechBreast>right mech breast</EM.BodyPartRightMechBreast>
 </LanguageData>

@@ -48,9 +48,9 @@ public partial class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>左侧总水位（按 GetCachedEntries 中 IsLeft 的 key 汇总），用于 UI/调试。</summary>
+    /// <summary>解剖左乳池水位之和；未标注侧不计入。</summary>
     public float LeftFullness => GetLeftOrRightFullness(left: true);
-    /// <summary>右侧总水位（按 GetCachedEntries 中非 IsLeft 的 key 汇总），用于 UI/调试。</summary>
+    /// <summary>解剖右乳池水位之和；未标注侧不计入（总奶量见 <see cref="Fullness"/>）。</summary>
     public float RightFullness => GetLeftOrRightFullness(left: false);
     private MilkSettings milkSettings = null;
     public MilkSettings MilkSettings

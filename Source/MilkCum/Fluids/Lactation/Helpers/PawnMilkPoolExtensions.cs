@@ -47,13 +47,16 @@ public static class PawnMilkPoolExtensions
             {
                 var r = rows[i];
                 if (r.IsLeft) leftFactor += r.BaseCapacity;
-                else rightFactor += r.BaseCapacity;
+                else if (RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(r.BreastHediff?.Part)) rightFactor += r.BaseCapacity;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RjwBreastPoolEconomy.LogDev(nameof(GetBreastCapacityFactors), ex);
+        }
     }
 
-    /// <summary>每条侧池一行：<see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>；同 <see cref="RjwBreastPoolSideRow.PairIndex"/> 双行由 <see cref="FluidPoolState.TickGrowth"/> 耦合进水。</summary>
+    /// <summary>每条侧池一行：<see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>；同 <see cref="RjwBreastPoolSideRow.PairIndex"/> 下若有两行且成左右对则 <see cref="FluidPoolState.TickGrowth"/>，否则单行 <see cref="FluidPoolState.SingleBreastTickGrowth"/>。</summary>
     public static List<FluidPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return new List<FluidPoolEntry>();
@@ -81,8 +84,9 @@ public static class PawnMilkPoolExtensions
             }
             ApplyCapacityAdaptationToEntries(pawn, result);
         }
-        catch
+        catch (Exception ex)
         {
+            RjwBreastPoolEconomy.LogDev(nameof(BuildBreastPoolEntriesFromSideRows), ex);
             result.Clear();
         }
         return result;
@@ -298,7 +302,10 @@ public static class PawnMilkPoolExtensions
             var bpr = Genital_Helper.get_genitalsBPR(pawn);
             if (bpr != null) return bpr;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RjwBreastPoolEconomy.LogDev(nameof(GetGenitalsPart), ex);
+        }
         if (pawn.health?.hediffSet == null) return null;
         var parts = pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined, null, null);
         BodyPartRecord genitals = null, anus = null;

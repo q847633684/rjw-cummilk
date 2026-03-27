@@ -347,4 +347,9 @@
     <EM.Milk_AllowDeflateTip>准不准这人自己去找桶、找扫帚或就地泄掉胀住的精。关则不会自动去泄。</EM.Milk_AllowDeflateTip>
     <EM.DefaultSetting_CanBeFed>允许被自动喂食</EM.DefaultSetting_CanBeFed>
     <EM.DefaultSetting_CanBeFedTip>作为婴儿/幼体时，是否允许保育员自动来哺乳我。关则不会成为自动哺乳的对象。</EM.DefaultSetting_CanBeFedTip>
+    <!-- 左右乳 customLabel 显示（与 Patch 中英文键一致） -->
+    <EM.BodyPartLeftBreast>左乳</EM.BodyPartLeftBreast>
+    <EM.BodyPartRightBreast>右乳</EM.BodyPartRightBreast>
+    <EM.BodyPartLeftMechBreast>左机械乳</EM.BodyPartLeftMechBreast>
+    <EM.BodyPartRightMechBreast>右机械乳</EM.BodyPartRightMechBreast>
 </LanguageData>

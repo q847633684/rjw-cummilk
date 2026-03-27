@@ -33,6 +33,7 @@ internal static class ApplyPatches
         new PatchClassProcessor(Harmony, typeof(CompAssignableToPawn_Box_Patch)).Patch();
         new PatchClassProcessor(Harmony, typeof(Hediff_BasePregnancy_Patch)).Patch();
         new PatchClassProcessor(Harmony, typeof(JobDriver_Sex_OrgasmMilk_Patch)).Patch();
+        new PatchClassProcessor(Harmony, typeof(RJW_BreastAnatomyHarmony)).Patch();
     }
 }
 [HarmonyPatch(typeof(PawnMilkPoolExtensions))]

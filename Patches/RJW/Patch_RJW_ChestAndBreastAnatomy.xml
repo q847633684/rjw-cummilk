@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 依赖 rim.job.world；将 RJW 的 Chest 改为概念父节点并挂左右 Breast；Torso 覆盖率与 RJW 原补丁一致。 -->
+<Patch>
+	<Operation Class="PatchOperationFindMod">
+		<mods>
+			<li>rim.job.world</li>
+		</mods>
+		<match Class="PatchOperationSequence">
+			<operations>
+				<!-- Chest：由单叶改为概念父节点（与 Waist 类似），HP 在子部位 Breast 上 -->
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/BodyPartDef[defName="Chest"]</xpath>
+					<value>
+						<BodyPartDef>
+							<defName>Chest</defName>
+							<label>chest</label>
+							<conceptual>true</conceptual>
+						</BodyPartDef>
+					</value>
+				</li>
+				<!-- Human：Chest 下增加左右乳 -->
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/BodyDef[defName="Human"]/corePart/parts/li[def="Chest"]</xpath>
+					<value>
+						<li>
+							<def>Chest</def>
+							<coverage>0.02</coverage>
+							<height>Top</height>
+							<depth>Outside</depth>
+							<groups>
+								<li>Torso</li>
+								<li>ChestBPG</li>
+							</groups>
+							<parts>
+								<li>
+									<def>Breast</def>
+									<customLabel>left breast</customLabel>
+									<coverage>0.5</coverage>
+									<flipGraphic>true</flipGraphic>
+									<groups>
+										<li>Torso</li>
+										<li>ChestBPG</li>
+									</groups>
+								</li>
+								<li>
+									<def>Breast</def>
+									<customLabel>right breast</customLabel>
+									<coverage>0.5</coverage>
+									<groups>
+										<li>Torso</li>
+										<li>ChestBPG</li>
+									</groups>
+								</li>
+							</parts>
+						</li>
+					</value>
+				</li>
+				<!-- 动物等：与 RJW BodyParts_Animals 中 Chest 块一致 -->
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/BodyDef[defName != "Human"]/corePart[def = "Body" or def = "Torso"]/parts/li[def="Chest"]</xpath>
+					<value>
+						<li>
+							<def>Chest</def>
+							<coverage>0.02</coverage>
+							<height>Top</height>
+							<depth>Outside</depth>
+							<groups>
+								<li>Torso</li>
+								<li>ChestBPG</li>
+							</groups>
+							<parts>
+								<li>
+									<def>Breast</def>
+									<customLabel>left breast</customLabel>
+									<coverage>0.5</coverage>
+									<flipGraphic>true</flipGraphic>
+									<groups>
+										<li>Torso</li>
+										<li>ChestBPG</li>
+									</groups>
+								</li>
+								<li>
+									<def>Breast</def>
+									<customLabel>right breast</customLabel>
+									<coverage>0.5</coverage>
+									<groups>
+										<li>Torso</li>
+										<li>ChestBPG</li>
+									</groups>
+								</li>
+							</parts>
+						</li>
+					</value>
+				</li>
+			</operations>
+		</match>
+	</Operation>
+</Patch>
