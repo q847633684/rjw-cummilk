@@ -1,24 +1,67 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LanguageData>
-  <!-- 原版 Lactating：本 mod 接管为池模型，此处说明与当前逻辑一致（L、双池、药物/分娩、衰减、挤奶、喷乳反射等）。 -->
-  <Lactating.description>由催乳剂或分娩触发。持续时间由内部泌乳量 L 与每日衰减决定，非原版严重度。奶量存入左/右乳池，可挤奶或吸奶；满池后产奶减缓，超出部分回缩并补充饱食度。挤奶或吸奶会暂时提高产奶效率（喷乳反射）；饥饿时停止产奶。永久泌乳基因或设置下可持续泌乳。</Lactating.description>
+  <!-- 泌乳：双乳池与奶量 L；与原版「严重度」不是同一套数。 -->
+  <Lactating.description>催乳药或分娩会唤起泌乳。能产多久，看身子里的奶劲 L 和日复一日的消退；不是 health 条上那种老式的「严重度数字」。奶水积在左乳、右乳里，可挤可吸；涨得太满时产奶会慢下来，多出来的会慢慢回进身子、填一点饿。挤奶或吸奶时，常会一阵顺畅（像催产素把奶路推开）；饿狠了，身子会先顾肚子、暂停产奶。若是天生永久泌乳，或营地里定下的规矩允许，也可以一直泌下去。</Lactating.description>
 
-  <!-- 催乳素耐受 EM_Prolactin_Tolerance -->
-  <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
+  <!-- 催乳素成瘾 EM_Prolactin_Addiction -->
+  <EM_Prolactin_Addiction.description>身子习惯了定期有催乳素撑着；一旦断供，就像被抽了骨头般难熬不宁。</EM_Prolactin_Addiction.description>
+  <EM_Prolactin_Addiction.label>催乳素依赖</EM_Prolactin_Addiction.label>
+  <EM_Prolactin_Addiction.stages.0.label>药劲安稳</EM_Prolactin_Addiction.stages.0.label>
+  <EM_Prolactin_Addiction.stages.1.label>戒断难熬</EM_Prolactin_Addiction.stages.1.label>
+
   <EM_Prolactin_Tolerance.label>催乳素耐受</EM_Prolactin_Tolerance.label>
+  <EM_Prolactin_Tolerance.description>身体渐渐摸透了催乳素的脾气：同样一剂劲道变弱，药劲一过，泌乳也退得快些。久停之后耐受会慢慢回去。耐受很高（约七成半以上）时，长年累月可能累及肾脏，大约平均每百八十日有一次发作机会。</EM_Prolactin_Tolerance.description>
   <EM_Prolactin_Tolerance.stages.0.label>轻微耐受</EM_Prolactin_Tolerance.stages.0.label>
   <EM_Prolactin_Tolerance.stages.1.label>中度耐受</EM_Prolactin_Tolerance.stages.1.label>
   <EM_Prolactin_Tolerance.stages.2.label>高度耐受</EM_Prolactin_Tolerance.stages.2.label>
 
-  <!-- 催乳素兴奋 EM_Prolactin_High -->
-  <EM_Prolactin_High.description>催乳素带来的短期愉悦感；协调能力与意识略有下降。</EM_Prolactin_High.description>
-  <EM_Prolactin_High.label>催乳素兴奋</EM_Prolactin_High.label>
+  <EM_Prolactin_High.description>催乳素带来的短暂醺然轻快，手脚略笨，脑子也有点飘。</EM_Prolactin_High.description>
+  <EM_Prolactin_High.label>催乳素上头</EM_Prolactin_High.label>
 
-  <!-- 催乳素成瘾 EM_Prolactin_Addiction -->
-  <EM_Prolactin_Addiction.description>对催乳素成瘾。</EM_Prolactin_Addiction.description>
-  <EM_Prolactin_Addiction.label>催乳素成瘾</EM_Prolactin_Addiction.label>
-  <EM_Prolactin_Addiction.stages.0.label>满足</EM_Prolactin_Addiction.stages.0.label>
-  <EM_Prolactin_Addiction.stages.1.label>戒断</EM_Prolactin_Addiction.stages.1.label>
+  <!-- 泌乳乳房与药物相关 Hediff（与 Def 英文分轨） -->
+  <EM_BreastsEngorged.label>乳房胀满</EM_BreastsEngorged.label>
+  <EM_BreastsEngorged.description>奶水攒得太满，乳房沉甸甸、绷得发紧，走路做事都不利索。多半是没及时挤净。把奶水排空了，一般会松快很多。</EM_BreastsEngorged.description>
+  <EM_BreastsEngorged.stages.0.label>胀硬不适</EM_BreastsEngorged.stages.0.label>
+
+  <EM_LactationalMilkStasis.label>奶水瘀积</EM_LactationalMilkStasis.label>
+  <EM_LactationalMilkStasis.description>奶水涨在里头却出路不顺，乳房发闷、发硬，一碰就揪着疼。老挤不干净的话，很容易拖成发炎。勤挤、尽量挤空，才有机会慢慢消下去。</EM_LactationalMilkStasis.description>
+  <EM_LactationalMilkStasis.stages.0.label>隐隐绷痛</EM_LactationalMilkStasis.stages.0.label>
+  <EM_LactationalMilkStasis.stages.1.label>闷痛结块</EM_LactationalMilkStasis.stages.1.label>
+
+  <EM_Mastitis.label>乳腺炎</EM_Mastitis.label>
+  <EM_Mastitis.description>乳房又红又烫，肿痛钻心，人也没精神，像烧起来一样。淤奶拖久了、身子不干净或者胸口带伤，都容易招来。得多歇着、照样把奶水挤空、别糟蹋伤口；再拖下去，恐怕会化脓成大病。</EM_Mastitis.description>
+  <EM_Mastitis.stages.0.label>肿痛初起</EM_Mastitis.stages.0.label>
+  <EM_Mastitis.stages.1.label>红肿蔓延</EM_Mastitis.stages.1.label>
+  <EM_Mastitis.stages.2.label>高热恶化</EM_Mastitis.stages.2.label>
+
+  <EM_BreastAbscess.label>乳房化脓</EM_BreastAbscess.label>
+  <EM_BreastAbscess.description>乳房里像是化了脓，肿痛厉害，浑身发冷发热，人快撑不住。多在炎症没压住、又脏又累的时候恶化出来。光挤奶不太够，得有人细心照料；若有大夫动刀引流，好起来会快些。</EM_BreastAbscess.description>
+  <EM_BreastAbscess.stages.0.label>局部积脓</EM_BreastAbscess.stages.0.label>
+  <EM_BreastAbscess.stages.1.label>脓势扩散</EM_BreastAbscess.stages.1.label>
+
+  <EM_DrugLactationBurden.label>催乳药的余累</EM_DrugLactationBurden.label>
+  <EM_DrugLactationBurden.description>药劲推着乳房不停产奶，身子却有点跟不上：手脚发沉，做事也容易分神。</EM_DrugLactationBurden.description>
+  <EM_DrugLactationBurden.stages.0.label>发沉乏力</EM_DrugLactationBurden.stages.0.label>
+
+  <EM_LactatingGain.label>泌乳带来的劲头</EM_LactatingGain.label>
+  <EM_LactatingGain.description>奶水涨得顺、人反而精神了些：步子轻快，手上也利索。</EM_LactatingGain.description>
+  <EM_LactatingGain.stages.0.label>身轻手稳</EM_LactatingGain.stages.0.label>
+
+  <EM_AbsorptionDelay.label>药力未透</EM_AbsorptionDelay.label>
+  <EM_AbsorptionDelay.description>催乳的药还在血脉里化开，胸口隐隐发热，离真正胀奶还有一会儿。</EM_AbsorptionDelay.description>
+  <EM_AbsorptionDelay.stages.0.label>化药中</EM_AbsorptionDelay.stages.0.label>
+
+  <Lactating_Drug.label>药物泌乳</Lactating_Drug.label>
+  <Lactating_Drug.description>靠药物催起来的泌乳；奶水照旧积在左右乳里，该挤该吸都不误。</Lactating_Drug.description>
+  <Lactating_Drug.stages.0.label>泌乳中</Lactating_Drug.stages.0.label>
+
+  <Lactating_Permanent.label>永久泌乳</Lactating_Permanent.label>
+  <Lactating_Permanent.description>身子天生就会一直产奶，除非遇上别的法子把它压下去。</Lactating_Permanent.description>
+  <Lactating_Permanent.stages.0.label>泌乳中</Lactating_Permanent.stages.0.label>
+
+  <Heavy_Lactating_Permanent.label>重度永久泌乳</Heavy_Lactating_Permanent.label>
+  <Heavy_Lactating_Permanent.description>泌乳又猛又久，乳房几乎闲不下来，比寻常永久泌乳更费神。</Heavy_Lactating_Permanent.description>
+  <Heavy_Lactating_Permanent.stages.0.label>泌乳中</Heavy_Lactating_Permanent.stages.0.label>
 
   <!-- ========== 精液和母乳 Health Conditions ========== -->
   <!-- Cumpilation_Cumflation 体内精液膨胀 -->

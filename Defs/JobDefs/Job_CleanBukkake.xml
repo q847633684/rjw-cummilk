@@ -3,14 +3,14 @@
 <Defs>
 	<JobDef>
 		<defName>Cumpilation_CleanSelf</defName>
-		<driverClass>Cumpilation.Bukkake.JobDriver_CleanSelf</driverClass>
+		<driverClass>MilkCum.Fluids.Cum.Bukkake.JobDriver_CleanSelf</driverClass>
 		<reportString>cleaning self</reportString>
 		<casualInterruptible>true</casualInterruptible>
 	</JobDef>
 
 	<JobDef>
 		<defName>Cumpilation_CleanSelfWithSink</defName>
-		<driverClass>Cumpilation.Bukkake.JobDriver_CleanSelfWithSink</driverClass>
+		<driverClass>MilkCum.Fluids.Cum.Bukkake.JobDriver_CleanSelfWithSink</driverClass>
 		<reportString>collecting fluids</reportString>
 		<casualInterruptible>true</casualInterruptible>
 	</JobDef>

@@ -2,7 +2,7 @@
 
 	<HediffDef>
 		<defName>Cumpilation_Hediff_SlugCoverageController</defName>
-		<hediffClass>Cumpilation.Bukkake.Hediff_CoverageController</hediffClass>
+		<hediffClass>MilkCum.Fluids.Cum.Bukkake.Hediff_CoverageController</hediffClass>
 		<label>Slugcovered</label>
 		<description>Covered in Slug.</description>
 		<makesSickThought>false</makesSickThought>
@@ -67,7 +67,7 @@
 			</li>
 		</stages>
 		<comps>
-			<li Class="Cumpilation.Common.HediffCompProperties_SpawnOtherHediffOverTime">
+			<li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_SpawnOtherHediffOverTime">
 				<tickInterval>2400</tickInterval>
 				<hediff>ToxicBuildup</hediff>
 				<severityIncrease>0.02</severityIncrease>
@@ -86,13 +86,13 @@
 		<labelNounPretty>slug on {1}</labelNounPretty>
 		<defaultLabelColor>(0.95,0.95,0.95)</defaultLabelColor>
 		<comps>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_BukkakeSpawnedByFluid">
 				<sexFluidDefs>
 					<li>Cumpilation_Slug</li>
 				</sexFluidDefs>
 				<fluidRequiredForSeverityOne>10</fluidRequiredForSeverityOne>
 			</li>
-			<li Class="Cumpilation.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
+			<li Class="MilkCum.Fluids.Cum.Bukkake.HediffCompProperties_SpawnOrAdjustControllerHediff">
 				<controller>Cumpilation_Hediff_SlugCoverageController</controller>
 				<summedSeverityRequiredForFullController>4.5</summedSeverityRequiredForFullController>
 			</li>

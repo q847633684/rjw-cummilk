@@ -3,7 +3,7 @@
 
   <JobDef>
     <defName>Cumpilation_VomitFluid</defName>
-    <driverClass>Cumpilation.Cumflation.JobDriver_VomitFluid</driverClass>
+    <driverClass>MilkCum.Fluids.Cum.Cumflation.JobDriver_VomitFluid</driverClass>
     <playerInterruptible>false</playerInterruptible>
     <casualInterruptible>false</casualInterruptible>
     <reportString>vomiting fluid.</reportString>

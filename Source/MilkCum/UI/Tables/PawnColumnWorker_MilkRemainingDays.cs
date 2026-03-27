@@ -1,0 +1,23 @@
+using MilkCum.Core;
+using RimWorld;
+using Verse;
+
+namespace MilkCum.UI;
+
+/// <summary>建议 7：奶表格中显示泌乳剩余天数。</summary>
+public class PawnColumnWorker_MilkRemainingDays : PawnColumnWorker_Text
+{
+	protected override string GetTextFor(Pawn pawn)
+	{
+		var hediff = pawn?.LactatingHediffWithComps();
+		var comp = hediff?.comps?.Find(c => c is HediffComp_EqualMilkingLactating) as HediffComp_EqualMilkingLactating;
+		if (comp == null || comp.RemainingDays <= 0f) return "-";
+		if (comp.IsPermanentLactation || float.IsPositiveInfinity(comp.RemainingDays))
+			return Lang.Permanent;
+		return comp.RemainingDays.ToString("F1") + "d";
+	}
+	protected override string GetHeaderTip(PawnTable table)
+	{
+		return "EM.MilkRemainingDaysColumnTip".Translate();
+	}
+}

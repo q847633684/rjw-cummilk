@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 乳房类 Hediff / 手术部位由 Chest 改为 Breast（叶节点）；不修改 RJW 仓库。 -->
+<Patch>
+	<Operation Class="PatchOperationFindMod">
+		<mods>
+			<li>rim.job.world</li>
+		</mods>
+		<match Class="PatchOperationSequence">
+			<operations>
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/rjw.HediffDef_SexPart[defaultBodyPart="Chest"]/defaultBodyPart</xpath>
+					<value>
+						<defaultBodyPart>Breast</defaultBodyPart>
+					</value>
+				</li>
+				<li Class="PatchOperationAdd">
+					<xpath>Defs/rjw.HediffDef_SexPart[defName="FeaturelessChest"]</xpath>
+					<value>
+						<defaultBodyPart>Breast</defaultBodyPart>
+					</value>
+				</li>
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/RecipeDef[@Name="BreastSurgery"]/appliedOnFixedBodyParts/li[text()="Chest"]</xpath>
+					<value>
+						<li>Breast</li>
+					</value>
+				</li>
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/RecipeDef[@Name="MultiBreast"]/appliedOnFixedBodyParts/li[text()="Chest"]</xpath>
+					<value>
+						<li>Breast</li>
+					</value>
+				</li>
+				<li Class="PatchOperationReplace">
+					<xpath>Defs/rjw.HediffDef_SexPart[defName="MechBreasts"]/defaultBodyPart</xpath>
+					<value>
+						<defaultBodyPart>MechBreast</defaultBodyPart>
+					</value>
+				</li>
+			</operations>
+		</match>
+	</Operation>
+</Patch>
