@@ -134,7 +134,7 @@ public static class Need_Food_Patch
     }
 }
 
-/// <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空双池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
+/// <summary>Lactating 被任意方式移除时（含其他 mod 直接 RemoveHediff）同步清空乳池，保证池与 hediff 一致。本 mod 内通过 ResetAndRemoveLactating 会先 ClearPools 再 RemoveHediff，此处兜底。</summary>
 [HarmonyPatch(typeof(Pawn_HealthTracker))]
 [HarmonyPatch(nameof(Pawn_HealthTracker.RemoveHediff))]
 public static class HediffSet_Remove_Patch
@@ -294,28 +294,37 @@ internal static class PoolModelBirthHelper
     }
 }
 
-/// <summary>健康页乳房悬停：构建单对乳房的完整块（【标题】总览 + 左/右乳分行 + 因子）。</summary>
+/// <summary>健康页乳房悬停：构建乳房池详情块（【标题】总览 + 可用侧分行 + 因子）。</summary>
 internal static class BreastPoolTooltipHelper
 {
     private const string Tab = "  ";
 
-    /// <summary>构建一对乳房的 tooltip：总览 + 左/右真实池各行与按池键的因子。</summary>
-    public static string BuildBreastPairBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, Pawn pawn)
+    /// <summary>构建乳房池 tooltip：优先显示该乳房子部位对应的池；若有两侧条目则同时显示。</summary>
+    public static string BuildBreastPoolBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, Pawn pawn)
     {
         if ((entries?.Count ?? 0) == 0 || pawn == null) return "";
         var comp = pawn.LactatingHediffComp();
         if (comp == null) return "";
-        var left = entries.FirstOrDefault(e => e.isLeft);
-        var right = entries.FirstOrDefault(e => !e.isLeft);
-        float leftFull = left.capacity >= 0.001f ? left.fullness : 0f;
-        float leftCap = Mathf.Max(0.001f, left.capacity);
-        float rightFull = right.capacity >= 0.001f ? right.fullness : 0f;
-        float rightCap = Mathf.Max(0.001f, right.capacity);
+        var left = entries.FirstOrDefault(e => e.isLeft && !string.IsNullOrEmpty(e.key));
+        var right = entries.FirstOrDefault(e => !e.isLeft && !string.IsNullOrEmpty(e.key));
+        bool hasLeft = !string.IsNullOrEmpty(left.key);
+        bool hasRight = !string.IsNullOrEmpty(right.key);
+        if (!hasLeft && !hasRight)
+        {
+            var any = entries.FirstOrDefault(e => !string.IsNullOrEmpty(e.key));
+            if (string.IsNullOrEmpty(any.key)) return "";
+            left = any;
+            hasLeft = true;
+        }
+        float leftFull = hasLeft && left.capacity >= 0.001f ? left.fullness : 0f;
+        float leftCap = hasLeft ? Mathf.Max(0.001f, left.capacity) : 0f;
+        float rightFull = hasRight && right.capacity >= 0.001f ? right.fullness : 0f;
+        float rightCap = hasRight ? Mathf.Max(0.001f, right.capacity) : 0f;
         float totalMilk = leftFull + rightFull;
-        float totalBaseCap = leftCap + rightCap;
-        float totalStretchCap = leftCap * PoolModelConstants.StretchCapFactor + rightCap * PoolModelConstants.StretchCapFactor;
+        float totalBaseCap = Mathf.Max(0.001f, leftCap + rightCap);
+        float totalStretchCap = (leftCap + rightCap) * PoolModelConstants.StretchCapFactor;
         var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastSides(left.key, right.key);
-        float flowPair = flowL + flowR;
+        float flowTotal = flowL + flowR;
         float letdownL = string.IsNullOrEmpty(left.key) ? 1f : comp.GetLetdownReflexFlowMultiplier(left.key);
         float letdownR = string.IsNullOrEmpty(right.key) ? 1f : comp.GetLetdownReflexFlowMultiplier(right.key);
         float pressureL = string.IsNullOrEmpty(left.key) ? 1f : pawn.GetPressureFactorForPool(left.key);
@@ -341,7 +350,7 @@ internal static class BreastPoolTooltipHelper
         sb.Append(Tab).AppendLine("EM.PoolBreastStretchCapLine".Translate(totalStretchCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
         sb.AppendLine();
         sb.AppendLine("EM.PoolSectionFlow".Translate());
-        sb.Append(Tab).AppendLine("EM.PoolBreastTotalFlowLine".Translate(flowPair.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append(Tab).AppendLine("EM.PoolBreastTotalFlowLine".Translate(flowTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
         sb.AppendLine();
         sb.AppendLine("EM.PoolLeftBreast".Translate());
         sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
@@ -357,20 +366,23 @@ internal static class BreastPoolTooltipHelper
             foreach (string line in factorLinesL)
                 sb.Append(Tab).Append(Tab).AppendLine(line);
         }
-        sb.AppendLine();
-        sb.AppendLine("EM.PoolRightBreast".Translate());
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
-            rightFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            rightCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-            rightPercent));
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(rightStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-        if (Verse.Prefs.DevMode)
+        if (hasRight)
         {
-            sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
-            sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
-            foreach (string line in factorLinesR)
-                sb.Append(Tab).Append(Tab).AppendLine(line);
+            sb.AppendLine();
+            sb.AppendLine("EM.PoolRightBreast".Translate());
+            sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
+                rightFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                rightCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+                rightPercent));
+            sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+            sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(rightStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+            if (Verse.Prefs.DevMode)
+            {
+                sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
+                sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
+                foreach (string line in factorLinesR)
+                    sb.Append(Tab).Append(Tab).AppendLine(line);
+            }
         }
         return sb.ToString();
     }
@@ -396,7 +408,7 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
             if (!string.IsNullOrEmpty(__result) && __result.Contains(blockHeader)) return;
             var entries = pawn.GetPoolEntriesForBreastHediff(parent);
             if (entries.Count == 0) return;
-            string block = BreastPoolTooltipHelper.BuildBreastPairBlock(sectionLabel, entries, pawn);
+            string block = BreastPoolTooltipHelper.BuildBreastPoolBlock(sectionLabel, entries, pawn);
             if (!string.IsNullOrEmpty(block))
                 __result = (__result ?? "") + "\n" + block;
         }

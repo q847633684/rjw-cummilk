@@ -556,7 +556,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             letdownReflexByKey.Remove(key);
     }
 
-    /// <summary>四层模型：挤�?吸奶刺激该侧，R += ΔR，Clamp �?1。仅被刺激的那一侧（如第一对的左乳）提升喷乳反射</summary>
+    /// <summary>四层模型：挤奶/吸奶刺激该侧，R += ΔR，Clamp 到 1。仅被刺激的乳池侧提升喷乳反射。</summary>
     public void AddLetdownReflexStimulus(string sideKey)
     {
         if (!MilkCumSettings.enableLetdownReflex || string.IsNullOrEmpty(sideKey)) return;
@@ -712,7 +712,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return true;
     }
 
-    /// <summary>泌乳结束：清空双池、移除 Lactating hediff</summary>
+    /// <summary>泌乳结束：清空乳池、移除 Lactating hediff</summary>
     private void ResetAndRemoveLactating()
     {
         lactationAmountFromDrug = 0f;
@@ -741,7 +741,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return milkComp?.GetTotalFlowPerDayCached() ?? 0f;
     }
 
-    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；RJW 乳房体积倍率在逐对 Tooltip 中由 GetFlowPerDayForBreastPair 的 mult 提供。</summary>
+    /// <summary>产奶流速拆解：总流速与各乘数因子，用于悬停显示。总流速仅读池逻辑缓存，缓存未刷新时 TotalFlow=0；RJW 乳房体积倍率在乳房池 Tooltip 中由 GetFlowPerDayForBreastSides 的 mult 提供。</summary>
     internal FlowBreakdown GetFlowPerDayBreakdown()
     {
         var r = new FlowBreakdown();

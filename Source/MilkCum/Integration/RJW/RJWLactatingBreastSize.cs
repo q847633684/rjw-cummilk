@@ -136,7 +136,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
         if (!MilkCumSettings.rjwBreastSizeEnabled || !MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled) return;
         float delta = Mathf.Max(0f, MilkCumSettings.rjwPermanentBreastGainSeverityDelta);
         if (delta <= 0f) return;
-        foreach (var s in RjwBreastPoolEconomy.GetBreastPairSnapshots(pawn))
+        foreach (var s in RjwBreastPoolEconomy.GetBreastPoolSnapshots(pawn))
         {
             string key = KeyFor(pawn, s.ListIndex);
             if (key == null || !BreastBaseSeverity.TryGetValue(key, out float baseSev)) continue;
@@ -167,7 +167,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
         float t_pool = 0f;
         if (stretchTotal > baseTotal && fullness > baseTotal)
             t_pool = Mathf.Clamp01((fullness - baseTotal) / (stretchTotal - baseTotal));
-        var snaps = RjwBreastPoolEconomy.GetBreastPairSnapshots(pawn);
+        var snaps = RjwBreastPoolEconomy.GetBreastPoolSnapshots(pawn);
         for (int idx = 0; idx < snaps.Count; idx++)
         {
             var s = snaps[idx];
@@ -193,7 +193,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
 
     private static void ApplyOrRestoreBreastSeverity(Pawn pawn)
     {
-        foreach (var s in RjwBreastPoolEconomy.GetBreastPairSnapshots(pawn))
+        foreach (var s in RjwBreastPoolEconomy.GetBreastPoolSnapshots(pawn))
         {
             string key = KeyFor(pawn, s.ListIndex);
             if (key == null || !BreastBaseSeverity.TryGetValue(key, out float baseSev)) continue;

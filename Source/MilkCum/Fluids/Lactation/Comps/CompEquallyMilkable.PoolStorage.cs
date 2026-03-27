@@ -10,7 +10,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Lactation.Comps;
 
-/// <summary>池存储与同步：缓存条目、按 key/左右汇总、选侧分组、清空/设置总水量。见 Docs/双池与PairIndex、ADR-003-选侧先左。</summary>
+/// <summary>池存储与同步：缓存条目、按 key/左右侧汇总视图、选侧规则、清空/设置总水量。见 Docs/单池模型、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
     /// <summary>缓存乳池条目（与侧行同次构建）；脏或超过 <see cref="GetEntriesCacheMaxTicksForPawn"/> 时失效。</summary>
@@ -26,12 +26,10 @@ public partial class CompEquallyMilkable
     private string lastBreastPoolKeySignature;
     /// <summary>当前地图小人：池条目缓存 TTL（tick）。非当前地图/未载入地图用更长 TTL，与 LOD 一致。</summary>
     private const int EntriesCacheMaxTicksOnCurrentMap = 300;
-    /// <summary>按 PairIndex 分组的缓存，与 cachedEntries 同周期失效。</summary>
-    private List<List<FluidPoolEntry>> cachedPairGroups;
     /// <summary>同对满度相等时先扣解剖左，仍平则优先解剖右，与 DrainForConsume / GetFirstDrainSideIndex 一致（ADR-003）。</summary>
     private const bool PreferLeftWhenEqual = true;
 
-    /// <summary>该侧「达基础满阈」连续累计的 tick（与 UpdateMilkPools 同步）。</summary>
+    /// <summary>该乳池侧「达基础满阈」连续累计的 tick（与 UpdateMilkPools 同步）。</summary>
     internal int GetTicksFullPoolForKey(string key) =>
         ticksFullPoolByKey != null && ticksFullPoolByKey.TryGetValue(key, out int t) ? t : 0;
 
@@ -45,7 +43,7 @@ public partial class CompEquallyMilkable
         return m;
     }
 
-    /// <summary>每 60tick 进水结束后：按各侧是否 ≥ 基础容量×满阈 更新/衰减计数并剔除无效 key。</summary>
+    /// <summary>每 60tick 进水结束后：按各乳池侧是否 ≥ 基础容量×满阈 更新/衰减计数并剔除无效 key。</summary>
     internal void UpdateTicksFullPoolForEntries(List<FluidPoolEntry> entries)
     {
         if (entries == null) return;
@@ -80,10 +78,10 @@ public partial class CompEquallyMilkable
     }
 
     /// <summary>
-    /// 左：仅 <see cref="FluidPoolEntry.IsLeft"/>（解剖左）。右：仅解剖右（<see cref="RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart"/>）。
-    /// 未标注侧不计入左/右栏；<see cref="Fullness"/> 仍为各 key 之和。
+    /// 左侧汇总视图：仅 <see cref="FluidPoolEntry.IsLeft"/>（解剖左）。右侧汇总视图：仅解剖右（<see cref="RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart"/>）。
+    /// 未标注侧不计入左右侧汇总视图；<see cref="Fullness"/> 仍为各 key 之和。
     /// </summary>
-    private float GetLeftOrRightFullness(bool left)
+    private float GetSideFullnessSum(bool isLeftSide)
     {
         if (breastFullness == null || breastFullness.Count == 0) return 0f;
         var entries = GetCachedEntries();
@@ -93,7 +91,7 @@ public partial class CompEquallyMilkable
             var e = entries[i];
             if (string.IsNullOrEmpty(e.Key)) continue;
             if (!breastFullness.TryGetValue(e.Key, out float v)) continue;
-            if (left)
+            if (isLeftSide)
             {
                 if (e.IsLeft) sum += v;
             }
@@ -138,7 +136,6 @@ public partial class CompEquallyMilkable
         cachedEntriesDirty = false;
         lastBreastListCount = Pawn != null ? Pawn.GetBreastListOrEmpty().Count : 0;
         lastBreastPoolKeySignature = Pawn != null ? RjwBreastPoolEconomy.BuildBreastListPoolKeySignature(Pawn) : "";
-        cachedPairGroups = null;
         return cachedEntries;
     }
 
@@ -180,38 +177,8 @@ public partial class CompEquallyMilkable
         return cachedSideRows;
     }
 
-    /// <summary>按 PairIndex 分组结果，与 GetCachedEntries() 同周期缓存，用于 UpdateMilkPools。</summary>
-    private List<List<FluidPoolEntry>> GetCachedPairGroups()
-    {
-        var entries = GetCachedEntries();
-        if (cachedPairGroups != null)
-            return cachedPairGroups;
-        cachedPairGroups = BuildPairGroupsByPairIndex(entries);
-        return cachedPairGroups;
-    }
-
-    /// <summary>乳池行数（每条可泌乳叶一行），与 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/> 一致；严格一对为 2，单侧/多乳为 1 或更多。用于机器挤奶并行扣量时算每侧速率。</summary>
+    /// <summary>乳池行数（每条可泌乳叶一行），与 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/> 一致；单侧/多乳均按实际乳房子部位计数。用于机器挤奶并行扣量时算每乳池侧速率。</summary>
     public int BreastSideCount => GetCachedEntries().Count;
-
-    /// <summary>按 PairIndex 分组并按 PairIndex 顺序排列，用于 UpdateMilkPools。无 LINQ，减少 GC。</summary>
-    private static List<List<FluidPoolEntry>> BuildPairGroupsByPairIndex(List<FluidPoolEntry> entries)
-    {
-        var pairIndexToGroup = new Dictionary<int, int>();
-        var pairGroups = new List<List<FluidPoolEntry>>();
-        for (int i = 0; i < entries.Count; i++)
-        {
-            var e = entries[i];
-            if (!pairIndexToGroup.TryGetValue(e.PairIndex, out int idx))
-            {
-                idx = pairGroups.Count;
-                pairIndexToGroup[e.PairIndex] = idx;
-                pairGroups.Add(new List<FluidPoolEntry>());
-            }
-            pairGroups[idx].Add(e);
-        }
-        pairGroups.Sort((a, b) => (a.Count > 0 ? a[0].PairIndex : 0).CompareTo(b.Count > 0 ? b[0].PairIndex : 0));
-        return pairGroups;
-    }
 
     /// <summary>吸奶/单侧扣量：在所有池条目中选<strong>单 key 满度最大</strong>的一条。顺序规则与手挤排序共用 <see cref="CompareDrainEntryOrder"/>。</summary>
     private int GetFirstDrainSideIndex()
@@ -240,13 +207,12 @@ public partial class CompEquallyMilkable
         fullness = Mathf.Clamp(total, 0f, maxFullness);
     }
 
-    /// <summary>泌乳结束时清空双池（由 HediffComp_EqualMilkingLactating 调用）</summary>
+    /// <summary>泌乳结束时清空乳池（由 HediffComp_EqualMilkingLactating 调用）</summary>
     public void ClearPools()
     {
         breastFullness?.Clear();
         ticksFullPoolByKey?.Clear();
         cachedEntries = null;
-        cachedPairGroups = null;
         cachedEntriesDirty = true;
         lastBreastListCount = -1;
         lastBreastPoolKeySignature = null;

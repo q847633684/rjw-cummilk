@@ -16,7 +16,7 @@ namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
 /// 乳池与流速：池条目、容量、MilkDef、泌乳 Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压奶满度、身体部位、距离等。
-/// 设计：泌乳乳房条目的经济快照以 <see cref="RjwBreastPairSnapshot"/> 为 SSOT；左右真实池与 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/> / <see cref="FluidPoolEntry"/> 对齐。不乘 BodySize。
+/// 设计：泌乳乳房条目的经济快照以 <see cref="RjwBreastPoolSnapshot"/> 为 SSOT；左右真实池与 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/> / <see cref="FluidPoolEntry"/> 对齐。不乘 BodySize。
 /// </summary>
 public static class PawnMilkPoolExtensions
 {
@@ -56,7 +56,7 @@ public static class PawnMilkPoolExtensions
         }
     }
 
-    /// <summary>每条侧池一行：<see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>；同 <see cref="RjwBreastPoolSideRow.PairIndex"/> 下若有两行且成左右对则 <see cref="FluidPoolState.TickGrowth"/>，否则单行 <see cref="FluidPoolState.SingleBreastTickGrowth"/>。</summary>
+    /// <summary>每条侧池一行：<see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>；当前模型按乳房子部位一池，不再做左右对耦合。</summary>
     public static List<FluidPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return new List<FluidPoolEntry>();
@@ -79,7 +79,7 @@ public static class PawnMilkPoolExtensions
                     r.BaseCapacity,
                     r.FlowMultiplier,
                     r.IsLeft,
-                    r.PairIndex,
+                    r.PoolIndex,
                     part));
             }
             ApplyCapacityAdaptationToEntries(pawn, result);
@@ -107,7 +107,7 @@ public static class PawnMilkPoolExtensions
         {
             var e = result[i];
             float add = adapt * (e.Capacity / sumCap);
-            result[i] = new FluidPoolEntry(e.Key, e.Capacity + add, e.FlowMultiplier, e.IsLeft, e.PairIndex, e.SourcePart);
+            result[i] = new FluidPoolEntry(e.Key, e.Capacity + add, e.FlowMultiplier, e.IsLeft, e.PoolIndex, e.SourcePart);
         }
     }
 

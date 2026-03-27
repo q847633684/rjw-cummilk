@@ -109,7 +109,7 @@ public static class Hediff_BasePregnancy_Patch
 [HarmonyPatch(typeof(JobDriver_Sex), nameof(JobDriver_Sex.Orgasm))]
 public static class JobDriver_Sex_OrgasmMilk_Patch
 {
-    /// <summary>每条侧池各追加的池单位（双池时两侧各加一次）。</summary>
+    /// <summary>每条乳池侧各追加的池单位（按命中的乳房子部位逐条追加）。</summary>
     private const float PoolUnitsPerOrgasmPerBreastSide = 0.05f;
 
     [HarmonyPostfix]

@@ -48,10 +48,10 @@ public partial class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>解剖左乳池水位之和；未标注侧不计入。</summary>
-    public float LeftFullness => GetLeftOrRightFullness(left: true);
-    /// <summary>解剖右乳池水位之和；未标注侧不计入（总奶量见 <see cref="Fullness"/>）。</summary>
-    public float RightFullness => GetLeftOrRightFullness(left: false);
+    /// <summary>解剖左侧乳池汇总视图（非总量）；未标注侧不计入。</summary>
+    public float LeftFullness => GetSideFullnessSum(isLeftSide: true);
+    /// <summary>解剖右侧乳池汇总视图（非总量）；未标注侧不计入（总奶量见 <see cref="Fullness"/>）。</summary>
+    public float RightFullness => GetSideFullnessSum(isLeftSide: false);
     private MilkSettings milkSettings = null;
     public MilkSettings MilkSettings
     {
@@ -92,9 +92,9 @@ public partial class CompEquallyMilkable : CompMilkable
     private bool hadShrinkLastStep = false;
     /// <summary>上一轮回缩时折算的「每日回缩吸收营养」，供 GetReabsorbedNutritionPerDay 直接返回，避免 UI/Needs 读取时再次遍历 entries。</summary>
     private float cachedReabsorbedNutritionPerDay = 0f;
-    /// <summary>用于 PoolTickLog：记录每侧本步前的满度，避免每次 UpdateMilkPools 分配新字典。</summary>
+    /// <summary>用于 PoolTickLog：记录每乳池侧本步前的满度，避免每次 UpdateMilkPools 分配新字典。</summary>
     private readonly Dictionary<string, float> fullnessBeforePerKeyCache = new Dictionary<string, float>();
-    /// <summary>用于 PoolTickLog：记录每侧本步回缩量，避免每次 UpdateMilkPools 分配新字典。</summary>
+    /// <summary>用于 PoolTickLog：记录每乳池侧本步回缩量，避免每次 UpdateMilkPools 分配新字典。</summary>
     private readonly Dictionary<string, float> reabsorbedPerKeyCache = new Dictionary<string, float>();
     /// <summary>统计：累计产奶量（池单位），用于成就/UI</summary>
     private float totalDrainedLifetime;
@@ -107,7 +107,7 @@ public partial class CompEquallyMilkable : CompMilkable
     internal float CachedFlowPerDayForDisplay;
     /// <summary>写入 CachedFlowPerDayForDisplay 时的游戏 tick，用于判断缓存是否有效（60 tick 内有效）。</summary>
     internal int CachedFlowTick = -1;
-    /// <summary>池逻辑在 UpdateMilkPools 中按 key 写入的每侧流速（池单位/天），供 GetFlowPerDayForBreastPair 等直接读取，不存档。</summary>
+    /// <summary>池逻辑在 UpdateMilkPools 中按 key 写入的每乳池侧流速（池单位/天），供 GetFlowPerDayForBreastSides 等直接读取，不存档。</summary>
     internal Dictionary<string, float> CachedFlowPerDayByKey;
     /// <summary>池逻辑中按实际进水流速加权的压力/喷乳反射/状态因子，供 GetFlowPerDayBreakdown 悬停显示，不存档。</summary>
     internal float CachedPressureForDisplay, CachedLetdownForDisplay, CachedConditionsForDisplay;
@@ -128,7 +128,7 @@ public partial class CompEquallyMilkable : CompMilkable
     }
     /// <summary>池撑大总容量（= 基础×StretchCapFactor），供 RJW 撑大/回缩同步用。</summary>
     internal float GetPoolStretchTotal() => GetPoolBaseTotal() * PoolModelConstants.StretchCapFactor;
-    /// <summary>池基础总容量（含组织适应摊入各侧后的 entries 之和），与 maxFullness 一致；供 UI/外部读取。</summary>
+    /// <summary>池基础总容量（含组织适应摊入各乳池侧后的 entries 之和），与 maxFullness 一致；供 UI/外部读取。</summary>
     public float GetPoolBaseCapacityTotal() => GetPoolBaseTotal();
     /// <summary>物理撑大总容量（池内可蓄满上限）；UI 满度分母、乳腺炎比例等应优先用本值而非仅 maxFullness。</summary>
     public float GetPoolStretchCapacityTotal() => GetPoolStretchTotal();

@@ -13,8 +13,8 @@ using Verse;
 namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
-/// RJW 乳房 Hediff 与乳池经济共用：基容量（纯严重度 / 纯 RJW 体积 / 纯 RJW 重量三档）、流速倍率（HediffComp_SexPart × 可选乳头阶段修饰）、池键与按对快照。
-/// <see cref="RjwBreastPairSnapshot"/> 为验收要求的「乳房快照」SSOT：容量/流速/UI/RJW Severity 同步均应对齐此结构中的量，避免多文件各写一遍 Severity×系数。
+/// RJW 乳房 Hediff 与乳池经济共用：基容量（纯严重度 / 纯 RJW 体积 / 纯 RJW 重量三档）、流速倍率（HediffComp_SexPart × 可选乳头阶段修饰）、池键与乳房快照。
+/// <see cref="RjwBreastPoolSnapshot"/> 为验收要求的「乳房快照」SSOT：容量/流速/UI/RJW Severity 同步均应对齐此结构中的量，避免多文件各写一遍 Severity×系数。
 /// </summary>
 public static class RjwBreastPoolEconomy
 {
@@ -148,49 +148,35 @@ public static class RjwBreastPoolEconomy
 
     /// <summary>
     /// 当前小人、在启用 RJW 胸池时的乳房快照；与 <see cref="GetBreastPoolSideRows"/> 一致。
-    /// 同一胸腔父节点下能判出一左一右且恰好两条时共享 <see cref="RjwBreastPairSnapshot.PairIndex"/>；否则（单侧、多乳、双乳但标签不成对）每条乳房各一快照、PairIndex 递增。
+    /// 当前模型每条乳房子部位独立一条快照，<see cref="RjwBreastPoolSnapshot.PoolIndex"/> 按遍历顺序递增。
     /// </summary>
-    public static List<RjwBreastPairSnapshot> GetBreastPairSnapshots(Pawn pawn)
+    public static List<RjwBreastPoolSnapshot> GetBreastPoolSnapshots(Pawn pawn)
     {
-        var result = new List<RjwBreastPairSnapshot>();
+        var result = new List<RjwBreastPoolSnapshot>();
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
         try
         {
             var cands = BuildBreastPoolCandidates(pawn);
             if (cands.Count == 0) return result;
-            var byParent = GroupCandidatesByParent(cands);
-            var parents = new List<BodyPartRecord>(byParent.Keys);
-            parents.Sort((a, b) => GroupMinListIndex(byParent[a]).CompareTo(GroupMinListIndex(byParent[b])));
-            int pairIdx = 0;
-            for (int pi = 0; pi < parents.Count; pi++)
+            cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
+            int poolIdx = 0;
+            for (int i = 0; i < cands.Count; i++)
             {
-                var grp = byParent[parents[pi]];
-                if (TryStrictLeftRightPair(pawn, grp, out Cand leftCand, out Cand rightCand))
-                {
-                    AppendBreastPairSnapshot(result, leftCand, pairIdx);
-                    AppendBreastPairSnapshot(result, rightCand, pairIdx);
-                    pairIdx++;
-                    continue;
-                }
-
-                SortUnpairedGroupByAnatomicalOrder(pawn, grp);
-                for (int i = 0; i < grp.Count; i++)
-                {
-                    AppendBreastPairSnapshot(result, grp[i], pairIdx);
-                    pairIdx++;
-                }
+                // 新模型：一条乳房子部位 = 一个池（不再按父节点做左右配对）。
+                AppendBreastPoolSnapshot(result, cands[i], poolIdx);
+                poolIdx++;
             }
         }
         catch (Exception ex)
         {
-            LogDev(nameof(GetBreastPairSnapshots), ex);
+            LogDev(nameof(GetBreastPoolSnapshots), ex);
             result.Clear();
         }
         return result;
     }
 
     /// <summary>
-    /// 每条可泌乳叶一条真实池行。同一 <see cref="RjwBreastPoolSideRow.PairIndex"/> 下若有两行且能辨左右，由 <see cref="CompEquallyMilkable.UpdateMilkPools"/> 走双池 <see cref="FluidPoolState.TickGrowth"/>；否则该 PairIndex 仅一行，走 <see cref="FluidPoolState.SingleBreastTickGrowth"/>。
+    /// 每条可泌乳叶一条真实池行；当前模型每条乳房子部位独立一池并独立计算。
     /// Breast/MechBreast 叶；无部位、旧 Chest 单点、容量为 0 等仍不进池。
     /// </summary>
     public static List<RjwBreastPoolSideRow> GetBreastPoolSideRows(Pawn pawn)
@@ -201,28 +187,14 @@ public static class RjwBreastPoolEconomy
         {
             var cands = BuildBreastPoolCandidates(pawn);
             if (cands.Count == 0) return result;
-            var byParent = GroupCandidatesByParent(cands);
-            var parents = new List<BodyPartRecord>(byParent.Keys);
-            parents.Sort((a, b) => GroupMinListIndex(byParent[a]).CompareTo(GroupMinListIndex(byParent[b])));
-            int pairIdx = 0;
-            for (int pi = 0; pi < parents.Count; pi++)
+            cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
+            int poolIdx = 0;
+            for (int i = 0; i < cands.Count; i++)
             {
-                var grp = byParent[parents[pi]];
-                if (TryStrictLeftRightPair(pawn, grp, out Cand leftCand, out Cand rightCand))
-                {
-                    AppendNaturalSide(result, pairIdx, leftCand, isLeft: true);
-                    AppendNaturalSide(result, pairIdx, rightCand, isLeft: false);
-                    pairIdx++;
-                    continue;
-                }
-
-                SortUnpairedGroupByAnatomicalOrder(pawn, grp);
-                for (int i = 0; i < grp.Count; i++)
-                {
-                    bool isLeft = IsAnatomicallyLeftBreastPart(grp[i].Part);
-                    AppendNaturalSide(result, pairIdx, grp[i], isLeft);
-                    pairIdx++;
-                }
+                bool isLeft = IsAnatomicallyLeftBreastPart(cands[i].Part);
+                // 新模型：一条乳房子部位 = 一个池；每条池独占一个 PoolIndex。
+                AppendNaturalSide(result, poolIdx, cands[i], isLeft);
+                poolIdx++;
             }
         }
         catch (Exception ex)
@@ -233,37 +205,11 @@ public static class RjwBreastPoolEconomy
         return result;
     }
 
-    /// <summary>部位 customLabel / Def 名可辨认为左乳（与严格成对判定一致）。</summary>
+    /// <summary>部位 customLabel / Def 名可辨认为左乳。</summary>
     public static bool IsAnatomicallyLeftBreastPart(BodyPartRecord part) => PartNameLooksLeft(part);
 
     /// <summary>部位可辨认为右乳；未标注侧既不左也不右（不计入左/右汇总）。</summary>
     public static bool IsAnatomicallyRightBreastPart(BodyPartRecord part) => PartNameLooksRight(part);
-
-    /// <summary>不成对组内按 <c>body.AllParts</c> 顺序稳定排序（与严格成对前一致）；仅影响遍历/展示顺序，不赋予虚拟左右。</summary>
-    private static void SortUnpairedGroupByAnatomicalOrder(Pawn pawn, List<Cand> grp)
-    {
-        if (grp == null || grp.Count <= 1) return;
-        var allParts = pawn?.RaceProps?.body?.AllParts;
-        if (allParts == null)
-        {
-            grp.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
-            return;
-        }
-
-        int PartOrderKey(Cand c)
-        {
-            if (c.Part == null) return int.MaxValue;
-            int idx = allParts.IndexOf(c.Part);
-            return idx >= 0 ? idx : int.MaxValue;
-        }
-
-        grp.Sort((a, b) =>
-        {
-            int ka = PartOrderKey(a), kb = PartOrderKey(b);
-            if (ka != kb) return ka.CompareTo(kb);
-            return a.ListIndex.CompareTo(b.ListIndex);
-        });
-    }
 
     private static bool IsLateralBreastLeafPart(BodyPartRecord part)
     {
@@ -294,54 +240,7 @@ public static class RjwBreastPoolEconomy
         return cands;
     }
 
-    private static Dictionary<BodyPartRecord, List<Cand>> GroupCandidatesByParent(List<Cand> cands)
-    {
-        var byParent = new Dictionary<BodyPartRecord, List<Cand>>();
-        for (int i = 0; i < cands.Count; i++)
-        {
-            var c = cands[i];
-            BodyPartRecord pkey = c.Part.parent ?? c.Part;
-            if (!byParent.TryGetValue(pkey, out var grp))
-            {
-                grp = new List<Cand>();
-                byParent[pkey] = grp;
-            }
-
-            grp.Add(c);
-        }
-
-        return byParent;
-    }
-
-    /// <summary>同一父节点下恰好两条泌乳乳房、且各标为左/右之一（各一侧）。组内顺序与不成对分支一致为 <see cref="SortUnpairedGroupByAnatomicalOrder"/>。</summary>
-    private static bool TryStrictLeftRightPair(Pawn pawn, List<Cand> grp, out Cand leftCand, out Cand rightCand)
-    {
-        leftCand = null;
-        rightCand = null;
-        if (grp == null || grp.Count != 2) return false;
-        SortUnpairedGroupByAnatomicalOrder(pawn, grp);
-        int nl = 0, nr = 0;
-        for (int j = 0; j < grp.Count; j++)
-        {
-            var cj = grp[j];
-            if (PartNameLooksRight(cj.Part))
-            {
-                nr++;
-                if (rightCand == null) rightCand = cj;
-            }
-            else if (PartNameLooksLeft(cj.Part))
-            {
-                nl++;
-                if (leftCand == null) leftCand = cj;
-            }
-        }
-
-        if (nl != 1 || nr != 1 || leftCand == null || rightCand == null) return false;
-        if (leftCand.ListIndex == rightCand.ListIndex) return false;
-        return true;
-    }
-
-    private static void AppendBreastPairSnapshot(List<RjwBreastPairSnapshot> result, Cand c, int pairIdx)
+    private static void AppendBreastPoolSnapshot(List<RjwBreastPoolSnapshot> result, Cand c, int poolIdx)
     {
         var h = c.H;
         int i = c.ListIndex;
@@ -354,9 +253,9 @@ public static class RjwBreastPoolEconomy
         bool usableSize = hasBs && (vol > 0f || w > 0f);
         float baseCap = ComputeBaseCapacityPerSide(h, vol, w, usableSize);
         float flow = GetBreastHediffFlowMultiplier(h);
-        result.Add(new RjwBreastPairSnapshot(
+        result.Add(new RjwBreastPoolSnapshot(
             listIndex: i,
-            pairIndex: pairIdx,
+            poolIndex: poolIdx,
             poolKey: poolKey,
             breastHediff: h,
             baseCapacityPerSide: baseCap,
@@ -385,14 +284,6 @@ public static class RjwBreastPoolEconomy
         }
     }
 
-    private static int GroupMinListIndex(List<Cand> g)
-    {
-        int m = int.MaxValue;
-        for (int i = 0; i < g.Count; i++)
-            if (g[i].ListIndex < m) m = g[i].ListIndex;
-        return m;
-    }
-
     private static bool PartNameLooksLeft(BodyPartRecord part)
     {
         if (part == null) return false;
@@ -419,18 +310,18 @@ public static class RjwBreastPoolEconomy
         return part.def.defName.IndexOf("Right", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
-    private static void AppendNaturalSide(List<RjwBreastPoolSideRow> result, int pairIdx, Cand c, bool isLeft)
+    private static void AppendNaturalSide(List<RjwBreastPoolSideRow> result, int poolIdx, Cand c, bool isLeft)
     {
         string key = MakeStablePoolKey(c.H, c.ListIndex);
         if (string.IsNullOrEmpty(key)) return;
-        result.Add(new RjwBreastPoolSideRow(pairIdx, key, c.H, c.BaseCap, c.Flow, isLeft));
+        result.Add(new RjwBreastPoolSideRow(poolIdx, key, c.H, c.BaseCap, c.Flow, isLeft));
     }
 }
 
 /// <summary>一条「侧」乳池行：与 <see cref="FluidPoolEntry"/> 一一对应。</summary>
 public readonly struct RjwBreastPoolSideRow
 {
-    public int PairIndex { get; }
+    public int PoolIndex { get; }
     public string PoolKey { get; }
     public Hediff BreastHediff { get; }
     public float BaseCapacity { get; }
@@ -438,9 +329,9 @@ public readonly struct RjwBreastPoolSideRow
     /// <summary>仅解剖左为 true；解剖右与未标注为 false（与 <see cref="FluidPoolEntry.IsLeft"/> 一致）。</summary>
     public bool IsLeft { get; }
 
-    public RjwBreastPoolSideRow(int pairIndex, string poolKey, Hediff breastHediff, float baseCapacity, float flowMultiplier, bool isLeft)
+    public RjwBreastPoolSideRow(int poolIndex, string poolKey, Hediff breastHediff, float baseCapacity, float flowMultiplier, bool isLeft)
     {
-        PairIndex = pairIndex;
+        PoolIndex = poolIndex;
         PoolKey = poolKey ?? "";
         BreastHediff = breastHediff;
         BaseCapacity = baseCapacity;
@@ -452,12 +343,12 @@ public readonly struct RjwBreastPoolSideRow
 /// <summary>
 /// 一条 RJW 乳房 Hediff 在乳池经济中的只读快照（验收：阶段 1 乳房快照）。
 /// ListIndex 为 GetBreastList 下标；PoolKey 为 <see cref="RjwBreastPoolEconomy.MakeStablePoolKey(Verse.Hediff,System.Int32)"/>（叶部位路径，含 customLabel 区分左右）。
-/// PairIndex：严格左右一对时两快照相同；单侧/多乳等否则每条乳房一序数。左右真实池与双池耦合见 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>。
+/// PoolIndex：乳池序号（按遍历顺序递增）；当前模型每个乳房子部位独立一池。
 /// </summary>
-public readonly struct RjwBreastPairSnapshot
+public readonly struct RjwBreastPoolSnapshot
 {
     public int ListIndex { get; }
-    public int PairIndex { get; }
+    public int PoolIndex { get; }
     public string PoolKey { get; }
     public Hediff BreastHediff { get; }
     public float BaseCapacityPerSide { get; }
@@ -468,9 +359,9 @@ public readonly struct RjwBreastPairSnapshot
     public float BreastBandSize { get; }
     public bool HasBreastSize { get; }
 
-    public RjwBreastPairSnapshot(
+    public RjwBreastPoolSnapshot(
         int listIndex,
-        int pairIndex,
+        int poolIndex,
         string poolKey,
         Hediff breastHediff,
         float baseCapacityPerSide,
@@ -482,7 +373,7 @@ public readonly struct RjwBreastPairSnapshot
         bool hasBreastSize)
     {
         ListIndex = listIndex;
-        PairIndex = pairIndex;
+        PoolIndex = poolIndex;
         PoolKey = poolKey ?? "";
         BreastHediff = breastHediff;
         BaseCapacityPerSide = baseCapacityPerSide;

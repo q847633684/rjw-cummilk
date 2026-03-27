@@ -41,7 +41,7 @@ public partial class CompEquallyMilkable
         CachedFlowTick = Find.TickManager.TicksGame;
     }
 
-    /// <summary>单侧流速统一计算：倍率×基础流速×状态×压力×喷乳反射；返回流速与各侧因子，供单/双池共用。</summary>
+    /// <summary>单池流速统一计算：倍率×基础流速×状态×压力×喷乳反射；返回流速与因子，供逐池计算复用。</summary>
     private (float flowPerTick, float pressure, float conditions, float letdown) ComputeSideFlow(
         FluidPoolEntry entry,
         float currentFullness,
@@ -60,7 +60,7 @@ public partial class CompEquallyMilkable
         return (flowPerTick, pressure, conditions, letdown);
     }
 
-    /// <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。TickGrowth 将超过撑大上限部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
+    /// <summary>水池模型：按池 key 逐个进水。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。超过撑大上限的部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
     private void UpdateMilkPools()
     {
         var lactatingComp = Pawn?.LactatingHediffComp();
@@ -139,82 +139,32 @@ public partial class CompEquallyMilkable
         float reabsorbedPoolThisStep = 0f;
         reabsorbedPerKeyCache.Clear();
 
-        var pairGroups = GetCachedPairGroups();
         float totalFlowThisStep = 0f;
         float pressureWeightedSum = 0f, letdownWeightedSum = 0f, conditionsWeightedSum = 0f;
         CachedFlowPerDayByKey ??= new Dictionary<string, float>();
-        for (int g = 0; g < pairGroups.Count; g++)
+        for (int i = 0; i < entries.Count; i++)
         {
-            var list = pairGroups[g];
-            if (list.Count == 2)
+            var e = entries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            float stretchCap = e.Capacity * PoolModelConstants.StretchCapFactor;
+            float current = GetFullnessForKey(e.Key);
+            var sideFlow = ComputeSideFlow(e, current, stretchCap, flowPerTickScale, lactatingComp, residualL);
+            float flowPerTick = sideFlow.flowPerTick;
+            totalFlowThisStep += flowPerTick;
+            pressureWeightedSum += flowPerTick * sideFlow.pressure;
+            letdownWeightedSum += flowPerTick * sideFlow.letdown;
+            conditionsWeightedSum += flowPerTick * sideFlow.conditions;
+            CachedFlowPerDayByKey[e.Key] = flowPerTick * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);
+            var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
+            if (newFullness > e.Capacity)
             {
-                FluidPoolEntry leftE = list[0].IsLeft ? list[0] : list[1];
-                FluidPoolEntry rightE = list[0].IsLeft ? list[1] : list[0];
-                if (string.IsNullOrEmpty(leftE.Key) || string.IsNullOrEmpty(rightE.Key)) continue;
-                float leftCap = leftE.Capacity;
-                float rightCap = rightE.Capacity;
-                float stretchLeft = leftCap * PoolModelConstants.StretchCapFactor;
-                float stretchRight = rightCap * PoolModelConstants.StretchCapFactor;
-                float curLeft = GetFullnessForKey(leftE.Key);
-                float curRight = GetFullnessForKey(rightE.Key);
-                var leftFlow = ComputeSideFlow(leftE, curLeft, stretchLeft, flowPerTickScale, lactatingComp, residualL);
-                var rightFlow = ComputeSideFlow(rightE, curRight, stretchRight, flowPerTickScale, lactatingComp, residualL);
-                float flowLeft = leftFlow.flowPerTick;
-                float flowRight = rightFlow.flowPerTick;
-                totalFlowThisStep += flowLeft + flowRight;
-                pressureWeightedSum += flowLeft * leftFlow.pressure + flowRight * rightFlow.pressure;
-                letdownWeightedSum += flowLeft * leftFlow.letdown + flowRight * rightFlow.letdown;
-                conditionsWeightedSum += flowLeft * leftFlow.conditions + flowRight * rightFlow.conditions;
-                float toPerDay = PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks;
-                CachedFlowPerDayByKey[leftE.Key] = flowLeft * toPerDay;
-                CachedFlowPerDayByKey[rightE.Key] = flowRight * toPerDay;
-                var pairPool = new FluidPoolState();
-                pairPool.SetFrom(curLeft, curRight, 0);
-                var cap = new BreastPairCapacities(leftCap, rightCap, stretchLeft, stretchRight);
-                var (leftNew, rightNew, overflow) = pairPool.TickGrowth(flowLeft, flowRight, cap);
-                if (leftNew > leftCap)
-                {
-                    float excessL = leftNew - leftCap;
-                    reabsorbedPoolThisStep += excessL * (1f - shrinkFactor);
-                    reabsorbedPerKeyCache[leftE.Key] = excessL * (1f - shrinkFactor);
-                    leftNew = leftCap + excessL * shrinkFactor;
-                }
-                if (rightNew > rightCap)
-                {
-                    float excessR = rightNew - rightCap;
-                    reabsorbedPoolThisStep += excessR * (1f - shrinkFactor);
-                    reabsorbedPerKeyCache[rightE.Key] = excessR * (1f - shrinkFactor);
-                    rightNew = rightCap + excessR * shrinkFactor;
-                }
-                breastFullness[leftE.Key] = leftNew;
-                breastFullness[rightE.Key] = rightNew;
-                overflowTotal += overflow;
+                float excess = newFullness - e.Capacity;
+                reabsorbedPoolThisStep += excess * (1f - shrinkFactor);
+                reabsorbedPerKeyCache[e.Key] = excess * (1f - shrinkFactor);
+                newFullness = e.Capacity + excess * shrinkFactor;
             }
-            else
-            {
-                foreach (var e in list)
-                {
-                    float stretchCap = e.Capacity * PoolModelConstants.StretchCapFactor;
-                    float current = GetFullnessForKey(e.Key);
-                    var sideFlow = ComputeSideFlow(e, current, stretchCap, flowPerTickScale, lactatingComp, residualL);
-                    float flowPerTick = sideFlow.flowPerTick;
-                    totalFlowThisStep += flowPerTick;
-                    pressureWeightedSum += flowPerTick * sideFlow.pressure;
-                    letdownWeightedSum += flowPerTick * sideFlow.letdown;
-                    conditionsWeightedSum += flowPerTick * sideFlow.conditions;
-                    CachedFlowPerDayByKey[e.Key] = flowPerTick * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);
-                    var (newFullness, overflow) = FluidPoolState.SingleBreastTickGrowth(current, flowPerTick, e.Capacity, stretchCap);
-                    if (newFullness > e.Capacity)
-                    {
-                        float excess = newFullness - e.Capacity;
-                        reabsorbedPoolThisStep += excess * (1f - shrinkFactor);
-                        reabsorbedPerKeyCache[e.Key] = excess * (1f - shrinkFactor);
-                        newFullness = e.Capacity + excess * shrinkFactor;
-                    }
-                    breastFullness[e.Key] = newFullness;
-                    overflowTotal += overflow;
-                }
-            }
+            breastFullness[e.Key] = newFullness;
+            overflowTotal += overflow;
         }
         // 供 UI 读取：池逻辑实际进水流速（池单位/天）与流速加权因子，与回缩/溢出等完全一致
         CachedFlowPerDayForDisplay = totalFlowThisStep * (PoolModelConstants.TicksPerGameDay / PoolModelConstants.Interval60Ticks);
