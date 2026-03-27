@@ -742,7 +742,14 @@ internal class MilkCumSettings : ModSettings
 		EventHelper.TriggerSettingsChanged();
 		pawnDefs ??= GetMilkablePawns();
 		defaultMilkProducts ??= GetDefaultMilkProducts();
-		HediffDefOf.Lactating.maxSeverity = 100f; // 允许 severity 按公式自由提高到 100。
+		if (HediffDefOf.Lactating != null)
+		{
+			HediffDefOf.Lactating.maxSeverity = 100f; // 允许 severity 按公式自由提高到 100。
+		}
+		else
+		{
+			Log.Warning("[MilkCum] HediffDefOf.Lactating is null, skip maxSeverity patch.");
+		}
 		humanlikeBreastfeed ??= new HumanlikeBreastfeed();
 		animalBreastfeed ??= new AnimalBreastfeed();
 		mechanoidBreastfeed ??= new MechanoidBreastfeed();

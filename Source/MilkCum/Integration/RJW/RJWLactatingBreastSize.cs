@@ -60,8 +60,6 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
         }
     }
 
-    public override void FinalizeInit() { }
-
     private static string KeyFor(Pawn pawn, int breastIndex)
     {
         if (pawn == null || breastIndex < 0) return null;

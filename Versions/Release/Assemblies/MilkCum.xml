@@ -1418,9 +1418,6 @@
         <member name="T:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown">
             <summary>产奶流速拆解：总流速与各乘数因子（�?GetFlowPerDay 一致），用�?UI 显示</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLine(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
-            <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）</summary>
-        </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
             <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（RJW GetFluidMultiplier 侧倍率、营规、状态、泌乳素、饥饿、压力、喷乳反射）</summary>
         </member>
@@ -2040,9 +2037,6 @@
         </member>
         <member name="M:MilkCum.RJW.RJWSexAndFertility.ApplyPostSexLactationBoost(Verse.Pawn)">
             <summary>3.2：性行为后为泌乳者增加少量池进水（若设置开启）。</summary>
-        </member>
-        <member name="M:MilkCum.RJW.RJWVersionDiffHelper.GetBreastsOrEmpty(Verse.Pawn)">
-            <summary>空安全：pawn 为 null 或 GetBreasts 异常/返回 null 时返回空序列，便于链式调用。</summary>
         </member>
         <member name="M:MilkCum.RJW.RJWVersionDiffHelper.GetBreastListOrEmpty(Verse.Pawn)">
             <summary>空安全：pawn 为 null 或 GetBreastList 异常/返回 null 时返回空列表，便于链式调用。</summary>

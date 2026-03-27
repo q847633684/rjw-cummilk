@@ -144,28 +144,6 @@ internal static class ApplyPatches
         }
     }
 }
-public class CompMultiResourceStorage : CompResourceStorage
-{
-    public override void PostExposeData()
-    {
-        if (this.amountStored > this.Props.storageCapacity)
-        {
-            this.amountStored = this.Props.storageCapacity;
-        }
-        Scribe_Values.Look(ref this.amountStored, "storedResource_" + this.Props.Resource.name.Replace(" ", "_"), 0f, false);
-        Scribe_Values.Look(ref this.ticksWithoutPower, "tickWithoutPower", 0, false);
-        Scribe_Values.Look(ref this.markedForExtract, "markedForExtract", false, false);
-        Scribe_Values.Look(ref this.markedForTransfer, "markedForTransfer", false, false);
-        Scribe_Values.Look(ref this.markedForRefill, "markedForRefill", false, false);
-    }
-}
-public class CompProperties_MultiResourceStorage : CompProperties_ResourceStorage
-{
-    public CompProperties_MultiResourceStorage()
-    {
-        this.compClass = typeof(CompMultiResourceStorage);
-    }
-}
 [HarmonyPatch(typeof(Alert_NoStorage))]
 public static class Alert_NoStorage_Patch
 {

@@ -20,9 +20,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <!-- 排除 Cumpilation 自带的 AssemblyInfo，避免与 SDK 自动生成的重复 -->
-    <Compile Remove="Cumpilation\Properties\AssemblyInfo.cs" />
-    <Compile Remove="Fluids\Cum\Properties\AssemblyInfo.cs" />
     <!-- 排除 Build 下旧 obj 中的自动生成文件，避免 CS0579 重复特性 -->
     <Compile Remove="Build\**\*.cs" />
     <!-- 无 PipeSystem 引用时不编译奶管道联动，避免 CS0246 -->

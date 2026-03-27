@@ -777,23 +777,6 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         public float Letdown;
     }
 
-    /// <summary>健康页乳房行悬停：构建单侧（左或右）产奶效率的因子拆解行；状态、压力、喷乳反射按该侧显示（null 时用总览 b 的值）</summary>
-    public static string BuildBreastEfficiencyFactorLine(FlowBreakdown b, float sideMult, bool leftSide, float? letdownForSide = null, float? pressureForSide = null, float? conditionsForSide = null)
-    {
-        float letdown = letdownForSide ?? b.Letdown;
-        float pressure = pressureForSide ?? b.Pressure;
-        float conditions = conditionsForSide ?? b.Conditions;
-        var parts = new List<string>();
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowDrive".Translate(), FormatFlowFactor(b.Drive)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowHunger".Translate(), FormatFlowFactor(b.Hunger)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowConditions".Translate(), FormatFlowFactor(conditions)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowSetting".Translate(), FormatFlowFactor(b.Setting)));
-        parts.Add("EM.MilkFlowFactorItem".Translate(leftSide ? "EM.PoolLeftBreast".Translate() : "EM.PoolRightBreast".Translate(), FormatFlowFactor(sideMult)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowPressure".Translate(), FormatFlowFactor(pressure)));
-        parts.Add("EM.MilkFlowFactorItem".Translate("EM.MilkFlowLetdown".Translate(), FormatFlowFactor(letdown)));
-        return string.Join(" ", parts);
-    }
-
     /// <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（RJW GetFluidMultiplier 侧倍率、营规、状态、泌乳素、饥饿、压力、喷乳反射）</summary>
     public static System.Collections.Generic.List<string> BuildBreastEfficiencyFactorLinesForDevMode(FlowBreakdown b, float sideMult, bool leftSide, float? letdownForSide = null, float? pressureForSide = null, float? conditionsForSide = null)
     {
