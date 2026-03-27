@@ -135,7 +135,7 @@ internal partial class MilkCumSettings : ModSettings
 	// 人形种族默认流速倍率：2 = 在标准体型、乳量等级 1 时约等于一次就能挤空；与 RJW/其他泌乳类 mod 联动时也可调。
 	public static float defaultFlowMultiplierForHumanlike = 2f;
 	// 压力/炎症/组织适应/品质/提醒等模型参数已拆分到 MilkCumSettings.Model.cs。
-	// 3.3 鍔ㄧ墿宸紓鍖栵細绉嶆棌 defName 瀵瑰簲鑽墿杩涙按鍊嶇巼锛堟湭鍒楀嚭鐨勭鏃忎负 1锛夈€備笌鍙傛暟鑱斿姩琛ㄤ竴鑷淬€?
+	// 3.3：按物种配置泌乳药物 ΔS 乘法修正；未配置的种族默认倍率为 1。
 	public static List<string> raceDrugDeltaSMultiplierDefNames = new();
 	public static List<float> raceDrugDeltaSMultiplierValues = new();
 	public static MilkSettings colonistSetting = new();
