@@ -328,8 +328,8 @@ internal static class BreastPoolTooltipHelper
         float leftStretch = leftCap * PoolModelConstants.StretchCapFactor;
         float rightStretch = rightCap * PoolModelConstants.StretchCapFactor;
         string totalPercent = totalBaseCap >= 0.001f ? (totalMilk / totalBaseCap).ToStringPercent() : "0%";
-        var factorLinesL = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multL, true, letdownL, pressureL, conditionsL);
-        var factorLinesR = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multR, false, letdownR, pressureR, conditionsR);
+        var factorLinesL = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multL, letdownL, pressureL, conditionsL);
+        var factorLinesR = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multR, letdownR, pressureR, conditionsR);
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("EM.PoolBreastSectionHeader".Translate(sectionLabel));
         sb.AppendLine();

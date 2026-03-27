@@ -778,7 +778,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     }
 
     /// <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（RJW GetFluidMultiplier 侧倍率、营规、状态、泌乳素、饥饿、压力、喷乳反射）</summary>
-    public static System.Collections.Generic.List<string> BuildBreastEfficiencyFactorLinesForDevMode(FlowBreakdown b, float sideMult, bool leftSide, float? letdownForSide = null, float? pressureForSide = null, float? conditionsForSide = null)
+    public static System.Collections.Generic.List<string> BuildBreastEfficiencyFactorLinesForDevMode(FlowBreakdown b, float sideMult, float? letdownForSide = null, float? pressureForSide = null, float? conditionsForSide = null)
     {
         float letdown = letdownForSide ?? b.Letdown;
         float pressure = pressureForSide ?? b.Pressure;

@@ -1063,6 +1063,9 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ResetMilkFlowDisplayCache">
             <summary>泌乳未进水时重置流速/UI 缓存，避免重复分支。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ComputeSideFlow(MilkCum.Fluids.Shared.Data.FluidPoolEntry,System.Single,System.Single,System.Single,MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating,System.Single)">
+            <summary>单侧流速统一计算：倍率×基础流速×状态×压力×喷乳反射；返回流速与各侧因子，供单/双池共用。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.UpdateMilkPools">
             <summary>水池模型：按对进水；每对仅当两侧都达基础容量后才允许撑大（见 Docs/泌乳系统逻辑图）。流速 = 基础日流速×条目倍率×状态×压力×喷乳反射；压力来自 Logistic 曲线或关压时的阶跃（顶满为 0），近满撑大时可再经 overflowResidualFlowFactor 抬升下限以模拟持续分泌/渗漏。TickGrowth 将超过撑大上限部分计为溢出污物；超出基础容量的乳量每 60 tick 按 ShrinkPerStep×健康度向基础收敛（与是否本步溢出无关），回缩量由 GetReabsorbedNutritionPerDay 折算营养。</summary>
         </member>
@@ -1418,7 +1421,7 @@
         <member name="T:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown">
             <summary>产奶流速拆解：总流速与各乘数因子（�?GetFlowPerDay 一致），用�?UI 显示</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Boolean,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.FlowBreakdown,System.Single,System.Nullable{System.Single},System.Nullable{System.Single},System.Nullable{System.Single})">
             <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（RJW GetFluidMultiplier 侧倍率、营规、状态、泌乳素、饥饿、压力、喷乳反射）</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
