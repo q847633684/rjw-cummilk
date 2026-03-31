@@ -1,7 +1,7 @@
 namespace MilkCum.Fluids.Shared.Data;
 
 /// <summary>
-/// 虚拟流体槽位（不绑定 <see cref="Verse.BodyPartRecord"/>）。泌乳用左/右乳槽；射精经济用左/右睾丸虚拟槽；与 Docs/流体与分侧架构-方案整理.md 一致。
+/// 虚拟流体槽位（不绑定 <see cref="Verse.BodyPartRecord"/>）。泌乳用左/右乳槽；精液每器官池可为 <see cref="None"/> + 自定义键；TesticleLeft/Right 仅兼容旧版聚合槽命名。
 /// </summary>
 public enum FluidSiteKind
 {

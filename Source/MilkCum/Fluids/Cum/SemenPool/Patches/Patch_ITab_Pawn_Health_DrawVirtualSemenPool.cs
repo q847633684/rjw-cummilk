@@ -3,7 +3,6 @@ using MilkCum.Fluids.Cum.Common;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using MilkCum.Core.Settings;
 
 namespace MilkCum.Fluids.Cum.SemenPool.Patches;
 
@@ -35,12 +34,9 @@ public static class Patch_ITab_Pawn_Health_DrawVirtualSemenPool
         float y = inner.y;
         Widgets.Label(new Rect(inner.x, y, inner.width, headerH), "EM.HealthTabVirtualSemenPoolHeader".Translate());
         y += headerH;
-        foreach ((FluidSiteKind site, float current, float capacity) in rows)
+        foreach ((string label, float current, float capacity) in rows)
         {
-            string side = site == FluidSiteKind.TesticleLeft
-                ? "EM.VirtualSemenPoolLeft".Translate()
-                : "EM.VirtualSemenPoolRight".Translate();
-            string line = $"{side}: {current:F1} / {capacity:F1}";
+            string line = $"{label}: {current:F1} / {capacity:F1}";
             Widgets.Label(new Rect(inner.x, y, inner.width, lineH), line);
             y += lineH;
         }

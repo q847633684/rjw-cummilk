@@ -6,7 +6,7 @@ namespace MilkCum.Fluids.Shared.Data;
 /// <summary>乳池条目：虚拟槽 <see cref="Site"/>（泌乳 SSOT）、容量、流速倍率、解剖左右标记、序号、代表部位（状态倍率解析）。</summary>
 public readonly struct FluidPoolEntry
 {
-    /// <summary>虚拟槽；泌乳为左/右乳槽；精液为 <see cref="FluidSiteKind.TesticleLeft"/> / <see cref="FluidSiteKind.TesticleRight"/>。</summary>
+    /// <summary>虚拟槽；泌乳为左/右乳槽；精液为每条器官自定义键时常为 <see cref="FluidSiteKind.None"/>（键为 <c>Semen_{loadID}</c> 等）。</summary>
     public FluidSiteKind Site { get; }
     public string Key { get; }
     public float Capacity { get; }

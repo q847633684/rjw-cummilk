@@ -196,7 +196,7 @@
             <summary>泌乳药物单次在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 一并叠加），默认 0.044；若改 XML 请同步更新此处说明。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.Cum_EnableVirtualSemenPool">
-            <summary>启用左/右睾丸虚拟精液池：射精量受池存量限制并在游戏日内回充。</summary>
+            <summary>启用虚拟精液池（每条可射精生殖器独立槽）：射精量受该槽存量限制并在游戏日内回充。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.Cum_SemenPoolDaysForFullRefill">
             <summary>自空槽回满至容量所需的「游戏内日」时间（流速与 RJW 部位倍率相乘）。</summary>
@@ -401,17 +401,20 @@
         </member>
         <member name="T:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy">
             <summary>
-            RJW 阴茎/雄性产卵器部位与左/右睾丸虚拟精液池：按解剖侧聚合容量（RJW <see cref="M:rjw.HediffComp_SexPart.GetFluidAmount"/>）与流速倍率。
+            RJW 阴茎/雄性产卵器：每条可射精器官独立虚拟精池（键 <see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.MakeSemenPartPoolKey(Verse.Hediff)"/>），容量与流速取该条 <see cref="M:rjw.HediffComp_SexPart.GetFluidAmount"/> / <see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.GetSemenPartFlowMultiplier(Verse.Hediff)"/>。
             </summary>
         </member>
+        <member name="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.MakeSemenPartPoolKey(Verse.Hediff)">
+            <summary>单条射精 Hediff 的稳定池键（沿用存档 loadID，与乳叶路径键策略一致）。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.GetSemenPoolSideRows(Verse.Pawn)">
-            <summary>每条可射精解剖行；虚拟睾丸池由 <see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.BuildSemenPoolEntries(Verse.Pawn)"/> 聚合为左/右两槽。</summary>
+            <summary>每条可射精解剖行（<see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.BuildSemenPoolEntries(Verse.Pawn)"/> 每条阴茎一行池条目）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.BuildSemenPoolEntries(Verse.Pawn)">
-            <summary>至多两条虚拟睾丸池条目（TesticleLeft / TesticleRight）；未标注左右的容量与流速各半摊入两侧。</summary>
+            <summary>每条可射精生殖器一条 <see cref="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry"/>（<see cref="F:MilkCum.Fluids.Shared.Data.FluidSiteKind.None"/> + 自定义键）；多阴茎互不合并。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.AddVirtualSemenKeysForPart(rjw.ISexPartHediff,System.Collections.Generic.List{System.String})">
-            <summary>该射精部位对应的虚拟槽键：解剖左/右各一侧；未标注则两侧各扣按比例。</summary>
+            <summary>该射精部位对应的虚拟精池键（与 <see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.BuildSemenPoolEntries(Verse.Pawn)"/> 一致，每器官单键）。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Common.RjwSemenPoolSideRow">
             <summary>一条可射精生殖器解剖行。</summary>
@@ -473,13 +476,13 @@
             <summary>鏄惁宸叉湁澶氫汉浣跨敤杩囷紙浜у嚭搴斾负娣峰悎绮炬恫锛</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool">
-            <summary>左/右睾丸虚拟精液池：存档键 TesticleLeft/TesticleRight，与 RJW 射精量单位一致。</summary>
+            <summary>每条可射精生殖器独立虚拟精池：存档键 <c>Semen_{loadID}</c>；旧档 <c>TesticleLeft/Right</c> 首次 Tick 按比例摊入各条池。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool.ConsumeForEjaculation(rjw.ISexPartHediff,System.Single,System.Boolean)">
             <summary>扣减虚拟池并返回实际可供射精的体量；<paramref name="registerForFluidRecords"/> 为口交记录补丁提供登记。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool.GetSemenPoolDisplayRows(Verse.Pawn)">
-            <summary>健康页等 UI：各虚拟睾丸槽当前量与容量（与 <see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.BuildSemenPoolEntries(Verse.Pawn)"/> 对齐）。</summary>
+            <summary>健康页等 UI：各虚拟精池当前量与容量（与 <see cref="M:MilkCum.Fluids.Cum.Common.RjwSemenPoolEconomy.BuildSemenPoolEntries(Verse.Pawn)"/> 对齐）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Cumflation.CumflationUtility.CumflatePawn(Verse.Pawn,Verse.Pawn,rjw.SexProps)">
             <summary>
@@ -1765,7 +1768,7 @@
             <summary>乳池条目：虚拟槽 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.Site"/>（泌乳 SSOT）、容量、流速倍率、解剖左右标记、序号、代表部位（状态倍率解析）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.Site">
-            <summary>虚拟槽；泌乳为左/右乳槽；精液为 <see cref="F:MilkCum.Fluids.Shared.Data.FluidSiteKind.TesticleLeft"/> / <see cref="F:MilkCum.Fluids.Shared.Data.FluidSiteKind.TesticleRight"/>。</summary>
+            <summary>虚拟槽；泌乳为左/右乳槽；精液为每条器官自定义键时常为 <see cref="F:MilkCum.Fluids.Shared.Data.FluidSiteKind.None"/>（键为 <c>Semen_{loadID}</c> 等）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.FlowMultiplier">
             <summary>该池的 RJW/基因等流速倍率；调用方 × basePerDay 得每日流速。合并双侧虚拟池时为原单侧倍率的 2 倍以保持总进水量不变。</summary>
@@ -1798,7 +1801,7 @@
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.FluidSiteKind">
             <summary>
-            虚拟流体槽位（不绑定 <see cref="T:Verse.BodyPartRecord"/>）。泌乳用左/右乳槽；射精经济用左/右睾丸虚拟槽；与 Docs/流体与分侧架构-方案整理.md 一致。
+            虚拟流体槽位（不绑定 <see cref="T:Verse.BodyPartRecord"/>）。泌乳用左/右乳槽；精液每器官池可为 <see cref="F:MilkCum.Fluids.Shared.Data.FluidSiteKind.None"/> + 自定义键；TesticleLeft/Right 仅兼容旧版聚合槽命名。
             </summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.FluidTag">
