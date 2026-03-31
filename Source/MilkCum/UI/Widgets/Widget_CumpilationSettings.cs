@@ -56,6 +56,14 @@ public class Widget_CumpilationSettings
 		listing.CheckboxLabeled("cumpilation_settings_enable_oscillation_mechanics_animals_key".Translate() + ": ", ref MilkCumSettings.Cum_EnableOscillationMechanicsForAnimals);
 		listing.Gap(GapSection);
 		listing.CheckboxLabeled("cumpilation_settings_enable_debug_logging_key".Translate() + ": ", ref MilkCumSettings.Cum_EnableDebugLogging);
+		listing.Gap(Gap);
+		listing.CheckboxLabeled("cumpilation_settings_enable_virtual_semen_pool_key".Translate() + ": ", ref MilkCumSettings.Cum_EnableVirtualSemenPool);
+		if (MilkCumSettings.Cum_EnableVirtualSemenPool)
+		{
+			listing.Gap(Gap);
+			listing.Label("cumpilation_settings_semen_pool_refill_days_key".Translate() + ": " + MilkCumSettings.Cum_SemenPoolDaysForFullRefill.ToString("F2"));
+			MilkCumSettings.Cum_SemenPoolDaysForFullRefill = listing.Slider(MilkCumSettings.Cum_SemenPoolDaysForFullRefill, 0.1f, 30f);
+		}
 
 		listing.Gap(GapSection * 2);
 

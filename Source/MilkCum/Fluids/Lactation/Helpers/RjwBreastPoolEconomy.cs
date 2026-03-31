@@ -73,9 +73,10 @@ public static class RjwBreastPoolEconomy
     public static string BuildBreastListPoolKeySignature(Pawn pawn)
     {
         if (pawn == null) return "";
+        var sb = new StringBuilder();
+        sb.Append((int)MilkCumSettings.rjwBreastPoolTopologyMode).Append(':');
         var list = pawn.GetBreastListOrEmpty();
-        if (list.Count == 0) return "";
-        var sb = new StringBuilder(list.Count * 48);
+        if (list.Count == 0) return sb.ToString();
         for (int i = 0; i < list.Count; i++)
         {
             if (i > 0) sb.Append('|');
@@ -156,13 +157,18 @@ public static class RjwBreastPoolEconomy
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
         try
         {
+            if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.RjwChestUnified)
+            {
+                AppendChestUnifiedSnapshot(result, pawn);
+                return result;
+            }
+
             var cands = BuildBreastPoolCandidates(pawn);
             if (cands.Count == 0) return result;
             cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
             int poolIdx = 0;
             for (int i = 0; i < cands.Count; i++)
             {
-                // 新模型：一条乳房子部位 = 一个池（不再按父节点做左右配对）。
                 AppendBreastPoolSnapshot(result, cands[i], poolIdx);
                 poolIdx++;
             }
@@ -176,8 +182,8 @@ public static class RjwBreastPoolEconomy
     }
 
     /// <summary>
-    /// 每条可泌乳叶一条真实池行；当前模型每条乳房子部位独立一池并独立计算。
-    /// Breast/MechBreast 叶；无部位、旧 Chest 单点、容量为 0 等仍不进池。
+    /// 每条可泌乳叶一条解剖行（非存档池键）；虚拟乳池由 <see cref="PawnMilkPoolExtensions.BuildBreastPoolEntriesFromSideRows"/> 聚合为左/右两槽。
+    /// Breast/MechBreast 叶；无部位、容量为 0 等仍不进列表。
     /// </summary>
     public static List<RjwBreastPoolSideRow> GetBreastPoolSideRows(Pawn pawn)
     {
@@ -185,6 +191,9 @@ public static class RjwBreastPoolEconomy
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
         try
         {
+            if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.RjwChestUnified)
+                return BuildChestUnifiedSideRows(pawn);
+
             var cands = BuildBreastPoolCandidates(pawn);
             if (cands.Count == 0) return result;
             cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
@@ -192,7 +201,6 @@ public static class RjwBreastPoolEconomy
             for (int i = 0; i < cands.Count; i++)
             {
                 bool isLeft = IsAnatomicallyLeftBreastPart(cands[i].Part);
-                // 新模型：一条乳房子部位 = 一个池；每条池独占一个 PoolIndex。
                 AppendNaturalSide(result, poolIdx, cands[i], isLeft);
                 poolIdx++;
             }
@@ -210,6 +218,152 @@ public static class RjwBreastPoolEconomy
 
     /// <summary>部位可辨认为右乳；未标注侧既不左也不右（不计入左/右汇总）。</summary>
     public static bool IsAnatomicallyRightBreastPart(BodyPartRecord part) => PartNameLooksRight(part);
+
+    /// <summary>胸位合并拓扑：无部位或挂在 <c>Chest</c> 上的可泌乳乳房 Hediff。</summary>
+    public static bool IsChestUnifiedBreastPart(BodyPartRecord part) =>
+        part == null || part.def?.defName == "Chest";
+
+    private static List<RjwBreastPoolSideRow> BuildChestUnifiedSideRows(Pawn pawn)
+    {
+        var result = new List<RjwBreastPoolSideRow>();
+        var list = pawn.GetBreastListOrEmpty();
+        float sumCap = 0f;
+        float sumFlow = 0f;
+        Hediff first = null;
+        BodyPartRecord src = null;
+        int firstIdx = -1;
+        for (int i = 0; i < list.Count; i++)
+        {
+            var h = list[i];
+            if (!IsBreastHediffForPool(h)) continue;
+            if (!IsChestUnifiedBreastPart(h.Part)) continue;
+            bool hasBs = PartSizeCalculator.TryGetBreastSize(h, out var bs);
+            float vol = hasBs ? bs.volume : 0f;
+            float w = hasBs ? bs.weight : 0f;
+            bool usableSize = hasBs && (vol > 0f || w > 0f);
+            float baseCap = ComputeBaseCapacityPerSide(h, vol, w, usableSize);
+            if (baseCap <= PoolModelConstants.Epsilon) continue;
+            sumCap += baseCap;
+            sumFlow += GetBreastHediffFlowMultiplier(h);
+            if (first == null)
+            {
+                first = h;
+                src = h.Part;
+                firstIdx = i;
+            }
+        }
+
+        if (sumCap <= PoolModelConstants.Epsilon) return result;
+        result.Add(new RjwBreastPoolSideRow(0, first, sumCap, sumFlow, isLeft: true, sourceBreastListIndex: firstIdx));
+        return result;
+    }
+
+    private static void AppendChestUnifiedSnapshot(List<RjwBreastPoolSnapshot> result, Pawn pawn)
+    {
+        var list = pawn.GetBreastListOrEmpty();
+        float sumCap = 0f;
+        float sumFlow = 0f;
+        float volSum = 0f, wSum = 0f, cup = 0f, band = 0f;
+        bool anySize = false;
+        Hediff first = null;
+        int firstIdx = -1;
+        for (int i = 0; i < list.Count; i++)
+        {
+            var h = list[i];
+            if (!IsBreastHediffForPool(h)) continue;
+            if (!IsChestUnifiedBreastPart(h.Part)) continue;
+            bool hasBs = PartSizeCalculator.TryGetBreastSize(h, out var bs);
+            float vol = hasBs ? bs.volume : 0f;
+            float w = hasBs ? bs.weight : 0f;
+            bool usableSize = hasBs && (vol > 0f || w > 0f);
+            float baseCap = ComputeBaseCapacityPerSide(h, vol, w, usableSize);
+            if (baseCap <= PoolModelConstants.Epsilon) continue;
+            sumCap += baseCap;
+            sumFlow += GetBreastHediffFlowMultiplier(h);
+            if (hasBs && usableSize)
+            {
+                anySize = true;
+                volSum += vol;
+                wSum += w;
+                cup += bs.cupSize;
+                band += bs.bandSize;
+            }
+
+            if (first == null)
+            {
+                first = h;
+                firstIdx = i;
+            }
+        }
+
+        if (first == null || sumCap <= PoolModelConstants.Epsilon) return;
+        string poolKey = MakeStablePoolKey(first, firstIdx);
+        result.Add(new RjwBreastPoolSnapshot(
+            listIndex: firstIdx,
+            poolIndex: 0,
+            poolKey: poolKey,
+            breastHediff: first,
+            baseCapacityPerSide: sumCap,
+            flowMultiplier: sumFlow,
+            breastVolumeLiters: volSum,
+            breastWeightKg: wSum,
+            breastCupSize: cup,
+            breastBandSize: band,
+            hasBreastSize: anySize));
+    }
+
+    /// <summary>胸位单池：合并容量/流速，虚拟键为 <see cref="FluidSiteKind.BreastLeft"/>。</summary>
+    public static List<FluidPoolEntry> BuildChestUnifiedBreastPoolEntries(Pawn pawn)
+    {
+        var result = new List<FluidPoolEntry>();
+        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
+        try
+        {
+            var rows = BuildChestUnifiedSideRows(pawn);
+            if (rows.Count == 0) return result;
+            var r = rows[0];
+            result.Add(new FluidPoolEntry(FluidSiteKind.BreastLeft, r.BaseCapacity, r.FlowMultiplier, true, 0, r.BreastHediff?.Part));
+            PawnMilkPoolExtensions.ApplyCapacityAdaptationToBreastEntries(pawn, result);
+        }
+        catch (Exception ex)
+        {
+            LogDev(nameof(BuildChestUnifiedBreastPoolEntries), ex);
+            result.Clear();
+        }
+
+        return result;
+    }
+
+    /// <summary>每 <c>Breast</c>/<c>MechBreast</c> 叶独立池键（不聚合成左/右）。</summary>
+    public static List<FluidPoolEntry> BuildPerAnatomicalLeafBreastPoolEntries(Pawn pawn)
+    {
+        var result = new List<FluidPoolEntry>();
+        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
+        try
+        {
+            var cands = BuildBreastPoolCandidates(pawn);
+            if (cands.Count == 0) return result;
+            cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
+            int idx = 0;
+            for (int i = 0; i < cands.Count; i++)
+            {
+                var c = cands[i];
+                var h = c.H;
+                string k = MakeStablePoolKey(h, c.ListIndex);
+                bool isLeft = IsAnatomicallyLeftBreastPart(c.Part);
+                result.Add(new FluidPoolEntry(k, FluidSiteKind.None, c.BaseCap, c.Flow, isLeft, idx++, c.Part));
+            }
+
+            PawnMilkPoolExtensions.ApplyCapacityAdaptationToBreastEntries(pawn, result);
+        }
+        catch (Exception ex)
+        {
+            LogDev(nameof(BuildPerAnatomicalLeafBreastPoolEntries), ex);
+            result.Clear();
+        }
+
+        return result;
+    }
 
     private static bool IsLateralBreastLeafPart(BodyPartRecord part)
     {
@@ -310,33 +464,124 @@ public static class RjwBreastPoolEconomy
         return part.def.defName.IndexOf("Right", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
-    private static void AppendNaturalSide(List<RjwBreastPoolSideRow> result, int poolIdx, Cand c, bool isLeft)
+    private static void AppendNaturalSide(List<RjwBreastPoolSideRow> result, int poolIdx, Cand c, bool isLeft) =>
+        result.Add(new RjwBreastPoolSideRow(poolIdx, c.H, c.BaseCap, c.Flow, isLeft, c.ListIndex));
+
+    /// <summary>未标注左右时，虚拟左/右槽均可能承载该解剖行贡献的容量与产液（各 50%）。</summary>
+    public static void AddVirtualBreastStorageKeysForSideRow(RjwBreastPoolSideRow row, HashSet<string> dest)
     {
-        string key = MakeStablePoolKey(c.H, c.ListIndex);
-        if (string.IsNullOrEmpty(key)) return;
-        result.Add(new RjwBreastPoolSideRow(poolIdx, key, c.H, c.BaseCap, c.Flow, isLeft));
+        if (dest == null) return;
+        if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.PerAnatomicalLeaf)
+        {
+            if (row.BreastHediff != null && row.SourceBreastListIndex >= 0)
+                dest.Add(MakeStablePoolKey(row.BreastHediff, row.SourceBreastListIndex));
+            return;
+        }
+
+        if (row.IsLeft)
+        {
+            dest.Add(FluidSiteKind.BreastLeft.ToString());
+            return;
+        }
+
+        if (IsAnatomicallyRightBreastPart(row.BreastHediff?.Part))
+        {
+            dest.Add(FluidSiteKind.BreastRight.ToString());
+            return;
+        }
+
+        dest.Add(FluidSiteKind.BreastLeft.ToString());
+        dest.Add(FluidSiteKind.BreastRight.ToString());
+    }
+
+    /// <summary>单解剖行对应的「主」虚拟槽（用于旧式单 key API）；未标注左右时取左槽。</summary>
+    public static string GetVirtualBreastStorageKeyForSideRow(RjwBreastPoolSideRow row)
+    {
+        if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.PerAnatomicalLeaf
+            && row.BreastHediff != null && row.SourceBreastListIndex >= 0)
+            return MakeStablePoolKey(row.BreastHediff, row.SourceBreastListIndex);
+        if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.RjwChestUnified)
+            return FluidSiteKind.BreastLeft.ToString();
+        if (row.IsLeft) return FluidSiteKind.BreastLeft.ToString();
+        if (IsAnatomicallyRightBreastPart(row.BreastHediff?.Part)) return FluidSiteKind.BreastRight.ToString();
+        return FluidSiteKind.BreastLeft.ToString();
+    }
+
+    /// <summary>高潮产液：按解剖行写入虚拟槽；未标注左右时对半分。</summary>
+    public static void AppendOrgasmMilkTargetsForSideRow(
+        RjwBreastPoolSideRow row,
+        float fullUnit,
+        List<FluidPoolEntry> entries,
+        List<(string key, float addAmount, float cap)> toAdd)
+    {
+        if (entries == null || toAdd == null || fullUnit <= 0f) return;
+        if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.PerAnatomicalLeaf
+            && row.BreastHediff != null && row.SourceBreastListIndex >= 0)
+        {
+            string k = MakeStablePoolKey(row.BreastHediff, row.SourceBreastListIndex);
+            float c = CapacityForPoolKey(entries, k);
+            if (c > PoolModelConstants.Epsilon) toAdd.Add((k, fullUnit, c));
+            return;
+        }
+
+        if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.RjwChestUnified)
+        {
+            float c = CapacityForPoolKey(entries, FluidSiteKind.BreastLeft.ToString());
+            if (c > PoolModelConstants.Epsilon) toAdd.Add((FluidSiteKind.BreastLeft.ToString(), fullUnit, c));
+            return;
+        }
+
+        if (row.IsLeft)
+        {
+            float c = CapacityForPoolKey(entries, FluidSiteKind.BreastLeft.ToString());
+            if (c > PoolModelConstants.Epsilon) toAdd.Add((FluidSiteKind.BreastLeft.ToString(), fullUnit, c));
+            return;
+        }
+
+        if (IsAnatomicallyRightBreastPart(row.BreastHediff?.Part))
+        {
+            float c = CapacityForPoolKey(entries, FluidSiteKind.BreastRight.ToString());
+            if (c > PoolModelConstants.Epsilon) toAdd.Add((FluidSiteKind.BreastRight.ToString(), fullUnit, c));
+            return;
+        }
+
+        float cL = CapacityForPoolKey(entries, FluidSiteKind.BreastLeft.ToString());
+        float cR = CapacityForPoolKey(entries, FluidSiteKind.BreastRight.ToString());
+        float half = fullUnit * 0.5f;
+        if (cL > PoolModelConstants.Epsilon) toAdd.Add((FluidSiteKind.BreastLeft.ToString(), half, cL));
+        if (cR > PoolModelConstants.Epsilon) toAdd.Add((FluidSiteKind.BreastRight.ToString(), half, cR));
+    }
+
+    /// <summary>按池键匹配条目容量（支持 <see cref="FluidSiteKind.BreastLeft"/>/<see cref="FluidSiteKind.BreastRight"/> 及每叶自定义键）。</summary>
+    public static float CapacityForPoolKey(List<FluidPoolEntry> ent, string key)
+    {
+        if (ent == null || string.IsNullOrEmpty(key)) return 0f;
+        for (int i = 0; i < ent.Count; i++)
+            if (ent[i].Key == key) return ent[i].Capacity;
+        return 0f;
     }
 }
 
-/// <summary>一条「侧」乳池行：与 <see cref="FluidPoolEntry"/> 一一对应。</summary>
+/// <summary>一条解剖「叶」乳行；虚拟乳池 <see cref="FluidPoolEntry"/> 由多行聚合为左/右两槽（或胸位单池/每叶独立键）。</summary>
 public readonly struct RjwBreastPoolSideRow
 {
     public int PoolIndex { get; }
-    public string PoolKey { get; }
     public Hediff BreastHediff { get; }
     public float BaseCapacity { get; }
     public float FlowMultiplier { get; }
-    /// <summary>仅解剖左为 true；解剖右与未标注为 false（与 <see cref="FluidPoolEntry.IsLeft"/> 一致）。</summary>
+    /// <summary>仅解剖左为 true；解剖右与未标注为 false。</summary>
     public bool IsLeft { get; }
+    /// <summary>RJW 乳房列表下标；每叶独立池键与稳定路径键生成一致。</summary>
+    public int SourceBreastListIndex { get; }
 
-    public RjwBreastPoolSideRow(int poolIndex, string poolKey, Hediff breastHediff, float baseCapacity, float flowMultiplier, bool isLeft)
+    public RjwBreastPoolSideRow(int poolIndex, Hediff breastHediff, float baseCapacity, float flowMultiplier, bool isLeft, int sourceBreastListIndex = -1)
     {
         PoolIndex = poolIndex;
-        PoolKey = poolKey ?? "";
         BreastHediff = breastHediff;
         BaseCapacity = baseCapacity;
         FlowMultiplier = flowMultiplier;
         IsLeft = isLeft;
+        SourceBreastListIndex = sourceBreastListIndex;
     }
 }
 

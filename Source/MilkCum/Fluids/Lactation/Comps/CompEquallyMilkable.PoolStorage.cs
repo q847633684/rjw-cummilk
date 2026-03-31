@@ -77,10 +77,7 @@ public partial class CompEquallyMilkable
         return breastFullness.TryGetValue(key, out float v) ? v : 0f;
     }
 
-    /// <summary>
-    /// 左侧汇总视图：仅 <see cref="FluidPoolEntry.IsLeft"/>（解剖左）。右侧汇总视图：仅解剖右（<see cref="RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart"/>）。
-    /// 未标注侧不计入左右侧汇总视图；<see cref="Fullness"/> 仍为各 key 之和。
-    /// </summary>
+    /// <summary>左/右汇总视图按虚拟槽 <see cref="FluidSiteKind"/>；<see cref="Fullness"/> 为各槽之和。</summary>
     private float GetSideFullnessSum(bool isLeftSide)
     {
         if (breastFullness == null || breastFullness.Count == 0) return 0f;
@@ -93,11 +90,11 @@ public partial class CompEquallyMilkable
             if (!breastFullness.TryGetValue(e.Key, out float v)) continue;
             if (isLeftSide)
             {
-                if (e.IsLeft) sum += v;
+                if (e.Site == FluidSiteKind.BreastLeft) sum += v;
             }
-            else
+            else if (e.Site == FluidSiteKind.BreastRight)
             {
-                if (RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(e.SourcePart)) sum += v;
+                sum += v;
             }
         }
         return sum;
@@ -116,6 +113,192 @@ public partial class CompEquallyMilkable
         return Find.CurrentMap == Pawn.MapHeld ? EntriesCacheMaxTicksOnCurrentMap : EntriesCacheMaxTicksOtherMap;
     }
 
+    /// <summary>
+    /// 瘀积满池 tick 与乳池键对齐：无新键时清空；奶量键集合不变时剔除无效 tick 键；否则按新池容量比例重分总 tick（最大余数法，守恒整数）。
+    /// </summary>
+    private void MigrateTicksFullPoolForNewEntryKeys(List<FluidPoolEntry> newEntries, HashSet<string> newKeySet, HashSet<string> oldBreastKeySet)
+    {
+        ticksFullPoolByKey ??= new Dictionary<string, int>();
+        if (newKeySet.Count == 0)
+        {
+            ticksFullPoolByKey.Clear();
+            return;
+        }
+
+        if (oldBreastKeySet.SetEquals(newKeySet))
+        {
+            var toRemove = new List<string>();
+            foreach (var k in ticksFullPoolByKey.Keys)
+                if (!newKeySet.Contains(k))
+                    toRemove.Add(k);
+            for (int i = 0; i < toRemove.Count; i++)
+                ticksFullPoolByKey.Remove(toRemove[i]);
+            return;
+        }
+
+        int totalTicks = 0;
+        foreach (var kv in ticksFullPoolByKey)
+            totalTicks += kv.Value;
+        ticksFullPoolByKey.Clear();
+        if (totalTicks <= 0) return;
+
+        var capByKey = new Dictionary<string, float>();
+        if (newEntries != null)
+        {
+            for (int i = 0; i < newEntries.Count; i++)
+            {
+                var e = newEntries[i];
+                if (string.IsNullOrEmpty(e.Key)) continue;
+                capByKey.TryGetValue(e.Key, out float c);
+                capByKey[e.Key] = c + Mathf.Max(0f, e.Capacity);
+            }
+        }
+
+        float sumCap = 0f;
+        foreach (var kv in capByKey)
+            sumCap += kv.Value;
+
+        if (sumCap < 0.001f)
+        {
+            int baseShare = totalTicks / newKeySet.Count;
+            int rem = totalTicks % newKeySet.Count;
+            int n = 0;
+            foreach (string k in newKeySet)
+            {
+                ticksFullPoolByKey[k] = baseShare + (n < rem ? 1 : 0);
+                n++;
+            }
+            return;
+        }
+
+        var keys = new List<string>(capByKey.Count);
+        var frac = new List<float>(capByKey.Count);
+        foreach (var kv in capByKey)
+        {
+            float w = kv.Value / sumCap;
+            float x = totalTicks * w;
+            int fl = Mathf.FloorToInt(x);
+            keys.Add(kv.Key);
+            frac.Add(x - fl);
+            ticksFullPoolByKey[kv.Key] = fl;
+        }
+
+        int assigned = 0;
+        foreach (var kv in ticksFullPoolByKey)
+            assigned += kv.Value;
+        int leftover = totalTicks - assigned;
+        if (leftover <= 0) return;
+
+        var order = new List<int>(keys.Count);
+        for (int i = 0; i < keys.Count; i++) order.Add(i);
+        order.Sort((a, b) =>
+        {
+            float fa = frac[a], fb = frac[b];
+            if (fa > fb + 1e-6f) return -1;
+            if (fb > fa + 1e-6f) return 1;
+            return string.CompareOrdinal(keys[a], keys[b]);
+        });
+
+        for (int j = 0; j < leftover && j < order.Count; j++)
+        {
+            string k = keys[order[j]];
+            ticksFullPoolByKey[k] = ticksFullPoolByKey[k] + 1;
+        }
+    }
+
+    /// <summary>
+    /// 乳池条目键与上次存档不一致时（切换拓扑、叶路径变化等）：按新条目 <see cref="FluidPoolEntry.Capacity"/> 比例重分总奶量，守恒总量；键集合相同则不动。
+    /// </summary>
+    private void MigrateBreastFullnessForNewEntryKeys(List<FluidPoolEntry> newEntries)
+    {
+        breastFullness ??= new Dictionary<string, float>();
+        var newKeySet = new HashSet<string>();
+        if (newEntries != null)
+        {
+            for (int i = 0; i < newEntries.Count; i++)
+            {
+                string k = newEntries[i].Key;
+                if (!string.IsNullOrEmpty(k)) newKeySet.Add(k);
+            }
+        }
+
+        var oldBreastKeySet = new HashSet<string>();
+        foreach (var k in breastFullness.Keys)
+            if (!string.IsNullOrEmpty(k)) oldBreastKeySet.Add(k);
+
+        var milkSnap = breastFullness.Count > 0
+            ? new Dictionary<string, float>(breastFullness)
+            : new Dictionary<string, float>();
+        Pawn?.LactatingHediffComp()?.SyncPoolKeyedStateToEntries(milkSnap, newEntries ?? new List<FluidPoolEntry>());
+
+        var oldKeySet = new HashSet<string>(breastFullness.Keys);
+        if (newKeySet.Count == 0)
+        {
+            if (oldKeySet.Count > 0)
+                breastFullness.Clear();
+            MigrateTicksFullPoolForNewEntryKeys(newEntries, newKeySet, oldBreastKeySet);
+            SyncBaseFullness();
+            return;
+        }
+
+        if (oldKeySet.SetEquals(newKeySet))
+        {
+            MigrateTicksFullPoolForNewEntryKeys(newEntries, newKeySet, oldBreastKeySet);
+            SyncBaseFullness();
+            return;
+        }
+
+        float totalMilk = 0f;
+        foreach (var v in breastFullness.Values) totalMilk += v;
+        breastFullness.Clear();
+
+        if (totalMilk <= PoolModelConstants.Epsilon)
+        {
+            MigrateTicksFullPoolForNewEntryKeys(newEntries, newKeySet, oldBreastKeySet);
+            SyncBaseFullness();
+            return;
+        }
+
+        var capByKeyForMilk = new Dictionary<string, float>();
+        for (int i = 0; i < newEntries.Count; i++)
+        {
+            var e = newEntries[i];
+            if (string.IsNullOrEmpty(e.Key)) continue;
+            capByKeyForMilk.TryGetValue(e.Key, out float c);
+            capByKeyForMilk[e.Key] = c + Mathf.Max(0f, e.Capacity);
+        }
+
+        float sumCap = 0f;
+        foreach (var kv in capByKeyForMilk)
+            sumCap += kv.Value;
+
+        if (sumCap < 0.001f)
+        {
+            float share = totalMilk / newKeySet.Count;
+            foreach (string k in newKeySet)
+                breastFullness[k] = share;
+        }
+        else
+        {
+            foreach (var kv in capByKeyForMilk)
+            {
+                float w = kv.Value / sumCap;
+                breastFullness[kv.Key] = totalMilk * w;
+            }
+        }
+
+        float stretch = PoolModelConstants.StretchCapFactor;
+        foreach (var kv in capByKeyForMilk)
+        {
+            float maxF = kv.Value * stretch;
+            if (breastFullness.TryGetValue(kv.Key, out float v) && v > maxF)
+                breastFullness[kv.Key] = maxF;
+        }
+
+        MigrateTicksFullPoolForNewEntryKeys(newEntries, newKeySet, oldBreastKeySet);
+        SyncBaseFullness();
+    }
+
     private List<FluidPoolEntry> GetCachedEntries()
     {
         int now = Find.TickManager.TicksGame;
@@ -125,7 +308,8 @@ public partial class CompEquallyMilkable
         if (Pawn != null)
         {
             cachedSideRows = RjwBreastPoolEconomy.GetBreastPoolSideRows(Pawn);
-            cachedEntries = PawnMilkPoolExtensions.BuildBreastPoolEntriesFromSideRows(Pawn, cachedSideRows);
+            cachedEntries = PawnMilkPoolExtensions.BuildCachedBreastPoolEntries(Pawn, cachedSideRows);
+            MigrateBreastFullnessForNewEntryKeys(cachedEntries);
         }
         else
         {
@@ -177,7 +361,7 @@ public partial class CompEquallyMilkable
         return cachedSideRows;
     }
 
-    /// <summary>乳池行数（每条可泌乳叶一行），与 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/> 一致；单侧/多乳均按实际乳房子部位计数。用于机器挤奶并行扣量时算每乳池侧速率。</summary>
+    /// <summary>当前乳池条目数（虚拟左/右至多 2；<see cref="RjwBreastPoolTopologyMode.PerAnatomicalLeaf"/> 可为多叶），与 <see cref="FluidPoolEntry"/> 条数一致。</summary>
     public int BreastSideCount => GetCachedEntries().Count;
 
     /// <summary>吸奶/单侧扣量：在所有池条目中选<strong>单 key 满度最大</strong>的一条。顺序规则与手挤排序共用 <see cref="CompareDrainEntryOrder"/>。</summary>

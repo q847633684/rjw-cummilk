@@ -42,8 +42,12 @@ namespace MilkCum.Fluids.Cum.Cumflation
                 if (inflated.IsAnimal() && !CanStuffAnimals(genital.GetPartComp().Fluid)) continue; 
 
                 ModLog.Debug($"Stuffing {inflated} with {inflator}s {genital}, adding {genital.GetPartComp().Fluid}");
+                float nominalFluid = genital.GetPartComp().FluidAmount;
+                float ejectAmount = VirtualSemenRecordLedger.TryPeekLastForPart(inflator, genital, out float fromOral)
+                    ? fromOral
+                    : inflator.ConsumeSemenForEjection(genital, nominalFluid);
                 float necessaryAmount = FluidAmountRequiredToStuffPawn(inflated, genital.GetPartComp().Fluid);
-                float incomingSeverity = DetermineStuffingSeverity(inflated, genital.GetPartComp().FluidAmount, genital.GetPartComp().Fluid);
+                float incomingSeverity = DetermineStuffingSeverity(inflated, ejectAmount, genital.GetPartComp().Fluid);
 
                 int existingStuffingHediffs = GetAllSharedSeverityHediffsInPawn(inflated).Count();
                 float accumulatedExistingSeverity = SumUpAllStuffingSeverities(inflated);
@@ -73,7 +77,7 @@ namespace MilkCum.Fluids.Cum.Cumflation
                             }
                         }
                     }
-                    FluidUtility.StoreFluidSource(stuffedHediff, inflator, genital.GetPartComp().Fluid, genital.GetPartComp().FluidAmount);
+                    FluidUtility.StoreFluidSource(stuffedHediff, inflator, genital.GetPartComp().Fluid, ejectAmount);
 
                     // TODO: add thoughts ... 
                     // TODO: something fancier for the Overflow?

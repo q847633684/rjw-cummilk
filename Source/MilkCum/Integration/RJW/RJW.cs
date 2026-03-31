@@ -1,9 +1,9 @@
 using HarmonyLib;
 using Verse;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using UnityEngine;
-using System.Linq;
 using rjw;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
@@ -33,7 +33,6 @@ internal static class ApplyPatches
         new PatchClassProcessor(Harmony, typeof(CompAssignableToPawn_Box_Patch)).Patch();
         new PatchClassProcessor(Harmony, typeof(Hediff_BasePregnancy_Patch)).Patch();
         new PatchClassProcessor(Harmony, typeof(JobDriver_Sex_OrgasmMilk_Patch)).Patch();
-        new PatchClassProcessor(Harmony, typeof(RJW_BreastAnatomyHarmony)).Patch();
     }
 }
 [HarmonyPatch(typeof(PawnMilkPoolExtensions))]
@@ -134,10 +133,8 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
             for (int r = 0; r < sideRows.Count; r++)
             {
                 if (sideRows[r].BreastHediff != h) continue;
-                string pk = sideRows[r].PoolKey;
-                var e = entries.FirstOrDefault(x => x.Key == pk);
-                if (string.IsNullOrEmpty(e.Key)) continue;
-                toAdd.Add((pk, PoolUnitsPerOrgasmPerBreastSide, e.Capacity));
+                RjwBreastPoolEconomy.AppendOrgasmMilkTargetsForSideRow(sideRows[r], PoolUnitsPerOrgasmPerBreastSide, entries, toAdd);
+                break;
             }
         }
         if (toAdd.Count > 0)

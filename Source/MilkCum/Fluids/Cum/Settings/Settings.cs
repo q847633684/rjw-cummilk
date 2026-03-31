@@ -17,5 +17,7 @@ namespace MilkCum.Fluids.Cum
         public static bool EnableOscillationMechanics { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanics; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanics = value; }
         public static bool EnableOscillationMechanicsForAnimals { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanicsForAnimals; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableOscillationMechanicsForAnimals = value; }
         public static bool EnableCumDebugLogging { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableDebugLogging; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableDebugLogging = value; }
+        public static bool EnableVirtualSemenPool { get => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableVirtualSemenPool; set => MilkCum.Core.Settings.MilkCumSettings.Cum_EnableVirtualSemenPool = value; }
+        public static float SemenPoolDaysForFullRefill { get => MilkCum.Core.Settings.MilkCumSettings.Cum_SemenPoolDaysForFullRefill; set => MilkCum.Core.Settings.MilkCumSettings.Cum_SemenPoolDaysForFullRefill = value; }
     }
 }

@@ -13,6 +13,7 @@ using Verse;
 namespace MilkCum.Fluids.Cum.Reactions
 {
     [HarmonyPatch(typeof(SexUtility), nameof(SexUtility.TransferFluids))]
+    [HarmonyPriority(Priority.First)]
     public static class Patch_TransferFluid_UpdateRecordAndGiveThoughts
     {
         public static void Postfix(SexProps props) {
@@ -42,9 +43,10 @@ namespace MilkCum.Fluids.Cum.Reactions
             foreach (var part in parts) {
                 var recordMapping = ReactionUtility.LookupFluid(part.GetPartComp().Fluid);
                 if (recordMapping == null) continue;
+                float amountForRecord = VirtualSemenRecordLedger.TryMatchAndRemove(pawn, part, part.GetPartComp().FluidAmount);
                 partner.records.Increment(recordMapping.numConsumedRecord);
-                partner.records.AddTo(recordMapping.amountConsumedRecord, part.GetPartComp().FluidAmount);
-                ModLog.Debug($"Bumping {partner}s records for {part.GetPartComp().Fluid} by {part.GetPartComp().FluidAmount}. New:#{partner.records.GetValue(recordMapping.numConsumedRecord)} dinings ({partner.records.GetValue(recordMapping.amountConsumedRecord)} ml total)");
+                partner.records.AddTo(recordMapping.amountConsumedRecord, amountForRecord);
+                ModLog.Debug($"Bumping {partner}s records for {part.GetPartComp().Fluid} by {amountForRecord}. New:#{partner.records.GetValue(recordMapping.numConsumedRecord)} dinings ({partner.records.GetValue(recordMapping.amountConsumedRecord)} ml total)");
                 
                 if (Settings.EnableProgressingConsumptionThoughts)
                 {

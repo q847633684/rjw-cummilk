@@ -44,8 +44,10 @@ namespace MilkCum.Fluids.Cum.Cumflation
 
             foreach(ISexPartHediff genital in inflatorGenitals)
             {
+                float nominalFluid = genital.GetPartComp().FluidAmount;
+                float ejectAmount = inflator.ConsumeSemenForEjection(genital, nominalFluid);
                 float necessaryAmount = FluidAmountRequiredToCumflatePawn(inflated, genital.GetPartComp().Fluid);
-                float resultingSeverity = DetermineCumflationSeverity(inflated, genital.GetPartComp().FluidAmount, genital.GetPartComp().Fluid);
+                float resultingSeverity = DetermineCumflationSeverity(inflated, ejectAmount, genital.GetPartComp().Fluid);
 
                 if (resultingSeverity > 0)
                 {
@@ -55,7 +57,7 @@ namespace MilkCum.Fluids.Cum.Cumflation
                     // Only give thoughts on more serious cumflations.
                     if (cumflationHediff.Severity >= 0.6)
                         GiveCumflationThoughts(inflated);
-                    FluidUtility.StoreFluidSource(cumflationHediff,inflator,genital.GetPartComp().Fluid,genital.GetPartComp().FluidAmount);
+                    FluidUtility.StoreFluidSource(cumflationHediff,inflator,genital.GetPartComp().Fluid,ejectAmount);
 
                     if (cumflationHediff.Severity > 1.01)
                         TryQueueOverflowingCumflation(inflated);

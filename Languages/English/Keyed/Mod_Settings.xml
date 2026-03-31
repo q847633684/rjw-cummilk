@@ -35,6 +35,11 @@
     <cumpilation_settings_enable_debug_logging_key>Debug Logging</cumpilation_settings_enable_debug_logging_key>
     <cumpilation_settings_enable_debug_logging_desc>When enabled, more detailed logging will take place.</cumpilation_settings_enable_debug_logging_desc>
 
+    <cumpilation_settings_enable_virtual_semen_pool_key>Virtual testicle semen pool</cumpilation_settings_enable_virtual_semen_pool_key>
+    <cumpilation_settings_enable_virtual_semen_pool_desc>When enabled, ejaculation draws from left/right virtual reservoirs that refill over in-game days (see slider below). Shown on the Health tab when applicable.</cumpilation_settings_enable_virtual_semen_pool_desc>
+    <cumpilation_settings_semen_pool_refill_days_key>Days to refill an empty side to full</cumpilation_settings_semen_pool_refill_days_key>
+    <cumpilation_settings_semen_pool_refill_days_desc>In-game days from empty to full for one virtual side, before RJW fluid multipliers on that side.</cumpilation_settings_semen_pool_refill_days_desc>
+
 	<!-- Cum leaking Settings Menu-->
 	<cumpilation_cumsettings_menuname>Cumpilation - Cum Leaking</cumpilation_cumsettings_menuname>
 

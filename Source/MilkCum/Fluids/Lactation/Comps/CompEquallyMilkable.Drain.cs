@@ -109,12 +109,12 @@ public partial class CompEquallyMilkable
         if (fb > fa + PoolModelConstants.FloatDustEpsilon) return 1;
         if (PreferLeftWhenEqual)
         {
-            if (entries[ia].IsLeft && !entries[ib].IsLeft) return -1;
-            if (entries[ib].IsLeft && !entries[ia].IsLeft) return 1;
+            if (entries[ia].Site == FluidSiteKind.BreastLeft && entries[ib].Site != FluidSiteKind.BreastLeft) return -1;
+            if (entries[ib].Site == FluidSiteKind.BreastLeft && entries[ia].Site != FluidSiteKind.BreastLeft) return 1;
         }
 
-        bool ra = RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(entries[ia].SourcePart);
-        bool rb = RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(entries[ib].SourcePart);
+        bool ra = entries[ia].Site == FluidSiteKind.BreastRight;
+        bool rb = entries[ib].Site == FluidSiteKind.BreastRight;
         if (ra && !rb) return -1;
         if (rb && !ra) return 1;
 

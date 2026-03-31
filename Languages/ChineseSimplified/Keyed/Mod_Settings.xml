@@ -35,6 +35,11 @@
 	<cumpilation_settings_enable_debug_logging_key>调试日志</cumpilation_settings_enable_debug_logging_key>
 	<cumpilation_settings_enable_debug_logging_desc>启用后在 Mod 日志中输出更详细的调试信息。</cumpilation_settings_enable_debug_logging_desc>
 
+	<cumpilation_settings_enable_virtual_semen_pool_key>睾丸虚拟精液池</cumpilation_settings_enable_virtual_semen_pool_key>
+	<cumpilation_settings_enable_virtual_semen_pool_desc>启用后，射精从左/右虚拟槽扣减存量，并在游戏日内回充；有适用小人时会在「健康」标签页底部显示两槽存量/容量。</cumpilation_settings_enable_virtual_semen_pool_desc>
+	<cumpilation_settings_semen_pool_refill_days_key>单侧空槽回满所需游戏日</cumpilation_settings_semen_pool_refill_days_key>
+	<cumpilation_settings_semen_pool_refill_days_desc>单侧从空到满所需的游戏内天数（再与 RJW 该侧流体倍率相乘）。</cumpilation_settings_semen_pool_refill_days_desc>
+
 	<cumpilation_cumsettings_menuname>泄漏与泄精（自然渗出、主动泄精到桶/地面等）</cumpilation_cumsettings_menuname>
 
 	<cumpilation_cumsettings_enable_filth_key>泄精时生成污物</cumpilation_cumsettings_enable_filth_key>

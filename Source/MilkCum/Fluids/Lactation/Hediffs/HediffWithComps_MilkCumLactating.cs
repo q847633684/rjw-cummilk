@@ -3,6 +3,7 @@ using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Comps;
 using MilkCum.Fluids.Lactation.Helpers;
+using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using Verse;
 using UnityEngine;
@@ -106,7 +107,7 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
         if (MilkCumSettings.enableInflammationModel)
             LactatingComp?.AddMilkingLStimulus();
     }
-    /// <summary>挤奶/吸奶后按被扣量的池 key 添加喷乳反射（与 breastFullness / MakeStablePoolKey 一致）</summary>
+    /// <summary>挤奶/吸奶后按被扣量的虚拟槽键添加喷乳反射。</summary>
     public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys)
     {
         if (drainedKeys == null) return;
@@ -186,7 +187,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float lactationAmountFromBirth;
     /// <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
     private float currentLactationAmount => lactationAmountFromDrug + lactationAmountFromBirth;
-    /// <summary>喷乳反射 R∈[0,1]，按稳定池键存储（与 breastFullness 一致）。挤奶/吸奶对该 key 提升 R。</summary>
+    /// <summary>喷乳反射 R∈[0,1]，按虚拟乳槽键（BreastLeft/BreastRight）存储。挤奶/吸奶对该槽提升 R。</summary>
     private Dictionary<string, float> letdownReflexByKey;
     /// <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
     private Dictionary<string, float> inflammationByKey;
@@ -267,8 +268,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             letdownKeys = letdownReflexByKey.Keys.ToList();
             letdownVals = letdownReflexByKey.Values.ToList();
         }
-        Scribe_Collections.Look(ref letdownKeys, "EM.LetdownReflexKeys", LookMode.Value);
-        Scribe_Collections.Look(ref letdownVals, "EM.LetdownReflexVals", LookMode.Value);
+        Scribe_Collections.Look(ref letdownKeys, "EM.MilkSiteLetdownK", LookMode.Value);
+        Scribe_Collections.Look(ref letdownVals, "EM.MilkSiteLetdownV", LookMode.Value);
         if (Scribe.mode == LoadSaveMode.PostLoadInit && letdownKeys != null && letdownVals != null && letdownKeys.Count == letdownVals.Count)
         {
             letdownReflexByKey ??= new Dictionary<string, float>();
@@ -284,8 +285,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             inflammationKeys = inflammationByKey.Keys.ToList();
             inflammationVals = inflammationByKey.Values.ToList();
         }
-        Scribe_Collections.Look(ref inflammationKeys, "EM.InflammationByKeyKeys", LookMode.Value);
-        Scribe_Collections.Look(ref inflammationVals, "EM.InflammationByKeyVals", LookMode.Value);
+        Scribe_Collections.Look(ref inflammationKeys, "EM.MilkSiteInflamK", LookMode.Value);
+        Scribe_Collections.Look(ref inflammationVals, "EM.MilkSiteInflamV", LookMode.Value);
         if (Scribe.mode == LoadSaveMode.LoadingVars && inflammationKeys != null && inflammationVals != null && inflammationKeys.Count == inflammationVals.Count)
         {
             inflammationByKey ??= new Dictionary<string, float>();
@@ -353,6 +354,93 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         for (int i = 0; i < keys.Count; i++)
             if (!validKeys.Contains(keys[i]))
                 inflammationByKey.Remove(keys[i]);
+    }
+
+    private void PruneLetdownToValidKeys(HashSet<string> validKeys)
+    {
+        if (letdownReflexByKey == null || letdownReflexByKey.Count == 0) return;
+        var keys = letdownReflexByKey.Keys.ToList();
+        for (int i = 0; i < keys.Count; i++)
+            if (!validKeys.Contains(keys[i]))
+                letdownReflexByKey.Remove(keys[i]);
+    }
+
+    /// <summary>
+    /// 与 <see cref="CompEquallyMilkable"/> 乳池键迁移对齐：键集合不变时剔除孤儿键；变化时按旧键奶量加权平均 R/I 后写入各新键（无奶则对旧字典简单平均）。
+    /// </summary>
+    public void SyncPoolKeyedStateToEntries(IReadOnlyDictionary<string, float> preMigrateBreastFullness, List<FluidPoolEntry> newEntries)
+    {
+        var newKeySet = new HashSet<string>();
+        if (newEntries != null)
+        {
+            for (int i = 0; i < newEntries.Count; i++)
+            {
+                string k = newEntries[i].Key;
+                if (!string.IsNullOrEmpty(k)) newKeySet.Add(k);
+            }
+        }
+
+        if (newKeySet.Count == 0)
+        {
+            letdownReflexByKey?.Clear();
+            inflammationByKey?.Clear();
+            return;
+        }
+
+        var oldMilkKeys = new HashSet<string>();
+        if (preMigrateBreastFullness != null)
+        {
+            foreach (var k in preMigrateBreastFullness.Keys)
+                if (!string.IsNullOrEmpty(k)) oldMilkKeys.Add(k);
+        }
+
+        if (oldMilkKeys.SetEquals(newKeySet))
+        {
+            PruneLetdownToValidKeys(newKeySet);
+            PruneInflammationToValidKeys(newKeySet);
+            return;
+        }
+
+        float totalMilk = 0f;
+        if (preMigrateBreastFullness != null)
+        {
+            foreach (var v in preMigrateBreastFullness.Values)
+                totalMilk += v;
+        }
+
+        float wLet = 0f;
+        float wInfl = 0f;
+        if (totalMilk > PoolModelConstants.Epsilon && preMigrateBreastFullness != null)
+        {
+            foreach (var kv in preMigrateBreastFullness)
+            {
+                if (string.IsNullOrEmpty(kv.Key)) continue;
+                float frac = kv.Value / totalMilk;
+                if (letdownReflexByKey != null && letdownReflexByKey.TryGetValue(kv.Key, out float r))
+                    wLet += r * frac;
+                if (inflammationByKey != null && inflammationByKey.TryGetValue(kv.Key, out float inf))
+                    wInfl += inf * frac;
+            }
+        }
+        else
+        {
+            if (letdownReflexByKey != null && letdownReflexByKey.Count > 0)
+                wLet = letdownReflexByKey.Values.Average();
+            if (inflammationByKey != null && inflammationByKey.Count > 0)
+                wInfl = inflammationByKey.Values.Average();
+        }
+
+        letdownReflexByKey ??= new Dictionary<string, float>();
+        letdownReflexByKey.Clear();
+        inflammationByKey ??= new Dictionary<string, float>();
+        inflammationByKey.Clear();
+
+        foreach (string k in newKeySet)
+        {
+            letdownReflexByKey[k] = Mathf.Clamp01(wLet);
+            if (wInfl > PoolModelConstants.Epsilon)
+                SetInflammationForKeyInternal(k, wInfl);
+        }
     }
 
     /// <summary>排空后按移出量/该侧撑大上限降低该侧 I。</summary>

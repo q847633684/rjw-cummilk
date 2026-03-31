@@ -127,6 +127,11 @@
     <EM.RjwBreastSizeDesc>勾上：泌乳时胸形会临时胀大一圈，奶池能装多少、流得多快，都跟着 RJW 那套胸形尺寸走。不勾：外表不动，奶池也不吃胸形尺寸，只按左右对称那一套算。</EM.RjwBreastSizeDesc>
     <EM.RjwBreastPoolCapacityMode>乳池基容量来源：{0}</EM.RjwBreastPoolCapacityMode>
     <EM.RjwBreastPoolCapacityModeTip>仅三档：严重度×系数、RJW 估算重量（千克）×系数、RJW BreastSize.volume（升）×系数。重量/体积档无有效 RJW 尺寸时该侧基容量为 0、不进虚拟池。严重度档始终用部位严重度。再乘下方容量系数（并受上限裁剪）；流速由 GetFluidMultiplier 等单独决定。</EM.RjwBreastPoolCapacityModeTip>
+    <EM.RjwBreastPoolTopologyMode>乳池拓扑：{0}</EM.RjwBreastPoolTopologyMode>
+    <EM.RjwBreastPoolTopologyModeTip>胸位合并：挂在 Chest（或无部位）的可泌乳乳房 Hediff 合并为单一虚拟池（键同 BreastLeft）。虚拟左/右：默认，Breast/MechBreast 叶按标签聚成左右两槽。每叶独立：每个乳房叶单独池键（稳定路径），不合并左右。当池键集合变化时，会把当前总奶量按新池基容量比例重分（再按单侧撑大上限裁剪），尽量守恒；同一时刻喷乳反射 R 与炎症 I 会随键迁移（有奶量快照时按奶量加权平均，否则对旧键简单平均后写入各新键）。「满池瘀积」累计 tick（乳腺炎/信件等）也按新键与容量比例做整数守恒拆分。</EM.RjwBreastPoolTopologyModeTip>
+    <EM.RjwTopology_ChestUnified>胸位合并（单池）</EM.RjwTopology_ChestUnified>
+    <EM.RjwTopology_VirtualLR>虚拟左/右（默认）</EM.RjwTopology_VirtualLR>
+    <EM.RjwTopology_PerLeaf>每解剖叶独立池</EM.RjwTopology_PerLeaf>
     <EM.RjwCapacityMode_Severity>严重度×系数</EM.RjwCapacityMode_Severity>
     <EM.RjwCapacityMode_Weight>乳房重量×系数</EM.RjwCapacityMode_Weight>
     <EM.RjwCapacityMode_Volume>乳房体积（升）×系数（默认）</EM.RjwCapacityMode_Volume>
@@ -346,11 +351,6 @@
     <EM.Milk_AllowDeflateTip>准不准这人自己去找桶、找扫帚或就地泄掉胀住的精。关则不会自动去泄。</EM.Milk_AllowDeflateTip>
     <EM.DefaultSetting_CanBeFed>允许被自动喂食</EM.DefaultSetting_CanBeFed>
     <EM.DefaultSetting_CanBeFedTip>作为婴儿/幼体时，是否允许保育员自动来哺乳我。关则不会成为自动哺乳的对象。</EM.DefaultSetting_CanBeFedTip>
-    <!-- 左右乳 customLabel 显示（与 Patch 中英文键一致） -->
-    <EM.BodyPartLeftBreast>左乳</EM.BodyPartLeftBreast>
-    <EM.BodyPartRightBreast>右乳</EM.BodyPartRightBreast>
-    <EM.BodyPartLeftMechBreast>左机械乳</EM.BodyPartLeftMechBreast>
-    <EM.BodyPartRightMechBreast>右机械乳</EM.BodyPartRightMechBreast>
     <EM.NPoolAdvancedSection>N 池高级参数</EM.NPoolAdvancedSection>
     <EM.AdaptationSlowTheta>慢重塑增长 theta：{0}</EM.AdaptationSlowTheta>
     <EM.AdaptationSlowOmega>慢重塑衰减 omega：{0}</EM.AdaptationSlowOmega>

@@ -62,7 +62,8 @@ namespace MilkCum.Fluids.Cum.Gathering
                 if (ext.supportedFluids.Contains(fluid))
                 {
                     FluidGatheringDef fgDef = LookupFluidGatheringDef(fluid);
-                    float fluidAmount = sexPartHediff.GetPartComp().FluidAmount;
+                    float nominal = sexPartHediff.GetPartComp().FluidAmount;
+                    float fluidAmount = props.pawn.ConsumeSemenForEjection(sexPartHediff, nominal);
                     if (numberOfOtherBuildings > 0)
                     {
                         fluidAmount = fluidAmount / numberOfOtherBuildings + 1;

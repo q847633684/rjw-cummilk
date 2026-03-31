@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>模拟：健康页 · 左右乳房（RJW + rjw-cummilk）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #141210;
+      --panel: #1e1c19;
+      --border: #3d3528;
+      --text: #d4c4a8;
+      --muted: #8a7f6e;
+      --accent: #c9a227;
+      --row-hover: #2a2620;
+      --severity: #6b9e4a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Newsreader", Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      margin: 0 0 0.25rem;
+    }
+    .sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      max-width: 36rem;
+      text-align: center;
+      line-height: 1.45;
+    }
+    .frame {
+      width: min(420px, 100%);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    .tabbar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .tab {
+      padding: 0.55rem 0.9rem;
+      color: var(--muted);
+    }
+    .tab.active {
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: -1px;
+    }
+    .content {
+      padding: 0.65rem 0;
+    }
+    .section-title {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.35rem 1rem 0.5rem;
+    }
+    .row {
+      padding: 0.55rem 1rem;
+      border-top: 1px solid rgba(61,53,40,0.5);
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: baseline;
+      gap: 0.5rem 0.75rem;
+      cursor: default;
+    }
+    .row:hover { background: var(--row-hover); }
+    .hediff-name { font-size: 0.95rem; }
+    .stage-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      color: #b8a88c;
+      text-align: right;
+    }
+    .part-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--severity);
+      white-space: nowrap;
+      text-align: right;
+    }
+    .note {
+      margin-top: 1.25rem;
+      max-width: 36rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+      border-left: 2px solid var(--border);
+      padding-left: 0.85rem;
+    }
+    .note code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.72em;
+      color: #a89880;
+    }
+    .compare {
+      margin-top: 1.75rem;
+      width: min(420px, 100%);
+    }
+    .compare h2 {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin: 0 0 0.5rem;
+    }
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      background: #0d0c0b;
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      color: #9a8b76;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>健康 · 模拟显示</h1>
+  <p class="sub">
+    同一 <code style="font-family:JetBrains Mono,monospace;font-size:0.85em">HediffDef：Breasts</code> 挂两条：
+    <strong>部位</strong>（左乳/右乳）来自 <code>BodyPartRecord.customLabel</code>；
+    <strong>尺寸档</strong>（Nipples / Tiny / … / Large …）来自 RJW 每条实例各自的
+    <code>Severity</code> 与 <code>stages</code>（<code>NaturalPrivatePartBreast</code>），两侧可不同。
+  </p>
+
+  <div class="frame" aria-label="模拟健康标签页">
+    <div class="tabbar">
+      <div class="tab">概况</div>
+      <div class="tab active">健康</div>
+      <div class="tab">手术</div>
+    </div>
+    <div class="content">
+      <div class="section-title">状况与损伤（节选）</div>
+      <div class="row">
+        <span class="hediff-name">breasts</span>
+        <span class="stage-tag">Large</span>
+        <span class="part-tag">左乳</span>
+      </div>
+      <div class="row">
+        <span class="hediff-name">breasts</span>
+        <span class="stage-tag">Small</span>
+        <span class="part-tag">右乳</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    实际游戏内：阶段名可能和严重度一起出现在行内或 Tooltip；译名取决于 RJW 的 DefInjected。
+    侧别仍由本 mod 对部位的 Keyed（<code>EM.BodyPartLeftBreast</code> 等）决定。
+    开局两侧严重度是否相同取决于 RJW 每次 <code>MakePart</code> 的随机/规则——可能出现一侧偏大一侧偏小（模拟里故意写成 Large / Small）。
+  </p>
+
+  <div class="compare">
+    <h2>对照：仅 RJW、胸部未拆叶（旧式）</h2>
+    <div class="mono">健康 › 状况
+  breasts  ·  胸（Chest）
+  （单条，锚点在整胸）</div>
+  </div>
+</body>
+</html>

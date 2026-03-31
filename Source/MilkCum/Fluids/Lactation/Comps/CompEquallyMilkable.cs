@@ -33,7 +33,7 @@ public partial class CompEquallyMilkable : CompMilkable
     private int lastBaseCapacityTick = -1;
     private const int BaseCapacityCacheInterval = 600;
 
-    /// <summary>按稳定池键（<see cref="RjwBreastPoolEconomy.MakeStablePoolKey"/>）的水位；Fullness = Sum(Values)。</summary>
+    /// <summary>虚拟乳槽键（BreastLeft/BreastRight）→ 水位；Fullness = Sum(Values)。</summary>
     private Dictionary<string, float> breastFullness = new Dictionary<string, float>();
 
     /// <summary>当前总奶量（0~maxFullness），= breastFullness.Values.Sum()；对外只读。</summary>
@@ -48,9 +48,9 @@ public partial class CompEquallyMilkable : CompMilkable
         }
     }
 
-    /// <summary>解剖左侧乳池汇总视图（非总量）；未标注侧不计入。</summary>
+    /// <summary>虚拟左槽（<see cref="FluidSiteKind.BreastLeft"/>）水位。</summary>
     public float LeftFullness => GetSideFullnessSum(isLeftSide: true);
-    /// <summary>解剖右侧乳池汇总视图（非总量）；未标注侧不计入（总奶量见 <see cref="Fullness"/>）。</summary>
+    /// <summary>虚拟右槽（<see cref="FluidSiteKind.BreastRight"/>）水位。</summary>
     public float RightFullness => GetSideFullnessSum(isLeftSide: false);
     private MilkSettings milkSettings = null;
     public MilkSettings MilkSettings
@@ -158,8 +158,8 @@ public partial class CompEquallyMilkable : CompMilkable
             ticksFullKeys = ticksFullPoolByKey.Keys.ToList();
             ticksFullVals = ticksFullPoolByKey.Values.ToList();
         }
-        Scribe_Collections.Look(ref ticksFullKeys, "EM.PoolTicksFullKeys", LookMode.Value);
-        Scribe_Collections.Look(ref ticksFullVals, "EM.PoolTicksFullVals", LookMode.Value);
+        Scribe_Collections.Look(ref ticksFullKeys, "EM.PoolTicksFullSiteKeys", LookMode.Value);
+        Scribe_Collections.Look(ref ticksFullVals, "EM.PoolTicksFullSiteVals", LookMode.Value);
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
         Scribe_Values.Look(ref lastFullPoolLetterDay, "EM.LastFullPoolLetterDay", -1);
         Scribe_Values.Look(ref capacityAdaptationFast, "EM.CapacityAdaptationFast", 0f);
@@ -167,7 +167,7 @@ public partial class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref totalDrainedLifetime, "EM.TotalDrainedLifetime", 0f);
         Scribe_Values.Look(ref gatherCountLifetime, "EM.GatherCountLifetime", 0);
         Scribe_Values.Look(ref overflowEventCount, "EM.OverflowEventCount", 0);
-        Scribe_Collections.Look(ref breastFullness, "BreastFullness", LookMode.Value, LookMode.Value);
+        Scribe_Collections.Look(ref breastFullness, "EM.FluidSitesMilk", LookMode.Value, LookMode.Value);
         if (Scribe.mode != LoadSaveMode.Saving)
             breastFullness ??= new Dictionary<string, float>();
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");

@@ -18,6 +18,10 @@ internal partial class MilkCumSettings
 	public static bool Cum_EnableOscillationMechanics = true;
 	public static bool Cum_EnableOscillationMechanicsForAnimals = false;
 	public static bool Cum_EnableDebugLogging = false;
+	/// <summary>启用左/右睾丸虚拟精液池：射精量受池存量限制并在游戏日内回充。</summary>
+	public static bool Cum_EnableVirtualSemenPool = true;
+	/// <summary>自空槽回满至容量所需的「游戏内日」时间（流速与 RJW 部位倍率相乘）。</summary>
+	public static float Cum_SemenPoolDaysForFullRefill = 1f;
 
 	public static bool CumLeak_EnableFilthGeneration = true;
 	public static bool CumLeak_EnableAutoDeflateBucket = false;
@@ -45,6 +49,8 @@ internal partial class MilkCumSettings
 		Scribe_Values.Look(ref Cum_EnableOscillationMechanics, "EM.Cum.EnableOscillationMechanics", true);
 		Scribe_Values.Look(ref Cum_EnableOscillationMechanicsForAnimals, "EM.Cum.EnableOscillationMechanicsForAnimals", false);
 		Scribe_Values.Look(ref Cum_EnableDebugLogging, "EM.Cum.EnableDebugLogging", false);
+		Scribe_Values.Look(ref Cum_EnableVirtualSemenPool, "EM.Cum.EnableVirtualSemenPool", true);
+		Scribe_Values.Look(ref Cum_SemenPoolDaysForFullRefill, "EM.Cum.SemenPoolDaysForFullRefill", 1f);
 		Scribe_Values.Look(ref CumLeak_EnableFilthGeneration, "EM.Cum.Leak.EnableFilthGeneration", true);
 		Scribe_Values.Look(ref CumLeak_EnableAutoDeflateBucket, "EM.Cum.Leak.EnableAutoDeflateBucket", false);
 		Scribe_Values.Look(ref CumLeak_EnableAutoDeflateClean, "EM.Cum.Leak.EnableAutoDeflateClean", false);

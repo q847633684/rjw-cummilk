@@ -8,4 +8,8 @@
 	<cumpilation_button_cumdeflate_deflate>Deflate</cumpilation_button_cumdeflate_deflate>
 	<cumpilation_button_cumdeflate_nodeflate>No Deflate</cumpilation_button_cumdeflate_nodeflate>
 
+	<EM.HealthTabVirtualSemenPoolHeader>Virtual semen (testicles)</EM.HealthTabVirtualSemenPoolHeader>
+	<EM.VirtualSemenPoolLeft>Left testicle</EM.VirtualSemenPoolLeft>
+	<EM.VirtualSemenPoolRight>Right testicle</EM.VirtualSemenPoolRight>
+
 </LanguageData>
