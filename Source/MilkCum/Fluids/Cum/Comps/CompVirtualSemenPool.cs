@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
@@ -10,11 +11,10 @@ using Verse;
 
 namespace MilkCum.Fluids.Cum.Comps;
 
-/// <summary>每条可射精生殖器独立虚拟精池：存档键 <c>Semen_{loadID}</c>；旧档 <c>TesticleLeft/Right</c> 首次 Tick 按比例摊入各条池。</summary>
+/// <summary>左/右虚拟睾丸精池：每个 <see cref="Pawn"/> 一份 <c>fullnessByKey</c>；该小人身上可射精器官汇入两侧；存档键 TesticleLeft/TesticleRight。</summary>
 public class CompVirtualSemenPool : ThingComp
 {
-    private const string LegacyKeyLeft = "TesticleLeft";
-    private const string LegacyKeyRight = "TesticleRight";
+    private const string ObsoletePerPartSemenPrefix = "Semen_";
 
     private Dictionary<string, float> fullnessByKey = new Dictionary<string, float>();
 
@@ -43,8 +43,7 @@ public class CompVirtualSemenPool : ThingComp
         List<FluidPoolEntry> entries = RjwSemenPoolEconomy.BuildSemenPoolEntries(pawn);
         if (entries.Count == 0) return nominal;
 
-        MergeLegacyAggregateKeysIntoPerPartPools(entries);
-        EnsureKeysInitialized(entries);
+        PreparePoolState(entries);
         var keys = new List<string>(2);
         RjwSemenPoolEconomy.AddVirtualSemenKeysForPart(part, keys);
         if (keys.Count == 0) return nominal;
@@ -58,53 +57,74 @@ public class CompVirtualSemenPool : ThingComp
         float actual = Mathf.Min(nominal, avail);
         if (actual <= PoolModelConstants.Epsilon) return 0f;
 
-        string k = keys[0];
-        fullnessByKey.TryGetValue(k, out float cur);
-        fullnessByKey[k] = Mathf.Max(0f, cur - actual);
+        if (keys.Count == 1)
+        {
+            string k = keys[0];
+            fullnessByKey.TryGetValue(k, out float cur);
+            fullnessByKey[k] = Mathf.Max(0f, cur - actual);
+        }
+        else
+        {
+            string kL = RjwSemenPoolEconomy.TesticleLeftPoolKey;
+            string kR = RjwSemenPoolEconomy.TesticleRightPoolKey;
+            fullnessByKey.TryGetValue(kL, out float l);
+            fullnessByKey.TryGetValue(kR, out float r);
+            float tot = l + r;
+            if (tot <= PoolModelConstants.Epsilon) return 0f;
+            float fromL = actual * (l / tot);
+            float fromR = actual - fromL;
+            fullnessByKey[kL] = Mathf.Max(0f, l - fromL);
+            fullnessByKey[kR] = Mathf.Max(0f, r - fromR);
+        }
 
         if (registerForFluidRecords)
             VirtualSemenRecordLedger.Push(pawn, part, actual);
         return actual;
     }
 
-    private void MergeLegacyAggregateKeysIntoPerPartPools(List<FluidPoolEntry> entries)
+    /// <summary>较早版本每条阴茎 <c>Semen_{loadID}</c> 键：合并入当前左/右槽（按容量比例），再删除旧键。</summary>
+    private void MergeObsoletePerPartSemenKeysIntoLateral(List<FluidPoolEntry> entries)
     {
         if (entries == null || entries.Count == 0) return;
-        bool hasLegacy = fullnessByKey.ContainsKey(LegacyKeyLeft) || fullnessByKey.ContainsKey(LegacyKeyRight);
-        if (!hasLegacy) return;
+        float orphanSum = 0f;
+        var remove = new List<string>();
+        foreach (KeyValuePair<string, float> kv in fullnessByKey)
+        {
+            if (kv.Key == null || !kv.Key.StartsWith(ObsoletePerPartSemenPrefix, StringComparison.Ordinal)) continue;
+            orphanSum += kv.Value;
+            remove.Add(kv.Key);
+        }
 
-        float legacySum = 0f;
-        if (fullnessByKey.TryGetValue(LegacyKeyLeft, out float lv)) legacySum += lv;
-        if (fullnessByKey.TryGetValue(LegacyKeyRight, out float rv)) legacySum += rv;
-        fullnessByKey.Remove(LegacyKeyLeft);
-        fullnessByKey.Remove(LegacyKeyRight);
-        if (legacySum <= PoolModelConstants.Epsilon) return;
+        for (int i = 0; i < remove.Count; i++)
+            fullnessByKey.Remove(remove[i]);
+        if (orphanSum <= PoolModelConstants.Epsilon) return;
 
         float sumCap = 0f;
         for (int i = 0; i < entries.Count; i++)
             sumCap += Mathf.Max(0f, entries[i].Capacity);
-
-        if (sumCap < 0.001f)
+        if (sumCap < PoolModelConstants.FloatDustEpsilon)
         {
-            float share = legacySum / entries.Count;
+            float share = orphanSum / entries.Count;
             for (int i = 0; i < entries.Count; i++)
             {
                 string k = entries[i].Key;
                 if (string.IsNullOrEmpty(k)) continue;
                 float cap = entries[i].Capacity;
-                fullnessByKey[k] = Mathf.Min(cap, share);
+                fullnessByKey.TryGetValue(k, out float cur);
+                fullnessByKey[k] = Mathf.Min(cap, cur + share);
             }
+
+            return;
         }
-        else
+
+        for (int i = 0; i < entries.Count; i++)
         {
-            for (int i = 0; i < entries.Count; i++)
-            {
-                string k = entries[i].Key;
-                if (string.IsNullOrEmpty(k)) continue;
-                float cap = Mathf.Max(0f, entries[i].Capacity);
-                float assign = legacySum * (cap / sumCap);
-                fullnessByKey[k] = Mathf.Min(cap, assign);
-            }
+            string k = entries[i].Key;
+            if (string.IsNullOrEmpty(k)) continue;
+            float cap = Mathf.Max(0f, entries[i].Capacity);
+            float add = orphanSum * (cap / sumCap);
+            fullnessByKey.TryGetValue(k, out float cur);
+            fullnessByKey[k] = Mathf.Min(cap, cur + add);
         }
     }
 
@@ -120,6 +140,12 @@ public class CompVirtualSemenPool : ThingComp
         }
     }
 
+    private void PreparePoolState(List<FluidPoolEntry> entries)
+    {
+        MergeObsoletePerPartSemenKeysIntoLateral(entries);
+        EnsureKeysInitialized(entries);
+    }
+
     private void Refill(Pawn pawn, float deltaDays)
     {
         List<FluidPoolEntry> entries = RjwSemenPoolEconomy.BuildSemenPoolEntries(pawn);
@@ -129,8 +155,7 @@ public class CompVirtualSemenPool : ThingComp
             return;
         }
 
-        MergeLegacyAggregateKeysIntoPerPartPools(entries);
-        EnsureKeysInitialized(entries);
+        PreparePoolState(entries);
         float daysFull = Mathf.Max(0.01f, MilkCumSettings.Cum_SemenPoolDaysForFullRefill);
         float baseFrac = Mathf.Min(1f, deltaDays / daysFull);
         for (int i = 0; i < entries.Count; i++)
@@ -160,23 +185,21 @@ public class CompVirtualSemenPool : ThingComp
             fullnessByKey.Remove(toRemove[i]);
     }
 
-    /// <summary>健康页等 UI：各虚拟精池当前量与容量（与 <see cref="RjwSemenPoolEconomy.BuildSemenPoolEntries"/> 对齐）。</summary>
-    public List<(string Label, float Current, float Capacity)> GetSemenPoolDisplayRows(Pawn pawn)
+    /// <summary>健康页：左/右虚拟睾丸槽当前量与容量。</summary>
+    public List<(FluidSiteKind Site, float Current, float Capacity)> GetSemenPoolDisplayRows(Pawn pawn)
     {
-        var result = new List<(string, float, float)>();
+        var result = new List<(FluidSiteKind, float, float)>();
         if (pawn == null || parent != pawn) return result;
         if (!MilkCumSettings.Cum_EnableVirtualSemenPool) return result;
         List<FluidPoolEntry> entries = RjwSemenPoolEconomy.BuildSemenPoolEntries(pawn);
         if (entries.Count == 0) return result;
-        MergeLegacyAggregateKeysIntoPerPartPools(entries);
-        EnsureKeysInitialized(entries);
+        PreparePoolState(entries);
         for (int i = 0; i < entries.Count; i++)
         {
             FluidPoolEntry e = entries[i];
             if (string.IsNullOrEmpty(e.Key)) continue;
             fullnessByKey.TryGetValue(e.Key, out float cur);
-            string label = e.SourcePart?.LabelCap ?? e.Key;
-            result.Add((label, cur, e.Capacity));
+            result.Add((e.Site, cur, e.Capacity));
         }
 
         return result;

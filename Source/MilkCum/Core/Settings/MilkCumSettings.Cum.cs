@@ -18,7 +18,7 @@ internal partial class MilkCumSettings
 	public static bool Cum_EnableOscillationMechanics = true;
 	public static bool Cum_EnableOscillationMechanicsForAnimals = false;
 	public static bool Cum_EnableDebugLogging = false;
-	/// <summary>启用虚拟精液池（每条可射精生殖器独立槽）：射精量受该槽存量限制并在游戏日内回充。</summary>
+	/// <summary>启用左/右虚拟睾丸精液池：全身射精器官汇入两侧，射精量受池存量限制并在游戏日内回充。</summary>
 	public static bool Cum_EnableVirtualSemenPool = true;
 	/// <summary>自空槽回满至容量所需的「游戏内日」时间（流速与 RJW 部位倍率相乘）。</summary>
 	public static float Cum_SemenPoolDaysForFullRefill = 1f;

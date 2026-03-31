@@ -213,11 +213,11 @@ public static class RjwBreastPoolEconomy
         return result;
     }
 
-    /// <summary>部位 customLabel / Def 名可辨认为左乳。</summary>
-    public static bool IsAnatomicallyLeftBreastPart(BodyPartRecord part) => PartNameLooksLeft(part);
+    /// <summary>部位 customLabel / Def 名可辨认为左乳（与 <see cref="BodyPartLaterality.PartNameLooksLeft"/> 一致）。</summary>
+    public static bool IsAnatomicallyLeftBreastPart(BodyPartRecord part) => BodyPartLaterality.PartNameLooksLeft(part);
 
     /// <summary>部位可辨认为右乳；未标注侧既不左也不右（不计入左/右汇总）。</summary>
-    public static bool IsAnatomicallyRightBreastPart(BodyPartRecord part) => PartNameLooksRight(part);
+    public static bool IsAnatomicallyRightBreastPart(BodyPartRecord part) => BodyPartLaterality.PartNameLooksRight(part);
 
     /// <summary>胸位合并拓扑：无部位或挂在 <c>Chest</c> 上的可泌乳乳房 Hediff。</summary>
     public static bool IsChestUnifiedBreastPart(BodyPartRecord part) =>
@@ -436,32 +436,6 @@ public static class RjwBreastPoolEconomy
             BaseCap = baseCap;
             Flow = flow;
         }
-    }
-
-    private static bool PartNameLooksLeft(BodyPartRecord part)
-    {
-        if (part == null) return false;
-        if (!string.IsNullOrEmpty(part.customLabel))
-        {
-            if (part.customLabel.Contains("左")) return true;
-            if (part.customLabel.IndexOf("left", StringComparison.OrdinalIgnoreCase) >= 0) return true;
-        }
-
-        if (part.def?.defName == null) return false;
-        return part.def.defName.IndexOf("Left", StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
-    private static bool PartNameLooksRight(BodyPartRecord part)
-    {
-        if (part == null) return false;
-        if (!string.IsNullOrEmpty(part.customLabel))
-        {
-            if (part.customLabel.Contains("右")) return true;
-            if (part.customLabel.IndexOf("right", StringComparison.OrdinalIgnoreCase) >= 0) return true;
-        }
-
-        if (part.def?.defName == null) return false;
-        return part.def.defName.IndexOf("Right", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static void AppendNaturalSide(List<RjwBreastPoolSideRow> result, int poolIdx, Cand c, bool isLeft) =>

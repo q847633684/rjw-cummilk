@@ -10,18 +10,12 @@ using Verse;
 namespace MilkCum.Fluids.Cum.Common;
 
 /// <summary>
-/// RJW 阴茎/雄性产卵器：每条可射精器官独立虚拟精池（键 <see cref="MakeSemenPartPoolKey"/>），容量与流速取该条 <see cref="HediffComp_SexPart.GetFluidAmount"/> / <see cref="GetSemenPartFlowMultiplier"/>。
+/// RJW 阴茎/雄性产卵器与「虚拟左/右睾丸」两槽：每个 <see cref="Pawn"/> 自有存档字典；该小人身上全部可射精器官汇入双侧储备（<see cref="HediffComp_SexPart.GetFluidAmount"/> / 流速）；互斥左/右以外（含同时匹配左右）按模糊各半摊入两侧。
 /// </summary>
 public static class RjwSemenPoolEconomy
 {
-    public const string SemenPoolKeyPrefix = "Semen_";
-
-    /// <summary>单条射精 Hediff 的稳定池键（沿用存档 loadID，与乳叶路径键策略一致）。</summary>
-    public static string MakeSemenPartPoolKey(Hediff h)
-    {
-        if (h == null) return "";
-        return SemenPoolKeyPrefix + h.loadID;
-    }
+    public static readonly string TesticleLeftPoolKey = FluidSiteKind.TesticleLeft.ToString();
+    public static readonly string TesticleRightPoolKey = FluidSiteKind.TesticleRight.ToString();
 
     public static bool IsPenisLikeSemenPart(ISexPartHediff p)
     {
@@ -31,32 +25,6 @@ public static class RjwSemenPoolEconomy
         if (p.Def.genitalTags == null || !p.Def.genitalTags.Contains(GenitalTag.CanPenetrate)) return false;
         HediffComp_SexPart comp = p.GetPartComp();
         return comp?.Fluid != null && comp.GetFluidAmount() > PoolModelConstants.Epsilon;
-    }
-
-    public static bool PartNameLooksLeft(BodyPartRecord part)
-    {
-        if (part == null) return false;
-        if (!string.IsNullOrEmpty(part.customLabel))
-        {
-            if (part.customLabel.Contains("左")) return true;
-            if (part.customLabel.IndexOf("left", StringComparison.OrdinalIgnoreCase) >= 0) return true;
-        }
-
-        if (part.def?.defName == null) return false;
-        return part.def.defName.IndexOf("Left", StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
-    public static bool PartNameLooksRight(BodyPartRecord part)
-    {
-        if (part == null) return false;
-        if (!string.IsNullOrEmpty(part.customLabel))
-        {
-            if (part.customLabel.Contains("右")) return true;
-            if (part.customLabel.IndexOf("right", StringComparison.OrdinalIgnoreCase) >= 0) return true;
-        }
-
-        if (part.def?.defName == null) return false;
-        return part.def.defName.IndexOf("Right", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     public static float GetSemenPartFlowMultiplier(Hediff h)
@@ -73,7 +41,7 @@ public static class RjwSemenPoolEconomy
         return Mathf.Max(0.01f, d.fluidMultiplier);
     }
 
-    /// <summary>每条可射精解剖行（<see cref="BuildSemenPoolEntries"/> 每条阴茎一行池条目）。</summary>
+    /// <summary>每条可射精解剖行；<see cref="BuildSemenPoolEntries"/> 聚合为左/右两虚拟槽。</summary>
     public static List<RjwSemenPoolSideRow> GetSemenPoolSideRows(Pawn pawn)
     {
         var result = new List<RjwSemenPoolSideRow>();
@@ -90,8 +58,8 @@ public static class RjwSemenPoolEconomy
                 float cap = part.GetPartComp().GetFluidAmount();
                 if (cap <= PoolModelConstants.Epsilon) continue;
                 float flow = GetSemenPartFlowMultiplier(h);
-                bool isLeft = PartNameLooksLeft(bpr);
-                result.Add(new RjwSemenPoolSideRow(idx++, h, cap, flow, isLeft));
+                bool exclusiveLeft = BodyPartLaterality.IsExclusiveLeft(bpr);
+                result.Add(new RjwSemenPoolSideRow(idx++, h, cap, flow, exclusiveLeft));
             }
         }
         catch (Exception ex)
@@ -103,7 +71,7 @@ public static class RjwSemenPoolEconomy
         return result;
     }
 
-    /// <summary>每条可射精生殖器一条 <see cref="FluidPoolEntry"/>（<see cref="FluidSiteKind.None"/> + 自定义键）；多阴茎互不合并。</summary>
+    /// <summary>至多两条虚拟睾丸槽（<see cref="FluidSiteKind.TesticleLeft"/> / <see cref="FluidSiteKind.TesticleRight"/>）；多阴茎汇入左右或模糊对半。</summary>
     public static List<FluidPoolEntry> BuildSemenPoolEntries(Pawn pawn)
     {
         var result = new List<FluidPoolEntry>();
@@ -112,24 +80,58 @@ public static class RjwSemenPoolEconomy
         if (rows.Count == 0) return result;
         try
         {
-            int poolIdx = 0;
+            float leftCap = 0f, rightCap = 0f, ambCap = 0f;
+            float leftFlow = 0f, rightFlow = 0f, ambFlow = 0f;
+            BodyPartRecord leftPart = null, rightPart = null, ambPart = null;
             for (int i = 0; i < rows.Count; i++)
             {
                 RjwSemenPoolSideRow r = rows[i];
-                Hediff h = r.GenitalHediff;
-                if (h == null) continue;
-                string key = MakeSemenPartPoolKey(h);
-                if (string.IsNullOrEmpty(key)) continue;
-                BodyPartRecord partRec = h.Part;
-                bool anatomicalLeft = PartNameLooksLeft(partRec);
+                BodyPartRecord part = r.GenitalHediff?.Part;
+                if (BodyPartLaterality.IsExclusiveLeft(part))
+                {
+                    leftCap += r.NominalFluidAmount;
+                    leftFlow += r.FlowMultiplier;
+                    leftPart ??= part;
+                }
+                else if (BodyPartLaterality.IsExclusiveRight(part))
+                {
+                    rightCap += r.NominalFluidAmount;
+                    rightFlow += r.FlowMultiplier;
+                    rightPart ??= part;
+                }
+                else
+                {
+                    ambCap += r.NominalFluidAmount;
+                    ambFlow += r.FlowMultiplier;
+                    ambPart ??= part;
+                }
+            }
+
+            leftCap += ambCap * 0.5f;
+            rightCap += ambCap * 0.5f;
+            leftFlow += ambFlow * 0.5f;
+            rightFlow += ambFlow * 0.5f;
+            int poolIdx = 0;
+            if (leftCap > PoolModelConstants.Epsilon)
+            {
                 result.Add(new FluidPoolEntry(
-                    key,
-                    FluidSiteKind.None,
-                    r.NominalFluidAmount,
-                    r.FlowMultiplier,
-                    anatomicalLeft,
-                    poolIdx++,
-                    partRec));
+                    FluidSiteKind.TesticleLeft,
+                    leftCap,
+                    leftFlow,
+                    isLeft: true,
+                    poolIndex: poolIdx++,
+                    sourcePart: leftPart ?? ambPart));
+            }
+
+            if (rightCap > PoolModelConstants.Epsilon)
+            {
+                result.Add(new FluidPoolEntry(
+                    FluidSiteKind.TesticleRight,
+                    rightCap,
+                    rightFlow,
+                    isLeft: false,
+                    poolIndex: poolIdx,
+                    sourcePart: rightPart ?? ambPart));
             }
         }
         catch (Exception ex)
@@ -141,12 +143,25 @@ public static class RjwSemenPoolEconomy
         return result;
     }
 
-    /// <summary>该射精部位对应的虚拟精池键（与 <see cref="BuildSemenPoolEntries"/> 一致，每器官单键）。</summary>
+    /// <summary>该射精部位扣池键：解剖左/右只扣一侧；未标注则两侧按当前存量比例分担。</summary>
     public static void AddVirtualSemenKeysForPart(ISexPartHediff part, List<string> dest)
     {
         if (dest == null || part == null) return;
-        string k = MakeSemenPartPoolKey(part.AsHediff);
-        if (!string.IsNullOrEmpty(k)) dest.Add(k);
+        BodyPartRecord bpr = part.AsHediff?.Part;
+        if (BodyPartLaterality.IsExclusiveLeft(bpr))
+        {
+            dest.Add(TesticleLeftPoolKey);
+            return;
+        }
+
+        if (BodyPartLaterality.IsExclusiveRight(bpr))
+        {
+            dest.Add(TesticleRightPoolKey);
+            return;
+        }
+
+        dest.Add(TesticleLeftPoolKey);
+        dest.Add(TesticleRightPoolKey);
     }
 }
 
@@ -157,14 +172,15 @@ public readonly struct RjwSemenPoolSideRow
     public Hediff GenitalHediff { get; }
     public float NominalFluidAmount { get; }
     public float FlowMultiplier { get; }
+    /// <summary>解剖上独占左侧（<c>左</c> 且不同时为右侧），与汇聚时的左桶一致。</summary>
     public bool IsLeft { get; }
 
-    public RjwSemenPoolSideRow(int poolIndex, Hediff genitalHediff, float nominalFluidAmount, float flowMultiplier, bool isLeft)
+    public RjwSemenPoolSideRow(int poolIndex, Hediff genitalHediff, float nominalFluidAmount, float flowMultiplier, bool exclusiveLeft)
     {
         PoolIndex = poolIndex;
         GenitalHediff = genitalHediff;
         NominalFluidAmount = nominalFluidAmount;
         FlowMultiplier = flowMultiplier;
-        IsLeft = isLeft;
+        IsLeft = exclusiveLeft;
     }
 }

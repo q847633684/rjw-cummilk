@@ -34,9 +34,12 @@ public static class Patch_ITab_Pawn_Health_DrawVirtualSemenPool
         float y = inner.y;
         Widgets.Label(new Rect(inner.x, y, inner.width, headerH), "EM.HealthTabVirtualSemenPoolHeader".Translate());
         y += headerH;
-        foreach ((string label, float current, float capacity) in rows)
+        foreach ((FluidSiteKind site, float current, float capacity) in rows)
         {
-            string line = $"{label}: {current:F1} / {capacity:F1}";
+            string side = site == FluidSiteKind.TesticleLeft
+                ? "EM.VirtualSemenPoolLeft".Translate()
+                : "EM.VirtualSemenPoolRight".Translate();
+            string line = $"{side}: {current:F1} / {capacity:F1}";
             Widgets.Label(new Rect(inner.x, y, inner.width, lineH), line);
             y += lineH;
         }
