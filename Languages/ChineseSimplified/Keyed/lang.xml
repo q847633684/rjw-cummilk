@@ -295,6 +295,7 @@
     <EM.PoolRightEfficiencyHeader>右乳流速：{0}({1}%)/天</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>（{0}）</EM.PoolEfficiencyFactorsBracket>
     <EM.PoolBreastSectionHeader>【{0}】</EM.PoolBreastSectionHeader>
+    <EM.PoolBreastPerLeafDetail>{0}（本叶乳池）</EM.PoolBreastPerLeafDetail>
     <EM.PoolBreastUnifiedLayoutLine>布局：每条乳房 Hediff 单一乳池（不拆左右）</EM.PoolBreastUnifiedLayoutLine>
     <EM.PoolSectionStorage>储量</EM.PoolSectionStorage>
     <EM.PoolSectionFlow>流速</EM.PoolSectionFlow>

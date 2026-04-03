@@ -298,6 +298,7 @@
     <EM.PoolRightEfficiencyHeader>Right milk flow: {0}({1}%)/day</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>({0})</EM.PoolEfficiencyFactorsBracket>
     <EM.PoolBreastSectionHeader>[{0}]</EM.PoolBreastSectionHeader>
+    <EM.PoolBreastPerLeafDetail>{0} (pool)</EM.PoolBreastPerLeafDetail>
     <EM.PoolBreastUnifiedLayoutLine>Layout: one pool per breast hediff (no L/R split)</EM.PoolBreastUnifiedLayoutLine>
     <EM.PoolSectionStorage>Storage</EM.PoolSectionStorage>
     <EM.PoolSectionFlow>Flow</EM.PoolSectionFlow>

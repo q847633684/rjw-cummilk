@@ -907,7 +907,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lines.Add("EM.LactatingStateProducing".Translate());
 
             lines.Add("");
-            // 2. 储量
+            // 2. 储量（仅总体；虚拟左/右或每叶明细见健康表里各 RJW 乳房行的悬停）
             lines.Add("EM.PoolSectionStorage".Translate());
             if (CompEquallyMilkable != null)
             {
@@ -967,7 +967,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             }
         }
     }
-    /// <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开见下方详情。</summary>
+    /// <summary>括号内保留「天数 + 总体满度%」；分侧满度见各 RJW 乳房行悬停。</summary>
     public override string CompLabelInBracketsExtra
     {
         get

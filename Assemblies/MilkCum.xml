@@ -1421,7 +1421,7 @@
             <summary>健康页乳房悬停 DevMode：返回「生产机制」顺序的因子行（RJW GetFluidMultiplier 侧倍率、营规、状态、泌乳素、饥饿、压力、喷乳反射）</summary>
         </member>
         <member name="P:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.CompLabelInBracketsExtra">
-            <summary>括号内保留「天数 + 满度%」，便于一眼看到剩余时间与池满度；悬停展开见下方详情。</summary>
+            <summary>括号内保留「天数 + 总体满度%」；分侧满度见各 RJW 乳房行悬停。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.SyncChargeFromPool">
             <summary>吸奶/消费后：仅将 Charge 同步为当前池总满度，并触�?OnGathered（不按比例缩放池，因已由 DrainForConsume 按对按侧扣过）</summary>
@@ -1995,7 +1995,10 @@
             <summary>构建乳房池 tooltip：优先显示该乳房子部位对应的池；若有两侧条目则同时显示。</summary>
         </member>
         <member name="T:MilkCum.Harmony.HediffComp_SexPart_CompTipStringExtra_Patch">
-            <summary>在 RJW 乳房行悬停（HediffComp_SexPart.CompTipStringExtra）后追加奶池块。仅当「有泌乳且当前为 RJW 乳房行」时追加；没有泌乳不追加，非乳房行不追加（genitalFamily != Breasts 已 return）。若 __result 中已包含本块（同一 getter 被调用两次并拼接时会重复），则不再追加以免同一悬浮内出现两份相同内容。</summary>
+            <summary>健康表部位悬停（HediffComp_SexPart.CompTipStringExtra）：人类乳房(RJW) 行追加与该乳房 Hediff 对应的乳池左/右（或每叶）块；阴茎/雄性产卵器行追加全身虚拟精液左/右槽。泌乳 Hediff 自身仅显示总体，不在此 Patch。各块用已翻译标题去重，避免同一次 tooltip 拼接重复。</summary>
+        </member>
+        <member name="T:MilkCum.Harmony.HediffWithComps_TipStringExtra_BreastPoolFallback_Patch">
+            <summary>兼容详细解剖等「非 HediffComp_SexPart 的乳房行」：在 HediffWithComps.TipStringExtra 后追加乳池块。匹配策略为“乳房族 SexPart”或“身体部位 defName 含 Breast”。</summary>
         </member>
         <member name="T:MilkCum.Harmony.Thing_GetStatValue_PartialMilkNutrition_Patch">
             <summary>未满一瓶的人奶：食用时营养按 CompPartialMilk.fillAmount 计算（池单位），不按 Def 的 Nutrition。目标方法可能为 Thing.GetStatValue(StatDef) 或 (StatDef,int)，或为扩展方法不在 Thing 上；由 ModInit 在找到目标时手动 Patch。</summary>
