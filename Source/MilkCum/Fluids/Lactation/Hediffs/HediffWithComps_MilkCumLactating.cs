@@ -187,9 +187,9 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float lactationAmountFromBirth;
     /// <summary>当前泌乳量 L = 药物分量 + 分娩分量</summary>
     private float currentLactationAmount => lactationAmountFromDrug + lactationAmountFromBirth;
-    /// <summary>喷乳反射 R∈[0,1]，按虚拟乳槽键（BreastLeft/BreastRight）存储。挤奶/吸奶对该槽提升 R。</summary>
+    /// <summary>喷乳反射 R∈[0,1]，键与当前 <see cref="FluidPoolEntry.Key"/> 一致（虚拟左/右枚举名、每叶稳定键等）。<see cref="SyncPoolKeyedStateToEntries"/> 在池键迁移时重建本字典。挤奶/吸奶对该键提升 R。</summary>
     private Dictionary<string, float> letdownReflexByKey;
-    /// <summary>四层模型：炎症负�?I�?。每 60 tick 离散更新；I>I_crit 触发乳腺炎</summary>
+    /// <summary>四层模型：炎症强度 I。每 60 tick 离散更新；I&gt;I_crit 触发乳腺炎；键同 <see cref="FluidPoolEntry.Key"/>。</summary>
     private Dictionary<string, float> inflammationByKey;
     /// <summary>挤奶 L 刺激：当日已累计量，每游戏日重置</summary>
     private float milkingLStimulusAccumulatedThisDay;
@@ -228,7 +228,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             return 0f;
         }
     }
-    /// <summary>当前泌乳�?L（规格：基础�?= 总容量，归一�?1）</summary>
+    /// <summary>当前泌乳水平 L（规格：基准量 = 总容量，归一化基准为 1）</summary>
     public float CurrentLactationAmount => currentLactationAmount;
 
     /// <summary>各侧 I 的最大值，供 L 衰减、品质等全局读取。</summary>
@@ -304,7 +304,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             effectiveToleranceE = Mathf.Clamp01(effectiveToleranceE);
     }
 
-    /// <summary>耐受动态：dE/dt = μ·L �?ν·E。Δt 单位：游戏日</summary>
+    /// <summary>耐受动态：dE/dt = μ·L − ν·E。Δt 单位：游戏日</summary>
     public void UpdateToleranceDynamic(float L, float deltaTDays)
     {
         if (!MilkCumSettings.enableToleranceDynamic || deltaTDays <= 0f) return;
@@ -317,7 +317,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     /// <summary>耐受动态：当前 E，供 GetProlactinToleranceFactor 使用</summary>
     public float GetEffectiveToleranceE() => Mathf.Clamp01(effectiveToleranceE);
 
-    /// <summary>四层模型：炎�?I 离散更新。dI/dt = α·P² + β·Injury + γ·BadHygiene �?ρ·I；Δt 单位：小时</summary>
+    /// <summary>四层模型：炎症 I 离散更新。dI/dt = α·P² + β·Injury + γ·BadHygiene − ρ·I；Δt 单位：小时</summary>
     private float GetInflammationMax()
     {
         if (inflammationByKey == null || inflammationByKey.Count == 0) return 0f;
@@ -589,7 +589,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return Mathf.Clamp01(r);
     }
 
-    /// <summary>指定侧的 R，无记录时为 0（用于显�?平均）</summary>
+    /// <summary>指定池键的 R（公开给 UI），无记录时为 0；<see cref="GetLetdownReflex"/> 对各键算术平均用于总览。</summary>
     public float GetLetdownReflexForSide(string sideKey)
     {
         if (!MilkCumSettings.enableLetdownReflex) return 1f;
@@ -654,7 +654,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         letdownReflexByKey[sideKey] = Mathf.Min(1f, r + deltaR);
     }
 
-    /// <summary>归一化基础�?= 总容量（规格：基础�?= 总容量），当前实现为 1</summary>
+    /// <summary>归一化基准量 = 总容量（规格与水池模型一致），当前实现恒为 1。</summary>
     public static float GetBaseValueNormalized(Pawn pawn = null) => 1f;
 
     /// <summary>有效药效系数：统一使用 MilkCumSettings.GetProlactinToleranceFactor</summary>
@@ -663,7 +663,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         return MilkCumSettings.GetProlactinToleranceFactor(Pawn);
     }
 
-    /// <summary>流速因子显示用：整数显示为 "1"，否则保�?1�? 位小数</summary>
+    /// <summary>流速因子显示用：整数显示为 "1"，否则保留 1～2 位小数。</summary>
     private static string FormatFlowFactor(float v)
     {
         if (float.IsNaN(v) || float.IsInfinity(v)) return "0";
@@ -905,6 +905,18 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
                 lines.Add(isShrinking ? "EM.LactatingStateFullShrinking".Translate() : "EM.LactatingStateFull".Translate());
             else
                 lines.Add("EM.LactatingStateProducing".Translate());
+
+            // 1.1 停止原因列表（上游行为）：可能同时命中多项时逐条显示，便于排查“为什么停奶”。
+            var stopReasons = new List<string>();
+            if (growthSpeed == 0f)
+                stopReasons.Add("LactatingStoppedBecauseHungry".Translate().Colorize(ColorLibrary.RedReadable));
+            if (isFull)
+                stopReasons.Add("LactatingStoppedBecauseFull".Translate());
+            if (stopReasons.Count > 0)
+            {
+                foreach (var reason in stopReasons)
+                    lines.Add("  - " + reason);
+            }
 
             lines.Add("");
             // 2. 储量（仅总体；虚拟左/右或每叶明细见健康表里各 RJW 乳房行的悬停）

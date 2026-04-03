@@ -58,6 +58,9 @@
         <costList>
             <Steel>20</Steel>
         </costList>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
         <comps>
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
             <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket" />
@@ -98,6 +101,7 @@
             <ComponentIndustrial>1</ComponentIndustrial>
         </costList>
         <researchPrerequisites>
+            <li>Machining</li>
             <li>Electricity</li>
         </researchPrerequisites>
     </ThingDef>

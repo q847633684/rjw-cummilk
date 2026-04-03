@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Comps;
+using MilkCum.Fluids.Lactation.Helpers;
+using MilkCum.Fluids.Shared.Data;
 using MilkCum.Core.Utils;
 using RimWorld;
 using UnityEngine;
@@ -93,6 +96,8 @@ public class Widget_AdvancedSettings
 			list.Label("EM.DevModeNoPawnSelected".Translate());
 		else
 		{
+			DrawDevBreastPoolTopologyBlock(list, sel);
+			list.Gap(4f);
 			var hediff = sel.LactatingHediffWithComps();
 			var comp = hediff?.comps?.OfType<HediffComp_EqualMilkingLactating>().FirstOrDefault();
 			if (comp == null)
@@ -116,6 +121,53 @@ public class Widget_AdvancedSettings
 			}
 		}
 		list.End();
+	}
+
+	private static string AbbrevPoolKeyForDev(string key)
+	{
+		if (string.IsNullOrEmpty(key)) return "∅";
+		if (key.Length <= 32) return key;
+		return key.Substring(0, 18) + "…" + key.Substring(key.Length - 12);
+	}
+
+	/// <summary>Dev：当前选中小人的全局拓扑模式 + 各池条目 Key/Site 缩写，便于与日志自检对照。</summary>
+	private static void DrawDevBreastPoolTopologyBlock(Listing_Standard list, Pawn pawn)
+	{
+		GUI.color = Color.gray;
+		list.Label("EM.DevModeBreastPoolTopology".Translate());
+		GUI.color = Color.white;
+		if (!MilkCumSettings.rjwBreastSizeEnabled)
+		{
+			list.Label("EM.DevModeBreastPoolTopologyDisabled".Translate());
+			return;
+		}
+
+		list.Label("EM.DevModeBreastPoolTopologyMode".Translate(RjwBreastPoolTopologyModeLabel(MilkCumSettings.rjwBreastPoolTopologyMode)));
+		var entries = pawn.GetBreastPoolEntries();
+		if (entries == null || entries.Count == 0)
+		{
+			list.Label("EM.DevModeBreastPoolTopologyNoEntries".Translate());
+			return;
+		}
+
+		var sb = new StringBuilder();
+		sb.AppendLine("EM.DevModeBreastPoolTopologyEntriesHeader".Translate(entries.Count));
+		for (int i = 0; i < entries.Count; i++)
+		{
+			FluidPoolEntry e = entries[i];
+			string part = e.SourcePart?.def?.defName ?? "-";
+			sb.AppendLine($"  #{i} Site={e.Site} anatomL={e.IsLeft} idx={e.PoolIndex} cap={e.Capacity:F3} {part} key=`{AbbrevPoolKeyForDev(e.Key)}`");
+		}
+
+		sb.AppendLine();
+		sb.Append("EM.DevModeBreastPoolUiHint".Translate());
+		string body = sb.ToString();
+		float h = Text.CalcHeight(body, list.ColumnWidth);
+		const float maxDevTopologyHeight = 240f;
+		Rect r = list.GetRect(Mathf.Min(h, maxDevTopologyHeight));
+		Widgets.Label(r, body);
+		if (h > maxDevTopologyHeight)
+			list.Label("EM.DevModeBreastPoolTopologyTruncated".Translate());
 	}
 
 	private void DrawHealthSection(Rect content, int subTab)

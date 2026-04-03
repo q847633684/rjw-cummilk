@@ -16,7 +16,7 @@ namespace MilkCum.Fluids.Lactation.Helpers;
 
 /// <summary>
 /// 乳池与流速：池条目、容量、MilkDef、泌乳 Hediff 访问、流速倍率（RJW/基因/乳腺炎）、压奶满度、身体部位、距离等。
-/// 设计：RJW 解剖行见 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>；乳池充盈为虚拟左/右槽 <see cref="FluidSiteKind"/>（<see cref="FluidPoolEntry"/>）。乳房快照仍以 <see cref="RjwBreastPoolSnapshot"/> 为每叶 SSOT。不乘 BodySize。
+/// 设计：RJW 解剖行见 <see cref="RjwBreastPoolEconomy.GetBreastPoolSideRows"/>；多叶时每叶一条 <see cref="FluidPoolEntry"/>（稳定池键），<see cref="FluidSiteKind"/> 仅用于左/右汇总与 UI。乳房快照仍以 <see cref="RjwBreastPoolSnapshot"/> 为每叶 SSOT。不乘 BodySize。
 /// </summary>
 public static class PawnMilkPoolExtensions
 {
@@ -61,7 +61,9 @@ public static class PawnMilkPoolExtensions
     {
         if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return new List<FluidPoolEntry>();
         var rows = RjwBreastPoolEconomy.GetBreastPoolSideRows(pawn);
-        return BuildCachedBreastPoolEntries(pawn, rows);
+        List<FluidPoolEntry> entries = BuildCachedBreastPoolEntries(pawn, rows);
+        BreastPoolTopologyDiagnostics.MaybeDevWarnAfterEntriesBuilt(pawn, entries);
+        return entries;
     }
 
     /// <summary>与 <see cref="CompEquallyMilkable"/> 池条目缓存一致：按拓扑构建条目（侧行在胸位单池时仍供 UI/RJW 行遍历）。</summary>
@@ -76,65 +78,39 @@ public static class PawnMilkPoolExtensions
         };
     }
 
-    /// <summary>将解剖叶行聚合为至多两条虚拟乳池（左/右）；未标注左右的容量与流速各半摊入两侧。</summary>
+    /// <summary>虚拟左/右拓扑：每条解剖行一颗乳一条 <see cref="FluidPoolEntry"/>（稳定池键），各侧保留 <see cref="FluidSiteKind"/> 便于 L/R 汇总；未标注左右用 <see cref="FluidSiteKind.None"/>。</summary>
     internal static List<FluidPoolEntry> BuildBreastPoolEntriesFromSideRows(Pawn pawn, List<RjwBreastPoolSideRow> rows)
     {
         var result = new List<FluidPoolEntry>();
         if (pawn == null || rows == null || rows.Count == 0) return result;
         try
         {
-            float leftCap = 0f, rightCap = 0f, ambCap = 0f;
-            float leftFlow = 0f, rightFlow = 0f, ambFlow = 0f;
-            BodyPartRecord leftPart = null, rightPart = null, ambPart = null;
             for (int i = 0; i < rows.Count; i++)
             {
                 var r = rows[i];
-                BodyPartRecord part = r.BreastHediff?.Part;
+                if (r.BreastHediff == null) continue;
+                int listIdx = r.SourceBreastListIndex >= 0 ? r.SourceBreastListIndex : i;
+                string key = RjwBreastPoolEconomy.MakeStablePoolKey(r.BreastHediff, listIdx);
+                BodyPartRecord part = r.BreastHediff.Part;
+                FluidSiteKind site;
+                bool isLeftFlag;
                 if (r.IsLeft)
                 {
-                    leftCap += r.BaseCapacity;
-                    leftFlow += r.FlowMultiplier;
-                    leftPart ??= part;
+                    site = FluidSiteKind.BreastLeft;
+                    isLeftFlag = true;
                 }
                 else if (RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(part))
                 {
-                    rightCap += r.BaseCapacity;
-                    rightFlow += r.FlowMultiplier;
-                    rightPart ??= part;
+                    site = FluidSiteKind.BreastRight;
+                    isLeftFlag = false;
                 }
                 else
                 {
-                    ambCap += r.BaseCapacity;
-                    ambFlow += r.FlowMultiplier;
-                    ambPart ??= part;
+                    site = FluidSiteKind.None;
+                    isLeftFlag = false;
                 }
-            }
 
-            leftCap += ambCap * 0.5f;
-            rightCap += ambCap * 0.5f;
-            leftFlow += ambFlow * 0.5f;
-            rightFlow += ambFlow * 0.5f;
-            int idx = 0;
-            if (leftCap > PoolModelConstants.Epsilon)
-            {
-                result.Add(new FluidPoolEntry(
-                    FluidSiteKind.BreastLeft,
-                    leftCap,
-                    leftFlow,
-                    isLeft: true,
-                    poolIndex: idx++,
-                    sourcePart: leftPart ?? ambPart));
-            }
-
-            if (rightCap > PoolModelConstants.Epsilon)
-            {
-                result.Add(new FluidPoolEntry(
-                    FluidSiteKind.BreastRight,
-                    rightCap,
-                    rightFlow,
-                    isLeft: false,
-                    poolIndex: idx,
-                    sourcePart: rightPart ?? ambPart));
+                result.Add(new FluidPoolEntry(key, site, r.BaseCapacity, r.FlowMultiplier, isLeftFlag, i, part));
             }
 
             ApplyCapacityAdaptationToBreastEntries(pawn, result);
@@ -223,6 +199,8 @@ public static class PawnMilkPoolExtensions
             if (rows[i].BreastHediff != breastHediff) continue;
             return RjwBreastPoolEconomy.GetVirtualBreastStorageKeyForSideRow(rows[i]);
         }
+
+        BreastPoolTopologyDiagnostics.MaybeDevLogPoolKeyLookupMiss(pawn, breastHediff);
         return null;
     }
 

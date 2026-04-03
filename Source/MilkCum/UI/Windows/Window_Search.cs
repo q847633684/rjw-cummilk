@@ -68,7 +68,12 @@ public class Window_Search : Window
 	}
 	private void UpdateFilteredDefs()
 	{
-		searchResults = AllDefs.Where(def => quickSearchWidget.filter.Matches(def.defName) || quickSearchWidget.filter.Matches(def.label)).ToList();
+		searchResults = AllDefs.Where(def =>
+			quickSearchWidget.filter.Matches(def.defName)
+			|| quickSearchWidget.filter.Matches(def.label)
+			|| quickSearchWidget.filter.Matches(def.LabelCap)
+			|| quickSearchWidget.filter.Matches(def.description ?? string.Empty))
+			.ToList();
 	}
 
 	public static List<ThingDef> GetItemDefs()
@@ -76,7 +81,6 @@ public class Window_Search : Window
 		return (from def in DefDatabase<ThingDef>.AllDefs
 				where
 		def.category == ThingCategory.Item
-		&& def.stackLimit > 1
 		&& !def.HasComp<CompQuality>()
 		&& !def.IsArt
 		&& !def.IsApparel

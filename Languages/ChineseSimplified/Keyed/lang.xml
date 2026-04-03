@@ -118,6 +118,8 @@
     <EM.RestrictionsAllowSelf_MilkingTip>允许自己使用挤奶器或接「自己挤奶」工作。</EM.RestrictionsAllowSelf_MilkingTip>
     <EM.RestrictionsAllowSelf_Consume>吃奶</EM.RestrictionsAllowSelf_Consume>
     <EM.RestrictionsAllowSelf_ConsumeTip>允许自己食用产出的奶/精液制品（含加工食物）。关则自己也不能吃自己的制品。</EM.RestrictionsAllowSelf_ConsumeTip>
+    <EM.RestrictionsAllowOthers_Milking>被他人挤奶</EM.RestrictionsAllowOthers_Milking>
+    <EM.RestrictionsAllowOthers_MilkingTip>允许其他殖民者/对应工作来对该角色使用挤奶器或接「挤奶」工作。关则仅自定「自己挤奶」仍可能生效（若下方允许）。</EM.RestrictionsAllowOthers_MilkingTip>
     <EM.Specify>指定</EM.Specify>
     <EM.DrugRoleHint>要催出泌乳：催乳素、露西催乳那一类。已经在泌了想再猛一点：用催奶散之类。</EM.DrugRoleHint>
     <EM.AnimalAdultFemaleAlwaysLactating>动物：成年雌性常乳</EM.AnimalAdultFemaleAlwaysLactating>
@@ -231,6 +233,13 @@
 	<EM.LactationLevelCapDurationMultiplier>上限溢出→时间倍数：{0}</EM.LactationLevelCapDurationMultiplier>
 	<EM.LactationLevelCapDurationMultiplierDesc>达到上限时，超出部分转为「持续时间」时乘以该倍数。&gt;1 则延长更多天，补偿不提高流速。默认 1.5。</EM.LactationLevelCapDurationMultiplierDesc>
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
+    <EM.DevModeBreastPoolTopology>乳池拓扑（调试）</EM.DevModeBreastPoolTopology>
+    <EM.DevModeBreastPoolTopologyDisabled>请先在「数值/平衡 → 乳房与乳池」中开启 RJW 乳房与乳池，才显示池条目。</EM.DevModeBreastPoolTopologyDisabled>
+    <EM.DevModeBreastPoolTopologyMode>全局拓扑模式：{0}</EM.DevModeBreastPoolTopologyMode>
+    <EM.DevModeBreastPoolTopologyNoEntries>当前无乳池条目（无可泌乳胸叶或身体部位）。</EM.DevModeBreastPoolTopologyNoEntries>
+    <EM.DevModeBreastPoolTopologyEntriesHeader>共 {0} 条：</EM.DevModeBreastPoolTopologyEntriesHeader>
+    <EM.DevModeBreastPoolUiHint>界面分列：虚拟左/右 → 左栏汇总解剖左且 Site 为左乳槽；右栏汇总解剖右。胸位合并且多池时「右乳」合计可能误导，以每条 Key 为准。每叶一池 → 一叶一键。</EM.DevModeBreastPoolUiHint>
+    <EM.DevModeBreastPoolTopologyTruncated>（列表过长已截断；完整键见存档或 记忆库/docs/乳池拓扑决策表.md。）</EM.DevModeBreastPoolTopologyTruncated>
     <EM.DevModeNoPawnSelected>先在游戏里点中一个人，才看得见奶劲、左右池、耐受、卫生险、涨破累计。</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} 这会儿没在泌乳。</EM.DevModeNotLactating>
     <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>

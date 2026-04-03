@@ -69,6 +69,31 @@ public class Widget_DefaultSetting
         listing.Label("EM.SectionDesc_DefaultByRole".Translate());
         GUI.color = Color.white;
         listing.Gap(4f);
+
+        GUI.color = Color.gray;
+        listing.Label("EM.RestrictionsAllowOthersSection".Translate());
+        GUI.color = Color.white;
+        listing.CheckboxLabeled("EM.RestrictionsAllowOthers_Milking".Translate(), ref setting.allowMilking);
+        GUI.color = Color.gray;
+        listing.Label("EM.RestrictionsAllowOthers_MilkingTip".Translate(), -1f);
+        GUI.color = Color.white;
+        listing.Gap(6f);
+
+        GUI.color = Color.gray;
+        listing.Label("EM.RestrictionsAllowSelfSection".Translate());
+        GUI.color = Color.white;
+        listing.CheckboxLabeled("EM.RestrictionsAllowSelf_Milking".Translate(), ref setting.allowMilkingSelf);
+        GUI.color = Color.gray;
+        listing.Label("EM.RestrictionsAllowSelf_MilkingTip".Translate(), -1f);
+        GUI.color = Color.white;
+        listing.Gap(2f);
+
+        listing.CheckboxLabeled("EM.RestrictionsAllowSelf_Consume".Translate(), ref setting.allowSelfConsumeProducts);
+        GUI.color = Color.gray;
+        listing.Label("EM.RestrictionsAllowSelf_ConsumeTip".Translate(), -1f);
+        GUI.color = Color.white;
+        listing.Gap(2f);
+
         listing.CheckboxLabeled("EM.DefaultSetting_CanBeFed".Translate(), ref setting.canBeFed);
         GUI.color = Color.gray;
         listing.Label("EM.DefaultSetting_CanBeFedTip".Translate(), -1f);

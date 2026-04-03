@@ -51,6 +51,9 @@
     <rotatable>false</rotatable>
     <terrainAffordanceNeeded>Medium</terrainAffordanceNeeded>
     <designationCategory>EM_PipeNetworks</designationCategory>
+    <researchPrerequisites>
+      <li>Machining</li>
+    </researchPrerequisites>
     <staticSunShadowHeight>0.2</staticSunShadowHeight>
     <constructEffect>ConstructMetal</constructEffect>
     <canOverlapZones>false</canOverlapZones>

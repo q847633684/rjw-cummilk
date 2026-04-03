@@ -10,7 +10,7 @@ public readonly struct FluidPoolEntry
     public FluidSiteKind Site { get; }
     public string Key { get; }
     public float Capacity { get; }
-    /// <summary>该池的 RJW/基因等流速倍率；调用方 × basePerDay 得每日流速。合并双侧虚拟池时为原单侧倍率的 2 倍以保持总进水量不变。</summary>
+    /// <summary>该池的 RJW/基因等流速倍率；调用方 × basePerDay 得每日流速。多叶时每叶一条目，倍率按该叶 RJW GetFluidMultiplier。</summary>
     public float FlowMultiplier { get; }
     /// <summary>仅解剖左乳为 true；解剖右与未标注为 false。右栏汇总仅计解剖右（与 IsAnatomicallyRightBreastPart 一致）。</summary>
     public bool IsLeft { get; }

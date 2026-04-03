@@ -81,7 +81,8 @@ internal partial class MilkCumSettings
 		}
 		else
 		{
-			if (def.race.Humanlike)
+			// 与上游一致：默认仅原版人类启用可挤奶；HAR/异种默认关闭，避免“自动全人型可挤奶”。
+			if (def == ThingDefOf.Human)
 			{
 				milkProduct.isMilkable = true;
 				milkProduct.milkTypeDefName = MilkCumDefOf.EM_HumanMilk.defName;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using Verse;
 using Verse.AI;
@@ -122,8 +123,17 @@ public static class ChildcareHelper
     }
     private static void AddBreastfeedActions(this Toil toil, Pawn pawn, Pawn baby, Action readyForNextToil)
     {
+        List<Apparel> temporarilyRemovedApparel = null;
+        toil.AddPreInitAction(delegate
+        {
+            temporarilyRemovedApparel = TryTemporarilyUnequipOuterwearForBreastfeed(pawn);
+        });
         toil.AddSuckleTickAction(pawn, baby, readyForNextToil);
         toil.AddFinishAction(BreastfeedFinishAction(pawn, baby));
+        toil.AddFinishAction(delegate
+        {
+            TryReequipTemporarilyRemovedApparel(pawn, temporarilyRemovedApparel);
+        });
         toil.WithProgressBar(TargetIndex.A, GetBreastfeedProgress(pawn, baby), false, -0.5f, false);
         toil.handlingFacing = true;
         toil.defaultCompleteMode = ToilCompleteMode.Never;
@@ -197,5 +207,53 @@ public static class ChildcareHelper
             BreastfeedFailReason.MomInIncompatibleFactionToHauler => true,
             _ => false,
         };
+    }
+
+    /// <summary>哺乳时临时脱下外层衣物（外套、盔甲、头盔），结束后恢复；失败时静默回退，不影响哺乳流程。</summary>
+    private static List<Apparel> TryTemporarilyUnequipOuterwearForBreastfeed(Pawn pawn)
+    {
+        var removed = new List<Apparel>();
+        if (pawn?.apparel == null || pawn.inventory?.innerContainer == null) return removed;
+        try
+        {
+            var worn = pawn.apparel.WornApparel != null ? new List<Apparel>(pawn.apparel.WornApparel) : null;
+            if (worn == null || worn.Count == 0) return removed;
+            foreach (var apparel in worn)
+            {
+                if (apparel?.def?.apparel?.layers == null) continue;
+                bool isOuterOrHelmet = apparel.def.apparel.layers.Contains(ApparelLayerDefOf.Shell)
+                    || apparel.def.apparel.layers.Contains(ApparelLayerDefOf.Overhead);
+                if (!isOuterOrHelmet) continue;
+                pawn.apparel.Remove(apparel);
+                pawn.inventory.innerContainer.TryAdd(apparel);
+                removed.Add(apparel);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[MilkCum] TryTemporarilyUnequipOuterwearForBreastfeed: {ex.Message}");
+        }
+        return removed;
+    }
+
+    private static void TryReequipTemporarilyRemovedApparel(Pawn pawn, List<Apparel> removed)
+    {
+        if (pawn?.apparel == null || pawn.inventory?.innerContainer == null || removed == null || removed.Count == 0) return;
+        try
+        {
+            for (int i = removed.Count - 1; i >= 0; i--)
+            {
+                var apparel = removed[i];
+                if (apparel == null || apparel.Destroyed) continue;
+                if (!pawn.inventory.innerContainer.Contains(apparel)) continue;
+                if (!pawn.apparel.CanWearWithoutDroppingAnything(apparel.def)) continue;
+                pawn.inventory.innerContainer.Remove(apparel);
+                pawn.apparel.Wear(apparel);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[MilkCum] TryReequipTemporarilyRemovedApparel: {ex.Message}");
+        }
     }
 }

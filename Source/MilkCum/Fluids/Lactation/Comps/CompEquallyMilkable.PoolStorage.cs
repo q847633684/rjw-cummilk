@@ -309,6 +309,7 @@ public partial class CompEquallyMilkable
         {
             cachedSideRows = RjwBreastPoolEconomy.GetBreastPoolSideRows(Pawn);
             cachedEntries = PawnMilkPoolExtensions.BuildCachedBreastPoolEntries(Pawn, cachedSideRows);
+            BreastPoolTopologyDiagnostics.MaybeDevWarnAfterEntriesBuilt(Pawn, cachedEntries);
             MigrateBreastFullnessForNewEntryKeys(cachedEntries);
         }
         else
@@ -361,7 +362,7 @@ public partial class CompEquallyMilkable
         return cachedSideRows;
     }
 
-    /// <summary>当前乳池条目数（虚拟左/右至多 2；<see cref="RjwBreastPoolTopologyMode.PerAnatomicalLeaf"/> 可为多叶），与 <see cref="FluidPoolEntry"/> 条数一致。</summary>
+    /// <summary>当前乳池条目数（多叶时等于可泌乳乳房叶数；与 <see cref="FluidPoolEntry"/> 条数一致）。</summary>
     public int BreastSideCount => GetCachedEntries().Count;
 
     /// <summary>吸奶/单侧扣量：在所有池条目中选<strong>单 key 满度最大</strong>的一条。顺序规则与手挤排序共用 <see cref="CompareDrainEntryOrder"/>。</summary>

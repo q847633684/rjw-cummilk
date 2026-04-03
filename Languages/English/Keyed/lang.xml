@@ -119,6 +119,8 @@
     <EM.RestrictionsAllowSelf_MilkingTip>Allow self to use a milker or take the self-milking job.</EM.RestrictionsAllowSelf_MilkingTip>
     <EM.RestrictionsAllowSelf_Consume>Consume</EM.RestrictionsAllowSelf_Consume>
     <EM.RestrictionsAllowSelf_ConsumeTip>Allow self to consume your milk/cum products (including cooked food). Off = you cannot eat your own products.</EM.RestrictionsAllowSelf_ConsumeTip>
+    <EM.RestrictionsAllowOthers_Milking>Milking (by others)</EM.RestrictionsAllowOthers_Milking>
+    <EM.RestrictionsAllowOthers_MilkingTip>Allow other colonists/work types to milk this pawn with a milker or milk job. Off = only self-milking can apply (if allowed below).</EM.RestrictionsAllowOthers_MilkingTip>
     <EM.Specify>Specify</EM.Specify>
     <EM.DrugRoleHint>To enter lactation: Prolactin or Lucilactin. To boost milk output when already lactating: Galactogogues.</EM.DrugRoleHint>
     <EM.AnimalAdultFemaleAlwaysLactating>Animals: adult females always lactating</EM.AnimalAdultFemaleAlwaysLactating>
@@ -232,6 +234,13 @@
 	<EM.LactationLevelCapDurationMultiplier>Cap overflow → duration multiplier: {0}</EM.LactationLevelCapDurationMultiplier>
 	<EM.LactationLevelCapDurationMultiplierDesc>When L is capped, the overflow is converted to Severity (duration) times this factor. &gt;1 = longer duration to compensate for no flow increase. Default 1.5.</EM.LactationLevelCapDurationMultiplierDesc>
     <EM.DevModeLactationPanel>Lactation status (DevMode, selected pawn)</EM.DevModeLactationPanel>
+    <EM.DevModeBreastPoolTopology>Breast pool topology (debug)</EM.DevModeBreastPoolTopology>
+    <EM.DevModeBreastPoolTopologyDisabled>Enable “RJW breast &amp; pool” in Balance → Breast &amp; pool to see pool entries.</EM.DevModeBreastPoolTopologyDisabled>
+    <EM.DevModeBreastPoolTopologyMode>Global topology mode: {0}</EM.DevModeBreastPoolTopologyMode>
+    <EM.DevModeBreastPoolTopologyNoEntries>No pool entries (no lactatable breast hediffs or body).</EM.DevModeBreastPoolTopologyNoEntries>
+    <EM.DevModeBreastPoolTopologyEntriesHeader>Entries ({0}):</EM.DevModeBreastPoolTopologyEntriesHeader>
+    <EM.DevModeBreastPoolUiHint>UI columns: Virtual L/R → left column aggregates anatomical left &amp; Site BreastLeft; right column aggregates anatomical right. Chest-unified + multiple entries → “right breast” totals can mislead; trust per-entry Key. Per-leaf → one Key per leaf.</EM.DevModeBreastPoolUiHint>
+    <EM.DevModeBreastPoolTopologyTruncated>(List truncated in UI; full keys in save/tooltip or topology doc.)</EM.DevModeBreastPoolTopologyTruncated>
     <EM.DevModeNoPawnSelected>No pawn selected. Select a pawn in-game to see L, pool L/R, E, hygiene risk, overflow.</EM.DevModeNoPawnSelected>
     <EM.DevModeNotLactating>{0} is not lactating (no lactation hediff).</EM.DevModeNotLactating>
     <EM.DevModeNoGame>Not in play. Open a save to see selected pawn lactation info.</EM.DevModeNoGame>
