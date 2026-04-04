@@ -316,7 +316,7 @@ public partial class CompEquallyMilkable : CompMilkable
             UpdateMilkPools();
             if (inflowEventBurstTicksRemaining > 0)
                 inflowEventBurstTicksRemaining = Mathf.Max(0, inflowEventBurstTicksRemaining - 60);
-            if (MilkCumSettings.rjwBreastSizeEnabled && Pawn != null && Pawn.IsInLactatingState())
+            if (ModIntegrationGates.RjwModActive && Pawn != null && Pawn.IsInLactatingState())
                 RJWLactatingBreastSizeGameComponent.SyncRJWBreastSeverityFromPool(Pawn);
         }
         if (parent.IsHashIntervalTick(2000))

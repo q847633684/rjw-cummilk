@@ -1,11 +1,10 @@
-using MilkCum.Core;
 using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
 namespace MilkCum.Integration.DubsBadHygiene;
-    /// <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载时，乳腺炎/堵塞的「卫生」触发可基于 DBH 的 Hygiene 需求；否则使用房间清洁度。喝奶（吸奶或食用奶瓶）时满足 DBH 的饮水(Thirst)需求。</summary>
+    /// <summary>可选联动：Dubs Bad Hygiene。当 DBH 已加载且存在 Hygiene 需求时，乳腺炎/堵塞的卫生风险始终基于 Hygiene；否则使用房间清洁度。喝奶（吸奶或食用奶瓶）时满足 DBH 的饮水(Thirst)需求。</summary>
     public static class DubsBadHygieneIntegration
     {
         private static NeedDef _cachedHygieneNeedDef;
@@ -59,6 +58,18 @@ namespace MilkCum.Integration.DubsBadHygiene;
             need.CurLevel = Mathf.Min(need.MaxLevel, need.CurLevel + amount);
         }
 
+        /// <summary>Thirst 需求有则返回 CurLevelPercentage（0~1，高=不渴）；无则 false。</summary>
+        public static bool TryGetThirstCurLevel01(Pawn pawn, out float curLevel01)
+        {
+            curLevel01 = 1f;
+            if (pawn?.needs == null || !IsThirstNeedAvailable() || _cachedThirstNeedDef == null)
+                return false;
+            var need = pawn.needs.TryGetNeed(_cachedThirstNeedDef);
+            if (need == null) return false;
+            curLevel01 = need.CurLevelPercentage;
+            return true;
+        }
+
         private static bool IsDubsBadHygieneModPresent()
         {
             if (ModLister.GetModWithIdentifier("dubwise.dubsbadhygiene") != null)
@@ -73,7 +84,7 @@ namespace MilkCum.Integration.DubsBadHygiene;
         public static float GetHygieneRiskFactorForMastitis(Pawn pawn)
         {
             if (pawn?.needs == null) return 0f;
-            if (IsDubsBadHygieneActive() && MilkCumSettings.useDubsBadHygieneForMastitis && _cachedHygieneNeedDef != null)
+            if (IsDubsBadHygieneActive() && _cachedHygieneNeedDef != null)
             {
                 var need = pawn.needs.TryGetNeed(_cachedHygieneNeedDef);
                 if (need != null)

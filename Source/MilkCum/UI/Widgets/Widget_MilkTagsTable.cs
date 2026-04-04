@@ -50,7 +50,8 @@ public class Widget_MilkTagsTable
         float outHeight = Mathf.Min(inRect.height, contentHeight);
         outHeight = Mathf.Max(UNIT_SIZE, outHeight);
         Rect outRect = new(inRect.x, inRect.y, inRect.width, outHeight);
-        Widgets.BeginScrollView(outRect, ref scrollPosition, new Rect(0, 0, inRect.width, contentHeight));
+        float innerW = outRect.width - 16f;
+        Widgets.BeginScrollView(outRect, ref scrollPosition, new Rect(0, 0, innerW, contentHeight));
         float y_Offset = 0f;
         List<string> removedDefs = new();
         foreach (string key in productsToTags.Keys)

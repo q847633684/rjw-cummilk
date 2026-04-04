@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MilkCum.Core;
 using UnityEngine;
 using Verse;
@@ -12,8 +11,9 @@ public class Widget_BreastfeedSettings
 	private readonly HumanlikeBreastfeed humanlikeBreastfeed;
 	private readonly AnimalBreastfeed animalBreastfeed;
 	private readonly MechanoidBreastfeed mechanoidBreastfeed;
-	private Vector2 _allTabsScrollPosition = Vector2.zero;
-	private const float AllTabsContentHeight = 800f;
+	private Vector2 _scrollBreastfeedSystem = Vector2.zero;
+	private const float BreastfeedScrollBottomPad = 32f;
+	private float _bfSystemScrollExtra;
 
 	public Widget_BreastfeedSettings(HumanlikeBreastfeed humanlikeBreastfeed, AnimalBreastfeed animalBreastfeed, MechanoidBreastfeed mechanoidBreastfeed)
 	{
@@ -60,13 +60,31 @@ public class Widget_BreastfeedSettings
 	public void DrawBreastfeedSystemFull(Rect inRect)
 	{
 		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
-		float viewHeight = inRect.height;
-		float contentWidth = inRect.width - 20f;
-		const float contentHeight = 1000f;
-		Rect scrollViewRect = new Rect(inRect.x, inRect.y, inRect.width, viewHeight);
-		Rect scrollContent = new Rect(0f, 0f, contentWidth, contentHeight);
-		Widgets.BeginScrollView(scrollViewRect, ref _allTabsScrollPosition, scrollContent, true);
-		Rect contentRect = new Rect(0f, 0f, contentWidth, contentHeight);
+		float viewH = inRect.height;
+		Rect scrollViewRect = new Rect(inRect.x, inRect.y, inRect.width, viewH);
+		float contentH = viewH + _bfSystemScrollExtra;
+		float wScroll = scrollViewRect.width - 16f;
+		Rect scrollContent = new Rect(0f, 0f, wScroll, contentH);
+		float measured;
+		Widgets.BeginScrollView(scrollViewRect, ref _scrollBreastfeedSystem, scrollContent);
+		try
+		{
+			measured = DrawBreastfeedSystemFullInner(scrollContent.width, contentH);
+		}
+		finally
+		{
+			Widgets.EndScrollView();
+		}
+
+		_bfSystemScrollExtra = Mathf.Max(0f, measured + BreastfeedScrollBottomPad - viewH);
+		float maxScroll = Mathf.Max(0f, _bfSystemScrollExtra);
+		if (_scrollBreastfeedSystem.y > maxScroll)
+			_scrollBreastfeedSystem.y = maxScroll;
+	}
+
+	private float DrawBreastfeedSystemFullInner(float contentWidth, float contentHeightBudget)
+	{
+		Rect contentRect = new Rect(0f, 0f, contentWidth, contentHeightBudget);
 		float y = 0f;
 		string overviewDesc = "EM.BreastfeedOverviewDesc".Translate();
 		if (!string.IsNullOrEmpty(overviewDesc))
@@ -96,50 +114,9 @@ public class Widget_BreastfeedSettings
 		GUI.color = Color.white;
 		y += UNIT_SIZE;
 		SetupMechanoid(contentRect, ref y, mechanoidBreastfeed);
-		Widgets.EndScrollView();
+		return y;
 	}
 
-	/// <summary>合并绘制人形/动物/机械族三类哺乳设置于同一可滚动页（原三个子 Tab 合并为一个）。</summary>
-	public void DrawAllTabs(Rect inRect)
-	{
-		inRect = inRect.ContractedBy(UNIT_SIZE / 2);
-		float viewHeight = inRect.height;
-		float contentWidth = inRect.width - 20f;
-		Rect scrollViewRect = new Rect(inRect.x, inRect.y, inRect.width, viewHeight);
-		Rect scrollContent = new Rect(0f, 0f, contentWidth, AllTabsContentHeight);
-		Widgets.BeginScrollView(scrollViewRect, ref _allTabsScrollPosition, scrollContent, true);
-		Rect contentRect = new Rect(0f, 0f, contentWidth, AllTabsContentHeight);
-		float y = 0f;
-		GUI.color = Color.gray;
-		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Colonist.CapitalizeFirst());
-		GUI.color = Color.white;
-		y += UNIT_SIZE;
-		SetupHumanlike(contentRect, ref y, humanlikeBreastfeed);
-		y += UNIT_SIZE * 2;
-		GUI.color = Color.gray;
-		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Animal.CapitalizeFirst());
-		GUI.color = Color.white;
-		y += UNIT_SIZE;
-		SetupAnimal(contentRect, ref y, animalBreastfeed);
-		y += UNIT_SIZE * 2;
-		GUI.color = Color.gray;
-		Widgets.Label(new Rect(0f, y, contentWidth, UNIT_SIZE), Lang.Mechanoid.CapitalizeFirst());
-		GUI.color = Color.white;
-		y += UNIT_SIZE;
-		SetupMechanoid(contentRect, ref y, mechanoidBreastfeed);
-		Widgets.EndScrollView();
-	}
-
-	private void DrawTabContent(Rect inRect, int tabIndex)
-	{
-		float y_Offset = inRect.y;
-		if (tabIndex == 0)
-			SetupHumanlike(inRect, ref y_Offset, humanlikeBreastfeed);
-		else if (tabIndex == 1)
-			SetupAnimal(inRect, ref y_Offset, animalBreastfeed);
-		else if (tabIndex == 2)
-			SetupMechanoid(inRect, ref y_Offset, mechanoidBreastfeed);
-	}
 	private void SetupBreastfeed(Rect inRect, ref float y_Offset, Breastfeed breastfeed)
 	{
 		Widgets.CheckboxLabeled(new Rect(inRect.x, y_Offset, inRect.width, UNIT_SIZE), Lang.Join(Lang.Allow, Lang.Breastfeed), ref breastfeed.AllowBreastfeeding);

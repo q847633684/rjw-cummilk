@@ -45,39 +45,37 @@ public class Widget_MilkableTable
         widgetRow.Label(Lang.MilkType, UNIT_SIZE * 6, Lang.MilkTypeDesc);
         Text.Font = GameFont.Small;
 		Rect tableRect = new(rect.x, rect.y + UNIT_SIZE, rect.width, rect.height - UNIT_SIZE);
-		// 自适应滚动框高度：内容不够填满时不铺太高，避免出现大量“空白框”。
 		float contentHeight = pawnCount * UNIT_SIZE;
 		float outHeight = Mathf.Min(tableRect.height, contentHeight);
 		outHeight = Mathf.Max(UNIT_SIZE, outHeight);
 		Rect outRect = new(tableRect.x, tableRect.y, tableRect.width, outHeight);
-		// 不强制显示水平滚动条，否则会占用宽度导致最右列（例如“指定/按钮”）被裁。
-		Rect scrollRect = new(tableRect.x, tableRect.y, tableRect.width, contentHeight);
-		Widgets.BeginScrollView(outRect, ref scrollPosition, scrollRect, false);
+		float innerW = tableRect.width - 16f;
+		Rect scrollInner = new(0f, 0f, innerW, contentHeight);
+		Widgets.BeginScrollView(outRect, ref scrollPosition, scrollInner);
 		try
 		{
-		using (IEnumerator<ThingDef> enumerator = pawnDefList.GetEnumerator())
-        {
-            float y_Offset = tableRect.y - UNIT_SIZE;
-            while (enumerator.MoveNext())
-            {
-                ThingDef pawnDef = enumerator.Current;
-                RaceMilkType product = namesToProducts.GetWithFallback(pawnDef.defName, new RaceMilkType());
-                y_Offset += UNIT_SIZE;
-                Widgets.ThingIcon(new Rect(tableRect.x, y_Offset, UNIT_SIZE, UNIT_SIZE), DefDatabase<ThingDef>.GetNamed(pawnDef.defName, true), null, null, 1f, null, null);
-                Widgets.Label(new Rect(tableRect.x + UNIT_SIZE, y_Offset, UNIT_SIZE * 9, UNIT_SIZE), pawnDef.DisplayText());
-                //Text.Font = GameFont.Tiny;
-                Widgets.Checkbox(new Vector2(tableRect.x + UNIT_SIZE * 10, y_Offset), ref product.isMilkable, UNIT_SIZE);
-                // “指定”按钮不要依赖 isMilkable：避免出现只有部分行（例如你看到的只有男生）显示按钮的情况。
-                SetupSelectProductButton(new Rect(tableRect.x + UNIT_SIZE * 11, y_Offset, UNIT_SIZE * 7, UNIT_SIZE), pawnDef, itemDefs);
-            }
-        }
-        }
+			using (IEnumerator<ThingDef> enumerator = pawnDefList.GetEnumerator())
+			{
+				float yRow = 0f;
+				while (enumerator.MoveNext())
+				{
+					ThingDef pawnDef = enumerator.Current;
+					RaceMilkType product = namesToProducts.GetWithFallback(pawnDef.defName, new RaceMilkType());
+					Widgets.ThingIcon(new Rect(0f, yRow, UNIT_SIZE, UNIT_SIZE), DefDatabase<ThingDef>.GetNamed(pawnDef.defName, true), null, null, 1f, null, null);
+					Widgets.Label(new Rect(UNIT_SIZE, yRow, UNIT_SIZE * 9, UNIT_SIZE), pawnDef.DisplayText());
+					Widgets.Checkbox(new Vector2(UNIT_SIZE * 10, yRow), ref product.isMilkable, UNIT_SIZE);
+					Rect btnLocal = new(UNIT_SIZE * 11, yRow, UNIT_SIZE * 7, UNIT_SIZE);
+					SetupSelectProductButton(btnLocal, pawnDef, itemDefs, outRect, scrollPosition);
+					yRow += UNIT_SIZE;
+				}
+			}
+		}
 		finally
 		{
 			Widgets.EndScrollView();
 		}
     }
-    private void SetupSelectProductButton(Rect buttonRect, ThingDef currentOptionDef, IEnumerable<ThingDef> optionDefs)
+    private void SetupSelectProductButton(Rect buttonRectLocal, ThingDef currentOptionDef, IEnumerable<ThingDef> optionDefs, Rect scrollViewport, Vector2 scrollPosition)
     {
         ThingDef milkProductDef;
         if (namesToProducts.TryGetValue(currentOptionDef.defName, out RaceMilkType product))
@@ -92,12 +90,14 @@ public class Widget_MilkableTable
         }
         if (milkProductDef == null)
             milkProductDef = DefDatabase<ThingDef>.GetNamedSilentFail("Milk") ?? MilkCumDefOf.EM_HumanMilk; // 无奶类型时回退，避免 NRE
-        if (Widgets.ButtonText(buttonRect, ProductButtonPadding + milkProductDef.DisplayText(), true, true, true, TextAnchor.MiddleLeft))
+        if (Widgets.ButtonText(buttonRectLocal, ProductButtonPadding + milkProductDef.DisplayText(), true, true, true, TextAnchor.MiddleLeft))
         {
-            Window_Search searchWindow = new(namesToProducts[currentOptionDef.defName].SetMilkType) { windowRect = new Rect(buttonRect.x, buttonRect.y, buttonRect.width, 500) };
+            float anchorX = scrollViewport.x + buttonRectLocal.x;
+            float anchorY = scrollViewport.y + buttonRectLocal.y - scrollPosition.y;
+            Window_Search searchWindow = new(namesToProducts[currentOptionDef.defName].SetMilkType) { windowRect = new Rect(anchorX, anchorY, buttonRectLocal.width, 500f) };
             Find.WindowStack.Add(searchWindow);
         }
-        Widgets.DefIcon(new Rect(buttonRect.x, buttonRect.y, buttonRect.height, buttonRect.height), milkProductDef);
+        Widgets.DefIcon(new Rect(buttonRectLocal.x, buttonRectLocal.y, buttonRectLocal.height, buttonRectLocal.height), milkProductDef);
     }
     private void RestoreVanilla()
     {

@@ -15,7 +15,7 @@ public static class RJWSexAndFertility
     /// <summary>3.2：性行为后为泌乳者增加少量池进水（若设置开启）。</summary>
     public static void ApplyPostSexLactationBoost(Pawn pawn)
     {
-        if (pawn?.health?.hediffSet == null || !MilkCumSettings.rjwSexAddsLactationBoost
+        if (pawn?.health?.hediffSet == null || !ModIntegrationGates.RjwModActive
             || MilkCumSettings.rjwSexLactationBoostDeltaS <= 0f) return;
         var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff?.comps == null) return;
@@ -32,7 +32,7 @@ public static class RJWSexAndFertility
 
     public static void GiveSexSatisfactionAfterNursing(Pawn pawn)
     {
-        if (pawn?.needs == null || !MilkCumSettings.rjwSexSatisfactionAfterNursingEnabled) return;
+        if (pawn?.needs == null || !ModIntegrationGates.RjwModActive) return;
         if (!RJWLustIntegration.WasRecentlyNursed(pawn)) return;
         RJWLustIntegration.AddSexNeed(pawn, SexSatisfactionBonusAfterNursing);
     }
@@ -57,7 +57,7 @@ public static class JobDriver_Sex_End_Patch
         if (partner != null) RJWSexAndFertility.GiveSexSatisfactionAfterNursing(partner);
         RJWSexAndFertility.ApplyPostSexLactationBoost(initiator);
         if (partner != null) RJWSexAndFertility.ApplyPostSexLactationBoost(partner);
-        if (MilkCumSettings.rjwLactatingInSexDescriptionEnabled && MilkCumDefOf.EM_HadSexWhileLactating != null)
+        if (ModIntegrationGates.RjwModActive && MilkCumDefOf.EM_HadSexWhileLactating != null)
         {
             if (initiator?.needs?.mood?.thoughts?.memories != null && initiator.IsInLactatingState())
                 initiator.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_HadSexWhileLactating);

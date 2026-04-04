@@ -5,9 +5,11 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using rjw;
+using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Comps;
 using MilkCum.Fluids.Lactation.Helpers;
+using MilkCum.Fluids.Shared.Data;
 
 namespace MilkCum.RJW;
 
@@ -92,7 +94,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
                 }
             }
         }
-        if (!MilkCumSettings.rjwBreastSizeEnabled || ticks % TickInterval != 0) return;
+        if (!ModIntegrationGates.RjwModActive || ticks % TickInterval != 0) return;
         foreach (Map map in Find.Maps)
         {
             if (map?.mapPawns?.AllPawnsSpawned == null) continue;
@@ -133,7 +135,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
 
     private static void ApplyPermanentBreastGain(Pawn pawn)
     {
-        if (!MilkCumSettings.rjwBreastSizeEnabled || !MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled) return;
+        if (!ModIntegrationGates.RjwModActive || !MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled) return;
         float delta = Mathf.Max(0f, MilkCumSettings.rjwPermanentBreastGainSeverityDelta);
         if (delta <= 0f) return;
         foreach (var s in RjwBreastPoolEconomy.GetBreastPoolSnapshots(pawn))
@@ -151,7 +153,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
 
     public static void SyncRJWBreastSeverityFromPool(Pawn pawn)
     {
-        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled || !pawn.IsInLactatingState()) return;
+        if (pawn == null || !ModIntegrationGates.RjwModActive || !pawn.IsInLactatingState()) return;
         var milkComp = pawn.CompEquallyMilkable();
         if (milkComp == null) return;
         float baseTotal = milkComp.GetPoolBaseTotal();
@@ -167,6 +169,12 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
         float t_pool = 0f;
         if (stretchTotal > baseTotal && fullness > baseTotal)
             t_pool = Mathf.Clamp01((fullness - baseTotal) / (stretchTotal - baseTotal));
+        float t_poolStretchAggregate = MilkRealismHelper.QuantizePoolStretchT(t_pool);
+        bool perSideStretch = MilkCumSettings.realismRjwStretchPerSideSync;
+        List<FluidPoolEntry> entries = null;
+        if (perSideStretch)
+            entries = milkComp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        bool anySeverityMoved = false;
         var snaps = RjwBreastPoolEconomy.GetBreastPoolSnapshots(pawn);
         for (int idx = 0; idx < snaps.Count; idx++)
         {
@@ -185,10 +193,32 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
             }
             if (BreastBaseSeverity.TryGetValue(key, out float baseSev))
             {
-                float target = baseSev + MilkCumSettings.rjwLactatingSeverityBonus * t_L + MilkCumSettings.rjwLactatingStretchSeverityBonus * t_pool;
-                comp.SetSeverity(Mathf.Min(BreastPartSeverityCap(hediff), target));
+                float tStretch = t_poolStretchAggregate;
+                if (perSideStretch && entries != null && !string.IsNullOrEmpty(s.PoolKey))
+                {
+                    float baseSide = RjwBreastPoolEconomy.CapacityForPoolKey(entries, s.PoolKey);
+                    if (baseSide < PoolModelConstants.Epsilon)
+                        baseSide = Mathf.Max(PoolModelConstants.Epsilon, s.BaseCapacityPerSide);
+                    float vanillaStretch = baseSide * PoolModelConstants.StretchCapFactor;
+                    float stretchSide = MilkRealismHelper.GetPerSideStretchCapFromBase(baseSide, vanillaStretch);
+                    float fulSide = milkComp.GetFullnessForKey(s.PoolKey);
+                    float tSide = 0f;
+                    if (stretchSide > baseSide && fulSide > baseSide)
+                        tSide = Mathf.Clamp01((fulSide - baseSide) / (stretchSide - baseSide));
+                    tStretch = MilkRealismHelper.QuantizePoolStretchT(tSide);
+                }
+                float target = baseSev + MilkCumSettings.rjwLactatingSeverityBonus * t_L
+                    + MilkCumSettings.rjwLactatingStretchSeverityBonus * tStretch;
+                float capSev = BreastPartSeverityCap(hediff);
+                float clamped = Mathf.Min(capSev, target);
+                float prev = comp.GetSeverity();
+                comp.SetSeverity(clamped);
+                if (Mathf.Abs(prev - clamped) > 1e-5f)
+                    anySeverityMoved = true;
             }
         }
+        if (anySeverityMoved)
+            milkComp.SetEntriesCacheDirty();
     }
 
     private static void ApplyOrRestoreBreastSeverity(Pawn pawn)

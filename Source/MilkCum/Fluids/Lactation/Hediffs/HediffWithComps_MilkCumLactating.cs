@@ -108,14 +108,18 @@ public class HediffWithComps_MilkCumLactating : HediffWithComps
             LactatingComp?.AddMilkingLStimulus();
     }
     /// <summary>挤奶/吸奶后按被扣量的虚拟槽键添加喷乳反射。</summary>
-    public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys)
+    public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys) =>
+        OnGatheredLetdownByKeys(drainedKeys, MilkingStimulusSource.Generic);
+
+    /// <summary>同上，可选刺激源（SYS-06 婴/机倍率）。</summary>
+    public void OnGatheredLetdownByKeys(IEnumerable<string> drainedKeys, MilkingStimulusSource stimulusSource)
     {
         if (drainedKeys == null) return;
         var comp = LactatingComp;
         foreach (string key in drainedKeys)
             comp?.AddLetdownReflexStimulus(key);
         if (MilkCumSettings.enableInflammationModel)
-            comp?.AddMilkingLStimulus();
+            comp?.AddMilkingLStimulus(stimulusSource);
     }
     /// <summary>设计原则 5：stages �?XML 移除，此�?C# 动态生成；capMods �?GenStage 内设置（当前 Clear �?EM_LactatingGain 等独�?Hediff 提供能力），避免�?Def 静态阶段冲突</summary>
     private void GenStages()
@@ -198,7 +202,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     private float effectiveToleranceE;
     /// <summary>上次判定时是否为永久泌乳，用于从非永久变为永久时 SetDirty 刷新阶段名</summary>
     private bool cachedWasPermanentLactation;
-    /// <summary>累计泌乳 tick，用于「因泌乳永久撑大」里程碑判定；仅当 rjwBreastSizeEnabled 且 rjwPermanentBreastGainFromLactationEnabled 时累加。</summary>
+    /// <summary>累计泌乳 tick，用于「因泌乳永久撑大」里程碑判定；仅当 RJW 已加载且 rjwPermanentBreastGainFromLactationEnabled 时累加。</summary>
     private int lactationTicksAccumulated;
     /// <summary>已触发的永久体型增益里程碑次数；每达 rjwPermanentBreastGainDaysPerMilestone 天递增一次并对 RJW 乳房 SetSeverity(base + delta)。</summary>
     private int permanentBreastGainMilestonesDone;
@@ -469,8 +473,8 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
         }
     }
 
-    /// <summary>按侧更新 I：淤积仅当 P 超阈值；卫生×淤积耦合；ρ·I 回落。Δt 小时。</summary>
-    public void UpdateInflammation(CompEquallyMilkable comp, float deltaTHours)
+    /// <summary>按侧更新 I：淤积仅当 P 超阈值；卫生×淤积耦合；ρ·I 回落。Δt 小时。realismStasisTermScale 拟真 SYS-05 仅乘淤积项。</summary>
+    public void UpdateInflammation(CompEquallyMilkable comp, float deltaTHours, float realismStasisTermScale = 1f)
     {
         if (!MilkCumSettings.enableInflammationModel || deltaTHours <= 0f || comp == null) return;
         var entries = GetPoolEntriesForInflammation(comp);
@@ -497,7 +501,7 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             float fk = comp.GetFullnessForKey(e.Key);
             float pk = fk / stretch;
             float excess = Mathf.Max(0f, pk - stasisTh);
-            float stasisTerm = alpha * Mathf.Pow(excess, stasisExp);
+            float stasisTerm = alpha * Mathf.Pow(excess, stasisExp) * Mathf.Max(0f, realismStasisTermScale);
             float normStasis = Mathf.Clamp01(excess / denomHygiene);
             float hygieneMult = Mathf.Lerp(hygieneBase, 1f, normStasis);
             float hygTerm = gamma * badHygiene * hygieneMult;
@@ -547,9 +551,13 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
     }
 
     /// <summary>四层模型：挤奶/吸奶时 L 微幅刺激，单次与每日带上限；仅 enableInflammationModel 时生效。</summary>
-    public void AddMilkingLStimulus()
+    public void AddMilkingLStimulus() => AddMilkingLStimulus(MilkingStimulusSource.Generic);
+
+    /// <inheritdoc cref="AddMilkingLStimulus()"/>
+    public void AddMilkingLStimulus(MilkingStimulusSource stimulusSource)
     {
         float perEvent = Mathf.Clamp(MilkCumSettings.milkingLStimulusPerEvent, 0f, 1f);
+        perEvent *= MilkRealismHelper.GetMilkingStimulusMultiplier(stimulusSource);
         float capEvent = Mathf.Clamp(MilkCumSettings.milkingLStimulusCapPerEvent, 0f, 1f);
         float capDay = Mathf.Clamp(MilkCumSettings.milkingLStimulusCapPerDay, 0f, 1f);
         int now = Find.TickManager.TicksGame;
@@ -770,9 +778,19 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             else
             {
                 cachedWasPermanentLactation = false;
-                // 原版逻辑：L 跟随 parent.Severity（由 SeverityPerDay 衰减）；启用泌乳水平上限时 L = min(Severity, cap)，超出 cap 的部分仅作持续时间缓冲
                 float cap = MilkCumSettings.lactationLevelCap;
-                lactationAmountFromDrug = cap > 0f ? Mathf.Min(Parent.Severity, cap) : Parent.Severity;
+                float target = cap > 0f ? Mathf.Min(Parent.Severity, cap) : Parent.Severity;
+                if (MilkCumSettings.realismWeaningCurve)
+                {
+                    float halfLifeTicks = Mathf.Max(600f, MilkCumSettings.realismWeaningHalfLifeDays * GenDate.TicksPerDay);
+                    float alpha = 1f - Mathf.Exp(-200f / halfLifeTicks);
+                    if (target > lactationAmountFromDrug + 1e-6f)
+                        lactationAmountFromDrug = target;
+                    else
+                        lactationAmountFromDrug = Mathf.Lerp(lactationAmountFromDrug, target, alpha);
+                }
+                else
+                    lactationAmountFromDrug = target;
                 lactationAmountFromBirth = 0f;
                 if (currentLactationAmount < PoolModelConstants.LactationEndEpsilon)
                 {
@@ -782,14 +800,14 @@ public class HediffComp_EqualMilkingLactating : HediffComp_Lactating
             }
         }
         this.Charge = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
-        if (Pawn != null && MilkCumSettings.rjwBreastSizeEnabled && MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled)
+        if (Pawn != null && ModIntegrationGates.RjwModActive && MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled)
             lactationTicksAccumulated++;
     }
 
-    /// <summary>是否达到下一档「因泌乳永久撑大」里程碑；若达到则递增 permanentBreastGainMilestonesDone 并返回 true，由 RJW GameComponent 调用 ApplyPermanentBreastGain。仅当 rjwBreastSizeEnabled 且 rjwPermanentBreastGainFromLactationEnabled 时有效。</summary>
+    /// <summary>是否达到下一档「因泌乳永久撑大」里程碑；若达到则递增 permanentBreastGainMilestonesDone 并返回 true，由 RJW GameComponent 调用 ApplyPermanentBreastGain。仅当 RJW 已加载且 rjwPermanentBreastGainFromLactationEnabled 时有效。</summary>
     public bool TryConsumeNextPermanentGainMilestone()
     {
-        if (!MilkCumSettings.rjwBreastSizeEnabled || !MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled) return false;
+        if (!ModIntegrationGates.RjwModActive || !MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled) return false;
         float days = MilkCumSettings.rjwPermanentBreastGainDaysPerMilestone;
         if (days <= 0f) return false;
         int ticksPerMilestone = (int)(days * 60000f);

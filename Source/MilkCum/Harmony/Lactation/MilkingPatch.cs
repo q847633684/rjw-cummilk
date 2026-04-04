@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using HarmonyLib;
 using MilkCum.Core;
 using MilkCum.Core.Settings;
@@ -301,53 +302,74 @@ internal static class BreastPoolTooltipHelper
 {
     private const string Tab = "  ";
 
-    /// <summary>构建乳房池 tooltip：优先显示该乳房子部位对应的池；若有两侧条目则同时显示。</summary>
-    public static string BuildBreastPoolBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, Pawn pawn)
+    /// <summary>构建乳房池 tooltip：对传入条目按解剖左/右/未标注汇总（同组多叶则加总）；虚拟左/右下同父同胞叶由 <see cref="PawnMilkPoolExtensions.GetPoolEntriesForBreastHediff"/> 预先收窄。</summary>
+    public static string BuildBreastPoolBlock(string sectionLabel, List<(string key, float fullness, float capacity, bool isLeft)> entries, Pawn pawn, bool showSiblingPairHint = false)
     {
         if ((entries?.Count ?? 0) == 0 || pawn == null) return "";
-        var comp = pawn.LactatingHediffComp();
-        if (comp == null) return "";
-        var left = entries.FirstOrDefault(e => e.isLeft && !string.IsNullOrEmpty(e.key));
-        var right = entries.FirstOrDefault(e => !e.isLeft && !string.IsNullOrEmpty(e.key));
-        bool hasLeft = !string.IsNullOrEmpty(left.key);
-        bool hasRight = !string.IsNullOrEmpty(right.key);
-        if (!hasLeft && !hasRight)
+        var lactComp = pawn.LactatingHediffComp();
+        var milkComp = pawn.CompEquallyMilkable();
+        if (lactComp == null) return "";
+
+        float lf = 0f, lc = 0f, lflow = 0f;
+        float rf = 0f, rc = 0f, rflow = 0f;
+        float af = 0f, ac = 0f, aflow = 0f;
+        string skL = null, skR = null, skA = null;
+        bool flowOk = milkComp != null && milkComp.IsCachedFlowValid();
+        int keyCount = 0;
+        foreach (var e in entries)
         {
-            var any = entries.FirstOrDefault(e => !string.IsNullOrEmpty(e.key));
-            if (string.IsNullOrEmpty(any.key)) return "";
-            left = any;
-            hasLeft = true;
+            if (string.IsNullOrEmpty(e.key)) continue;
+            keyCount++;
+            BodyPartRecord part = pawn.GetPartForPoolKey(e.key);
+            float fl = flowOk ? milkComp.GetFlowPerDayForKeyCached(e.key) : 0f;
+            if (e.isLeft)
+            {
+                lf += e.fullness;
+                lc += e.capacity;
+                lflow += fl;
+                skL ??= e.key;
+            }
+            else if (RjwBreastPoolEconomy.IsAnatomicallyRightBreastPart(part))
+            {
+                rf += e.fullness;
+                rc += e.capacity;
+                rflow += fl;
+                skR ??= e.key;
+            }
+            else
+            {
+                af += e.fullness;
+                ac += e.capacity;
+                aflow += fl;
+                skA ??= e.key;
+            }
         }
-        float leftFull = hasLeft && left.capacity >= 0.001f ? left.fullness : 0f;
-        float leftCap = hasLeft ? Mathf.Max(0.001f, left.capacity) : 0f;
-        float rightFull = hasRight && right.capacity >= 0.001f ? right.fullness : 0f;
-        float rightCap = hasRight ? Mathf.Max(0.001f, right.capacity) : 0f;
-        float totalMilk = leftFull + rightFull;
-        float totalBaseCap = Mathf.Max(0.001f, leftCap + rightCap);
-        float totalStretchCap = (leftCap + rightCap) * PoolModelConstants.StretchCapFactor;
-        var (flowL, flowR, multL, multR) = pawn.GetFlowPerDayForBreastSides(left.key, right.key);
-        float flowTotal = flowL + flowR;
-        float letdownL = string.IsNullOrEmpty(left.key) ? 1f : comp.GetLetdownReflexFlowMultiplier(left.key);
-        float letdownR = string.IsNullOrEmpty(right.key) ? 1f : comp.GetLetdownReflexFlowMultiplier(right.key);
-        float pressureL = string.IsNullOrEmpty(left.key) ? 1f : pawn.GetPressureFactorForPool(left.key);
-        float pressureR = string.IsNullOrEmpty(right.key) ? 1f : pawn.GetPressureFactorForPool(right.key);
-        float conditionsL = string.IsNullOrEmpty(left.key) ? 1f : pawn.GetConditionsForPoolKey(left.key);
-        float conditionsR = string.IsNullOrEmpty(right.key) ? 1f : pawn.GetConditionsForPoolKey(right.key);
-        var b = comp.GetFlowPerDayBreakdown();
-        string leftPercent = leftCap >= 0.001f ? (leftFull / leftCap).ToStringPercent() : "0%";
-        string rightPercent = rightCap >= 0.001f ? (rightFull / rightCap).ToStringPercent() : "0%";
-        float leftStretch = leftCap * PoolModelConstants.StretchCapFactor;
-        float rightStretch = rightCap * PoolModelConstants.StretchCapFactor;
+
+        bool hasL = lc >= 0.001f;
+        bool hasR = rc >= 0.001f;
+        bool hasA = ac >= 0.001f;
+        if (!hasL && !hasR && !hasA) return "";
+
+        var entList = milkComp?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var b = lactComp.GetFlowPerDayBreakdown();
+        float totalMilk = lf + rf + af;
+        float totalBaseCap = Mathf.Max(0.001f, lc + rc + ac);
+        float totalStretchCap = totalBaseCap * PoolModelConstants.StretchCapFactor;
+        float flowTotal = lflow + rflow + aflow;
         string totalPercent = totalBaseCap >= 0.001f ? (totalMilk / totalBaseCap).ToStringPercent() : "0%";
-        var factorLinesL = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multL, letdownL, pressureL, conditionsL);
-        var factorLinesR = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, multR, letdownR, pressureR, conditionsR);
-        string kL = FluidSiteKind.BreastLeft.ToString();
-        string kR = FluidSiteKind.BreastRight.ToString();
-        bool singleCustomLeaf = entries.Count == 1 && hasRight && !hasLeft
-            && !string.IsNullOrEmpty(right.key) && right.key != kL && right.key != kR;
-        var sb = new System.Text.StringBuilder();
+
+        bool singleLeafRow = keyCount == 1;
+        string perLeafTitle = "EM.PoolBreastPerLeafDetail".Translate(sectionLabel);
+
+        var sb = new StringBuilder();
         sb.AppendLine("EM.PoolBreastSectionHeader".Translate(sectionLabel));
         sb.AppendLine();
+        if (showSiblingPairHint)
+        {
+            sb.AppendLine("EM.PoolBreastTooltipSiblingPairHint".Translate());
+            sb.AppendLine();
+        }
+
         sb.AppendLine("EM.PoolSectionStorage".Translate());
         sb.Append(Tab).AppendLine("EM.PoolBreastTotalMilkLine".Translate(
             totalMilk.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
@@ -358,46 +380,69 @@ internal static class BreastPoolTooltipHelper
         sb.AppendLine("EM.PoolSectionFlow".Translate());
         sb.Append(Tab).AppendLine("EM.PoolBreastTotalFlowLine".Translate(flowTotal.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
         sb.AppendLine();
-        if (hasLeft)
+
+        if (hasL)
         {
-            sb.AppendLine("EM.PoolLeftBreast".Translate());
-            sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
-                leftFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                leftCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                leftPercent));
-            sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flowL.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-            sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(leftStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-            if (Verse.Prefs.DevMode)
-            {
-                sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
-                sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
-                foreach (string line in factorLinesL)
-                    sb.Append(Tab).Append(Tab).AppendLine(line);
-            }
+            string title = singleLeafRow && !hasR && !hasA ? perLeafTitle : "EM.PoolLeftBreast".Translate();
+            AppendAggregatedBreastSide(sb, lactComp, b, title, lf, lc, lflow, FlowMultForBreastKey(entList, skL), skL, pawn);
         }
 
-        if (hasRight)
+        if (hasR)
         {
             sb.AppendLine();
-            sb.AppendLine(singleCustomLeaf
-                ? "EM.PoolBreastPerLeafDetail".Translate(sectionLabel)
-                : "EM.PoolRightBreast".Translate());
-            sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
-                rightFull.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                rightCap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
-                rightPercent));
-            sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flowR.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-            sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(rightStretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
-            if (Verse.Prefs.DevMode)
-            {
-                sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
-                sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
-                foreach (string line in factorLinesR)
-                    sb.Append(Tab).Append(Tab).AppendLine(line);
-            }
+            string title = singleLeafRow && !hasL && !hasA ? perLeafTitle : "EM.PoolRightBreast".Translate();
+            AppendAggregatedBreastSide(sb, lactComp, b, title, rf, rc, rflow, FlowMultForBreastKey(entList, skR), skR, pawn);
+        }
+
+        if (hasA)
+        {
+            sb.AppendLine();
+            string title = singleLeafRow && !hasL && !hasR ? perLeafTitle : "EM.PoolBreastAmbiguousSide".Translate();
+            AppendAggregatedBreastSide(sb, lactComp, b, title, af, ac, aflow, FlowMultForBreastKey(entList, skA), skA, pawn);
         }
 
         return sb.ToString();
+    }
+
+    static float FlowMultForBreastKey(List<FluidPoolEntry> list, string k)
+    {
+        if (string.IsNullOrEmpty(k) || list == null) return 0f;
+        for (int i = 0; i < list.Count; i++)
+            if (list[i].Key == k)
+                return list[i].FlowMultiplier;
+        return 0f;
+    }
+
+    static void AppendAggregatedBreastSide(
+        StringBuilder sb,
+        HediffComp_EqualMilkingLactating lactComp,
+        HediffComp_EqualMilkingLactating.FlowBreakdown b,
+        string sideTitle,
+        float full,
+        float cap,
+        float flow,
+        float mult,
+        string poolKey,
+        Pawn pawn)
+    {
+        sb.AppendLine(sideTitle);
+        string pct = cap >= 0.001f ? (full / cap).ToStringPercent() : "0%";
+        float stretch = cap * PoolModelConstants.StretchCapFactor;
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
+            full.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
+            pct));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideFlowLine".Translate(flow.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        sb.Append(Tab).AppendLine("EM.PoolBreastSideCapMax".Translate(stretch.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)));
+        if (!Prefs.DevMode || string.IsNullOrEmpty(poolKey)) return;
+        float letdown = lactComp.GetLetdownReflexFlowMultiplier(poolKey);
+        float pressure = pawn.GetPressureFactorForPool(poolKey);
+        float conditions = pawn.GetConditionsForPoolKey(poolKey);
+        var factorLines = HediffComp_EqualMilkingLactating.BuildBreastEfficiencyFactorLinesForDevMode(b, mult, letdown, pressure, conditions);
+        sb.Append(Tab).AppendLine("EM.PoolBreastDevModeOnly".Translate());
+        sb.Append(Tab).AppendLine("EM.PoolBreastMechanismLabel".Translate());
+        foreach (string line in factorLines)
+            sb.Append(Tab).Append(Tab).AppendLine(line);
     }
 }
 
@@ -421,9 +466,9 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
                 string sectionLabel = parent.LabelCap;
                 string blockHeader = "EM.PoolBreastSectionHeader".Translate(sectionLabel);
                 if (!string.IsNullOrEmpty(__result) && __result.Contains(blockHeader)) return;
-                var entries = pawn.GetPoolEntriesForBreastHediff(parent);
+                var entries = pawn.GetPoolEntriesForBreastHediff(parent, out bool sibHint);
                 if (entries.Count == 0) return;
-                string block = BreastPoolTooltipHelper.BuildBreastPoolBlock(sectionLabel, entries, pawn);
+                string block = BreastPoolTooltipHelper.BuildBreastPoolBlock(sectionLabel, entries, pawn, sibHint);
                 if (!string.IsNullOrEmpty(block))
                     __result = (__result ?? "") + "\n" + block;
                 return;
@@ -484,12 +529,15 @@ public static class HediffWithComps_TipStringExtra_BreastPoolFallback_Patch
             string blockHeader = "EM.PoolBreastSectionHeader".Translate(sectionLabel);
             if (!string.IsNullOrEmpty(__result) && __result.Contains(blockHeader)) return;
 
-            var entries = pawn.GetPoolEntriesForBreastHediff(__instance);
+            var entries = pawn.GetPoolEntriesForBreastHediff(__instance, out bool sibHint);
             if (entries.Count == 0 && __instance.Part != null)
+            {
                 entries = pawn.GetPoolEntriesForBreastPart(__instance.Part);
+                sibHint = false;
+            }
             if (entries.Count == 0) return;
 
-            string block = BreastPoolTooltipHelper.BuildBreastPoolBlock(sectionLabel, entries, pawn);
+            string block = BreastPoolTooltipHelper.BuildBreastPoolBlock(sectionLabel, entries, pawn, sibHint);
             if (!string.IsNullOrEmpty(block))
                 __result = (__result ?? "") + "\n" + block;
         }

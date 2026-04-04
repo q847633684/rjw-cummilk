@@ -57,6 +57,10 @@ internal partial class MilkCumSettings
 	// 事件进水/导管模型
 	public static int inflowEventSubsteps = 6;
 	public static int inflowEventBurstDurationTicks = 300;
+	/// <summary>
+	/// 进水哲学：开启=「单一泌乳轴」—小人级 60tick 总预算在各乳池键间按通道权重分配；关闭=「并行独立侧」—每侧独立乘满同一份标度（历史行为，多侧总进水更高）。UI 文案键 EM.InflowSharedMammaryBudget / Desc。
+	/// </summary>
+	public static bool inflowSharedMammaryBudget;
 	public static float ductHopPenaltyPerEdge = 0.15f;
 	public static float ductInflowInflammationResistance = 1.5f;
 	public static float ductDrainInflammationResistanceManual = 1.2f;
@@ -161,6 +165,7 @@ internal partial class MilkCumSettings
 		Scribe_Values.Look(ref adaptationSlowOmega, "EM.AdaptationSlowOmega", 0.00025f);
 		Scribe_Values.Look(ref inflowEventSubsteps, "EM.InflowEventSubsteps", 6);
 		Scribe_Values.Look(ref inflowEventBurstDurationTicks, "EM.InflowEventBurstDurationTicks", 300);
+		Scribe_Values.Look(ref inflowSharedMammaryBudget, "EM.InflowSharedMammaryBudget", false);
 		Scribe_Values.Look(ref ductHopPenaltyPerEdge, "EM.DuctHopPenaltyPerEdge", 0.15f);
 		Scribe_Values.Look(ref ductInflowInflammationResistance, "EM.DuctInflowInflammationResistance", 1.5f);
 		Scribe_Values.Look(ref ductDrainInflammationResistanceManual, "EM.DuctDrainInflammationResistanceManual", 1.2f);

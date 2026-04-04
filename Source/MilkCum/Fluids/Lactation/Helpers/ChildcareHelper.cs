@@ -63,7 +63,7 @@ public static class ChildcareHelper
 
         var drainedKeys = new List<string>();
         float actualDrained = comp.DrainForConsume(toDrainPool, drainedKeys, singleSideOnly: true);
-        lactatingHediff.OnGatheredLetdownByKeys(drainedKeys);
+        lactatingHediff.OnGatheredLetdownByKeys(drainedKeys, MilkingStimulusSource.Baby);
         lactatingComp.SyncChargeFromPool();
 
         comp.breastfedAmount += actualDrained;

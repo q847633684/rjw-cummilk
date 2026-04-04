@@ -21,13 +21,20 @@ internal partial class MilkCumSettings
 	private static Widget_DefaultSetting defaultSettingWidget;
 	private static Widget_CumpilationSettings cumpilationSettings;
 	private static Widget_RaceOverrides raceOverridesWidget;
+	private int _prevMainTabForPawnCache = int.MinValue;
 
 	public void DoWindowContents(Rect inRect)
 	{
 		inRect.yMin += unitSize;
 
-		pawnDefs = GetMilkablePawns();
-		defaultMilkProducts = GetDefaultMilkProducts();
+		bool needPawnCache = pawnDefs == null
+			|| (mainTabIndex == (int)MainTabIndex.DataRaces && _prevMainTabForPawnCache != (int)MainTabIndex.DataRaces);
+		if (needPawnCache)
+		{
+			pawnDefs = GetMilkablePawns();
+			defaultMilkProducts = GetDefaultMilkProducts();
+		}
+		_prevMainTabForPawnCache = mainTabIndex;
 
 		List<TabRecord> mainTabs = new()
 		{
@@ -57,13 +64,15 @@ internal partial class MilkCumSettings
 
 		bool useAdvancedSettings = mainTabIndex == (int)MainTabIndex.HealthRisk || mainTabIndex == (int)MainTabIndex.Permissions
 			|| mainTabIndex == (int)MainTabIndex.Balance || mainTabIndex == (int)MainTabIndex.Integrations || mainTabIndex == (int)MainTabIndex.DevTools;
-		if (useAdvancedSettings) advancedSettings = new Widget_AdvancedSettings();
+		// 勿每帧 new：否则 ScrollView/_sectionScrollPosition 归零，无法滚动或拖条。
+		if (useAdvancedSettings)
+			advancedSettings ??= new Widget_AdvancedSettings();
 
 		switch (mainTabIndex)
 		{
 			case (int)MainTabIndex.CoreSystems:
-				breastfeedSettings = new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
-				cumpilationSettings = new Widget_CumpilationSettings();
+				breastfeedSettings ??= new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
+				cumpilationSettings ??= new Widget_CumpilationSettings();
 				if (subTabIndex == 0) breastfeedSettings.DrawBreastfeedSystemFull(contentRect);
 				else if (subTabIndex == 1) cumpilationSettings.Draw(contentRect);
 				else
@@ -77,7 +86,7 @@ internal partial class MilkCumSettings
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.HealthRisk, subTabIndex);
 				break;
 			case (int)MainTabIndex.Permissions:
-				defaultSettingWidget = new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
+				defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
 				if (subTabIndex == 0) advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Permissions, 0);
 				else defaultSettingWidget.Draw(contentRect);
 				break;
@@ -88,10 +97,10 @@ internal partial class MilkCumSettings
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Integrations, subTabIndex);
 				break;
 			case (int)MainTabIndex.DataRaces:
-				milkableTable = new Widget_MilkableTable(namesToProducts);
-				milkTagsTable = new Widget_MilkTagsTable(namesToProducts, productsToTags);
-				raceOverridesWidget = new Widget_RaceOverrides();
-				geneSetting = new Widget_GeneSetting(genes);
+				milkableTable ??= new Widget_MilkableTable(namesToProducts);
+				milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
+				raceOverridesWidget ??= new Widget_RaceOverrides();
+				geneSetting ??= new Widget_GeneSetting(genes);
 				if (subTabIndex == 0) milkableTable.Draw(contentRect);
 				else if (subTabIndex == 1) milkTagsTable.Draw(contentRect);
 				else if (subTabIndex == 2) raceOverridesWidget.Draw(contentRect);

@@ -10,6 +10,8 @@ namespace MilkCum.UI;
 public class Window_Search : Window
 {
 	private Vector2 scrollPosition = new(0f, 0f);
+	/// <summary>与 RJW 一致：内容超过列表视口时累加的纵向增量。</summary>
+	private float listScrollExtra;
 	private readonly QuickSearchWidget quickSearchWidget = new();
 	private static readonly List<ThingDef> AllDefs = GetItemDefs();
 	private List<ThingDef> searchResults = new();
@@ -45,10 +47,10 @@ public class Window_Search : Window
 		float listTop = inRect.y + Text.LineHeight + UNIT_SIZE;
 		float listHeight = inRect.height - Text.LineHeight - UNIT_SIZE;
 		Rect outRect = new(inRect.x, listTop, inRect.width, listHeight);
-		Rect contentRect = new(inRect.x, listTop, inRect.width - Text.LineHeight, Mathf.Max(1f, searchResults.Count * Text.LineHeight));
-		Widgets.BeginScrollView(outRect, ref scrollPosition, contentRect);
-		Rect listingRect = new(inRect.x, listTop, inRect.width - Text.LineHeight, 999999);
-		listing_Standard.Begin(listingRect);
+		float innerW = outRect.width - 16f;
+		Rect viewRect = new(0f, 0f, innerW, listHeight + listScrollExtra);
+		Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect);
+		listing_Standard.Begin(viewRect);
 		listing_Standard.verticalSpacing = 2f;
 		foreach (ThingDef def in searchResults)
 		{
@@ -63,6 +65,7 @@ public class Window_Search : Window
 			}
 		}
 		listing_Standard.End();
+		listScrollExtra = Mathf.Max(0f, listing_Standard.MaxColumnHeightSeen - listHeight);
 		Widgets.EndScrollView();
 		Text.Anchor = TextAnchor.UpperLeft;
 	}

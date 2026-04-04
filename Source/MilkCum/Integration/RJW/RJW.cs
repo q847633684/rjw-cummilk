@@ -104,7 +104,7 @@ public static class Hediff_BasePregnancy_Patch
     }
 }
 
-/// <summary>RJW 高潮产液（produceFluidOnOrgasm）：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量（AddMilkToKeys）。性行为后 L 增量见 RJWSexAndFertility.ApplyPostSexLactationBoost（rjwSexAddsLactationBoost）。</summary>
+/// <summary>RJW 高潮产液（produceFluidOnOrgasm）：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量（AddMilkToKeys）。性行为后 L 增量见 RJWSexAndFertility.ApplyPostSexLactationBoost（RJW 已加载且 DeltaS&gt;0 时生效）。</summary>
 [HarmonyPatch(typeof(JobDriver_Sex), nameof(JobDriver_Sex.Orgasm))]
 public static class JobDriver_Sex_OrgasmMilk_Patch
 {
@@ -119,7 +119,7 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
         if (!pawn.IsLactating()) return;
         var comp = pawn.CompEquallyMilkable();
         if (comp == null) return;
-        if (!MilkCumSettings.rjwBreastSizeEnabled) return;
+        if (!ModIntegrationGates.RjwModActive) return;
         var list = pawn.GetBreastListOrEmpty();
         if (list.Count == 0) return;
         var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();

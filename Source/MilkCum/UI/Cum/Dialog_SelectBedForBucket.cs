@@ -12,6 +12,7 @@ public class Dialog_SelectBedForBucket : Window
     private readonly Map _map;
     private readonly CompCumBucketLink _comp;
     private Vector2 _scrollPosition;
+    private float _bedListScrollExtra;
     private List<Building_Bed> _bedsInRoom;
     private List<Building_Bed> _bedsElsewhere;
 
@@ -51,30 +52,33 @@ public class Dialog_SelectBedForBucket : Window
         y += 28f;
 
         var outRect = new Rect(inRect.x, y, inRect.width, inRect.height - y);
-        var viewRect = new Rect(0f, 0f, outRect.width - 24f, (_bedsInRoom.Count + _bedsElsewhere.Count) * 32f + 64f);
+        float viewH = outRect.height;
+        float innerW = outRect.width - 16f;
+        var viewRect = new Rect(0f, 0f, innerW, viewH + _bedListScrollExtra);
         Widgets.BeginScrollView(outRect, ref _scrollPosition, viewRect);
 
         float row = 0f;
         if (_bedsInRoom.Count > 0)
         {
-            Widgets.Label(new Rect(0f, row, viewRect.width, 22f), "EM_CumBucket_BedsInRoom".Translate());
+            Widgets.Label(new Rect(0f, row, innerW, 22f), "EM_CumBucket_BedsInRoom".Translate());
             row += 24f;
             foreach (var bed in _bedsInRoom)
             {
-                DrawBedRow(viewRect.width, ref row, bed);
+                DrawBedRow(innerW, ref row, bed);
             }
             row += 8f;
         }
         if (_bedsElsewhere.Count > 0)
         {
-            Widgets.Label(new Rect(0f, row, viewRect.width, 22f), "EM_CumBucket_BedsElsewhere".Translate());
+            Widgets.Label(new Rect(0f, row, innerW, 22f), "EM_CumBucket_BedsElsewhere".Translate());
             row += 24f;
             foreach (var bed in _bedsElsewhere)
             {
-                DrawBedRow(viewRect.width, ref row, bed);
+                DrawBedRow(innerW, ref row, bed);
             }
         }
         Widgets.EndScrollView();
+        _bedListScrollExtra = Mathf.Max(0f, row - viewH);
     }
 
     private void DrawBedRow(float width, ref float row, Building_Bed bed)

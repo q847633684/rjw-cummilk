@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MilkCum.Core;
+using MilkCum.Fluids.Lactation.Helpers;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -160,7 +161,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             for (int i = 0; i < drainedKeys.Count; i++)
                 sessionDrainedKeys.Add(drainedKeys[i]);
             // 通知泌乳反射：本 tick 被扣量的池侧 key，用于更新喷乳反射 R 与流速倍率
-            Target.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys);
+            Target.LactatingHediffWithComps()?.OnGatheredLetdownByKeys(drainedKeys, MilkingStimulusSource.Machine);
             Target.LactatingHediffComp()?.SyncChargeFromPool();
             totalDrained += actualDrained;
             if (MilkBuilding != null)

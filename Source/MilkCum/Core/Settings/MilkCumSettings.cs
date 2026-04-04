@@ -68,7 +68,7 @@ internal partial class MilkCumSettings : ModSettings
 	public static float reabsorbNutritionEfficiency = 0.5f;
 	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/奶池/回缩/吸奶明细到日志。</summary>
 	public static bool lactationPoolTickLog = false;
-	/// <summary>DevMode 时打开：输出每次挤奶操作（手动/机械）入口、结果等明细日志，用于调试与 AI 测试。</summary>
+	/// <summary>DevMode 下输出挤奶扣池明细；不依赖 <see cref="lactationLog"/>。已存档，「调试工具」可勾选。</summary>
 	public static bool milkingActionLog = false;
 	/// <summary>DevMode 时打开：输出泌乳关键流程日志（进水/衰减/溢出等），关闭可减少刷屏；仅用于细查 PoolTickLog 不方便的情况。</summary>
 	public static bool lactationLog = true;
@@ -86,15 +86,20 @@ internal partial class MilkCumSettings : ModSettings
 		if (Verse.Prefs.DevMode && lactationPoolTickLog && !string.IsNullOrEmpty(message))
 			Verse.Log.Message("[MilkCum.Pool] " + message);
 	}
+
+	/// <summary>仅当 DevMode 且 <see cref="milkingActionLog"/> 为 true 时输出；与 <see cref="lactationLog"/> 无关。</summary>
+	public static void MilkingActionLogMessage(string message)
+	{
+		if (Verse.Prefs.DevMode && milkingActionLog && !string.IsNullOrEmpty(message))
+			Verse.Log.Message("[MilkCum.Milking] " + message);
+	}
 	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
 	public static AnimalBreastfeed animalBreastfeed = new();
 	public static MechanoidBreastfeed mechanoidBreastfeed = new();
 	// 泌乳期意义/操纵/移动收益：开关与百分比(0~0.20 = 0%~20%)
 	public static bool lactatingGainEnabled = true;
 	public static float lactatingGainCapModPercent = 0.10f;
-	// RJW 联动（仅当 rim.job.world 激活时生效）。
-	public static bool rjwBreastSizeEnabled = true;
-	/// <summary>RJW 胸围容量系数：单侧基容量 =（由 <see cref="rjwBreastPoolCapacityMode"/> 选定的严重度/体积/重量等基值）× 本系数，默认 2。</summary>
+	/// <summary>RJW 胸围容量系数：单侧基容量 =（由 <see cref="rjwBreastPoolCapacityMode"/> 选定的严重度/体积/重量等基值）× 本系数，默认 2。仅当 RJW（rim.job.world）在 mod 列表中时乳房池才使用 RJW 数据。</summary>
 	public static float rjwBreastCapacityCoefficient = 2f;
 	/// <summary>乳池单侧基容量来源：默认 <see cref="RjwBreastPoolCapacityMode.RjwBreastVolume"/>（体积/重量无有效 RJW 尺寸则为 0）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
 	public static RjwBreastPoolCapacityMode rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastVolume;
@@ -112,18 +117,10 @@ internal partial class MilkCumSettings : ModSettings
 	public static float rjwPermanentBreastGainDaysPerMilestone = 10f;
 	/// <summary>每次里程碑永久增加的 Severity 量（RJW 定义），上限 1。</summary>
 	public static float rjwPermanentBreastGainSeverityDelta = 0.03f;
-	public static bool rjwLustFromNursingEnabled = true;
-	public static bool rjwSexNeedLactatingBonusEnabled = true;
-	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
 	/// <summary>泌乳期对 RJW 生育能力的倍率（0~1），1 = 不影响，0.85 = 略微降低怀孕率。</summary>
 	public static float rjwLactationFertilityFactor = 0.85f;
-	/// <summary>是否在性行为描述中加入「泌乳中」提示。</summary>
-	public static bool rjwLactatingInSexDescriptionEnabled = true;
-	/// <summary>3.2：性行为结束后是否给泌乳增加一小段额外进水/持续时间加成，可选。</summary>
-	public static bool rjwSexAddsLactationBoost = false;
+	/// <summary>性行为结束后泌乳进水强度；RJW 已加载且 &gt;0 时生效。</summary>
 	public static float rjwSexLactationBoostDeltaS = 0.15f;
-	// 乳腺炎计算来源：是否与 Dubs Bad Hygiene 联动；开启时用 Hygiene 需求，否则用房间清洁度。
-	public static bool useDubsBadHygieneForMastitis = true;
 	// 乳腺炎/耐受相关配置已拆分到 MilkCumSettings.Risk.cs。
 	// 耐受动态：dE/dt = μ×L − ν×E；启用时由 mod 维护的 E 计算 E_tol（流速/容量），取代仅用游戏内耐受严重度 t。
 	public static bool enableToleranceDynamic = true;
@@ -182,7 +179,6 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref reabsorbNutritionEfficiency, "EM.ReabsorbNutritionEfficiency", 0.5f);
 		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
-		Scribe_Values.Look(ref rjwBreastSizeEnabled, "EM.RjwBreastSizeEnabled", true);
 		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
 		Scribe_Values.Look(ref rjwBreastPoolCapacityMode, "EM.RjwBreastPoolCapMode", RjwBreastPoolCapacityMode.RjwBreastVolume);
 		rjwBreastPoolCapacityMode = (RjwBreastPoolCapacityMode)Mathf.Clamp((int)rjwBreastPoolCapacityMode, 0, 2);
@@ -194,18 +190,13 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwPermanentBreastGainFromLactationEnabled, "EM.RjwPermanentBreastGainFromLactationEnabled", false);
 		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
 		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
-		Scribe_Values.Look(ref rjwLustFromNursingEnabled, "EM.RjwLustFromNursingEnabled", true);
-		Scribe_Values.Look(ref rjwSexNeedLactatingBonusEnabled, "EM.RjwSexNeedLactatingBonusEnabled", true);
-		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
-		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
-		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", false);
 		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
-		Scribe_Values.Look(ref useDubsBadHygieneForMastitis, "EM.UseDubsBadHygieneForMastitis", true);
 		ExposeRiskData();
 		Scribe_Values.Look(ref enableToleranceDynamic, "EM.EnableToleranceDynamic", true);
 		Scribe_Values.Look(ref toleranceDynamicMu, "EM.ToleranceDynamicMu", 0.03f);
 		Scribe_Values.Look(ref toleranceDynamicNu, "EM.ToleranceDynamicNu", 0.08f);
+		Scribe_Values.Look(ref ProlactinToleranceGainPerDose, "EM.ProlactinToleranceGainPerDose", 0.044f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
 		Scribe_Values.Look(ref lactationLevelCap, "EM.LactationLevelCap", 0f);
 		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "EM.LactationLevelCapDurationMultiplier", 1.5f);
@@ -217,6 +208,7 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
 		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
 		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
+		Scribe_Values.Look(ref milkingActionLog, "EM.MilkingActionLog", false);
 		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);
 		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
 		ExposeCumData();
@@ -230,6 +222,7 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Deep.Look(ref animalSetting, "EM.AnimalSetting");
 		Scribe_Deep.Look(ref mechSetting, "EM.MechSetting");
 		Scribe_Deep.Look(ref entitySetting, "EM.EntitySetting");
+		ExposeRealismData();
 	}
 
 	internal void UpdateMilkCumSettings()

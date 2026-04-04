@@ -18,13 +18,26 @@ public class Widget_GeneSetting
     public void Draw(Rect inRect)
     {
         Rect scrollViewRect = new(inRect.x, inRect.y, inRect.width, inRect.height - ELEMENT_HEIGHT);
-        Rect viewRect = new(0f, 0f, inRect.width - 16f, gene_MilkTypes.Count * LINE_HEIGHT);
-
+        float contentH = gene_MilkTypes.Count * LINE_HEIGHT;
+        float rowWidth = scrollViewRect.width - 16f;
+        Rect viewRect = new(0f, 0f, rowWidth, Mathf.Max(contentH, 1f));
         Widgets.BeginScrollView(scrollViewRect, ref scrollPosition, viewRect);
+        DrawGeneRows(rowWidth);
+        Widgets.EndScrollView();
 
+        // Add new entry button
+        Rect addButtonRect = new(inRect.x, inRect.yMax - ELEMENT_HEIGHT, inRect.width, ELEMENT_HEIGHT);
+        if (Widgets.ButtonText(addButtonRect, "+"))
+        {
+            Find.WindowStack.Add(new Dialog_GeneConfig(AddGene));
+        }
+    }
+
+    private void DrawGeneRows(float rowWidth)
+    {
         for (int i = 0; i < gene_MilkTypes.Count; i++)
         {
-            Rect rowRect = new(0f, i * LINE_HEIGHT, viewRect.width, ELEMENT_HEIGHT);
+            Rect rowRect = new(0f, i * LINE_HEIGHT, rowWidth, ELEMENT_HEIGHT);
 
             Gene_MilkTypeData geneData = gene_MilkTypes[i];
 
@@ -60,26 +73,18 @@ public class Widget_GeneSetting
             Widgets.Label(rowRect, geneData.StatSummary());
             rowRect.height = ELEMENT_HEIGHT;
             // Edit button
-            Rect editButtonRect = new(viewRect.width - (2f * ELEMENT_HEIGHT), rowRect.y, rowRect.height, rowRect.height);
+            Rect editButtonRect = new(rowWidth - (2f * ELEMENT_HEIGHT), rowRect.y, rowRect.height, rowRect.height);
             if (Widgets.ButtonImage(editButtonRect, TexButton.Info))
             {
                 Find.WindowStack.Add(new Dialog_GeneConfig(geneData.CopyFrom, geneData));
             }
             // Display delete button
-            Rect deleteButtonRect = new(viewRect.width - ELEMENT_HEIGHT, rowRect.y, rowRect.height, rowRect.height);
+            Rect deleteButtonRect = new(rowWidth - ELEMENT_HEIGHT, rowRect.y, rowRect.height, rowRect.height);
             if (Widgets.ButtonImage(deleteButtonRect, TexButton.Delete))
             {
                 gene_MilkTypes.RemoveAt(i);
                 i--;
             }
-        }
-        Widgets.EndScrollView();
-
-        // Add new entry button
-        Rect addButtonRect = new(inRect.x, inRect.yMax - ELEMENT_HEIGHT, inRect.width, ELEMENT_HEIGHT);
-        if (Widgets.ButtonText(addButtonRect, "+"))
-        {
-            Find.WindowStack.Add(new Dialog_GeneConfig(AddGene));
         }
     }
     private void AddGene(Gene_MilkTypeData geneData)

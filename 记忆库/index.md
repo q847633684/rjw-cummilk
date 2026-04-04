@@ -61,6 +61,7 @@
 | 代码审阅：泌乳系统核心逻辑 | [design/代码审阅-泌乳系统核心逻辑](design/代码审阅-泌乳系统核心逻辑.md) | #审阅 #泌乳 #双池 #UpdateMilkPools #CompEquallyMilkable |
 | 代码审阅：药物系统实现确认 | [design/代码审阅-药物系统实现确认](design/代码审阅-药物系统实现确认.md) | #审阅 #药物 #吸收延迟 #耐受公式 #WorldComponent_MilkCumAbsorptionDelay |
 | 奶与奶制品权限开放接口 | [design/奶与奶制品权限开放接口](design/奶与奶制品权限开放接口.md) | #权限 #开放接口 #AllowSucklerHandlers #CanConsumeMilkProductHandlers #扩展 |
+| 拟真子系统开关清单与优先级 | [design/拟真子系统开关清单与优先级](design/拟真子系统开关清单与优先级.md) | #拟真 #顺应性 #代谢门控 #漏奶 #RJW形变 #优先级 #P0P1P2 |
 
 ---
 

@@ -134,7 +134,8 @@ public static class MilkRelatedHealthHelper
         if (milkComp == null) return;
         _ = fullness;
         _ = maxFullness;
-        lactatingComp.UpdateInflammation(milkComp, 60f / 3600f);
+        float stasisScale = MilkRealismHelper.GetStasisTermScale(milkComp);
+        lactatingComp.UpdateInflammation(milkComp, 60f / 3600f, stasisScale);
         lactatingComp.TryTriggerMastitisFromInflammation();
     }
 

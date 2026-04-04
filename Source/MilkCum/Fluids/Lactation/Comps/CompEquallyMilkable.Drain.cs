@@ -192,7 +192,7 @@ public partial class CompEquallyMilkable
         if (MilkCumSettings.milkingActionLog && Pawn != null && drained > 0f)
         {
             float fullnessAfterTotal = Fullness;
-            MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainForConsume amountReq={amount:F3} drained={drained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
+            MilkCumSettings.MilkingActionLogMessage($"pawn={Pawn.LabelShort} tick={tick} mode=DrainForConsume amountReq={amount:F3} drained={drained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
         }
         return drained;
     }
@@ -289,9 +289,9 @@ public partial class CompEquallyMilkable
                 ? $" sideKey={entries[singleDrainSideIndex.Value].Key}"
                 : "";
             if (logMode == "DrainSingleSide")
-                MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainSingleSide amountReq={remainingCap:F3} drained={totalDrained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}{sideKeyPart}");
+                MilkCumSettings.MilkingActionLogMessage($"pawn={Pawn.LabelShort} tick={tick} mode=DrainSingleSide amountReq={remainingCap:F3} drained={totalDrained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}{sideKeyPart}");
             else
-                MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={Pawn.LabelShort} tick={tick} mode=DrainParallel cap={remainingCap:F3} drained={totalDrained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
+                MilkCumSettings.MilkingActionLogMessage($"pawn={Pawn.LabelShort} tick={tick} mode=DrainParallel cap={remainingCap:F3} drained={totalDrained:F3} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3}");
         }
         return totalDrained;
     }

@@ -156,7 +156,7 @@ public partial class CompEquallyMilkable
         if (MilkCumSettings.milkingActionLog && pawn != null && totalDrained > 0f)
         {
             float fullnessAfterTotal = Fullness;
-            MilkCumSettings.LactationLog($"[MilkCum][INFO][Milking] pawn={pawn.LabelShort} tick={tick} mode=SpawnBottles drained={totalDrained:F3} bottlesSpawned={bottlesSpawned} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3} doer={doer?.LabelShort}");
+            MilkCumSettings.MilkingActionLogMessage($"pawn={pawn.LabelShort} tick={tick} mode=SpawnBottles drained={totalDrained:F3} bottlesSpawned={bottlesSpawned} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3} doer={doer?.LabelShort}");
         }
         if (parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
         {

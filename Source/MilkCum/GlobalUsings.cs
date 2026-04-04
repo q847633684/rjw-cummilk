@@ -16,4 +16,5 @@ global using MilkCum.Core.Stats;
 global using MilkCum.Fluids.Lactation.World;
 // Harmony 补丁
 global using MilkCum.Harmony;
+global using MilkCum.Integration;
 global using MilkCum.Integration.DubsBadHygiene;

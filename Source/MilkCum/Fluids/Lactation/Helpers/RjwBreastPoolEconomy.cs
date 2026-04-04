@@ -162,7 +162,7 @@ public static class RjwBreastPoolEconomy
     public static List<RjwBreastPoolSnapshot> GetBreastPoolSnapshots(Pawn pawn)
     {
         var result = new List<RjwBreastPoolSnapshot>();
-        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
+        if (pawn == null || !ModIntegrationGates.RjwModActive) return result;
         try
         {
             if (MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.RjwChestUnified)
@@ -195,7 +195,7 @@ public static class RjwBreastPoolEconomy
     /// 同 tick、同键签名时由 <see cref="BreastPoolSideRowsCache"/> 缓存，避免重复构建。
     /// </summary>
     public static List<RjwBreastPoolSideRow> GetBreastPoolSideRows(Pawn pawn) =>
-        pawn == null || !MilkCumSettings.rjwBreastSizeEnabled
+        pawn == null || !ModIntegrationGates.RjwModActive
             ? new List<RjwBreastPoolSideRow>()
             : BreastPoolSideRowsCache.GetCached(pawn, BuildBreastPoolSideRowsUncached);
 
@@ -284,7 +284,7 @@ public static class RjwBreastPoolEconomy
     public static List<FluidPoolEntry> BuildChestUnifiedBreastPoolEntries(Pawn pawn)
     {
         var result = new List<FluidPoolEntry>();
-        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
+        if (pawn == null || !ModIntegrationGates.RjwModActive) return result;
         try
         {
             var rows = BuildChestUnifiedSideRows(pawn);
@@ -312,7 +312,7 @@ public static class RjwBreastPoolEconomy
     public static List<FluidPoolEntry> BuildPerAnatomicalLeafBreastPoolEntries(Pawn pawn)
     {
         var result = new List<FluidPoolEntry>();
-        if (pawn == null || !MilkCumSettings.rjwBreastSizeEnabled) return result;
+        if (pawn == null || !ModIntegrationGates.RjwModActive) return result;
         try
         {
             var cands = BuildBreastPoolCandidates(pawn);
@@ -339,7 +339,7 @@ public static class RjwBreastPoolEconomy
         return result;
     }
 
-    private static bool IsLateralBreastLeafPart(BodyPartRecord part)
+    internal static bool IsLateralBreastLeafPart(BodyPartRecord part)
     {
         if (part?.def?.defName == null) return false;
         string d = part.def.defName;
