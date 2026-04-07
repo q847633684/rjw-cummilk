@@ -4,7 +4,7 @@ using System;
 
 namespace MilkCum.Fluids.Lactation.Hediffs;
 
-/// <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 Docs/泌乳系统逻辑图</summary>
+/// <summary>吸收延迟 hediff 悬停时显示距最早一批泌乳生效的剩余时间。见 记忆库/docs/泌乳系统逻辑图</summary>
 public class HediffComp_AbsorptionDelayTip : HediffComp
 {
     public override string CompTipStringExtra

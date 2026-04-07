@@ -104,11 +104,11 @@ public static class Hediff_BasePregnancy_Patch
     }
 }
 
-/// <summary>RJW 高潮产液（produceFluidOnOrgasm）：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量（AddMilkToKeys）。性行为后 L 增量见 RJWSexAndFertility.ApplyPostSexLactationBoost（RJW 已加载且 DeltaS&gt;0 时生效）。</summary>
+/// <summary>RJW 高潮产液（produceFluidOnOrgasm）：高潮时若该角色泌乳且乳房 Def 标记 produceFluidOnOrgasm，则向对应乳池追加少量奶量（AddMilkToKeys）。房事奶劲见 <see cref="RJWSexAndFertility.ApplyPostSexLactationBoost"/>（总闸、Δs、RJW 已加载）。</summary>
 [HarmonyPatch(typeof(JobDriver_Sex), nameof(JobDriver_Sex.Orgasm))]
 public static class JobDriver_Sex_OrgasmMilk_Patch
 {
-    /// <summary>每条乳池侧各追加的池单位（按命中的乳房子部位逐条追加）。</summary>
+    /// <summary>每条虚拟储奶格（<c>_L</c>/<c>_R</c>）各追加的池单位基数；多解剖行共一颗乳房时按行数摊薄 <c>perRow</c>，每行仍对左右各加一整份 <c>perRow</c>。</summary>
     private const float PoolUnitsPerOrgasmPerBreastSide = 0.05f;
 
     [HarmonyPostfix]
@@ -130,11 +130,17 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
         {
             var h = list[i];
             if (h?.def is not HediffDef_SexPart def || !def.produceFluidOnOrgasm) continue;
+            int nMatch = 0;
+            for (int r = 0; r < sideRows.Count; r++)
+            {
+                if (sideRows[r].BreastHediff == h) nMatch++;
+            }
+            if (nMatch <= 0) continue;
+            float perRow = PoolUnitsPerOrgasmPerBreastSide / nMatch;
             for (int r = 0; r < sideRows.Count; r++)
             {
                 if (sideRows[r].BreastHediff != h) continue;
-                RjwBreastPoolEconomy.AppendOrgasmMilkTargetsForSideRow(sideRows[r], PoolUnitsPerOrgasmPerBreastSide, entries, toAdd);
-                break;
+                RjwBreastPoolEconomy.AppendOrgasmMilkTargetsForSideRow(sideRows[r], perRow, entries, toAdd);
             }
         }
         if (toAdd.Count > 0)

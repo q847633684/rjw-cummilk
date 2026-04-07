@@ -33,16 +33,11 @@ public class CompShowProducer : ThingComp
     public override string TransformLabel(string label)
     {
         label = base.TransformLabel(label);
+        // 勿在「未显示标签」时清空 producer/producerKind：否则每次绘制标签都会抹掉存档数据与食用校验依据。
         if (producerKind != null && MilkCumSettings.HasRaceTag(parent))
-        {
             label = Lang.Join(producerKind.race.label, label);
-        }
-        else { producerKind = null; }
         if (producer != null && MilkCumSettings.HasPawnTag(parent))
-        {
             label = "SomeonesRoom".Translate().Replace("{PAWN_labelShort}", producer.LabelShort).Replace("{1}", label);
-        }
-        else { producer = null; }
         return label;
     }
 

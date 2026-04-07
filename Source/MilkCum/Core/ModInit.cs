@@ -63,6 +63,7 @@ public static class ModInit
         JobDriver_Ingest_MilkProductCheck.ApplyOptionalPatches(MilkCumMod.Harmony);
         ProlactinAddictionPatch.ApplyIfPossible(MilkCumMod.Harmony);
         Thing_GetStatValue_PartialMilkNutrition_Patch.ApplyIfPossible(MilkCumMod.Harmony);
+        HealthCardUtility_GetTooltip_BreastPool_Patch.ApplyIfPossible(MilkCumMod.Harmony);
         CumpilationIntegration.ApplyPatches(MilkCumMod.Harmony);
         RjwMilkHumanWorkGiverPatch.ApplyPatches(MilkCumMod.Harmony);
     }

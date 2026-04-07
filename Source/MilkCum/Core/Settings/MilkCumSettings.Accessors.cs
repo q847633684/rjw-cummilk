@@ -46,7 +46,8 @@ internal partial class MilkCumSettings
 
 	internal static bool IsProducerRestrictionConsumersEffectiveForCumProducts()
 	{
-		return productsToTags.TryGetValue("Cum_Cum", out MilkTag t) && t.TagPawn;
+		if (productsToTags.TryGetValue("Cumpilation_Cum", out MilkTag t) && t.TagPawn) return true;
+		return productsToTags.TryGetValue("Cum_Cum", out t) && t.TagPawn;
 	}
 
 	internal static bool MilkTypeCanBreastfeed(Pawn mom)

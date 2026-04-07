@@ -25,7 +25,7 @@ public class PendingLactatingEntry : IExposable
     }
 }
 
-/// <summary>水池模型吸收延迟：吃药后延迟一段时间再�?Lactating 并进水，延迟由代谢率决定。见 Docs/泌乳系统逻辑图</summary>
+/// <summary>水池模型吸收延迟：吃药后延迟一段时间再�?Lactating 并进水，延迟由代谢率决定。见 记忆库/docs/泌乳系统逻辑图</summary>
 public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
 {
     private List<PendingLactatingEntry> pending = new List<PendingLactatingEntry>();
@@ -47,7 +47,7 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
     private static bool IsInvalidPendingPawn(Pawn p) =>
         p == null || p.Destroyed || (!p.Spawned && p.Dead);
 
-    /// <summary>加载后移除无效条目，避免跨存档/地图坏引用。见 Docs/泌乳系统逻辑图</summary>
+    /// <summary>加载后移除无效条目，避免跨存档/地图坏引用。见 记忆库/docs/泌乳系统逻辑图</summary>
     private void RemoveInvalidPendingEntries()
     {
         if (pending == null) return;
@@ -202,7 +202,7 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         return minRemaining <= 0 ? 0 : minRemaining;
     }
 
-    /// <summary>�?pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返�?1f。见 Docs/泌乳系统逻辑图</summary>
+    /// <summary>�?pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返�?1f。见 记忆库/docs/泌乳系统逻辑图</summary>
     private static float GetMetabolicRate(Pawn pawn)
     {
         if (pawn == null) return 1f;

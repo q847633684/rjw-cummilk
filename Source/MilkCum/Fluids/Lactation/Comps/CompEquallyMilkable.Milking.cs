@@ -11,7 +11,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Lactation.Comps;
 
-/// <summary>挤奶流速与产奶：单侧/总流速、SpawnBottles、PlaceMilkThingOnce。见 Docs/泌乳系统逻辑图。</summary>
+/// <summary>挤奶流速与产奶：单侧/总流速、SpawnBottles、PlaceMilkThingOnce。见 记忆库/docs/泌乳系统逻辑图。</summary>
 public partial class CompEquallyMilkable
 {
     /// <summary>单侧流速（池单位/秒），index 为 GetCachedEntries() 下标。吸奶只关心一侧时用此方法避免分配全表。</summary>

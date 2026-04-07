@@ -8,7 +8,7 @@ namespace MilkCum.Fluids.Lactation.Hediffs;
 
 /// <summary>
 /// 医学贴近：排空乳房（池满度低于阈值）时，乳腺炎 severity 额外衰减。
-/// 对应临床「排空是治疗核心」；与 HediffCompProperties_SeverityPerDay 叠加。见 Docs/泌乳系统-全部说明。
+/// 对应临床「排空是治疗核心」；与 HediffCompProperties_SeverityPerDay 叠加。见 记忆库/docs/泌乳系统-全部说明。
 /// </summary>
 public class HediffComp_MastitisDrainageRelief : HediffComp
 {

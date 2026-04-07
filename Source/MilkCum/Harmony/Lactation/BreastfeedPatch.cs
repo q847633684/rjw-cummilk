@@ -348,7 +348,7 @@ public static class WorkGiver_Breastfeed_Patch
 [HarmonyPatch(typeof(HediffComp_Chargeable))]
 public static class HediffComp_Chargeable_Patch
 {
-    /// <summary>吸奶时从池扣量：按「选最满乳池侧、依次吃到饱」从 CompEquallyMilkable 扣奶，再同步 Charge（见 Docs/泌乳系统逻辑图）。</summary>
+    /// <summary>吸奶时从池扣量：按「选最满乳池侧、依次吃到饱」从 CompEquallyMilkable 扣奶，再同步 Charge（见 记忆库/docs/泌乳系统逻辑图）。</summary>
     [HarmonyPrefix]
     [HarmonyPatch(nameof(HediffComp_Chargeable.GreedyConsume))]
     public static bool GreedyConsume_Prefix(HediffComp_Chargeable __instance, ref float __result, float desiredCharge)

@@ -61,7 +61,7 @@ public static class BreastPoolTopologyDiagnostics
             string k = $"chestMulti:{id}";
             if (TryConsumeWarnSlot(k, now))
             {
-                Log.Warning($"[MilkCum][Dev] Pawn {pawn.LabelShort}: RjwChestUnified but {entries.Count} pool entries — UI “right breast” aggregates may be misleading; all entries use Site≈BreastLeft for legacy. See 记忆库/docs/乳池拓扑决策表.md.");
+                Log.Warning($"[MilkCum][Dev] Pawn {pawn.LabelShort}: RjwChestUnified with {entries.Count} virtual duct keys (chest-hung breast hediffs × _L/_R). UI columns aggregate by FluidSiteKind BreastLeft/BreastRight.");
             }
         }
     }

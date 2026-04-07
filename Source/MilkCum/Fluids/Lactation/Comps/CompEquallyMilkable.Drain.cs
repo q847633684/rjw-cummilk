@@ -10,7 +10,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Lactation.Comps;
 
-/// <summary>池扣量：手挤/吸奶/机器挤的 Drain 与按比例缩减。见 Docs/泌乳系统逻辑图、ADR-003-选侧先左。</summary>
+/// <summary>池扣量：手挤/吸奶/机器挤的 Drain 与按比例缩减。见 记忆库/docs/泌乳系统逻辑图、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
     /// <summary>扣量导通系数：压力与导管阻力共同决定单位时间可抽取比例。</summary>
@@ -123,7 +123,7 @@ public partial class CompEquallyMilkable
     /// <summary>
     /// 吸奶/挤奶时从池中扣量。
     /// singleSideOnly=false（默认）：按<strong>每条池单 key 满度</strong>全局从高到低依次扣，直到扣满 amount；满度相同则先左（ADR-003）。用于手挤奶（与吸奶同属「按单池满度」规则，手挤可连续扣多条）。
-    /// singleSideOnly=true：只从当前全局最满的一条池扣，最多扣 amount。用于吸奶。见 Docs/泌乳系统逻辑图；ADR-003。
+    /// singleSideOnly=true：只从当前全局最满的一条池扣，最多扣 amount。用于吸奶。见 记忆库/docs/泌乳系统逻辑图；ADR-003。
     /// </summary>
     /// <param name="amount">要扣的池单位量（与 Charge/Fullness 同单位）</param>
     /// <param name="drainedKeys">若非 null，会填入本次被扣量的池侧 key（用于按侧加喷乳反射刺激）</param>

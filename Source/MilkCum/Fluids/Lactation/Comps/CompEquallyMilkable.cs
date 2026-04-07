@@ -14,7 +14,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Lactation.Comps;
 
-/// <summary>平等挤奶 Comp：池存储与同步见 PoolStorage；进水/溢出/回缩见 Inflow；扣量见 Drain；流速与产奶见 Milking。见 Docs/泌乳系统逻辑图。</summary>
+/// <summary>平等挤奶 Comp：池存储与同步见 PoolStorage；进水/溢出/回缩见 Inflow；扣量见 Drain；流速与产奶见 Milking。见 记忆库/docs/泌乳系统逻辑图。</summary>
 public partial class CompEquallyMilkable : CompMilkable
 {
     protected Pawn Pawn => parent as Pawn;
@@ -33,7 +33,7 @@ public partial class CompEquallyMilkable : CompMilkable
     private int lastBaseCapacityTick = -1;
     private const int BaseCapacityCacheInterval = 600;
 
-    /// <summary>虚拟乳槽键（BreastLeft/BreastRight）→ 水位；Fullness = Sum(Values)。</summary>
+    /// <summary>储奶字典：键为 <c>稳定基键_L/_R</c>（或动物等 Fallback 路径），非枚举名字符串；Fullness = Sum(Values)。</summary>
     private Dictionary<string, float> breastFullness = new Dictionary<string, float>();
 
     /// <summary>当前总奶量（0~maxFullness），= breastFullness.Values.Sum()；对外只读。</summary>
@@ -158,8 +158,8 @@ public partial class CompEquallyMilkable : CompMilkable
             ticksFullKeys = ticksFullPoolByKey.Keys.ToList();
             ticksFullVals = ticksFullPoolByKey.Values.ToList();
         }
-        Scribe_Collections.Look(ref ticksFullKeys, "EM.PoolTicksFullSiteKeys", LookMode.Value);
-        Scribe_Collections.Look(ref ticksFullVals, "EM.PoolTicksFullSiteVals", LookMode.Value);
+        Scribe_Collections.Look(ref ticksFullKeys, "EM.MilkPoolTicksFullKeys", LookMode.Value);
+        Scribe_Collections.Look(ref ticksFullVals, "EM.MilkPoolTicksFullVals", LookMode.Value);
         Scribe_Values.Look(ref lastFullPoolLetterTick, "PoolLastFullPoolLetterTick", -1);
         Scribe_Values.Look(ref lastFullPoolLetterDay, "EM.LastFullPoolLetterDay", -1);
         Scribe_Values.Look(ref capacityAdaptationFast, "EM.CapacityAdaptationFast", 0f);
@@ -167,7 +167,7 @@ public partial class CompEquallyMilkable : CompMilkable
         Scribe_Values.Look(ref totalDrainedLifetime, "EM.TotalDrainedLifetime", 0f);
         Scribe_Values.Look(ref gatherCountLifetime, "EM.GatherCountLifetime", 0);
         Scribe_Values.Look(ref overflowEventCount, "EM.OverflowEventCount", 0);
-        Scribe_Collections.Look(ref breastFullness, "EM.FluidSitesMilk", LookMode.Value, LookMode.Value);
+        Scribe_Collections.Look(ref breastFullness, "EM.MilkBreastFullnessByKey", LookMode.Value, LookMode.Value);
         if (Scribe.mode != LoadSaveMode.Saving)
             breastFullness ??= new Dictionary<string, float>();
         Scribe_Deep.Look(ref milkSettings, "MilkSettings");
@@ -259,7 +259,10 @@ public partial class CompEquallyMilkable : CompMilkable
         {
             if (cachedEntries == null || (now - lastBaseCapacityTick) > BaseCapacityCacheInterval)
             {
-                cachedBaseMaxFullness = Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+                float dualBase = RjwBreastPoolEconomy.GetTotalDualPoolBaseCapacityBeforeAdaptation(p);
+                cachedBaseMaxFullness = dualBase >= 0.01f
+                    ? dualBase
+                    : Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
                 lastBaseCapacityTick = now;
             }
             float baseMax = cachedBaseMaxFullness;

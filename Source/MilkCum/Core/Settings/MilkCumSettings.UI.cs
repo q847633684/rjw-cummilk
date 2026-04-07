@@ -91,7 +91,7 @@ internal partial class MilkCumSettings
 				else defaultSettingWidget.Draw(contentRect);
 				break;
 			case (int)MainTabIndex.Balance:
-				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Balance, 0);
+				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Balance, subTabIndex);
 				break;
 			case (int)MainTabIndex.Integrations:
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Integrations, subTabIndex);
@@ -138,7 +138,12 @@ internal partial class MilkCumSettings
 					new("EM.SubTab.DefaultBehavior".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 				};
 			case (int)MainTabIndex.Balance:
-				return new List<TabRecord> { new("EM.SubTab.BalanceScaling".Translate(), () => subTabIndex = 0, subTabIndex == 0) };
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.BalanceCore".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.BalanceAdvancedModel".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.BalanceColonistExtras".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+				};
 			case (int)MainTabIndex.Integrations:
 				return new List<TabRecord>
 				{

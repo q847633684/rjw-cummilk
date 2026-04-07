@@ -10,7 +10,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Lactation.Comps;
 
-/// <summary>池存储与同步：缓存条目、按 key/左右侧汇总视图、选侧规则、清空/设置总水量。见 Docs/单池模型、ADR-003-选侧先左。</summary>
+/// <summary>池存储与同步：缓存条目、按 key/左右侧汇总视图、选侧规则、清空/设置总水量。见 记忆库/docs/单池模型、ADR-003-选侧先左。</summary>
 public partial class CompEquallyMilkable
 {
     /// <summary>缓存乳池条目（与侧行同次构建）；脏或超过 <see cref="GetEntriesCacheMaxTicksForPawn"/> 时失效。</summary>
@@ -308,7 +308,7 @@ public partial class CompEquallyMilkable
         if (Pawn != null)
         {
             cachedSideRows = RjwBreastPoolEconomy.GetBreastPoolSideRows(Pawn);
-            cachedEntries = PawnMilkPoolExtensions.BuildCachedBreastPoolEntries(Pawn, cachedSideRows);
+            cachedEntries = PawnMilkPoolExtensions.BuildCachedBreastPoolEntries(Pawn);
             BreastPoolTopologyDiagnostics.MaybeDevWarnAfterEntriesBuilt(Pawn, cachedEntries);
             MigrateBreastFullnessForNewEntryKeys(cachedEntries);
         }

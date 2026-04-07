@@ -19,11 +19,11 @@ public enum RjwBreastPoolCapacityMode : byte
 /// <summary>RJW 乳房 Hediff 与乳池条目的拓扑：胸位单池 / 虚拟左·右 / 每叶独立池键。</summary>
 public enum RjwBreastPoolTopologyMode : byte
 {
-    /// <summary>挂胸（<c>Chest</c>）或无部位的可泌乳乳房 Hediff 合并为单一虚拟池（键名与 <c>BreastLeft</c> 枚举一致）。</summary>
+    /// <summary>挂胸（<c>Chest</c>）或无部位的可泌乳乳房：每颗 Hediff <c>稳定基键_L/_R</c> 双格；Site 为虚拟左/右槽。</summary>
     RjwChestUnified = 0,
-    /// <summary>默认：<c>Breast</c>/<c>MechBreast</c> 叶 + 标签辨左右，聚合成虚拟左/右两槽。</summary>
+    /// <summary>默认：<c>Breast</c>/<c>MechBreast</c> 叶每颗 Hediff <c>基键_L/_R</c> 双格；侧行汇总仅「解剖左」为左，未标注侧不参与左/右因子（同胞叶悬停聚类仅本模式）。</summary>
     VirtualLeftRight = 1,
-    /// <summary>每叶一条池，键为 RjwBreastPoolEconomy.MakeStablePoolKey 路径串；条目 Site 为 None。</summary>
+    /// <summary>每叶每颗 Hediff <c>基键_L/_R</c> 双格；侧行汇总时「非解剖右」计入左（与虚拟左·右「仅解剖左」不同）。</summary>
     PerAnatomicalLeaf = 2,
 }
 
@@ -119,7 +119,13 @@ internal partial class MilkCumSettings : ModSettings
 	public static float rjwPermanentBreastGainSeverityDelta = 0.03f;
 	/// <summary>泌乳期对 RJW 生育能力的倍率（0~1），1 = 不影响，0.85 = 略微降低怀孕率。</summary>
 	public static float rjwLactationFertilityFactor = 0.85f;
-	/// <summary>性行为结束后泌乳进水强度；RJW 已加载且 &gt;0 时生效。</summary>
+	/// <summary>哺乳后不久性交是否额外满足 RJW <c>Need_Sex</c>（旧版默认开）。</summary>
+	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
+	/// <summary>性交结束时是否尝试给予 <c>EM_HadSexWhileLactating</c> 心情（旧版默认开）。</summary>
+	public static bool rjwLactatingInSexDescriptionEnabled = true;
+	/// <summary>性交结束后是否对泌乳者施加「房事奶劲」进水（<see cref="rjwSexLactationBoostDeltaS"/>；旧版默认关，现默认开以贴近近年无总闸行为）。</summary>
+	public static bool rjwSexAddsLactationBoost = true;
+	/// <summary>房事奶劲强度（池逻辑 Δs）；需 <see cref="rjwSexAddsLactationBoost"/> 且 &gt;0；可与总闸配合关死本项。</summary>
 	public static float rjwSexLactationBoostDeltaS = 0.15f;
 	// 乳腺炎/耐受相关配置已拆分到 MilkCumSettings.Risk.cs。
 	// 耐受动态：dE/dt = μ×L − ν×E；启用时由 mod 维护的 E 计算 E_tol（流速/容量），取代仅用游戏内耐受严重度 t。
@@ -191,6 +197,9 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
 		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
+		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
+		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
+		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", true);
 		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
 		ExposeRiskData();
 		Scribe_Values.Look(ref enableToleranceDynamic, "EM.EnableToleranceDynamic", true);
@@ -259,10 +268,22 @@ internal partial class MilkCumSettings : ModSettings
 		ThingDef humanMilkDef = DefDatabase<ThingDef>.GetNamedSilentFail("EM_HumanMilk");
 		if (humanMilkDef != null && !productsToTags.ContainsKey("EM_HumanMilk"))
 			productsToTags.Add("EM_HumanMilk", new MilkTag("EM_HumanMilk", true, false));
-		// 7.10: rjw-genes cum milk etc. — ensure breast-sourced cum gets producer so allowedConsumers apply
-		ThingDef cumDef = DefDatabase<ThingDef>.GetNamedSilentFail("Cum_Cum");
-		if (cumDef != null && !productsToTags.ContainsKey("Cum_Cum"))
-			productsToTags.Add("Cum_Cum", new MilkTag("Cum_Cum", true, false));
+		// 本 mod 主精液物品 defName 为 Cumpilation_Cum；须带 CompShowProducer，CumpilationIntegration 才能在生成时写入产主。
+		ThingDef cumpilationCum = DefDatabase<ThingDef>.GetNamedSilentFail("Cumpilation_Cum");
+		if (cumpilationCum != null)
+		{
+			AddOrSetShowProducerComp(cumpilationCum);
+			if (!productsToTags.ContainsKey("Cumpilation_Cum"))
+				productsToTags.Add("Cumpilation_Cum", new MilkTag("Cumpilation_Cum", true, false));
+		}
+		// rjw-genes 等若另有 Cum_Cum，同样保证产主组件与标签
+		ThingDef cumCum = DefDatabase<ThingDef>.GetNamedSilentFail("Cum_Cum");
+		if (cumCum != null)
+		{
+			AddOrSetShowProducerComp(cumCum);
+			if (!productsToTags.ContainsKey("Cum_Cum"))
+				productsToTags.Add("Cum_Cum", new MilkTag("Cum_Cum", true, false));
+		}
 		foreach (Pawn pawn in PawnsFinder.AllMaps)
 		{
 			pawn.LactatingHediffWithComps()?.SetDirty();
