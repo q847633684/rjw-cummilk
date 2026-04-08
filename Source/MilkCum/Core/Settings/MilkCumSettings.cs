@@ -16,17 +16,6 @@ public enum RjwBreastPoolCapacityMode : byte
     RjwBreastVolume = 2,
 }
 
-/// <summary>RJW 乳房 Hediff 与乳池条目的拓扑：胸位单池 / 虚拟左·右 / 每叶独立池键。</summary>
-public enum RjwBreastPoolTopologyMode : byte
-{
-    /// <summary>挂胸（<c>Chest</c>）或无部位的可泌乳乳房：每颗 Hediff <c>稳定基键_L/_R</c> 双格；Site 为虚拟左/右槽。</summary>
-    RjwChestUnified = 0,
-    /// <summary>默认：<c>Breast</c>/<c>MechBreast</c> 叶每颗 Hediff <c>基键_L/_R</c> 双格；侧行汇总仅「解剖左」为左，未标注侧不参与左/右因子（同胞叶悬停聚类仅本模式）。</summary>
-    VirtualLeftRight = 1,
-    /// <summary>每叶每颗 Hediff <c>基键_L/_R</c> 双格；侧行汇总时「非解剖右」计入左（与虚拟左·右「仅解剖左」不同）。</summary>
-    PerAnatomicalLeaf = 2,
-}
-
 /// <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
 public enum MainTabIndex
 {
@@ -103,8 +92,6 @@ internal partial class MilkCumSettings : ModSettings
 	public static float rjwBreastCapacityCoefficient = 2f;
 	/// <summary>乳池单侧基容量来源：默认 <see cref="RjwBreastPoolCapacityMode.RjwBreastVolume"/>（体积/重量无有效 RJW 尺寸则为 0）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
 	public static RjwBreastPoolCapacityMode rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastVolume;
-	/// <summary>乳房 Hediff 与虚拟乳池的拓扑；默认 <see cref="RjwBreastPoolTopologyMode.VirtualLeftRight"/>（与历史行为一致）。</summary>
-	public static RjwBreastPoolTopologyMode rjwBreastPoolTopologyMode = RjwBreastPoolTopologyMode.VirtualLeftRight;
 	/// <summary>RJW 乳房阶段标签含 “Nipple” 时，对进水/高潮产液流速倍率施加的百分比修正（0=关闭）；限制在约 ±15% 内。</summary>
 	public static float rjwNippleStageFlowBonusPercent = 0f;
 	/// <summary>泌乳期临时体型增益（0~1 段）：RJW Severity 增量，满 L 时生效；默认 0.15。</summary>
@@ -188,8 +175,6 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
 		Scribe_Values.Look(ref rjwBreastPoolCapacityMode, "EM.RjwBreastPoolCapMode", RjwBreastPoolCapacityMode.RjwBreastVolume);
 		rjwBreastPoolCapacityMode = (RjwBreastPoolCapacityMode)Mathf.Clamp((int)rjwBreastPoolCapacityMode, 0, 2);
-		Scribe_Values.Look(ref rjwBreastPoolTopologyMode, "EM.RjwBreastPoolTopologyMode", RjwBreastPoolTopologyMode.VirtualLeftRight);
-		rjwBreastPoolTopologyMode = (RjwBreastPoolTopologyMode)Mathf.Clamp((int)rjwBreastPoolTopologyMode, 0, 2);
 		Scribe_Values.Look(ref rjwNippleStageFlowBonusPercent, "EM.RjwNippleStageFlowBonusPct", 0f);
 		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "EM.RjwLactatingSeverityBonus", 0.15f);
 		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "EM.RjwLactatingStretchSeverityBonus", 0.05f);

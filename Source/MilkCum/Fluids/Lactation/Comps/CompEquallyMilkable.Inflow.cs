@@ -78,22 +78,24 @@ public partial class CompEquallyMilkable
         }
 
         float currentLactation = lactatingComp.CurrentLactationAmount;
-        float hungerFactor = Mathf.Max(0.05f, PawnUtility.BodyResourceGrowthSpeed(Pawn));
-        float drive = MilkCumSettings.GetEffectiveDrive(lactatingComp.EffectiveLactationAmountForFlow);
-        float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
         var entries = GetCachedEntries();
         breastFullness ??= new Dictionary<string, float>();
         float overflowTotal = 0f;
         TryApplyPoolFedSelf();
         if (MilkCumSettings.lactationPoolTickLog && Pawn != null)
         {
+            float hungerFactor = Mathf.Max(0.05f, PawnUtility.BodyResourceGrowthSpeed(Pawn));
+            float drive = MilkCumSettings.GetEffectiveDrive(lactatingComp.EffectiveLactationAmountForFlow);
+            float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
+            float baseFromFactors = drive * hungerFactor * raceFlow;
             var sb = new StringBuilder();
             sb.Append("[MilkCum][INFO][MilkFlow] 小人=").Append(Pawn.LabelShort).Append(" 泌乳量L=").Append(currentLactation.ToString("F3"))
                 .Append(" 驱动力drive=").Append(drive.ToString("F3")).Append(" 饥饿系数hunger=").Append(hungerFactor.ToString("F3"))
                 .Append(" 种族流速倍率raceFlow=").Append(raceFlow.ToString("F3")).Append("; ");
-            sb.Append("每日基础流速basePerDay=drive(").Append(drive.ToString("F3")).Append(")×hunger(").Append(hungerFactor.ToString("F3"))
-                .Append(")×raceFlow(").Append(raceFlow.ToString("F3")).Append(")=").Append(basePerDay.ToString("F3")).Append("; ");
-            sb.Append("每60tick进池量flowPer60tick=basePerDay(").Append(basePerDay.ToString("F3")).Append(")/60000×60=").Append(flowPerTickScale.ToString("F5")).Append("；");
+            sb.Append("每日基础流速basePerDay=drive×hunger×race=").Append(baseFromFactors.ToString("F3"))
+                .Append("（应与 TryComputeInflowScale 的 basePerDay ").Append(basePerDay.ToString("F3")).Append(" 一致）; ");
+            sb.Append("每60tick标度flowPer60tick=").Append(flowPerTickScale.ToString("F5"))
+                .Append("（=basePerDay/日tick×60×昼夜×代谢×排空 relief）; ");
             sb.Append("单侧实际流速≈flowPer60tick×core(流速倍率×状态×压力×喷乳×导管)×顺应性；单一轴再按 core×顺应性 比例分总预算；");
             sb.Append("substeps=").Append(IsInflowEventBurstActive() ? Mathf.Max(1, MilkCumSettings.inflowEventSubsteps) : 1);
             MilkCumSettings.PoolTickLog(sb.ToString());

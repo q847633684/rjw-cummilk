@@ -214,11 +214,7 @@
     <EM.RJWSection>—— RJW（亲密与身形）——</EM.RJWSection>
     <EM.RjwBreastPoolCapacityMode>乳池基容量来源：{0}</EM.RjwBreastPoolCapacityMode>
     <EM.RjwBreastPoolCapacityModeTip>仅三档：严重度×系数、RJW 估算重量（千克）×系数、RJW BreastSize.volume（升）×系数。重量/体积档无有效 RJW 尺寸时该侧基容量为 0、不进虚拟池。严重度档始终用部位严重度。再乘下方容量系数（并受上限裁剪）；流速由 GetFluidMultiplier 等单独决定。</EM.RjwBreastPoolCapacityModeTip>
-    <EM.RjwBreastPoolTopologyMode>乳池拓扑：{0}</EM.RjwBreastPoolTopologyMode>
-    <EM.RjwBreastPoolTopologyModeTip>胸位合并：挂在 Chest（或无部位）的可泌乳乳房 Hediff 合并为单一虚拟池（键同 BreastLeft）。虚拟左/右：Breast/MechBreast 叶按解剖左/右聚成左右两槽（仅有胸位、无侧叶乳房时不产生此处侧行池键）。侧叶部位名既非左也非右时仍有独立稳定池键，但不计入左/右基容量汇总（站点为 None）。每叶独立：每个乳房叶单独池键（稳定路径），不合并左右。当池键集合变化时，会把当前总奶量按新池基容量比例重分（再按单侧撑大上限裁剪），尽量守恒；同一时刻喷乳反射 R 与炎症 I 会随键迁移（有奶量快照时按奶量加权平均，否则对旧键简单平均后写入各新键）。「满池瘀积」累计 tick（乳腺炎/信件等）也按新键与容量比例做整数守恒拆分。</EM.RjwBreastPoolTopologyModeTip>
-    <EM.RjwTopology_ChestUnified>胸位合并（单池）</EM.RjwTopology_ChestUnified>
-    <EM.RjwTopology_VirtualLR>虚拟左/右（默认）</EM.RjwTopology_VirtualLR>
-    <EM.RjwTopology_PerLeaf>每解剖叶独立池</EM.RjwTopology_PerLeaf>
+    <EM.BreastPoolLayoutVirtualLRFixed>乳池布局：虚拟左/右（固定）</EM.BreastPoolLayoutVirtualLRFixed>
     <EM.RjwCapacityMode_Severity>严重度×系数</EM.RjwCapacityMode_Severity>
     <EM.RjwCapacityMode_Weight>乳房重量×系数</EM.RjwCapacityMode_Weight>
     <EM.RjwCapacityMode_Volume>乳房体积（升）×系数（默认）</EM.RjwCapacityMode_Volume>
@@ -313,7 +309,6 @@
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
     <EM.DevModeBreastPoolTopology>乳池拓扑（调试）</EM.DevModeBreastPoolTopology>
     <EM.DevModeBreastPoolTopologyDisabled>仅当 mod 列表中启用 RJW（rim.job.world）时，才显示基于 RJW 的乳池拓扑调试信息。</EM.DevModeBreastPoolTopologyDisabled>
-    <EM.DevModeBreastPoolTopologyMode>全局拓扑模式：{0}</EM.DevModeBreastPoolTopologyMode>
     <EM.DevModeBreastPoolTopologyNoEntries>当前无乳池条目（无可泌乳胸叶或身体部位）。</EM.DevModeBreastPoolTopologyNoEntries>
     <EM.DevModeBreastPoolTopologyEntriesHeader>共 {0} 条：</EM.DevModeBreastPoolTopologyEntriesHeader>
     <EM.DevModeBreastPoolUiHint>界面分列：虚拟左/右 → 左栏汇总解剖左且 Site 为左乳槽；右栏汇总解剖右。胸位合并且多池时「右乳」合计可能误导，以每条 Key 为准。每叶一池 → 一叶一键。</EM.DevModeBreastPoolUiHint>
@@ -394,7 +389,7 @@
     <EM.PoolRightEfficiencyHeader>右乳流速：{0}({1}%)/天</EM.PoolRightEfficiencyHeader>
     <EM.PoolEfficiencyFactorsBracket>（{0}）</EM.PoolEfficiencyFactorsBracket>
     <EM.PoolBreastSectionHeader>【{0}】</EM.PoolBreastSectionHeader>
-    <EM.PoolBreastPerLeafDetail>{0}（本叶乳池）</EM.PoolBreastPerLeafDetail>
+    <EM.PoolBreastSingleRowDetail>{0}（单条乳池）</EM.PoolBreastSingleRowDetail>
     <EM.PoolBreastChestSinglePoolTitle>{0}（胸位单池：乳房挂在胸部、无独立左/右乳解剖叶，仅一条乳池）</EM.PoolBreastChestSinglePoolTitle>
     <EM.PoolBreastUnifiedLayoutLine>布局：每条乳房 Hediff 单一乳池（不拆左右）</EM.PoolBreastUnifiedLayoutLine>
     <EM.PoolSectionStorage>储量</EM.PoolSectionStorage>

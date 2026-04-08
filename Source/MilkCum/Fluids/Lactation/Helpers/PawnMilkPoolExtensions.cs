@@ -58,18 +58,18 @@ public static class PawnMilkPoolExtensions
         }
     }
 
-    /// <summary>虚拟乳池条目：拓扑见 <see cref="RjwBreastPoolTopologyMode"/>（胸位单池 / 虚拟左·右 / 每叶独立键）。</summary>
+    /// <summary>虚拟乳池条目：当前固定虚拟左·右，条目键为稳定基键加 <c>_L/_R</c>。</summary>
     public static List<FluidPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
         if (pawn == null || !ModIntegrationGates.RjwModActive) return new List<FluidPoolEntry>();
-        var entries = RjwBreastPoolTopology.BuildPoolEntriesForCurrentTopology(pawn);
+        var entries = RjwBreastPoolEconomy.BuildVirtualLeftRightBreastPoolEntries(pawn);
         BreastPoolTopologyDiagnostics.MaybeDevWarnAfterEntriesBuilt(pawn, entries);
         return entries;
     }
 
-    /// <summary>与 <see cref="CompEquallyMilkable"/> 池条目缓存一致：按当前拓扑构建条目（不依赖预计算侧行，与 <see cref="RjwBreastPoolTopology"/> 一致）。</summary>
+    /// <summary>与 <see cref="CompEquallyMilkable"/> 池条目缓存一致：按虚拟左·右构建条目。</summary>
     internal static List<FluidPoolEntry> BuildCachedBreastPoolEntries(Pawn pawn) =>
-        RjwBreastPoolTopology.BuildPoolEntriesForCurrentTopology(pawn);
+        RjwBreastPoolEconomy.BuildVirtualLeftRightBreastPoolEntries(pawn);
 
     /// <summary>虚拟左/右拓扑：由侧行生成条目；实现位于 <see cref="RjwBreastPoolEconomy.BuildBreastPoolEntriesFromSideRows"/>。</summary>
     internal static List<FluidPoolEntry> BuildBreastPoolEntriesFromSideRows(Pawn pawn, List<RjwBreastPoolSideRow> rows) =>
@@ -219,8 +219,7 @@ public static class PawnMilkPoolExtensions
         var rows = RjwBreastPoolEconomy.GetBreastPoolSideRows(pawn);
         var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
         var keys = new HashSet<string>();
-        bool siblingCluster = ModIntegrationGates.RjwModActive
-            && MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.VirtualLeftRight;
+        bool siblingCluster = ModIntegrationGates.RjwModActive;
         BodyPartRecord clusterParent = null;
         int clusterLateralRows = 0;
         if (siblingCluster)

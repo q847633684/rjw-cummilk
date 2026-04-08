@@ -67,6 +67,13 @@ public static class MilkPoolInflowSimulator
         return s;
     }
 
+    /// <summary>炎症 I 相对 I_crit 归一化到 [0,1]，供进水/挤出导管共用。</summary>
+    public static float GetNormalizedInflammation01(HediffComp_EqualMilkingLactating lact, string poolKey)
+    {
+        if (lact == null || string.IsNullOrEmpty(poolKey)) return 0f;
+        return Mathf.Clamp01(lact.GetInflammationForKey(poolKey) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit));
+    }
+
     public static SideChannelFactors ComputeSideChannelFactors(
         Pawn pawn,
         FluidPoolEntry entry,
@@ -83,7 +90,7 @@ public static class MilkPoolInflowSimulator
         float conditions = pawn.GetConditionsForPoolKey(entry.Key);
         float letdown = MilkCumSettings.enableLetdownReflex ? lactatingComp.GetLetdownReflexFlowMultiplier(entry.Key) : 1f;
         letdown *= MilkRealismHelper.GetStressLetdownMultiplier(pawn);
-        float duct = ComputeDuctConductance(pawn, entry, network);
+        float duct = ComputeDuctConductance(pawn, entry, network, lactatingComp);
         return new SideChannelFactors(conditions, pressure, letdown, duct);
     }
 
@@ -107,14 +114,16 @@ public static class MilkPoolInflowSimulator
         return (flowPerTick, chan.Pressure, chan.Conditions, chan.Letdown);
     }
 
-    public static float ComputeDuctConductance(Pawn pawn, FluidPoolEntry entry, FluidPoolNetwork network)
+    public static float ComputeDuctConductance(
+        Pawn pawn,
+        FluidPoolEntry entry,
+        FluidPoolNetwork network,
+        HediffComp_EqualMilkingLactating lactatingComp = null)
     {
         if (string.IsNullOrEmpty(entry.Key)) return 1f;
         float outlet = network?.GetOutletHopFactor(entry.Key, MilkCumSettings.ductHopPenaltyPerEdge) ?? 1f;
-        float inflammation = 0f;
-        var lactatingComp = pawn?.LactatingHediffComp();
-        if (lactatingComp != null)
-            inflammation = Mathf.Clamp01(lactatingComp.GetInflammationForKey(entry.Key) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit));
+        lactatingComp ??= pawn?.LactatingHediffComp();
+        float inflammation = GetNormalizedInflammation01(lactatingComp, entry.Key);
         float baseResistance = 1f + inflammation * MilkCumSettings.ductInflowInflammationResistance;
         float conductance = outlet / Mathf.Max(MilkCumSettings.ductConductanceMin, baseResistance);
         return Mathf.Clamp(conductance, MilkCumSettings.ductConductanceMin, MilkCumSettings.ductConductanceMax);

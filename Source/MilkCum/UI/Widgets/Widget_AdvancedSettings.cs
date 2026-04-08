@@ -24,13 +24,6 @@ public class Widget_AdvancedSettings
 		_ => "EM.RjwCapacityMode_Severity".Translate(),
 	};
 
-	private static string RjwBreastPoolTopologyModeLabel(RjwBreastPoolTopologyMode mode) => mode switch
-	{
-		RjwBreastPoolTopologyMode.RjwChestUnified => "EM.RjwTopology_ChestUnified".Translate(),
-		RjwBreastPoolTopologyMode.PerAnatomicalLeaf => "EM.RjwTopology_PerLeaf".Translate(),
-		_ => "EM.RjwTopology_VirtualLR".Translate(),
-	};
-
 	/// <summary>泌乳相关设置页内二级标题：灰标题 + 可选说明，与下方控件成组。</summary>
 	private static void DrawEmUISectionHeading(Listing_Standard list, string titleKey, string descKey = null, float gapBefore = 10f)
 	{
@@ -220,7 +213,7 @@ public class Widget_AdvancedSettings
 			return;
 		}
 
-		list.Label("EM.DevModeBreastPoolTopologyMode".Translate(RjwBreastPoolTopologyModeLabel(MilkCumSettings.rjwBreastPoolTopologyMode)));
+		list.Label("EM.BreastPoolLayoutVirtualLRFixed".Translate());
 		var entries = pawn.GetBreastPoolEntries();
 		if (entries == null || entries.Count == 0)
 		{
@@ -655,18 +648,7 @@ public class Widget_AdvancedSettings
 		}
 		TooltipHandler.TipRegion(rCapMode, "EM.RjwBreastPoolCapacityModeTip".Translate());
 		list.Gap(4f);
-		Rect rTopo = list.GetRect(UNIT_SIZE);
-		if (Widgets.ButtonText(rTopo, "EM.RjwBreastPoolTopologyMode".Translate(RjwBreastPoolTopologyModeLabel(MilkCumSettings.rjwBreastPoolTopologyMode))))
-		{
-			var topoOpts = new List<FloatMenuOption>
-			{
-				new FloatMenuOption("EM.RjwTopology_ChestUnified".Translate(), () => MilkCumSettings.rjwBreastPoolTopologyMode = RjwBreastPoolTopologyMode.RjwChestUnified),
-				new FloatMenuOption("EM.RjwTopology_VirtualLR".Translate(), () => MilkCumSettings.rjwBreastPoolTopologyMode = RjwBreastPoolTopologyMode.VirtualLeftRight),
-				new FloatMenuOption("EM.RjwTopology_PerLeaf".Translate(), () => MilkCumSettings.rjwBreastPoolTopologyMode = RjwBreastPoolTopologyMode.PerAnatomicalLeaf),
-			};
-			Find.WindowStack.Add(new FloatMenu(topoOpts));
-		}
-		TooltipHandler.TipRegion(rTopo, "EM.RjwBreastPoolTopologyModeTip".Translate());
+		list.Label("EM.BreastPoolLayoutVirtualLRFixed".Translate());
 		list.Gap(4f);
 		Rect rCapCoeff = list.GetRect(UNIT_SIZE);
 		float capCoeff = MilkCumSettings.rjwBreastCapacityCoefficient;

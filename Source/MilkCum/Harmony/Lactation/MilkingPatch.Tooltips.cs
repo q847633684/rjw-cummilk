@@ -5,7 +5,6 @@ using System.Text;
 using HarmonyLib;
 using MilkCum.Core;
 using MilkCum.Core.Constants;
-using MilkCum.Core.Settings;
 using MilkCum.Fluids.Cum.Common;
 using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Lactation.Helpers;
@@ -29,7 +28,6 @@ internal static class BreastPoolTooltipHelper
         if (lactComp == null) return "";
 
         var entList = milkComp?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
-        bool useVlrSiteColumns = MilkCumSettings.rjwBreastPoolTopologyMode == RjwBreastPoolTopologyMode.VirtualLeftRight;
 
         float lf = 0f, lc = 0f, lflow = 0f;
         float rf = 0f, rc = 0f, rflow = 0f;
@@ -44,7 +42,7 @@ internal static class BreastPoolTooltipHelper
             BodyPartRecord part = pawn.GetPartForPoolKey(e.key);
             float fl = flowOk ? milkComp.GetFlowPerDayForKeyCached(e.key) : 0f;
             bool virtualRightSite = false;
-            if (useVlrSiteColumns && entList != null)
+            if (entList != null)
             {
                 for (int j = 0; j < entList.Count; j++)
                 {
@@ -92,10 +90,10 @@ internal static class BreastPoolTooltipHelper
         string totalPercent = totalBaseCap >= 0.001f ? (totalMilk / totalBaseCap).ToStringPercent() : "0%";
 
         bool singleLeafRow = keyCount == 1;
-        string perLeafTitle = "EM.PoolBreastPerLeafDetail".Translate(sectionLabel);
+        string singleRowTitle = "EM.PoolBreastSingleRowDetail".Translate(sectionLabel);
         string anySk = skL ?? skR ?? skA;
         BodyPartRecord samplePart = string.IsNullOrEmpty(anySk) ? null : pawn.GetPartForPoolKey(anySk);
-        bool chestBackedSinglePool = singleLeafRow && RjwBreastPoolEconomy.IsChestUnifiedBreastPart(samplePart);
+        bool chestBackedSinglePool = singleLeafRow && (samplePart == null || samplePart.def?.defName == "Chest");
 
         string TitleForAggregatedColumn(bool leftCol, bool rightCol, bool ambigCol)
         {
@@ -107,7 +105,7 @@ internal static class BreastPoolTooltipHelper
             }
             if (chestBackedSinglePool)
                 return "EM.PoolBreastChestSinglePoolTitle".Translate(sectionLabel);
-            return perLeafTitle;
+            return singleRowTitle;
         }
 
         var sb = new StringBuilder();

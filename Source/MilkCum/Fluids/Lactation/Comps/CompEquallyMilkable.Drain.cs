@@ -19,10 +19,7 @@ public partial class CompEquallyMilkable
         if (string.IsNullOrEmpty(entry.Key)) return 1f;
         float pressure = network?.GetPressureRatio01(entry.Key) ?? 0f;
         float outlet = network?.GetOutletHopFactor(entry.Key, MilkCumSettings.ductHopPenaltyPerEdge) ?? 1f;
-        float inflammation = 0f;
-        var lact = Pawn?.LactatingHediffComp();
-        if (lact != null)
-            inflammation = Mathf.Clamp01(lact.GetInflammationForKey(entry.Key) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit));
+        float inflammation = MilkPoolInflowSimulator.GetNormalizedInflammation01(Pawn?.LactatingHediffComp(), entry.Key);
         float resistance = 1f + inflammation * (isMachine ? MilkCumSettings.ductDrainInflammationResistanceMachine : MilkCumSettings.ductDrainInflammationResistanceManual);
         float suction = isMachine ? MilkCumSettings.ductMachineSuctionBonus : 1f;
         float pressureTerm = MilkCumSettings.ductDrainPressureBase + MilkCumSettings.ductDrainPressureScale * pressure;
@@ -45,6 +42,7 @@ public partial class CompEquallyMilkable
         float worstInflow = float.MaxValue;
         string worstKey = null;
         int rows = 0;
+        var lact = Pawn?.LactatingHediffComp();
         for (int i = 0; i < entries.Count; i++)
         {
             if (rows >= Mathf.Max(1, maxRows)) break;
@@ -52,9 +50,7 @@ public partial class CompEquallyMilkable
             if (string.IsNullOrEmpty(e.Key)) continue;
             float pressure = network.GetPressureRatio01(e.Key);
             float outlet = network.GetOutletHopFactor(e.Key, MilkCumSettings.ductHopPenaltyPerEdge);
-            float inflammation = Pawn?.LactatingHediffComp() != null
-                ? Mathf.Clamp01(Pawn.LactatingHediffComp().GetInflammationForKey(e.Key) / Mathf.Max(0.01f, MilkCumSettings.inflammationCrit))
-                : 0f;
+            float inflammation = MilkPoolInflowSimulator.GetNormalizedInflammation01(lact, e.Key);
             float inflowRes = 1f + inflammation * MilkCumSettings.ductInflowInflammationResistance;
             float inflowCond = Mathf.Clamp(outlet / Mathf.Max(MilkCumSettings.ductConductanceMin, inflowRes), MilkCumSettings.ductConductanceMin, MilkCumSettings.ductConductanceMax);
             float drainManual = GetDuctTakeFactor(e, network, isMachine: false);

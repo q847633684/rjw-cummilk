@@ -1,12 +1,11 @@
 using System.Collections.Generic;
-using MilkCum.Core.Settings;
 using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using Verse;
 
 namespace MilkCum.Fluids.Lactation.Helpers;
 
-/// <summary>开发模式：乳池拓扑异常提示（限频），便于 HAR/异种体部位命名与胸位多池排查。</summary>
+/// <summary>开发模式：乳池条目异常提示（限频），便于 HAR/异种体侧向未标注等排查。</summary>
 public static class BreastPoolTopologyDiagnostics
 {
     private const int CooldownTicks = 2500;
@@ -34,35 +33,22 @@ public static class BreastPoolTopologyDiagnostics
         }
 
         int now = Find.TickManager?.TicksGame ?? 0;
-        var mode = MilkCumSettings.rjwBreastPoolTopologyMode;
         string id = pawn.ThingID.ToString();
 
-        if (mode == RjwBreastPoolTopologyMode.VirtualLeftRight)
+        for (int i = 0; i < entries.Count; i++)
         {
-            for (int i = 0; i < entries.Count; i++)
+            if (entries[i].Site != FluidSiteKind.None)
             {
-                if (entries[i].Site != FluidSiteKind.None)
-                {
-                    continue;
-                }
-
-                string k = $"siteNone:{id}";
-                if (!TryConsumeWarnSlot(k, now))
-                {
-                    continue;
-                }
-
-                Log.Warning($"[MilkCum][Dev] Pawn {pawn.LabelShort}: breast pool entry #{i} has FluidSiteKind.None under Virtual L/R topology (unlabeled lateral part?). Key={entries[i].Key}");
+                continue;
             }
-        }
 
-        if (mode == RjwBreastPoolTopologyMode.RjwChestUnified && entries.Count > 1)
-        {
-            string k = $"chestMulti:{id}";
-            if (TryConsumeWarnSlot(k, now))
+            string k = $"siteNone:{id}";
+            if (!TryConsumeWarnSlot(k, now))
             {
-                Log.Warning($"[MilkCum][Dev] Pawn {pawn.LabelShort}: RjwChestUnified with {entries.Count} virtual duct keys (chest-hung breast hediffs × _L/_R). UI columns aggregate by FluidSiteKind BreastLeft/BreastRight.");
+                continue;
             }
+
+            Log.Warning($"[MilkCum][Dev] Pawn {pawn.LabelShort}: breast pool entry #{i} has FluidSiteKind.None (unlabeled lateral part?). Key={entries[i].Key}");
         }
     }
 
@@ -86,6 +72,6 @@ public static class BreastPoolTopologyDiagnostics
             return;
         }
 
-        Log.Warning($"[MilkCum][Dev] GetPoolKeyForBreastHediff: no side row for breast {breastHediff.def?.defName} on {pawn.LabelShort} (topology={MilkCumSettings.rjwBreastPoolTopologyMode}, Part={breastHediff.Part?.def?.defName}). Caller may get null.");
+        Log.Warning($"[MilkCum][Dev] GetPoolKeyForBreastHediff: no side row for breast {breastHediff.def?.defName} on {pawn.LabelShort} (Part={breastHediff.Part?.def?.defName}). Caller may get null.");
     }
 }
