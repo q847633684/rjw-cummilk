@@ -1,3 +1,4 @@
+using MilkCum.Fluids.Cum;
 using MilkCum.Fluids.Cum.Cumflation;
 using MilkCum.Fluids.Cum.Gathering;
 using rjw;
@@ -8,10 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace MilkCum.Fluids.Cum.Common
+namespace MilkCum.Fluids.Cum.Common;
+
+public partial class FluidUtility
 {
-    public class FluidUtility
-    {
 
         public static void ChangeFluidType(ISexPartHediff part, SexFluidDef newFluid)
         {
@@ -109,9 +110,8 @@ namespace MilkCum.Fluids.Cum.Common
         }
 
 
-        public static IEnumerable<SexFluidDef> GetAllSexFluidDefs()
-        {
-            return DefDatabase<SexFluidDef>.AllDefs;
-        }
+    public static IEnumerable<SexFluidDef> GetAllSexFluidDefs()
+    {
+        return DefDatabase<SexFluidDef>.AllDefs;
     }
 }

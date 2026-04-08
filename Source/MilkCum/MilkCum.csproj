@@ -13,6 +13,14 @@
       <HintPath>$(RJWPath)</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="RJW_Menstruation">
+      <HintPath>$(RJWMenstruationPath)</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RJW_Menstruation_Fluids">
+      <HintPath>$(RJWMenstruationFluidsPath)</HintPath>
+      <Private>False</Private>
+    </Reference>
     <!-- Vanilla Expanded Framework，奶管道联动；仅当 PipeSystemPath 存在时引用 -->
     <Reference Include="PipeSystem" Condition="Exists('$(PipeSystemPath)')">
       <HintPath>$(PipeSystemPath)</HintPath>

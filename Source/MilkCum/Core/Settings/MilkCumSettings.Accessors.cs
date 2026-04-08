@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Shared.Comps;
 using RimWorld;
 using UnityEngine;
@@ -117,41 +116,12 @@ internal partial class MilkCumSettings
 		return Mathf.FloorToInt(14f * pawn.def.race.baseBodySize / ThingDefOf.Cow.race.baseBodySize);
 	}
 
-	internal static float GetRaceDrugDeltaSMultiplier(Pawn pawn)
-	{
-		if (pawn?.def?.defName == null || raceDrugDeltaSMultiplierDefNames == null || raceDrugDeltaSMultiplierValues == null) return 1f;
-		int i = raceDrugDeltaSMultiplierDefNames.IndexOf(pawn.def.defName);
-		if (i < 0 || i >= raceDrugDeltaSMultiplierValues.Count) return 1f;
-		return Mathf.Clamp(raceDrugDeltaSMultiplierValues[i], 0.1f, 3f);
-	}
-
 	internal static float GetProlactinTolerance(Pawn pawn)
 		=> pawn?.health?.hediffSet?.GetFirstHediffOfDef(MilkCumDefOf.EM_Prolactin_Tolerance)?.Severity ?? 0f;
 
-	internal static float GetProlactinToleranceFactor(Pawn pawn)
-	{
-		if (!allowToleranceAffectMilk) return 1f;
-		if (enableToleranceDynamic && pawn != null)
-		{
-			var lactating = pawn.LactatingHediffWithComps();
-			var comp = lactating?.TryGetComp<HediffComp_EqualMilkingLactating>();
-			if (comp != null) return GetProlactinToleranceFactorFromE(comp.GetEffectiveToleranceE());
-		}
-		float t = GetProlactinTolerance(pawn);
-		return GetProlactinToleranceFactor(t);
-	}
+	/// <summary>水池进水与泌乳流速不再乘本 mod 自算耐受系数；给药合并与 Hediff severity 以原版/XML 为准。</summary>
+	internal static float GetProlactinToleranceFactor(Pawn pawn) => 1f;
 
-	internal static float GetProlactinToleranceFactorFromE(float E)
-	{
-		if (!allowToleranceAffectMilk) return 1f;
-		float e = Mathf.Max(1f - Mathf.Clamp01(E), PoolModelConstants.EffectiveDrugFactorMin);
-		return Mathf.Pow(e, Mathf.Clamp(toleranceFlowImpactExponent, 0.1f, 3f));
-	}
-
-	internal static float GetProlactinToleranceFactor(float toleranceSeverity)
-	{
-		if (!allowToleranceAffectMilk) return 1f;
-		float e = Mathf.Max(1f - toleranceSeverity, PoolModelConstants.EffectiveDrugFactorMin);
-		return Mathf.Pow(e, Mathf.Clamp(toleranceFlowImpactExponent, 0.1f, 3f));
-	}
+	/// <summary>兼容旧调用；恒为 1，耐受不再用作泌乳倍率。</summary>
+	internal static float GetProlactinToleranceFactor(float toleranceSeverity) => 1f;
 }

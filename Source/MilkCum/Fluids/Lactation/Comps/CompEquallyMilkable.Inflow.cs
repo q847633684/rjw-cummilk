@@ -104,8 +104,6 @@ public partial class CompEquallyMilkable
             lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
         MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
         float residualL = lactatingComp.CurrentLactationAmount;
-        if (MilkCumSettings.enableToleranceDynamic)
-            lactatingComp.UpdateToleranceDynamic(currentLactation, PoolModelConstants.Interval60PerDay);
         float extraFall60 = 0f;
         float pendingNeedDelta = 0f;
         float baseMax = Mathf.Max(0.01f, maxFullness - CapacityAdaptation);
@@ -149,19 +147,11 @@ public partial class CompEquallyMilkable
             : 1;
         if (MilkCumSettings.inflowSharedMammaryBudget)
         {
-            var flowAccByKey = new Dictionary<string, float>();
-            var pAccByKey = new Dictionary<string, float>();
-            var lAccByKey = new Dictionary<string, float>();
-            var cAccByKey = new Dictionary<string, float>();
-            for (int i = 0; i < entries.Count; i++)
-            {
-                var ek = entries[i].Key;
-                if (string.IsNullOrEmpty(ek)) continue;
-                flowAccByKey[ek] = 0f;
-                pAccByKey[ek] = 0f;
-                lAccByKey[ek] = 0f;
-                cAccByKey[ek] = 0f;
-            }
+            PrepareInflowSharedAccDicts(entries);
+            var flowAccByKey = inflowSharedFlowAccByKey;
+            var pAccByKey = inflowSharedPAccByKey;
+            var lAccByKey = inflowSharedLAccByKey;
+            var cAccByKey = inflowSharedCAccByKey;
             for (int s = 0; s < substeps; s++)
             {
                 float budgetPiece = flowPerTickScale / substeps;
@@ -171,12 +161,13 @@ public partial class CompEquallyMilkable
                     if (!string.IsNullOrEmpty(entries[i].Key)) count++;
                 }
                 if (count == 0) continue;
-                var eArr = new FluidPoolEntry[count];
-                var curArr = new float[count];
-                var scArr = new float[count];
-                var keyArr = new string[count];
-                var chanArr = new MilkPoolInflowSimulator.SideChannelFactors[count];
-                var wArr = new float[count];
+                EnsureInflowSharedRowScratch(count);
+                var eArr = inflowSharedRowEArr;
+                var curArr = inflowSharedRowCurArr;
+                var scArr = inflowSharedRowScArr;
+                var keyArr = inflowSharedRowKeyArr;
+                var chanArr = inflowSharedRowChanArr;
+                var wArr = inflowSharedRowWArr;
                 int ix = 0;
                 for (int i = 0; i < entries.Count; i++)
                 {
@@ -362,6 +353,43 @@ public partial class CompEquallyMilkable
         string text = "EM.FullPoolLetterText".Translate(Pawn.LabelShort);
         if (string.IsNullOrEmpty(text)) text = Pawn.LabelShort + " " + "EM.MilkPoolFull".Translate();
         Find.LetterStack.ReceiveLetter(title, text, LetterDefOf.NegativeEvent, new TargetInfo(Pawn));
+    }
+
+    private void PrepareInflowSharedAccDicts(List<FluidPoolEntry> entries)
+    {
+        inflowSharedFlowAccByKey ??= new Dictionary<string, float>();
+        inflowSharedPAccByKey ??= new Dictionary<string, float>();
+        inflowSharedLAccByKey ??= new Dictionary<string, float>();
+        inflowSharedCAccByKey ??= new Dictionary<string, float>();
+        ClearAndPrimeInflowAccDict(inflowSharedFlowAccByKey, entries);
+        ClearAndPrimeInflowAccDict(inflowSharedPAccByKey, entries);
+        ClearAndPrimeInflowAccDict(inflowSharedLAccByKey, entries);
+        ClearAndPrimeInflowAccDict(inflowSharedCAccByKey, entries);
+    }
+
+    private static void ClearAndPrimeInflowAccDict(Dictionary<string, float> d, List<FluidPoolEntry> entries)
+    {
+        d.Clear();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            string ek = entries[i].Key;
+            if (string.IsNullOrEmpty(ek)) continue;
+            d[ek] = 0f;
+        }
+    }
+
+    private void EnsureInflowSharedRowScratch(int count)
+    {
+        if (count <= 0) return;
+        if (inflowSharedRowEArr == null || inflowSharedRowEArr.Length < count)
+        {
+            inflowSharedRowEArr = new FluidPoolEntry[count];
+            inflowSharedRowCurArr = new float[count];
+            inflowSharedRowScArr = new float[count];
+            inflowSharedRowKeyArr = new string[count];
+            inflowSharedRowChanArr = new MilkPoolInflowSimulator.SideChannelFactors[count];
+            inflowSharedRowWArr = new float[count];
+        }
     }
 
     /// <summary>满池溢出：累计溢出量达到阈值时生成地面污物（不扣水位）；污物 Def 由设置指定</summary>

@@ -18,7 +18,6 @@ public partial class CompEquallyMilkable
     private float GetMilkingFlowRateForSideIndex(int index, bool isMachine, Building_Milking building)
     {
         float baseFlowPerSecond = 60f / Mathf.Max(0.01f, MilkCumSettings.milkingWorkTotalBase);
-        float raceMult = MilkCumSettings.GetRaceDrugDeltaSMultiplier(Pawn);
         var lactatingComp = Pawn?.LactatingHediffComp();
         breastFullness ??= new Dictionary<string, float>();
         var entries = GetCachedEntries();
@@ -29,14 +28,14 @@ public partial class CompEquallyMilkable
         {
             float maxF = Mathf.Max(0.01f, maxFullness);
             float f = Mathf.Clamp01(Fullness / maxF);
-            return baseFlowPerSecond * raceMult * (f * f) * speedMult;
+            return baseFlowPerSecond * (f * f) * speedMult;
         }
         if (entries.Count == 0)
         {
             float letdown = Mathf.Max(0.01f, lactatingComp.GetLetdownReflexFlowMultiplier());
             float maxF = Mathf.Max(0.01f, maxFullness);
             float f = Mathf.Clamp01(Fullness / maxF);
-            return baseFlowPerSecond * raceMult * (f * f) * letdown * speedMult;
+            return baseFlowPerSecond * (f * f) * letdown * speedMult;
         }
         if (index < 0 || index >= entries.Count) return 0f;
         var e = entries[index];
@@ -46,10 +45,10 @@ public partial class CompEquallyMilkable
         float fSide = Mathf.Clamp01(fullness / cap);
         float letdownSide = Mathf.Max(0.01f, lactatingComp.GetLetdownReflexFlowMultiplier(e.Key));
         float duct = GetDuctTakeFactor(e, network, isMachine);
-        return baseFlowPerSecond * raceMult * (fSide * fSide) * letdownSide * speedMult * duct;
+        return baseFlowPerSecond * (fSide * fSide) * letdownSide * speedMult * duct;
     }
 
-    /// <summary>挤奶时的挤出流速（池单位/秒）：各侧按「该侧满度/该侧容量」算挤出乳压 f² 与该侧 letdown，求和后×基准×种族×机器倍率。手挤用总流速；机器挤用 GetMilkingFlowRatesPerSide 每侧独立、并行。</summary>
+    /// <summary>挤奶时的挤出流速（池单位/秒）：各侧按「该侧满度/该侧容量」算挤出乳压 f² 与该侧 letdown，求和后×基准×机器倍率。手挤用总流速；机器挤用 GetMilkingFlowRatesPerSide 每侧独立、并行。</summary>
     public float GetMilkingFlowRate(bool isMachine, Building_Milking building = null)
     {
         var perSide = GetMilkingFlowRatesPerSide(isMachine, building);
@@ -111,7 +110,7 @@ public partial class CompEquallyMilkable
     }
 
     /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。drainedKeys 非空时对被扣量侧对应的乳腺炎做额外排空缓解。</summary>
-    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null, List<string> drainedKeys = null)
+    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null, ICollection<string> drainedKeys = null)
     {
         if (totalDrained <= 0f)
         {

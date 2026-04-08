@@ -1,5 +1,6 @@
 using Verse;
 using Verse.AI;
+using MilkCum.Fluids.Cum;
 using MilkCum.Fluids.Cum.Cumflation;
 
 namespace MilkCum.Fluids.Cum.Leaking
@@ -10,7 +11,7 @@ namespace MilkCum.Fluids.Cum.Leaking
 
         protected override bool Satisfied(Pawn pawn)
         {
-            cumflationHediff = CumflationUtility.GetOrCreateCumflationHediff(pawn);
+            cumflationHediff = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn);
             if (cumflationHediff == null)
             {
                 return false;

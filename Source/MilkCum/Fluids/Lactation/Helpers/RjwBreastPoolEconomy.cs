@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
@@ -217,13 +218,12 @@ public static class RjwBreastPoolEconomy
     public static List<RjwBreastPoolSnapshot> GetBreastPoolSnapshots(Pawn pawn) =>
         SnapshotsVirtualLeftRight(pawn);
 
-    /// <summary>虚拟左·右拓扑：快照仅来自 <see cref="GatherLateralBreastLeafCands"/>。</summary>
+    /// <summary>虚拟左·右拓扑：快照与侧行共用 <see cref="GetSortedLateralBreastLeafCandsCached"/>（同 tick、同乳房签名）。</summary>
     internal static List<RjwBreastPoolSnapshot> SnapshotsVirtualLeftRight(Pawn pawn)
     {
         var result = new List<RjwBreastPoolSnapshot>();
-        var cands = GatherLateralBreastLeafCands(pawn);
+        var cands = GetSortedLateralBreastLeafCandsCached(pawn);
         if (cands.Count == 0) return result;
-        cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
         for (int i = 0; i < cands.Count; i++)
             AppendBreastPoolSnapshot(result, cands[i], i);
         return result;
@@ -232,7 +232,7 @@ public static class RjwBreastPoolEconomy
     /// <summary>
     /// 每条可泌乳乳房一条解剖行；储奶为每条乳房 Hediff 的 <c>稳定基键_L/_R</c> 双格（虚拟左右池）。
     /// 含 <c>Breast</c>/<c>MechBreast</c> 叶及 RJW 常见的 <c>Chest</c>/无部位；容量为 0 不进列表。
-    /// 同 tick、同键签名时由 <see cref="BreastPoolSideRowsCache"/> 缓存，避免重复构建。
+    /// 同 tick、同键签名时由 <see cref="BreastPoolSideRowsCache"/> 缓存侧行；叶候选与同 tick 签名缓存与快照构建共用。
     /// </summary>
     public static List<RjwBreastPoolSideRow> GetBreastPoolSideRows(Pawn pawn) =>
         pawn == null || !ModIntegrationGates.RjwModActive
@@ -242,13 +242,12 @@ public static class RjwBreastPoolEconomy
     private static List<RjwBreastPoolSideRow> BuildBreastPoolSideRowsUncached(Pawn pawn) =>
         BuildVirtualLeftRightSideRowsUncached(pawn);
 
-    /// <summary>虚拟左·右：候选来自 <see cref="GatherLateralBreastLeafCands"/>；胸位/无部位行标为左列；叶上行仅解剖左为左（与 <see cref="PawnMilkPoolExtensions.GetBreastCapacityFactors"/> 一致）。</summary>
+    /// <summary>虚拟左·右：候选来自 <see cref="GetSortedLateralBreastLeafCandsCached"/>；胸位/无部位行标为左列；叶上行仅解剖左为左（与 <see cref="PawnMilkPoolExtensions.GetBreastCapacityFactors"/> 一致）。</summary>
     internal static List<RjwBreastPoolSideRow> BuildVirtualLeftRightSideRowsUncached(Pawn pawn)
     {
         var result = new List<RjwBreastPoolSideRow>();
-        var cands = GatherLateralBreastLeafCands(pawn);
+        var cands = GetSortedLateralBreastLeafCandsCached(pawn);
         if (cands.Count == 0) return result;
-        cands.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
         int poolIdx = 0;
         for (int i = 0; i < cands.Count; i++)
         {
@@ -301,6 +300,37 @@ public static class RjwBreastPoolEconomy
         }
 
         return cands;
+    }
+
+    /// <summary>同 tick、同 <see cref="BuildBreastListPoolKeySignature"/> 下复用已排序乳房叶候选；供快照与侧行构建共用。列表勿 Add/Remove。</summary>
+    private static List<Cand> GetSortedLateralBreastLeafCandsCached(Pawn pawn) =>
+        pawn == null ? new List<Cand>() : BreastPoolLeafCandsCache.GetCached(pawn);
+
+    private static class BreastPoolLeafCandsCache
+    {
+        private sealed class Entry
+        {
+            public int Tick = -1;
+            public string Sig = "";
+            public List<Cand> Cands;
+        }
+
+        private static readonly ConditionalWeakTable<Pawn, Entry> Table = new();
+
+        public static List<Cand> GetCached(Pawn pawn)
+        {
+            int tick = Find.TickManager?.TicksGame ?? -1;
+            string sig = BuildBreastListPoolKeySignature(pawn);
+            Entry e = Table.GetOrCreateValue(pawn);
+            if (e.Cands != null && tick == e.Tick && sig == e.Sig)
+                return e.Cands;
+            List<Cand> fresh = GatherLateralBreastLeafCands(pawn);
+            fresh.Sort((a, b) => a.ListIndex.CompareTo(b.ListIndex));
+            e.Tick = tick;
+            e.Sig = sig;
+            e.Cands = fresh;
+            return e.Cands;
+        }
     }
 
     /// <summary>虚拟左·右拓扑：由侧行构建池条目（组织适应摊入）。侧行经 <see cref="GetBreastPoolSideRows"/> 与同 tick 缓存对齐，避免与 <see cref="MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable"/> 刷新条目时重复构建。</summary>

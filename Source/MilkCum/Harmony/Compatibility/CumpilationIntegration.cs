@@ -10,9 +10,9 @@ using MilkCum.Fluids.Shared.Comps;
 namespace MilkCum.Harmony;
 
 /// <summary>
-/// 鏈?Mod 宸插悎骞?Cumpilation锛氫负绮炬恫鐗╁搧鎵撲骇涓?producer)锛岄鐢ㄨ鍒欎笌濂跺埗鍝佷竴鑷?CompShowProducer + allowedConsumers)銆?
-/// 妗跺彲鍏宠仈搴婏細浠呭簥涓诲彲鐢ㄧ┖妗讹紱鍗犵敤鏃舵彁绀衡€滀笉鏄綘鐨勬《鈥濓紱鍏变韩鍗у=娣峰悎绮炬恫銆?
-/// 7.13: 鍗曟簮(ExtractCum銆丏eflateBucket 鍗曚富銆丟athering from sex)璁?producer锛涙贩鍚堟《/娓呮磥姹＄墿鍥炴敹涓嶈 producer銆?
+/// 本 Mod 已合并 Cumpilation：精液物品打产主 (producer)，食用规则与奶制品一致 (CompShowProducer + allowedConsumers)。
+/// 桶可关联床：仅床主可用空桶；有占用时提示「不是你的桶」；共享宿舍 = 混合精液。
+/// 7.13：单源（ExtractCum、DeflateBucket 单主、性交 Gathering）设 producer；混合桶/清洁回收不设 producer。
 /// </summary>
 public static class CumpilationIntegration
 {

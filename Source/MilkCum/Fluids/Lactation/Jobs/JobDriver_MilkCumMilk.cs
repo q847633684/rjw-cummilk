@@ -17,6 +17,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
     private float totalDrained;
     private Sustainer milkSustainer;
     private readonly List<string> drainedKeys = new();
+    private readonly List<float> machineRateScratch = new();
     /// <summary>本场次被扣量的池侧 key 集合，用于挤奶结束时按侧做乳腺炎排空缓解。</summary>
     private readonly HashSet<string> sessionDrainedKeys = new();
     public Pawn Target => job.GetTarget(TargetIndex.A).Thing as Pawn;
@@ -121,7 +122,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             {
                 if (totalDrained > 0f)
                 {
-                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, new List<string>(sessionDrainedKeys));
+                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, sessionDrainedKeys);
                     totalDrained = 0f;
                 }
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded);
@@ -135,10 +136,10 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             {
                 // 机器挤奶：每侧按自身流速独立排空，并行进行；总耗时由最慢的一侧决定（如左 2.5 秒、右 1 秒 → 总时间 2.5 秒）
                 var flowRatesPerSide = comp.GetMilkingFlowRatesPerSide(true, MilkBuilding);
-                var ratePerSidePerTick = new List<float>(flowRatesPerSide.Count);
+                machineRateScratch.Clear();
                 for (int i = 0; i < flowRatesPerSide.Count; i++)
-                    ratePerSidePerTick.Add(flowRatesPerSide[i] / 60f);
-                actualDrained = comp.DrainForConsumeParallel(ratePerSidePerTick, remaining, drainedKeys);
+                    machineRateScratch.Add(flowRatesPerSide[i] / 60f);
+                actualDrained = comp.DrainForConsumeParallel(machineRateScratch, remaining, drainedKeys);
             }
             else
             {
@@ -149,7 +150,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
                 {
                     if (totalDrained > 0f)
                     {
-                        comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, new List<string>(sessionDrainedKeys));
+                        comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, sessionDrainedKeys);
                         totalDrained = 0f;
                     }
                     this.milkSustainer?.End();
@@ -174,7 +175,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             {
                 if (totalDrained > 0f)
                 {
-                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, new List<string>(sessionDrainedKeys));
+                    comp.SpawnBottlesForDrainedAmount(totalDrained, actor, MilkBuilding, sessionDrainedKeys);
                     totalDrained = 0f;
                 }
                 this.milkSustainer?.End();
@@ -186,7 +187,7 @@ public class JobDriver_MilkCumMilk : JobDriver_Milk
             this.milkSustainer?.End();
             // 挤奶被打断时，已扣的池量仍产瓶，不丢失
             if (totalDrained > 0f && Target?.CompEquallyMilkable() is CompEquallyMilkable comp)
-                comp.SpawnBottlesForDrainedAmount(totalDrained, pawn, MilkBuilding, new List<string>(sessionDrainedKeys));
+                comp.SpawnBottlesForDrainedAmount(totalDrained, pawn, MilkBuilding, sessionDrainedKeys);
             if (Target?.CurJobDef == JobDefOf.Wait_MaintainPosture)
             {
                 Target.jobs.EndCurrentJob(JobCondition.InterruptForced);

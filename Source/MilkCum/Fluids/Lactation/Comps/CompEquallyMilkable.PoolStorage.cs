@@ -351,6 +351,10 @@ public partial class CompEquallyMilkable
         return cachedEntries;
     }
 
+    /// <summary>优先有效缓存，否则重建并迁移满度；勿对返回的 Comp 缓存列表执行 Add/Remove。</summary>
+    internal List<FluidPoolEntry> GetResolvedBreastPoolEntries() =>
+        GetCachedEntriesIfValid() ?? GetCachedEntries();
+
     /// <summary>与 <see cref="GetCachedEntriesIfValid"/> 同生命周期；供 RJW 联动等需 <see cref="RjwBreastPoolSideRow.BreastHediff"/> 的路径，避免再算一遍侧行。</summary>
     internal List<RjwBreastPoolSideRow> GetCachedSideRowsIfValid()
     {

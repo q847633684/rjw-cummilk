@@ -36,7 +36,8 @@
     <EM.SubTab.ToleranceOverflow>Tolerance &amp; overflow</EM.SubTab.ToleranceOverflow>
     <EM.SectionDesc_Mastitis>Mastitis/clog: master switch enables the mechanic; sliders set base MTB, over-fullness and hygiene risk multipliers, and humanlike/animal multipliers. Hygiene source: when Dubs Bad Hygiene is active and a Hygiene need exists, that need is used automatically; otherwise room cleanliness.</EM.SectionDesc_Mastitis>
     <EM.SectionDesc_DBH>When Dubs Bad Hygiene is active, mastitis/clog hygiene risk automatically uses DBH's Hygiene need when available; otherwise room cleanliness is used.</EM.SectionDesc_DBH>
-    <EM.SectionDesc_ToleranceOverflow>Whether tolerance affects milk efficiency and the impact exponent; which filth def spawns when pool overflows; whether milking AI prefers fuller targets. Reference line shows pool model baselines.</EM.SectionDesc_ToleranceOverflow>
+    <EM.SectionDesc_ToleranceOverflow>Overflow filth def, full-pool letters, and milking AI fullness preference are on the Overflow sub-tab. This tab used to host tolerance sliders—those are removed; drug merge and severity follow vanilla/XML.</EM.SectionDesc_ToleranceOverflow>
+    <EM.ToleranceVanillaOnlyBody>Drug tolerance and lactating hediff merge are handled by vanilla and your defs. This mod no longer multiplies pool inflow or milk flow by a separate prolactin-tolerance factor. If EM prolactin tolerance hediff still exists from XML, it can affect thoughts or UI only—not a second penalty on output here.</EM.ToleranceVanillaOnlyBody>
     <EM.SectionDesc_IdentityAndMenu>Controls whether right-clicking a pawn of each type shows "Give prolactin", "Breastfeed/suckle", etc. in the float menu. Check by target identity (mechanoid/colonist/slave/prisoner/animal/misc) to reduce clutter.</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
     <EM.SubTab.Efficiency>Efficiency</EM.SubTab.Efficiency>
@@ -136,14 +137,14 @@
     <EM.RjwPermanentBreastGainDaysDesc>How many in-game lactation-days between each permanent severity step.</EM.RjwPermanentBreastGainDaysDesc>
     <EM.RjwPermanentBreastGainDelta>Severity delta per step: {0}</EM.RjwPermanentBreastGainDelta>
     <EM.RjwPermanentBreastGainDeltaDesc>RJW breast hediff severity added each milestone (capped at 1).</EM.RjwPermanentBreastGainDeltaDesc>
-    <EM.RaceDrugDeltaSMultipliers>Race prolactin ΔS multiplier (defName:value, …)</EM.RaceDrugDeltaSMultipliers>
-    <EM.RaceDrugDeltaSMultipliersDesc>Optional per-race multiplier for drug-induced lactation stimulus (ΔS). Format: Human:1.2, MyAlien:0.8 — comma-separated, colon between defName and value. Clamped 0.1–3. Empty = all races use 1.</EM.RaceDrugDeltaSMultipliersDesc>
+    <EM.RaceDrugDeltaSMultipliers>[Removed] Race prolactin ΔS multiplier</EM.RaceDrugDeltaSMultipliers>
+    <EM.RaceDrugDeltaSMultipliersDesc>Obsolete: pool drug intake uses Hediff severity from vanilla/XML only; no per-race ΔS table.</EM.RaceDrugDeltaSMultipliersDesc>
     <EM.PoolSchematicTitle>Schematic: pool fullness vs. time (not exact tick sim)</EM.PoolSchematicTitle>
     <EM.PoolSchematicTip>Normalized schematic (0 = empty, 1 = capacity). Cyan uses the same formula as in-game effective drive (GetEffectiveDrive) after L cap; green adds a simple “residual pressure” lift from the overflow slider and a late-time milking drain from flow multiplier / milking work base. Not a tick-accurate pool simulation.</EM.PoolSchematicTip>
     <EM.PoolSchematicReflectedTitle>Reflected in this plot (approximate)</EM.PoolSchematicReflectedTitle>
     <EM.PoolSchematicReflectedBullets>L cap and overflow-to-severity multiplier; inflow substeps &amp; burst duration; pressure factor on/off and Pc (shape); hormone saturation via GetEffectiveDrive (A, LRef); overflow residual pressure slider r (static — not L/I dynamic scaling); humanlike flow multiplier &amp; milking work base (late green dip).</EM.PoolSchematicReflectedBullets>
     <EM.PoolSchematicExcludedTitle>Not reflected here</EM.PoolSchematicExcludedTitle>
-    <EM.PoolSchematicExcludedBullets>Nutrition / reabsorb; mastitis &amp; full hygiene–inflammation loop; tolerance E &amp; race ΔS table; duct graph per pawn; nipple stage / RJW capacity modes; multi-pool topology.</EM.PoolSchematicExcludedBullets>
+    <EM.PoolSchematicExcludedBullets>Nutrition / reabsorb; mastitis &amp; full hygiene–inflammation loop; duct graph per pawn; nipple stage / RJW capacity modes; multi-pool topology.</EM.PoolSchematicExcludedBullets>
     <EM.PoolSchematicFooterSeeTooltip>Hover this panel for the reflected vs. excluded list.</EM.PoolSchematicFooterSeeTooltip>
     <EM.PoolSchematicAxisTime>Time → (one normalized drug cycle)</EM.PoolSchematicAxisTime>
     <EM.PoolSchematicAxisLevel>Level ↑ (normalized)</EM.PoolSchematicAxisLevel>
@@ -289,7 +290,7 @@
     <EM.BaselineMilkDurationReference>Reference: drug baseline {0} days, birth-induced {1} days (each component decays with its own baseline).</EM.BaselineMilkDurationReference>
     <EM.AiPreferHighFullnessTargets>Prioritize fuller targets when milking</EM.AiPreferHighFullnessTargets>
     <EM.AiPreferHighFullnessTargetsDesc>When enabled, colonists will prefer to milk pawns with higher pool fullness first (reduces overflow risk).</EM.AiPreferHighFullnessTargetsDesc>
-    <EM.RaceOverridesSection>Race overrides (whitelist / blacklist)</EM.RaceOverridesSection>
+    <EM.RaceOverridesSection>Race overrides (whitelist / blacklist). Prolactin pool Δs follows Hediff severity only—no per-race multiplier here.</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>Races that can always lactate (defName, comma-separated)</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>Races that cannot lactate (defName, comma-separated)</EM.RaceCannotLactate>
 <EM.DefaultFlowMultiplierForHumanlike>Flow multiplier: {0}</EM.DefaultFlowMultiplierForHumanlike>

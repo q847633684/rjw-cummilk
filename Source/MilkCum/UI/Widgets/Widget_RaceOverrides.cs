@@ -28,20 +28,6 @@ public class Widget_RaceOverrides
 		Widgets.Label(rNever.LeftHalf(), "EM.RaceCannotLactate".Translate());
 		raceNever = Widgets.TextField(rNever.RightHalf(), raceNever, 128);
 		MilkCumSettings.raceCannotLactate = CommaSeparatedDefNames.Parse(raceNever);
-		list.Gap(8f);
-		MilkCumSettings.raceDrugDeltaSMultiplierDefNames ??= new List<string>();
-		MilkCumSettings.raceDrugDeltaSMultiplierValues ??= new List<float>();
-		string raceDrugPairs = CommaSeparatedDefNames.FormatRaceDrugDeltaSText(
-			MilkCumSettings.raceDrugDeltaSMultiplierDefNames,
-			MilkCumSettings.raceDrugDeltaSMultiplierValues);
-		Rect rDrug = list.GetRect(UNIT_SIZE);
-		Widgets.Label(rDrug.LeftHalf(), "EM.RaceDrugDeltaSMultipliers".Translate());
-		raceDrugPairs = Widgets.TextField(rDrug.RightHalf(), raceDrugPairs, 256);
-		CommaSeparatedDefNames.ParseRaceDrugDeltaSText(
-			raceDrugPairs,
-			MilkCumSettings.raceDrugDeltaSMultiplierDefNames,
-			MilkCumSettings.raceDrugDeltaSMultiplierValues);
-		{ string tip = "EM.RaceDrugDeltaSMultipliersDesc".Translate(); TooltipHandler.TipRegion(rDrug, string.IsNullOrEmpty(tip) ? "EM.RaceDrugDeltaSMultipliersDesc" : tip); }
 		list.End();
 	}
 }

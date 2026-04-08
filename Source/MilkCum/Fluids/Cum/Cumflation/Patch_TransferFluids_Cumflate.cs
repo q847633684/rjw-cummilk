@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MilkCum.Fluids.Cum;
 using rjw;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace MilkCum.Fluids.Cum.Cumflation
     {
         public static void Postfix(SexProps props)
         {
+            if (MenstruationFluidsCompat.MenstruationFluidsCumflationDefsPresent)
+                return;
             if (Settings.EnableCumflation) {
                 // DevNote: See Patch_TransferFluids_Stuff at the Bottom for how to figure out the cases.
                 if (!props.isReceiver && !props.isRevese)

@@ -40,14 +40,12 @@ public static class ProlactinAddictionPatch
         var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
         if (hediff == null)
             return;
-        float tBefore = Mathf.Max(0f, MilkCumSettings.GetProlactinTolerance(pawn) - MilkCumSettings.ProlactinToleranceGainPerDose);
         float rawSeverity = giveHediff.severity;
-        float effectiveSeverity = rawSeverity * MilkCumSettings.GetProlactinToleranceFactor(tBefore);
+        float effectiveSeverity = rawSeverity;
 
         if (hediff.Severity > rawSeverity)
         {
-            float raceMult = MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
-            float deltaS = effectiveSeverity * raceMult;
+            float deltaS = effectiveSeverity;
             float remainingBefore = 0f;
             float lactationBefore = 0f;
             bool logIntake = MilkCumSettings.lactationDrugIntakeLog;
@@ -71,7 +69,7 @@ public static class ProlactinAddictionPatch
                         if (comp.MergedFromIngestionThisTick)
                         {
                             MilkCumSettings.LactationLog($"[MilkCum.验证] 已泌乳再次服药 数据: Pawn={pawn?.LabelShort} Def_raw={rawSeverity:F3} 合并other.Severity={mergedSeverity:F3} 自算effective={effectiveSeverity:F3}");
-                            MilkCumSettings.LactationLog("[MilkCum.验证] 解读: 原版已乘耐受，合并值≈effective，无需补差");
+                            MilkCumSettings.LactationLog("[MilkCum.验证] 解读: 合并路径 Severity 已由原版处理，水池按合并量同步，无需再乘本 mod 系数");
                             comp.LastMergedOtherSeverity = 0f;
                         }
                         else
@@ -85,18 +83,17 @@ public static class ProlactinAddictionPatch
                             comp.SuppressDrugIntakeLog = false;
                             float remainingAfter = comp.RemainingDays;
                             float lactationAfter = comp.CurrentLactationAmount;
-                            float eTol = MilkCumSettings.GetProlactinToleranceFactor(pawn);
-                            float rawInferred = (eTol * raceMult > 1E-6f) ? (deltaS / (eTol * raceMult)) : 0f;
+                            float rawInferred = deltaS;
                             float totalDeltaL = wasMerged ? (mergedSeverity * PoolModelConstants.DoseToLFactor) : (lactationAfter - lactationBefore);
                             float deltaRemaining = remainingAfter - remainingBefore;
                             int tick = Find.TickManager.TicksGame;
                             MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] pawn={pawn?.LabelShort} tick={tick} state=AlreadyLactating merged={(wasMerged ? "ByVanillaMerge" : "Direct")}");
-                            MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] input rawDef~={rawInferred:F3} Δs={deltaS:F3} E_tol={eTol:F3} raceMult={raceMult:F3} doseToL={PoolModelConstants.DoseToLFactor:F2}");
+                            MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] input severity~={rawInferred:F3} Δs={deltaS:F3} doseToL={PoolModelConstants.DoseToLFactor:F2}");
                             MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] result 本针合计ΔL={totalDeltaL:F3} remainBefore={remainingBefore:F1}d remainAfter={remainingAfter:F1}d Δremain={deltaRemaining:+0.0;-0.0;0.0}d");
                             if (wasMerged)
-                                MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] 公式 合并加L={mergedSeverity:F3}×C_dose={mergedSeverity * PoolModelConstants.DoseToLFactor:F3}=合计ΔL；effective=raw({rawSeverity:F3})×E_tol({eTol:F3})={effectiveSeverity:F3} Δs=effective×种族({raceMult:F3})={deltaS:F3}；剩余={remainingBefore:F1}d+Δ天数({deltaRemaining:+0.0;-0.0;0.0})d={remainingAfter:F1}d");
+                                MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] 公式 合并加L={mergedSeverity:F3}×C_dose={mergedSeverity * PoolModelConstants.DoseToLFactor:F3}=合计ΔL；Δs=effectiveSeverity({rawSeverity:F3})={deltaS:F3}；剩余={remainingBefore:F1}d+Δ天数({deltaRemaining:+0.0;-0.0;0.0})d={remainingAfter:F1}d");
                             else
-                                MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] 公式 有效剂量effective=raw({rawSeverity:F3})×E_tol({eTol:F3})={effectiveSeverity:F3}；Δs=effective×种族({raceMult:F3})={deltaS:F3}；ΔL=Δs×C_dose={totalDeltaL:F3}；剩余={remainingBefore:F1}d+Δ天数({deltaRemaining:+0.0;-0.0;0.0})d={remainingAfter:F1}d");
+                                MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] 公式 Δs=GiveHediff.severity/effective({rawSeverity:F3})={deltaS:F3}；ΔL=Δs×C_dose={totalDeltaL:F3}；剩余={remainingBefore:F1}d+Δ天数({deltaRemaining:+0.0;-0.0;0.0})d={remainingAfter:F1}d");
                         }
                         break;
                     }
@@ -116,7 +113,7 @@ public static class ProlactinAddictionPatch
         }
         else
         {
-            float deltaS = effectiveSeverity * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
+            float deltaS = effectiveSeverity;
             MilkCumSettings.LactationLog($"Prolactin immediate apply: {pawn?.Name}, deltaS={deltaS:F3}");
             var reapply = pawn.health.GetOrAddHediff(HediffDefOf.Lactating, pawn.GetBreastOrChestPart()) as HediffWithComps;
             if (reapply?.comps != null)

@@ -214,7 +214,7 @@ public class Widget_AdvancedSettings
 		}
 
 		list.Label("EM.BreastPoolLayoutVirtualLRFixed".Translate());
-		var entries = pawn.GetBreastPoolEntries();
+		var entries = pawn.GetResolvedBreastPoolEntries();
 		if (entries == null || entries.Count == 0)
 		{
 			list.Label("EM.DevModeBreastPoolTopologyNoEntries".Translate());
@@ -390,49 +390,8 @@ public class Widget_AdvancedSettings
 	private void DrawToleranceBlock(Listing_Standard list)
 	{
 		GUI.color = Color.gray;
-		list.Label("EM.SectionDesc_ToleranceOverflow".Translate());
+		list.Label("EM.ToleranceVanillaOnlyBody".Translate());
 		GUI.color = Color.white;
-		list.Gap(6f);
-		DrawEmUISectionHeading(list, "EM.UISection.ToleranceAffectsMilk", "EM.UISection.ToleranceAffectsMilkDesc", 0f);
-		Rect rToleranceAffect = list.GetRect(UNIT_SIZE);
-		bool allowToleranceAffectMilk = MilkCumSettings.allowToleranceAffectMilk;
-		Widgets.CheckboxLabeled(rToleranceAffect, "EM.AllowToleranceAffectMilk".Translate(), ref allowToleranceAffectMilk, false);
-		MilkCumSettings.allowToleranceAffectMilk = allowToleranceAffectMilk;
-		TooltipHandler.TipRegion(rToleranceAffect, "EM.AllowToleranceAffectMilkDesc".Translate());
-		list.Gap(6f);
-		Rect rExp = list.GetRect(UNIT_SIZE);
-		float toleranceFlowImpactExponent = MilkCumSettings.toleranceFlowImpactExponent;
-		Widgets.HorizontalSlider(rExp, ref toleranceFlowImpactExponent, new FloatRange(0.1f, 3f), "EM.ToleranceFlowImpactExponent".Translate(MilkCumSettings.toleranceFlowImpactExponent.ToString("F1")), 0.1f);
-		MilkCumSettings.toleranceFlowImpactExponent = toleranceFlowImpactExponent;
-		list.Gap(6f);
-		DrawEmUISectionHeading(list, "EM.UISection.ToleranceDynamicModel", "EM.UISection.ToleranceDynamicModelDesc", 0f);
-		Rect rTolDyn = list.GetRect(UNIT_SIZE);
-		bool enableToleranceDynamic = MilkCumSettings.enableToleranceDynamic;
-		Widgets.CheckboxLabeled(rTolDyn, "EM.EnableToleranceDynamic".Translate(), ref enableToleranceDynamic, false);
-		MilkCumSettings.enableToleranceDynamic = enableToleranceDynamic;
-		TooltipHandler.TipRegion(rTolDyn, "EM.EnableToleranceDynamicDesc".Translate());
-		list.Gap(4f);
-		bool tolDynGuiEnabled = GUI.enabled;
-		GUI.enabled = MilkCumSettings.enableToleranceDynamic;
-		Rect rMu = list.GetRect(UNIT_SIZE);
-		float toleranceMu = MilkCumSettings.toleranceDynamicMu;
-		Widgets.HorizontalSlider(rMu, ref toleranceMu, new FloatRange(0.001f, 0.2f), "EM.ToleranceDynamicMu".Translate(toleranceMu.ToString("F3")), 0.001f);
-		MilkCumSettings.toleranceDynamicMu = toleranceMu;
-		TooltipHandler.TipRegion(rMu, "EM.ToleranceDynamicMuDesc".Translate());
-		list.Gap(4f);
-		Rect rNu = list.GetRect(UNIT_SIZE);
-		float toleranceNu = MilkCumSettings.toleranceDynamicNu;
-		Widgets.HorizontalSlider(rNu, ref toleranceNu, new FloatRange(0.01f, 0.5f), "EM.ToleranceDynamicNu".Translate(toleranceNu.ToString("F3")), 0.005f);
-		MilkCumSettings.toleranceDynamicNu = toleranceNu;
-		TooltipHandler.TipRegion(rNu, "EM.ToleranceDynamicNuDesc".Translate());
-		GUI.enabled = tolDynGuiEnabled;
-		list.Gap(6f);
-		DrawEmUISectionHeading(list, "EM.UISection.ProlactinTolerancePerDose", "EM.UISection.ProlactinTolerancePerDoseDesc", 0f);
-		Rect rProlactinTol = list.GetRect(UNIT_SIZE);
-		float prolactinTolGain = MilkCumSettings.ProlactinToleranceGainPerDose;
-		Widgets.HorizontalSlider(rProlactinTol, ref prolactinTolGain, new FloatRange(0.01f, 0.12f), "EM.ProlactinToleranceGainPerDose".Translate(prolactinTolGain.ToString("F3")), 0.002f);
-		MilkCumSettings.ProlactinToleranceGainPerDose = Mathf.Max(0.001f, prolactinTolGain);
-		TooltipHandler.TipRegion(rProlactinTol, "EM.ProlactinToleranceGainPerDoseDesc".Translate());
 	}
 
 	private void DrawOverflowBlock(Listing_Standard list)

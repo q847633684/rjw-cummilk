@@ -21,6 +21,19 @@ namespace MilkCum.Fluids.Lactation.Helpers;
 /// </summary>
 public static class PawnMilkPoolExtensions
 {
+    /// <summary>无 RJW 或 pawn 为空时复用；勿 Add/Remove。</summary>
+    private static readonly List<FluidPoolEntry> EmptyBreastPoolEntries = new();
+
+    /// <summary>优先 Comp 有效缓存条目，否则 <see cref="CompEquallyMilkable.GetResolvedBreastPoolEntries"/>；无 Comp 时走 <see cref="GetBreastPoolEntries"/>。勿对返回的 Comp 缓存或本静态空列表执行 Add/Remove。</summary>
+    public static List<FluidPoolEntry> GetResolvedBreastPoolEntries(this Pawn pawn)
+    {
+        if (pawn == null) return EmptyBreastPoolEntries;
+        var comp = pawn.CompEquallyMilkable();
+        if (comp != null)
+            return comp.GetResolvedBreastPoolEntries();
+        return pawn.GetBreastPoolEntries();
+    }
+
     /// <summary>左侧各池基容量之和（组织适应前因子，由 <see cref="GetBreastCapacityFactors"/>）。</summary>
     public static float GetLeftBreastCapacityFactor(this Pawn pawn)
     {
@@ -61,7 +74,7 @@ public static class PawnMilkPoolExtensions
     /// <summary>虚拟乳池条目：当前固定虚拟左·右，条目键为稳定基键加 <c>_L/_R</c>。</summary>
     public static List<FluidPoolEntry> GetBreastPoolEntries(this Pawn pawn)
     {
-        if (pawn == null || !ModIntegrationGates.RjwModActive) return new List<FluidPoolEntry>();
+        if (pawn == null || !ModIntegrationGates.RjwModActive) return EmptyBreastPoolEntries;
         var entries = RjwBreastPoolEconomy.BuildVirtualLeftRightBreastPoolEntries(pawn);
         BreastPoolTopologyDiagnostics.MaybeDevWarnAfterEntriesBuilt(pawn, entries);
         return entries;
@@ -127,7 +140,7 @@ public static class PawnMilkPoolExtensions
     public static BodyPartRecord GetPartForPoolKey(this Pawn pawn, string poolKey)
     {
         if (pawn == null || string.IsNullOrEmpty(poolKey)) return null;
-        var entries = pawn.CompEquallyMilkable()?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entries = pawn.GetResolvedBreastPoolEntries();
         for (int i = 0; i < entries.Count; i++)
             if (entries[i].Key == poolKey)
                 return entries[i].SourcePart;
@@ -169,7 +182,7 @@ public static class PawnMilkPoolExtensions
     {
         if (pawn == null || pawn.LactatingHediffComp() == null) return (0f, 0f, 0f, 0f);
         var milkComp = pawn.CompEquallyMilkable();
-        var entries = milkComp?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entries = pawn.GetResolvedBreastPoolEntries();
         float multL = 0f, multR = 0f;
         for (int i = 0; i < entries.Count; i++)
         {
@@ -189,7 +202,7 @@ public static class PawnMilkPoolExtensions
     {
         var milkComp = pawn?.CompEquallyMilkable();
         if (milkComp == null || string.IsNullOrEmpty(poolKey)) return 1f;
-        var entries = milkComp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entries = milkComp.GetResolvedBreastPoolEntries();
         if (entries.Count == 0) return 1f;
         var e = entries.FirstOrDefault(x => x.Key == poolKey);
         if (string.IsNullOrEmpty(e.Key)) return 1f;
@@ -217,7 +230,7 @@ public static class PawnMilkPoolExtensions
         var comp = pawn?.CompEquallyMilkable();
         if (comp == null || breastHediff == null) return list;
         var rows = RjwBreastPoolEconomy.GetBreastPoolSideRows(pawn);
-        var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entries = comp.GetResolvedBreastPoolEntries();
         var keys = new HashSet<string>();
         bool siblingCluster = ModIntegrationGates.RjwModActive;
         BodyPartRecord clusterParent = null;
@@ -284,7 +297,7 @@ public static class PawnMilkPoolExtensions
         var list = new List<(string, float, float, bool)>();
         var comp = pawn?.CompEquallyMilkable();
         if (comp == null || string.IsNullOrEmpty(poolKey)) return list;
-        var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entries = comp.GetResolvedBreastPoolEntries();
 
         void TryAdd(string k)
         {

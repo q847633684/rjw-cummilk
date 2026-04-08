@@ -173,7 +173,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
         bool perSideStretch = MilkCumSettings.realismRjwStretchPerSideSync;
         List<FluidPoolEntry> entries = null;
         if (perSideStretch)
-            entries = milkComp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+            entries = milkComp.GetResolvedBreastPoolEntries();
         bool anySeverityMoved = false;
         var snaps = RjwBreastPoolEconomy.GetBreastPoolSnapshots(pawn);
         for (int idx = 0; idx < snaps.Count; idx++)

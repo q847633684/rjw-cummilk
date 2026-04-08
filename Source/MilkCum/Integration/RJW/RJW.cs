@@ -122,7 +122,7 @@ public static class JobDriver_Sex_OrgasmMilk_Patch
         if (!ModIntegrationGates.RjwModActive) return;
         var list = pawn.GetBreastListOrEmpty();
         if (list.Count == 0) return;
-        var entries = comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entries = comp.GetResolvedBreastPoolEntries();
         if (entries == null || entries.Count == 0) return;
         var sideRows = comp.GetCachedSideRowsIfValid() ?? RjwBreastPoolEconomy.GetBreastPoolSideRows(pawn);
         var toAdd = new List<(string key, float addAmount, float cap)>();

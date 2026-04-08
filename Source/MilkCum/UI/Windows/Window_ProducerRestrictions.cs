@@ -414,7 +414,7 @@ public class Window_ProducerRestrictions : Window
 
         EnsureRowStartIfNarrow(narrow);
 
-        // 第二行：泄精、塞住（若组件存在）
+        // 第二行：泄精（有 Comp 即可）；塞住仅当 canSeal()，避免 IsSealed getter 在无法塞住时恒为 false 导致勾选状态不同步。
         if (sealComp != null)
         {
             DrawCheckbox(
@@ -424,12 +424,15 @@ public class Window_ProducerRestrictions : Window
                 sealComp.CanDeflate,
                 v => sealComp.SetCanDeflate(v));
 
-            DrawCheckbox(
-                "EM.Milk_SealCum",
-                "EM.Milk_SealCumTip",
-                100f,
-                sealComp.IsSealed,
-                v => sealComp.SetSealed(v));
+            if (sealComp.canSeal())
+            {
+                DrawCheckbox(
+                    "EM.Milk_SealCum",
+                    "EM.Milk_SealCumTip",
+                    100f,
+                    sealComp.IsSealed,
+                    v => sealComp.SetSealed(v));
+            }
         }
 
         y = rowY + rowHeight + 8f;

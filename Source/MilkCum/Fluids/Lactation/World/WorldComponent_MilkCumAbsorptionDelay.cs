@@ -102,12 +102,10 @@ public class WorldComponent_MilkCumAbsorptionDelay : WorldComponent
         if (pawn?.health?.hediffSet == null) return;
         if (MilkCumDefOf.EM_AbsorptionDelay != null && pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_AbsorptionDelay) is Hediff absorptionHediff)
             pawn.health.RemoveHediff(absorptionHediff);
-        // Δs = 游戏按耐受削弱后的 effectiveSeverity × 种族倍率
-        float raceMult = MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
-        float deltaS = effectiveSeverity * raceMult;
+        float deltaS = effectiveSeverity;
         int tick = Find.TickManager.TicksGame;
-        MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] pawn={pawn?.LabelShort} tick={tick} mode=DelayedApply Δs={deltaS:F3} effective={effectiveSeverity:F3} raceMult={raceMult:F3}");
-        MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] 公式 泌乳增量Δs=有效剂量effective({effectiveSeverity:F3})×种族倍率({raceMult:F3})={deltaS:F3}");
+        MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] pawn={pawn?.LabelShort} tick={tick} mode=DelayedApply Δs={deltaS:F3} effective={effectiveSeverity:F3}");
+        MilkCumSettings.LactationLog($"[MilkCum][INFO][LactationDrug] 公式 泌乳增量Δs=队列内effectiveSeverity({effectiveSeverity:F3})={deltaS:F3}");
         try
         {
             BodyPartRecord bodyPart = null;

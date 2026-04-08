@@ -7,7 +7,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Shared.Comps;
 
-/// <summary>濂?绮炬恫绛夋祦浣撲骇鐗╃殑浜т富鏍囪 Comp锛堝ザ涓庣簿娑插叡鐢級銆傝 CumpilationIntegration銆丆ompEquallyMilkable.Milking銆</summary>
+/// <summary>奶/精液等流体物品的产主标记 Comp（奶与精液共用）。见 CumpilationIntegration、CompEquallyMilkable.Milking。</summary>
 public class CompProperties_ShowProducer : CompProperties
 {
     public CompProperties_ShowProducer()
@@ -16,7 +16,7 @@ public class CompProperties_ShowProducer : CompProperties
     }
 }
 
-/// <summary>鐗╁搧涓婅褰曚骇涓?producer/producerKind)锛岀敤浜?label銆佸爢鍙犮€佹鏌ラ潰鏉裤€侀鐢ㄥ厑璁稿悕鍗曘€傚ザ鍒跺搧涓庣簿娑插埗鍝佸叡鐢ㄣ€</summary>
+/// <summary>在物品上记录产主 (producer/producerKind)，用于 label、堆叠、检查面板、食用许可名单。奶制品与精液制品共用。</summary>
 public class CompShowProducer : ThingComp
 {
     public CompProperties_ShowProducer Props => (CompProperties_ShowProducer)props;
@@ -48,7 +48,7 @@ public class CompShowProducer : ThingComp
         return otherComp.producer == producer && otherComp.producerKind == producerKind;
     }
 
-    /// <summary>鐗╁搧鎮诞/妫€鏌ラ潰鏉匡細鏄剧ず浜т富涓庡厑璁镐娇鐢ㄥ悕鍗曪紙濂朵骇涓荤敤 CompEquallyMilkable.allowedConsumers锛涚簿娑茬瓑鏃?Comp 鏃朵粎鏄剧ず浜т富锛夈€</summary>
+    /// <summary>物品悬浮/检查面板：显示产主与许可食用者名单（名单来自产主的 CompEquallyMilkable.allowedConsumers）。</summary>
     public override string CompInspectStringExtra()
     {
         if (producer == null) return null;

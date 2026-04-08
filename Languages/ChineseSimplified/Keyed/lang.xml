@@ -36,7 +36,8 @@
     <EM.SubTab.ToleranceOverflow>耐受与溢出</EM.SubTab.ToleranceOverflow>
     <EM.SectionDesc_Mastitis>管乳房红肿、堵奶这类祸事会不会找上门、又多容易找上门。总闸一关，久涨、脏乱、带伤也不再惹出乳腺炎。下面的滑条调「平均隔多少天出事」「涨太久有多险」「人脏屋脏有多险」，人与畜生还能分开算。若装着 Dubs Bad Hygiene 且能读到卫生需求，乳腺炎的「脏」自动按小人身上泥垢条算；否则按屋子洁净度。</EM.SectionDesc_Mastitis>
     <EM.SectionDesc_DBH>营地里若激活了 Dubs Bad Hygiene，且存在卫生（Hygiene）需求，乳腺炎/堵奶的卫生风险会自动用小人泥垢条；否则仍按房间洁净度。</EM.SectionDesc_DBH>
-    <EM.SectionDesc_ToleranceOverflow>催乳素吃久了身子会腻：这里决定腻味会不会拖慢产奶、腻得多快；奶涨破池时地上会留下哪种污迹；挤奶的活计要不要先找涨得最狠的那个。下面还有一眼能看懂的池子参考数。</EM.SectionDesc_ToleranceOverflow>
+    <EM.SectionDesc_ToleranceOverflow>破池污迹、满池信件、挤奶 AI 找更满一侧等在「溢出」子 Tab。本 Tab 已不再提供耐受倍率选项——给药与 Hediff 合并以原版/XML 为准。</EM.SectionDesc_ToleranceOverflow>
+    <EM.ToleranceVanillaOnlyBody>催乳素耐受、泌乳 Hediff 合并等由原版与你的 Def 驱动。本 mod 不再单独用「催乳素耐受」去乘水池进水或泌乳流速。若 XML 仍挂 EM 催乳素耐受 Hediff，它主要影响心情/界面提示，不再在这里二次打折产量。</EM.ToleranceVanillaOnlyBody>
     <EM.SectionDesc_IdentityAndMenu>右键某人时要不要冒出「喂催乳素」「哺乳/吸奶」之类条目。按身份（机械体、自己人、奴隶、囚犯、畜生、别的）分开勾，免得菜单又长又杂。</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>这里是各路人马新来的默认脾气：殖民者、奴隶、囚犯、畜生、机械、怪东西各一套。没单独改过的人用这里的规矩；在奶表上还能逐个覆盖。</EM.SectionDesc_DefaultByRole>
     <EM.SectionDesc_Efficiency>泌乳劲头强弱怎么换成挤奶快慢、一次能挤出多少；催乳药催起来的那点心神手脚加成也在这里管。另可让成年母畜常年有奶。都只动泌乳与挤奶这一路，不碰别家系统。</EM.SectionDesc_Efficiency>
@@ -135,14 +136,14 @@
     <EM.RjwPermanentBreastGainDaysDesc>两次永久加严重度之间要累计的泌乳天数。</EM.RjwPermanentBreastGainDaysDesc>
     <EM.RjwPermanentBreastGainDelta>每档严重度增量：{0}</EM.RjwPermanentBreastGainDelta>
     <EM.RjwPermanentBreastGainDeltaDesc>每达标一次增加的 RJW 乳房严重度（上限 1）。</EM.RjwPermanentBreastGainDeltaDesc>
-    <EM.RaceDrugDeltaSMultipliers>种族泌乳药 ΔS 倍率（defName:数值，逗号分隔）</EM.RaceDrugDeltaSMultipliers>
-    <EM.RaceDrugDeltaSMultipliersDesc>按种族修正催乳带来的奶劲增量。格式：Human:1.2、某异星种族:0.8 — 多条用英文逗号隔开，冒号分隔内部名与倍率。倍率钳在 0.1～3；留空=全体 1。</EM.RaceDrugDeltaSMultipliersDesc>
+    <EM.RaceDrugDeltaSMultipliers>【已移除】种族泌乳药 ΔS 倍率</EM.RaceDrugDeltaSMultipliers>
+    <EM.RaceDrugDeltaSMultipliersDesc>已废弃：进水以原版/XML 给出的 Hediff severity 为准，不再提供按种族乘 Δs 的表。</EM.RaceDrugDeltaSMultipliersDesc>
     <EM.PoolSchematicTitle>示意图：奶池满度随时间（非逐 tick 仿真）</EM.PoolSchematicTitle>
     <EM.PoolSchematicTip>纵轴归一化（0 空，1 满池容量）。青线使用与游戏内一致的 GetEffectiveDrive（先做 L 封顶再算激素饱和）。绿线在满位附近按「溢出残余压力」滑块 r 略抬高，在后段再按人形流速倍率、挤奶工作量基准做一点挤出下落示意。仍非单步池仿真。</EM.PoolSchematicTip>
     <EM.PoolSchematicReflectedTitle>本图大致反映的内容</EM.PoolSchematicReflectedTitle>
     <EM.PoolSchematicReflectedBullets>L 上限与溢出转严重度系数；进水子步数与 Burst 时长；乳压因子开关与 Pc；激素饱和（GetEffectiveDrive，含 A、LRef）；近满残余压力滑块 r（此处不用 L/I 动态缩放，只读滑条）；人形流速倍率与挤奶工作量基准（后段绿线下拽）。</EM.PoolSchematicReflectedBullets>
     <EM.PoolSchematicExcludedTitle>本图不反映</EM.PoolSchematicExcludedTitle>
-    <EM.PoolSchematicExcludedBullets>营养与回吸；乳腺炎与卫生—炎症整套；耐受 E 与种族 ΔS 表；逐人导管拓扑；乳头阶段 / RJW 容量模式；多池拓扑。</EM.PoolSchematicExcludedBullets>
+    <EM.PoolSchematicExcludedBullets>营养与回吸；乳腺炎与卫生—炎症整套；逐人导管拓扑；乳头阶段 / RJW 容量模式；多池拓扑。</EM.PoolSchematicExcludedBullets>
     <EM.PoolSchematicFooterSeeTooltip>鼠标悬停整块示意图可查看「反映 / 不反映」完整列表。</EM.PoolSchematicFooterSeeTooltip>
     <EM.PoolSchematicAxisTime>时间轴 →（一次药效归一化尺度）</EM.PoolSchematicAxisTime>
     <EM.PoolSchematicAxisLevel>量级 ↑（归一化）</EM.PoolSchematicAxisLevel>
@@ -288,7 +289,7 @@
     <EM.BaselineMilkDurationReference>参考：药物基准 {0} 天，分娩 {1} 天（两分量分别衰减）。</EM.BaselineMilkDurationReference>
     <EM.AiPreferHighFullnessTargets>挤奶时优先满度更高的目标</EM.AiPreferHighFullnessTargets>
     <EM.AiPreferHighFullnessTargetsDesc>勾上：干活的人会先找涨得最狠的那个挤，少溅一地奶。</EM.AiPreferHighFullnessTargetsDesc>
-    <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）</EM.RaceOverridesSection>
+    <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）。催乳进水只认 Hediff severity，此处不再有按种族乘 Δs。</EM.RaceOverridesSection>
     <EM.RaceCanAlwaysLactate>这些种族一律当作能产奶（内部短名，逗号隔开）</EM.RaceCanAlwaysLactate>
     <EM.RaceCannotLactate>这些种族一律当作不能产奶（内部短名，逗号隔开）</EM.RaceCannotLactate>
 <EM.DefaultFlowMultiplierForHumanlike>流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>

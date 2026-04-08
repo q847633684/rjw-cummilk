@@ -30,7 +30,7 @@ public partial class CompEquallyMilkable
     /// <summary>DevMode 导管模型调试：输出每池压力/出口因子/导通系数（手动与机器）。</summary>
     internal string BuildDuctDebugString(int maxRows = 8)
     {
-        var entries = GetCachedEntriesIfValid() ?? GetCachedEntries();
+        var entries = GetResolvedBreastPoolEntries();
         if (entries == null || entries.Count == 0) return "[MilkCum.Duct] no pools";
         var network = FluidPoolNetwork.Build(entries, breastFullness);
         var sb = new StringBuilder();

@@ -10,6 +10,7 @@ using RimWorld;
 using Verse.Noise;
 using RimWorld.QuestGen;
 using rjw;
+using MilkCum.Fluids.Cum;
 using MilkCum.Fluids.Cum.Cumflation;
 
 namespace MilkCum.Fluids.Cum.Leaking
@@ -21,7 +22,7 @@ namespace MilkCum.Fluids.Cum.Leaking
 
         public override IEnumerable<FloatMenuOption> CompFloatMenuOptions(Pawn selPawn)
         {
-            if (!selPawn.health.hediffSet.HasHediff(DefOfs.Cumpilation_Cumflation))
+            if (!MenstruationFluidsCompat.PawnHasAnyDeflatableCumflation(selPawn))
             {
                 yield return new FloatMenuOption($"Deflate into {parent.Label} (not inflated)", null);
                 yield break;

@@ -100,6 +100,18 @@ public partial class CompEquallyMilkable : CompMilkable
     private readonly Dictionary<string, float> fullnessBeforePerKeyCache = new Dictionary<string, float>();
     /// <summary>用于 PoolTickLog：记录每乳池侧本步回缩量，避免每次 UpdateMilkPools 分配新字典。</summary>
     private readonly Dictionary<string, float> reabsorbedPerKeyCache = new Dictionary<string, float>();
+    /// <summary>单一泌乳轴进水：复用累加字典，避免每 60tick 分配。</summary>
+    private Dictionary<string, float> inflowSharedFlowAccByKey;
+    private Dictionary<string, float> inflowSharedPAccByKey;
+    private Dictionary<string, float> inflowSharedLAccByKey;
+    private Dictionary<string, float> inflowSharedCAccByKey;
+    /// <summary>单一泌乳轴进水：复用 substep 行缓冲，避免 substeps×每步分配数组。</summary>
+    private FluidPoolEntry[] inflowSharedRowEArr;
+    private float[] inflowSharedRowCurArr;
+    private float[] inflowSharedRowScArr;
+    private string[] inflowSharedRowKeyArr;
+    private MilkPoolInflowSimulator.SideChannelFactors[] inflowSharedRowChanArr;
+    private float[] inflowSharedRowWArr;
     /// <summary>统计：累计产奶量（池单位），用于成就/UI</summary>
     private float totalDrainedLifetime;
     /// <summary>统计：被挤奶/吸奶次数（每次 SpawnBottles 或等效产出计 1）</summary>
@@ -243,7 +255,7 @@ public partial class CompEquallyMilkable : CompMilkable
         }
         int entryCount = pawn == Pawn
             ? GetCachedEntries().Count
-            : (pawn.CompEquallyMilkable()?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries()).Count;
+            : pawn.GetResolvedBreastPoolEntries().Count;
         cachedActive = pawn.IsLactating() && pawn.IsMilkable() && entryCount > 0;
         return cachedActive;
     }

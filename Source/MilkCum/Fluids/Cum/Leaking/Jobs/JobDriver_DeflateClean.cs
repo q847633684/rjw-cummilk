@@ -10,8 +10,8 @@ using RimWorld;
 using Verse.Noise;
 using RimWorld.QuestGen;
 using rjw;
-using MilkCum.Fluids.Cum.Cumflation;
 using MilkCum.Fluids.Cum;
+using MilkCum.Fluids.Cum.Cumflation;
 using MilkCum.Fluids.Cum.Gathering;
 
 namespace MilkCum.Fluids.Cum.Leaking
@@ -39,11 +39,11 @@ namespace MilkCum.Fluids.Cum.Leaking
                 }
             });
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.OnCell);
-            float initialSeverity = CumflationUtility.GetOrCreateCumflationHediff(pawn).Severity;
+            float initialSeverity = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn).Severity;
             deflateRate = (TargetA.Thing?.TryGetComp<Comp_DeflateBucket>()?.deflateRate ?? TargetA.Thing?.TryGetComp<Comp_DeflateClean>()?.deflateRate) ?? 1f;
             //ModLog.Debug($"Deflate rate = {deflateRate}");
             Toil deflate = ToilMaker.MakeToil("MakeNewToils");
-            cumflationHediff = CumflationUtility.GetOrCreateCumflationHediff(pawn);
+            cumflationHediff = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn);
             seenBy = new List<Pawn>{pawn};
             deflate.initAction = delegate
             {
@@ -79,7 +79,7 @@ namespace MilkCum.Fluids.Cum.Leaking
 
         private void ResetTicksToDeflate()
         {
-            float num = GetAverageLooseness() + CumflationUtility.GetOrCreateCumflationHediff(pawn).Severity + 0.5f;
+            float num = GetAverageLooseness() + MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn).Severity + 0.5f;
             num *= Settings.DeflateRate * deflateRate;
             ModLog.Debug($"Deflate in {25f / num} ticks");
             ticksToDeflate = (int)Math.Round(25f / num);

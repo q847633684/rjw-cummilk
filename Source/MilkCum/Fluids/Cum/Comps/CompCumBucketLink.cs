@@ -9,10 +9,10 @@ using MilkCum.UI.Cum;
 namespace MilkCum.Fluids.Cum.Comps;
 
 /// <summary>
-/// 绮炬恫妗跺叧鑱斿簥锛氬彲閾炬帴鍒颁竴寮犲簥銆?
-/// 閾炬帴鍚庝粎搴婁富鍙娇鐢紝浜т富绮炬恫 = 搴婁富锛堝嵆鏀堕泦鐨勭簿娑蹭竴寰嬭涓哄簥涓讳骇鐢燂級銆?
-/// 鏈摼鎺ユ椂澶氫汉鍙娇鐢紝澶氫汉鐢ㄨ繃鍒欎负娣峰悎绮炬恫锛堟棤浜т富锛夈€?
-/// 鑻ョ綈鍐呭凡鏈夌簿娑蹭笖浜т富涓嶆槸璇ュ簥鐨勫簥涓伙紝鍒欐棤娉曢摼鎺ュ埌璇ュ簥锛圕anLinkToBed 杩斿洖 false锛屽脊绐楁彁绀猴級銆?
+/// 精液桶关联床：可链接到一张床。
+/// 链接后仅床主可使用，精液产主 = 床主（即收集的体液一律记为床主产出）。
+/// 未链接时多人可用，多人用过则为混合精液（无单一产主）。
+/// 若格内已有精液且产主不是该床的床主，则无法链接到该床（CanLinkToBed 返回 false，弹窗提示）。
 /// </summary>
 public class CompCumBucketLink : ThingComp
 {
@@ -29,10 +29,10 @@ public class CompCumBucketLink : ThingComp
 
     public List<Pawn> UsedByPawns => _usedByPawns;
 
-    /// <summary>搴婁富锛堥€氳繃 CompAssignableToPawn 鑾峰彇锛屽吋瀹瑰悇鐗堟湰锛</summary>
+    /// <summary>床主（通过 CompAssignableToPawn 获取，兼容各版本）。</summary>
     public Pawn Owner => _linkedBed?.GetBedOwner();
 
-    /// <summary>鍏变韩鍗у锛氭埧闂村唴澶氬紶搴婏紝鎴栭摼鎺ョ殑搴婃棤涓</summary>
+    /// <summary>共享卧室：房间内多张床，或链接的床无主。</summary>
     public bool IsSharedRoom
     {
         get
@@ -46,7 +46,7 @@ public class CompCumBucketLink : ThingComp
         }
     }
 
-    /// <summary>妗舵牸涓婃湁绮炬恫鐗╁搧鍗宠涓烘湁鍗犵敤</summary>
+    /// <summary>格上有精液物品即视为有占用。</summary>
     public bool HasContent
     {
         get
@@ -62,7 +62,7 @@ public class CompCumBucketLink : ThingComp
         }
     }
 
-    /// <summary>妗跺唴鏈夌簿娑叉椂锛屼粎褰撴墍鏈夌簿娑插潎灞炰簬璇ュ簥涓伙紙鎴栨棤浜т富锛夋椂鎵嶅厑璁稿叧鑱旓紱鍚﹀垯杩斿洖 false 骞跺簲鐢辫皟鐢ㄦ柟鎻愮ず鏃犳硶閾炬帴</summary>
+    /// <summary>桶内有精液时，仅当所有精液均属于该床主（或无产主）时才允许关联；否则返回 false 并由调用方提示无法链接。</summary>
     public bool CanLinkToBed(Building_Bed bed)
     {
         if (bed == null) return true;
@@ -95,7 +95,7 @@ public class CompCumBucketLink : ThingComp
             _usedByPawns.Clear();
     }
 
-    /// <summary>璇ュ皬浜烘槸鍚﹁鍏佽浣跨敤姝ゆ《锛堝仛 DeflateBucket 绛夛級</summary>
+    /// <summary>该小人是否被允许使用此桶（如 DeflateBucket 等）。</summary>
     public bool CanPawnUse(Pawn pawn)
     {
         if (pawn == null) return false;
@@ -106,7 +106,7 @@ public class CompCumBucketLink : ThingComp
         return false;
     }
 
-    /// <summary>鏄惁搴旀彁绀衡€滀笉灞炰簬浠栫殑绮炬恫妗垛€濓紙鏈夊崰鐢ㄤ笖涓嶆槸浠栫殑妗讹級</summary>
+    /// <summary>是否应提示「不属于他的精液桶」（有占用且不是他的桶）。</summary>
     public bool ShouldWarnNotYourBucket(Pawn pawn)
     {
         if (pawn == null || !HasContent) return false;
@@ -116,7 +116,7 @@ public class CompCumBucketLink : ThingComp
         return true;
     }
 
-    /// <summary>璁板綍璇ュ皬浜哄悜姝ゆ《鎺掓斁浜嗕竴娆★紱鑻ュ浜虹敤杩囧垯鍚庣画浜у嚭涓烘贩鍚堢簿娑</summary>
+    /// <summary>记录该小人向此桶排放过一次；若多人用过则后续产出为混合精液。</summary>
     public void NotifyPawnUsed(Pawn pawn)
     {
         if (pawn == null) return;
@@ -124,7 +124,7 @@ public class CompCumBucketLink : ThingComp
             _usedByPawns.Add(pawn);
     }
 
-    /// <summary>鏄惁宸叉湁澶氫汉浣跨敤杩囷紙浜у嚭搴斾负娣峰悎绮炬恫锛</summary>
+    /// <summary>是否已有多人使用过（产出应为混合精液）。</summary>
     public bool IsMixed => _usedByPawns.Count > 1;
 
     public override IEnumerable<Gizmo> CompGetGizmosExtra()

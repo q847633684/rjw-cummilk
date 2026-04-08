@@ -114,21 +114,13 @@ internal partial class MilkCumSettings : ModSettings
 	public static bool rjwSexAddsLactationBoost = true;
 	/// <summary>房事奶劲强度（池逻辑 Δs）；需 <see cref="rjwSexAddsLactationBoost"/> 且 &gt;0；可与总闸配合关死本项。</summary>
 	public static float rjwSexLactationBoostDeltaS = 0.15f;
-	// 乳腺炎/耐受相关配置已拆分到 MilkCumSettings.Risk.cs。
-	// 耐受动态：dE/dt = μ×L − ν×E；启用时由 mod 维护的 E 计算 E_tol（流速/容量），取代仅用游戏内耐受严重度 t。
-	public static bool enableToleranceDynamic = true;
-	/// <summary>耐受累积率 μ（每游戏日）：越高，长时间高 L 时 E 上升越快。</summary>
-	public static float toleranceDynamicMu = 0.03f;
-	/// <summary>耐受衰减率 ν（每游戏日）：越高，停药后耐受自然回落越快。</summary>
-	public static float toleranceDynamicNu = 0.08f;
+	// 乳腺炎/卫生等相关配置已拆分到 MilkCumSettings.Risk.cs。
 	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
 	public static string overflowFilthDefName = "Filth_Vomit";
 	/// <summary>泌乳水平上限（L_cap）：&gt;0 时，吃药超过此值的部分不再增加进水量 L，只增加 Severity（延长泌乳时间），流速由 min(L, cap) 决定，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</summary>
 	public static float lactationLevelCap = 0f;
 	/// <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
 	public static float lactationLevelCapDurationMultiplier = 1.5f;
-	/// <summary>泌乳药物单次在 XML 中对耐受 Hediff 的 Severity 增量（与 Lactating 一并叠加），默认 0.044；若改 XML 请同步更新此处说明。</summary>
-	public static float ProlactinToleranceGainPerDose = 0.044f;
 	// 压力/炎症/适应/导管等模型参数与方法已拆分到 MilkCumSettings.Model.cs。
 	// AI 挤奶工作：是否优先选择更满的一侧作为目标（低满度的会先去找更满的一侧）。 
 	public static bool aiPreferHighFullnessTargets = true;
@@ -138,9 +130,6 @@ internal partial class MilkCumSettings : ModSettings
 	// 人形种族默认流速倍率：2 = 在标准体型、乳量等级 1 时约等于一次就能挤空；与 RJW/其他泌乳类 mod 联动时也可调。
 	public static float defaultFlowMultiplierForHumanlike = 2f;
 	// 压力/炎症/组织适应/品质/提醒等模型参数已拆分到 MilkCumSettings.Model.cs。
-	// 3.3：按物种配置泌乳药物 ΔS 乘法修正；未配置的种族默认倍率为 1。
-	public static List<string> raceDrugDeltaSMultiplierDefNames = new();
-	public static List<float> raceDrugDeltaSMultiplierValues = new();
 	public static MilkSettings colonistSetting = new();
 	public static MilkSettings slaveSetting = new();
 	public static MilkSettings prisonerSetting = new();
@@ -187,10 +176,6 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", true);
 		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
 		ExposeRiskData();
-		Scribe_Values.Look(ref enableToleranceDynamic, "EM.EnableToleranceDynamic", true);
-		Scribe_Values.Look(ref toleranceDynamicMu, "EM.ToleranceDynamicMu", 0.03f);
-		Scribe_Values.Look(ref toleranceDynamicNu, "EM.ToleranceDynamicNu", 0.08f);
-		Scribe_Values.Look(ref ProlactinToleranceGainPerDose, "EM.ProlactinToleranceGainPerDose", 0.044f);
 		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
 		Scribe_Values.Look(ref lactationLevelCap, "EM.LactationLevelCap", 0f);
 		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "EM.LactationLevelCapDurationMultiplier", 1.5f);
@@ -199,8 +184,6 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
 		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 2f);
 		ExposeModelData();
-		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierDefNames, "EM.RaceDrugDeltaSMultiplierDefNames", LookMode.Value);
-		Scribe_Collections.Look(ref raceDrugDeltaSMultiplierValues, "EM.RaceDrugDeltaSMultiplierValues", LookMode.Value);
 		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
 		Scribe_Values.Look(ref milkingActionLog, "EM.MilkingActionLog", false);
 		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);

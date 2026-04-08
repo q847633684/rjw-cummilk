@@ -27,7 +27,7 @@ internal static class BreastPoolTooltipHelper
         var milkComp = pawn.CompEquallyMilkable();
         if (lactComp == null) return "";
 
-        var entList = milkComp?.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        var entList = pawn.GetResolvedBreastPoolEntries();
 
         float lf = 0f, lc = 0f, lflow = 0f;
         float rf = 0f, rc = 0f, rflow = 0f;

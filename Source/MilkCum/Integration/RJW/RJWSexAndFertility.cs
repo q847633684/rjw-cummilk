@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -24,7 +25,7 @@ public static class RJWSexAndFertility
         {
             if (c is HediffComp_EqualMilkingLactating comp)
             {
-                float deltaS = MilkCumSettings.rjwSexLactationBoostDeltaS * MilkCumSettings.GetProlactinToleranceFactor(pawn) * MilkCumSettings.GetRaceDrugDeltaSMultiplier(pawn);
+                float deltaS = MilkCumSettings.rjwSexLactationBoostDeltaS;
                 comp.AddFromDrug(deltaS);
                 break;
             }
@@ -43,11 +44,16 @@ public static class RJWSexAndFertility
 [HarmonyPatch]
 public static class JobDriver_Sex_End_Patch
 {
-    static System.Reflection.MethodBase TargetMethod()
+    private static MethodBase cachedSexBaseInitiatorEnd;
+
+    static MethodBase TargetMethod()
     {
+        if (cachedSexBaseInitiatorEnd != null)
+            return cachedSexBaseInitiatorEnd;
         var t = AccessTools.TypeByName("rjw.JobDriver_SexBaseInitiator");
         if (t == null) return null;
-        return AccessTools.Method(t, "End");
+        cachedSexBaseInitiatorEnd = AccessTools.Method(t, "End");
+        return cachedSexBaseInitiatorEnd;
     }
 
     [HarmonyPostfix]

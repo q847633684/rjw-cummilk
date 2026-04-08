@@ -4,7 +4,7 @@ using Verse;
 
 namespace MilkCum.UI;
 
-/// <summary>绮炬恫/Cumpilation 璁剧疆锛氳啫鑳€銆佸～鍏呫€佽鐩栥€佹敹闆嗐€佹硠绮剧瓑锛岀粺涓€鍒颁富 mod 璁剧疆鐨勪竴涓?Tab銆</summary>
+/// <summary>Cumpilation 系列选项：充盈、填充、覆盖、收集、泄漏等，合并到本 mod 主设置的一个 Tab。</summary>
 public class Widget_CumpilationSettings
 {
 	private const float Gap = 4f;
@@ -67,7 +67,7 @@ public class Widget_CumpilationSettings
 
 		listing.Gap(GapSection * 2);
 
-		// --- 娉勭簿/Leaking 璁剧疆 ---
+		// --- 泄漏 / Leaking 设置 ---
 		Widgets.Label(listing.GetRect(24f), "cumpilation_cumsettings_menuname".Translate());
 		listing.Gap(Gap);
 

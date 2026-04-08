@@ -233,7 +233,7 @@ public static class MilkRelatedHealthHelper
     }
 
     /// <summary>挤奶结束：按侧与全局略降瘀积/乳腺炎/化脓严重度（与排空缓解 Comp 叠加）。</summary>
-    public static void ApplyMilkingPhysicalRelief(Pawn pawn, List<string> drainedKeys)
+    public static void ApplyMilkingPhysicalRelief(Pawn pawn, ICollection<string> drainedKeys)
     {
         if (pawn?.health?.hediffSet == null) return;
         var hed = pawn.health.hediffSet.hediffs;
@@ -273,7 +273,7 @@ public static class MilkRelatedHealthHelper
     private static List<FluidPoolEntry> PoolEntriesForHealth(CompEquallyMilkable comp, Pawn pawn)
     {
         if (comp == null || pawn == null) return new List<FluidPoolEntry>();
-        return comp.GetCachedEntriesIfValid() ?? pawn.GetBreastPoolEntries();
+        return comp.GetResolvedBreastPoolEntries();
     }
 
     /// <summary>是否有躯干/乳房损伤（乳腺炎 MTB 风险）</summary>
