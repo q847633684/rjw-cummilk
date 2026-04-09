@@ -54,7 +54,9 @@ namespace MilkCum.Fluids.Cum.Bukkake
                             (HediffCompProperties_BukkakeSpawnedByFluid)splashDef.comps.First(comp => comp is HediffCompProperties_BukkakeSpawnedByFluid);
                 if (spawnProps == null) continue;
 
-                float totalSeverityToSpawn = sexPartComp.FluidAmount / spawnProps.fluidRequiredForSeverityOne / receiver.BodySize;
+                // Keep behavior aligned with Cumflation/Stuffing: higher global modifier => needs more fluid.
+                float bukkakeModifier = Math.Max(0.01f, Settings.GlobaleBukkakeModifier);
+                float totalSeverityToSpawn = sexPartComp.FluidAmount / spawnProps.fluidRequiredForSeverityOne / receiver.BodySize / bukkakeModifier;
                 if (totalSeverityToSpawn <= 0.1) continue;
 
                 var targets =

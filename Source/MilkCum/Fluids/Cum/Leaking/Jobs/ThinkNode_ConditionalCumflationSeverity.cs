@@ -11,12 +11,12 @@ namespace MilkCum.Fluids.Cum.Leaking
 
         protected override bool Satisfied(Pawn pawn)
         {
-            cumflationHediff = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn);
+            cumflationHediff = MenstruationFluidsCompat.TryGetActiveCumflationForJobs(pawn);
             if (cumflationHediff == null)
             {
                 return false;
             }
-            // 鑻ュザ闈炲父婊¤€?Cumflation 鍙槸鐣ラ珮浜庨槇鍊硷紝鍒欎紭鍏堣鎸ゅザ Job 鎶汉锛屾殏缂撹嚜鍔ㄦ硠绮?
+            // 奶池非常满且 Cumflation 仅轻中度时，优先挤奶而非自动泄精。
             var comp = pawn.CompEquallyMilkable();
             if (comp != null && comp.Fullness >= comp.maxFullness * 0.9f && cumflationHediff.Severity < 1.0f)
             {

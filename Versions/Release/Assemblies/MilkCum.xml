@@ -781,12 +781,12 @@
         </member>
         <member name="T:MilkCum.Fluids.Cum.Gathering.FilthProducerRegistry">
             <summary>
-            鏈?Mod 鐢熸垚姹＄墿鏃剁櫥璁颁骇涓伙紱楂樼骇妗跺惛鏀舵椂鍙寜搴婁富杩囨护锛屽苟缁欎骇鍑烘墦浜т富銆?
-            閿负 (鍦板浘, 鏍? 姹＄墿Def)锛屽悓涓€鏍煎娆＄敓鎴愭椂鍚庤€呰鐩栵紙浠呬繚鐣欐渶鍚庝骇涓伙級銆?
+            记录本 mod 生成污物时的产主。高级桶吸收污物时可按床主过滤，并把产主写回产出物。
+            键为 (地图, 格子, 污物Def)。同格同 Def 多次记录时以后写覆盖先写。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Gathering.FilthProducerRegistry.GetAndRemove(Verse.Map,Verse.IntVec3,Verse.ThingDef)">
-            <summary>鍙栧嚭骞剁Щ闄よ鏍艰姹＄墿鐨勪骇涓昏褰曪紱鏃犺褰曞垯杩斿洖 null銆</summary>
+            <summary>取出并移除该格该污物的产主记录；无记录返回 null。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Gathering.GatheringUtility.GetNearbyFilth(Verse.Thing,System.Boolean,System.Int32)">
             <summary>
@@ -836,6 +836,9 @@
         <member name="T:MilkCum.Fluids.Cum.Leaking.Comp_SealCum">
             <summary>阴道相关「塞住 / 是否允许自动泄精」状态；交互在指派限制窗口，不再占用小人底部 Gizmo。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Cum.Leaking.LeakingUtility.GetAverageVaginalLooseness(Verse.Pawn)">
+            <summary>获取目标 pawn 阴道部位平均松弛度（无阴道时返回 0）。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Cum.Leaking.Patch.Patch_SealCum_StopLeaking_MenstruationFluids">
             <summary>
             月经周期模组中子宫内 <see cref="T:RJW_Menstruation.Cum"/> 的自然衰减：密封时不应按泄漏系数衰减（与 CumpilationLite 意图一致；适配当前 DismishNatural 签名）。
@@ -845,7 +848,7 @@
             <summary>与 CumpilationLite 一致：为 ExtractCum 手术补充动物 recipeUsers。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Leaking.Settings">
-            <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+            <summary>数据已统一到 MilkCumSettings；此类仅作代理，供 Cumpilation 旧代码读取。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.MenstruationFluidsCompat">
             <summary>
@@ -856,10 +859,19 @@
         <member name="P:MilkCum.Fluids.Cum.MenstruationFluidsCompat.MenstruationFluidsCumflationDefsPresent">
             <summary>当前 Def 数据库中存在 MF 充盈 Hediff 定义。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.GetActiveCumflationForJobs(Verse.Pawn)">
+        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.TryGetActiveCumflationForJobs(Verse.Pawn)">
             <summary>
-            自动泄殖/进度条等使用的「当前充盈 Hediff」：优先 MF 阴道/肛门，否则回退 Cumpilation_Cumflation（旧档）。
+            只读查询：自动泄殖/进度条等使用的当前充盈 Hediff。
+            优先 MF 阴道/肛门，其次旧档 Cumpilation_Cumflation；不会创建新 Hediff。
             </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.GetOrCreateActiveCumflationForJobs(Verse.Pawn)">
+            <summary>
+            执行路径使用：获取当前充盈 Hediff；若不存在则按当前环境创建一个可用 Hediff。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.GetActiveCumflationForJobs(Verse.Pawn)">
+            <summary>兼容旧调用：保留原方法名，语义等同执行路径的 GetOrCreate。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Oscillation.OscillationHelper.GetOrCreateBlueBallsHediff(Verse.Pawn)">
             <summary>
@@ -911,7 +923,7 @@
             </summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Settings">
-            <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+            <summary>数据已统一到 MilkCumSettings；此类仅作代理，供 Cumpilation 旧代码读取。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable">
             <summary>平等挤奶 Comp：池存储与同步见 PoolStorage；进水/溢出/回缩见 Inflow；扣量见 Drain；流速与产奶见 Milking。见 记忆库/docs/泌乳系统逻辑图。</summary>
@@ -2340,12 +2352,8 @@
         <member name="F:MilkCum.UI.Window_ProducerRestrictions.AllowSelfNarrowThreshold">
             <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
         </member>
-        <member name="F:MilkCum.UI.Window_ProducerRestrictions.filter">
-            <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。
-            当前 UI 不再提供筛选器（你要求删除筛选框），因此默认始终为 All。</summary>
-        </member>
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.FillFilteredPawns(System.Collections.Generic.List{Verse.Pawn})">
-            <summary>按当前筛选填充列表（排除产奶者自己），不排序。调用方负责 Clear。使用 RimWorld 实际返回的 List&lt;Pawn&gt; 直接 for 遍历，避免 IEnumerable 枚举器分配。</summary>
+            <summary>填充列表（排除产奶者自己），不排序。调用方负责 Clear。</summary>
         </member>
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.GetRelationLabel(Verse.Pawn,Verse.Pawn)">
             <summary>产奶者与另一人的关系标签；无关系或异常时返回「—」。兼容无 GetGenderSpecificLabel 的 RimWorld 版本。</summary>

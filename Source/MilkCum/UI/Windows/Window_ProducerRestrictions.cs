@@ -25,10 +25,6 @@ public class Window_ProducerRestrictions : Window
     /// <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
     private const float AllowSelfNarrowThreshold = 520f;
 
-    /// <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。
-    /// 当前 UI 不再提供筛选器（你要求删除筛选框），因此默认始终为 All。</summary>
-    private ProducerRestrictionFilter filter = ProducerRestrictionFilter.All;
-
     private Vector2 tableScrollPosition;
 
     private static readonly List<Pawn> tmpFiltered = new();
@@ -43,31 +39,11 @@ public class Window_ProducerRestrictions : Window
         absorbInputAroundWindow = true;
     }
 
-    private enum ProducerRestrictionFilter
-    {
-        All,
-        Colonists,
-        Prisoners
-    }
-
-    /// <summary>按当前筛选填充列表（排除产奶者自己），不排序。调用方负责 Clear。使用 RimWorld 实际返回的 List&lt;Pawn&gt; 直接 for 遍历，避免 IEnumerable 枚举器分配。</summary>
+    /// <summary>填充列表（排除产奶者自己），不排序。调用方负责 Clear。</summary>
     private void FillFilteredPawns(List<Pawn> outList)
     {
         if (producer?.Map == null || outList == null) return;
-        var map = producer.Map;
-        List<Pawn> source;
-        switch (filter)
-        {
-            case ProducerRestrictionFilter.Colonists:
-                source = map.mapPawns.FreeColonists;
-                break;
-            case ProducerRestrictionFilter.Prisoners:
-                source = map.mapPawns.PrisonersOfColony;
-                break;
-            default:
-                source = map.mapPawns.FreeColonistsAndPrisoners;
-                break;
-        }
+        List<Pawn> source = producer.Map.mapPawns.FreeColonistsAndPrisoners;
         for (int i = 0; i < source.Count; i++)
         {
             Pawn p = source[i];
@@ -414,7 +390,7 @@ public class Window_ProducerRestrictions : Window
 
         EnsureRowStartIfNarrow(narrow);
 
-        // 第二行：泄精（有 Comp 即可）；塞住仅当 canSeal()，避免 IsSealed getter 在无法塞住时恒为 false 导致勾选状态不同步。
+        // 第二行：泄精（有 Comp 即可）；塞住仅当 CanSeal()，避免 IsSealed getter 在无法塞住时恒为 false 导致勾选状态不同步。
         if (sealComp != null)
         {
             DrawCheckbox(
@@ -424,7 +400,7 @@ public class Window_ProducerRestrictions : Window
                 sealComp.CanDeflate,
                 v => sealComp.SetCanDeflate(v));
 
-            if (sealComp.canSeal())
+            if (sealComp.CanSeal())
             {
                 DrawCheckbox(
                     "EM.Milk_SealCum",

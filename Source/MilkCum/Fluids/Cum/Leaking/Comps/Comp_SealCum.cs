@@ -18,13 +18,6 @@ namespace MilkCum.Fluids.Cum.Leaking
 			Scribe_Values.Look(ref canDeflate, "canDeflate", true);
 		}
 
-		public override IEnumerable<Gizmo> CompGetGizmosExtra()
-		{
-			// 基类迭代保留；塞住/泄精开关在 Window_ProducerRestrictions 中操作。
-			foreach (Gizmo gizmo in base.CompGetGizmosExtra())
-				yield return gizmo;
-		}
-
 		public bool CanDeflate()
 		{
 			return canDeflate;
@@ -34,27 +27,12 @@ namespace MilkCum.Fluids.Cum.Leaking
 
 		public void SetCanDeflate(bool value) => canDeflate = value;
 
-		public bool PlayerControlled
-		{
-			get
-			{
-				Pawn pawn = (Pawn)parent;
-				if (pawn.IsColonist)
-				{
-					if (pawn.HostFaction != null)
-						return pawn.IsSlave;
-					return true;
-				}
-				return false;
-			}
-		}
-
 		public bool IsSealed()
 		{
-			return canSeal() && cumSealed;
+			return CanSeal() && cumSealed;
 		}
 
-		public bool canSeal()
+		public bool CanSeal()
 		{
 			Pawn pawn = (Pawn)parent;
 

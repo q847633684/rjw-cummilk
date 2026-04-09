@@ -88,7 +88,7 @@ internal static class ApplyPatches
     }
     public static void AddResourceConversions()
     {
-        // 7.6锛氫粎鍔ㄧ墿浜у嚭鐨勫師鐗?Milk 杩涘叆绠￠亾锛涗汉濂?EM_HumanMilk 涓庣簿娑?Cumpilation_Cum 鍧囦笉杩涘叆绠￠亾锛岀洿鎺ヨ惤鏍笺€?
+        // 7.6：仅动物产出的原版 Milk 进入管道；人奶 EM_HumanMilk 与精液 Cumpilation_Cum 不进入管道，直接落格。
         ThingDef milkDef = DefDatabase<ThingDef>.GetNamed("Milk");
         MilkCumDefOf.EM_MilkingPump.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
         MilkCumDefOf.EM_MilkingElectric.comps.Add(new CompProperties_ConvertThingToResource { thing = milkDef, pipeNet = DefDatabase<PipeNetDef>.GetNamed("EM_MilkNet") });
@@ -112,11 +112,11 @@ internal static class ApplyPatches
     [HarmonyPatch(typeof(Building_Milking), nameof(Building_Milking.PlaceMilkThing))]
     public static class Building_Milking_PlaceMilkThing_Patch
     {
-        /// <summary>浜哄ザ锛堝甫 producer 涓斾负浜虹被锛変笉杩涘叆绠￠亾/澶ф《锛岀洿鎺ユ斁缃紱鍔ㄧ墿濂舵墠杩涘叆绠￠亾銆</summary>
+        /// <summary>人奶（有 producer 且为人形）不进管道/大桶，直接放置；仅动物奶进入管道。</summary>
         public static bool Prefix(Building_Milking __instance, ref Thing milkThing)
         {
             if (milkThing.TryGetComp<CompShowProducer>() is CompShowProducer comp && comp.producer != null && comp.producer.RaceProps.Humanlike)
-                return true; // 浜哄ザ锛氫笉閫佺閬擄紝璁╁師鏂规硶鏀剧疆鍒板湴涓?
+                return true; // 人奶：不送管道，保持原方法放置到地上。
             if (__instance.GetPipeNetForThing(milkThing.def) is PipeNet pipeNet)
             {
                 pipeNet.DistributeAmongStorage(milkThing.stackCount, out float stored);

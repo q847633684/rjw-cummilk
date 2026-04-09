@@ -36,7 +36,7 @@ public class WorkGiver_MilkCumMilk : WorkGiver_Milk
         CompEquallyMilkable comp = target.CompEquallyMilkable();
         if (comp?.ActiveAndFull == true)
         {
-            // 鑻ョ洰鏍囧悓鏃跺瓨锟?Cumflation锛屼笖涓ラ噸搴﹁繙楂樹簬濂剁殑 fullness锛屽垯浼樺厛璁╂硠锟?Job 鎶汉
+            // 若目标同时有较高 Cumflation 且奶量并不高，优先让其执行泄精相关 Job。
             var cumflation = CumflationUtility.GetOrCreateCumflationHediff(target);
             if (cumflation != null && cumflation.Severity > 0.75f && comp.Fullness < comp.maxFullness * 0.75f && !forced)
             {
@@ -66,7 +66,7 @@ public class WorkGiver_MilkCumMilk : WorkGiver_Milk
 		{
 			return colony;
 		}
-		// 浼樺厛婊″害鏇撮珮鐨勭洰鏍囷紝鍑忓皯婧㈠嚭
+		// 优先满度更高的目标，减少溢出。
 		return colony
 			.OrderByDescending(t =>
 			{

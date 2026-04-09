@@ -2,12 +2,6 @@ using HarmonyLib;
 using MilkCum.Harmony;
 using RimWorld;
 using Verse;
-using rjw;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse.AI;
 using System.Reflection;
 
@@ -45,16 +39,16 @@ namespace MilkCum.Fluids.Cum.Gathering
                 if (Rand.Chance(chance))
                 {
                     // 与 PassiveFluidGatherer 一致：从 FilthProducerRegistry 取产主，供 ThingMaker postfix 写入 CompShowProducer
-                    CumpilationIntegration.CumProducerForNextSpawn = FilthProducerRegistry.GetAndRemove(filth.Map, filth.Position, filth.def);
+                    CumpilationIntegration.PushCumProducerContext(FilthProducerRegistry.GetAndRemove(filth.Map, filth.Position, filth.def));
                     try
                     {
                         var result = ThingMaker.MakeThing(gDef.thingDef);
                         result.stackCount = 1;
-                        GenPlace.TryPlaceThing(result, __instance.pawn.PositionHeld, __instance.pawn.Map, ThingPlaceMode.Direct, out Thing res);
+                        GenPlace.TryPlaceThing(result, __instance.pawn.PositionHeld, __instance.pawn.Map, ThingPlaceMode.Direct, out _);
                     }
                     finally
                     {
-                        CumpilationIntegration.CumProducerForNextSpawn = null;
+                        CumpilationIntegration.PopCumProducerContext();
                     }
                 }
             }

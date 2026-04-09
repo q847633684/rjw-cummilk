@@ -502,35 +502,35 @@
         </member>
         <member name="T:MilkCum.Fluids.Cum.Comps.CompCumBucketLink">
             <summary>
-            绮炬恫妗跺叧鑱斿簥锛氬彲閾炬帴鍒颁竴寮犲簥銆?
-            閾炬帴鍚庝粎搴婁富鍙娇鐢紝浜т富绮炬恫 = 搴婁富锛堝嵆鏀堕泦鐨勭簿娑蹭竴寰嬭涓哄簥涓讳骇鐢燂級銆?
-            鏈摼鎺ユ椂澶氫汉鍙娇鐢紝澶氫汉鐢ㄨ繃鍒欎负娣峰悎绮炬恫锛堟棤浜т富锛夈€?
-            鑻ョ綈鍐呭凡鏈夌簿娑蹭笖浜т富涓嶆槸璇ュ簥鐨勫簥涓伙紝鍒欐棤娉曢摼鎺ュ埌璇ュ簥锛圕anLinkToBed 杩斿洖 false锛屽脊绐楁彁绀猴級銆?
+            精液桶关联床：可链接到一张床。
+            链接后仅床主可使用，精液产主 = 床主（即收集的体液一律记为床主产出）。
+            未链接时多人可用，多人用过则为混合精液（无单一产主）。
+            若格内已有精液且产主不是该床的床主，则无法链接到该床（CanLinkToBed 返回 false，弹窗提示）。
             </summary>
         </member>
         <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.Owner">
-            <summary>搴婁富锛堥€氳繃 CompAssignableToPawn 鑾峰彇锛屽吋瀹瑰悇鐗堟湰锛</summary>
+            <summary>床主（通过 CompAssignableToPawn 获取，兼容各版本）。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.IsSharedRoom">
-            <summary>鍏变韩鍗у锛氭埧闂村唴澶氬紶搴婏紝鎴栭摼鎺ョ殑搴婃棤涓</summary>
+            <summary>共享卧室：房间内多张床，或链接的床无主。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.HasContent">
-            <summary>妗舵牸涓婃湁绮炬恫鐗╁搧鍗宠涓烘湁鍗犵敤</summary>
+            <summary>格上有精液物品即视为有占用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.CanLinkToBed(RimWorld.Building_Bed)">
-            <summary>妗跺唴鏈夌簿娑叉椂锛屼粎褰撴墍鏈夌簿娑插潎灞炰簬璇ュ簥涓伙紙鎴栨棤浜т富锛夋椂鎵嶅厑璁稿叧鑱旓紱鍚﹀垯杩斿洖 false 骞跺簲鐢辫皟鐢ㄦ柟鎻愮ず鏃犳硶閾炬帴</summary>
+            <summary>桶内有精液时，仅当所有精液均属于该床主（或无产主）时才允许关联；否则返回 false 并由调用方提示无法链接。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.CanPawnUse(Verse.Pawn)">
-            <summary>璇ュ皬浜烘槸鍚﹁鍏佽浣跨敤姝ゆ《锛堝仛 DeflateBucket 绛夛級</summary>
+            <summary>该小人是否被允许使用此桶（如 DeflateBucket 等）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.ShouldWarnNotYourBucket(Verse.Pawn)">
-            <summary>鏄惁搴旀彁绀衡€滀笉灞炰簬浠栫殑绮炬恫妗垛€濓紙鏈夊崰鐢ㄤ笖涓嶆槸浠栫殑妗讹級</summary>
+            <summary>是否应提示「不属于他的精液桶」（有占用且不是他的桶）。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.NotifyPawnUsed(Verse.Pawn)">
-            <summary>璁板綍璇ュ皬浜哄悜姝ゆ《鎺掓斁浜嗕竴娆★紱鑻ュ浜虹敤杩囧垯鍚庣画浜у嚭涓烘贩鍚堢簿娑</summary>
+            <summary>记录该小人向此桶排放过一次；若多人用过则后续产出为混合精液。</summary>
         </member>
         <member name="P:MilkCum.Fluids.Cum.Comps.CompCumBucketLink.IsMixed">
-            <summary>鏄惁宸叉湁澶氫汉浣跨敤杩囷紙浜у嚭搴斾负娣峰悎绮炬恫锛</summary>
+            <summary>是否已有多人使用过（产出应为混合精液）。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool">
             <summary>左/右虚拟睾丸精池：每个 <see cref="T:Verse.Pawn"/> 一份 <c>fullnessByKey</c>；该小人身上可射精器官汇入两侧；存档键 TesticleLeft/TesticleRight。</summary>
@@ -781,12 +781,12 @@
         </member>
         <member name="T:MilkCum.Fluids.Cum.Gathering.FilthProducerRegistry">
             <summary>
-            鏈?Mod 鐢熸垚姹＄墿鏃剁櫥璁颁骇涓伙紱楂樼骇妗跺惛鏀舵椂鍙寜搴婁富杩囨护锛屽苟缁欎骇鍑烘墦浜т富銆?
-            閿负 (鍦板浘, 鏍? 姹＄墿Def)锛屽悓涓€鏍煎娆＄敓鎴愭椂鍚庤€呰鐩栵紙浠呬繚鐣欐渶鍚庝骇涓伙級銆?
+            记录本 mod 生成污物时的产主。高级桶吸收污物时可按床主过滤，并把产主写回产出物。
+            键为 (地图, 格子, 污物Def)。同格同 Def 多次记录时以后写覆盖先写。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Gathering.FilthProducerRegistry.GetAndRemove(Verse.Map,Verse.IntVec3,Verse.ThingDef)">
-            <summary>鍙栧嚭骞剁Щ闄よ鏍艰姹＄墿鐨勪骇涓昏褰曪紱鏃犺褰曞垯杩斿洖 null銆</summary>
+            <summary>取出并移除该格该污物的产主记录；无记录返回 null。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Gathering.GatheringUtility.GetNearbyFilth(Verse.Thing,System.Boolean,System.Int32)">
             <summary>
@@ -833,6 +833,12 @@
             <param name="__result">The place to stand near a bucket</param>
             <returns>Run original method</returns>
         </member>
+        <member name="T:MilkCum.Fluids.Cum.Leaking.Comp_SealCum">
+            <summary>阴道相关「塞住 / 是否允许自动泄精」状态；交互在指派限制窗口，不再占用小人底部 Gizmo。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Leaking.LeakingUtility.GetAverageVaginalLooseness(Verse.Pawn)">
+            <summary>获取目标 pawn 阴道部位平均松弛度（无阴道时返回 0）。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Cum.Leaking.Patch.Patch_SealCum_StopLeaking_MenstruationFluids">
             <summary>
             月经周期模组中子宫内 <see cref="T:RJW_Menstruation.Cum"/> 的自然衰减：密封时不应按泄漏系数衰减（与 CumpilationLite 意图一致；适配当前 DismishNatural 签名）。
@@ -842,7 +848,7 @@
             <summary>与 CumpilationLite 一致：为 ExtractCum 手术补充动物 recipeUsers。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Leaking.Settings">
-            <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+            <summary>数据已统一到 MilkCumSettings；此类仅作代理，供 Cumpilation 旧代码读取。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.MenstruationFluidsCompat">
             <summary>
@@ -853,10 +859,19 @@
         <member name="P:MilkCum.Fluids.Cum.MenstruationFluidsCompat.MenstruationFluidsCumflationDefsPresent">
             <summary>当前 Def 数据库中存在 MF 充盈 Hediff 定义。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.GetActiveCumflationForJobs(Verse.Pawn)">
+        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.TryGetActiveCumflationForJobs(Verse.Pawn)">
             <summary>
-            自动泄殖/进度条等使用的「当前充盈 Hediff」：优先 MF 阴道/肛门，否则回退 Cumpilation_Cumflation（旧档）。
+            只读查询：自动泄殖/进度条等使用的当前充盈 Hediff。
+            优先 MF 阴道/肛门，其次旧档 Cumpilation_Cumflation；不会创建新 Hediff。
             </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.GetOrCreateActiveCumflationForJobs(Verse.Pawn)">
+            <summary>
+            执行路径使用：获取当前充盈 Hediff；若不存在则按当前环境创建一个可用 Hediff。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.MenstruationFluidsCompat.GetActiveCumflationForJobs(Verse.Pawn)">
+            <summary>兼容旧调用：保留原方法名，语义等同执行路径的 GetOrCreate。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Oscillation.OscillationHelper.GetOrCreateBlueBallsHediff(Verse.Pawn)">
             <summary>
@@ -908,7 +923,7 @@
             </summary>
         </member>
         <member name="T:MilkCum.Fluids.Cum.Settings">
-            <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+            <summary>数据已统一到 MilkCumSettings；此类仅作代理，供 Cumpilation 旧代码读取。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable">
             <summary>平等挤奶 Comp：池存储与同步见 PoolStorage；进水/溢出/回缩见 Inflow；扣量见 Drain；流速与产奶见 Milking。见 记忆库/docs/泌乳系统逻辑图。</summary>
@@ -1940,13 +1955,13 @@
             <summary>奶瓶品质 Comp：quality 0~1，产奶时由 SpawnBottles 根据泌乳者 L/乳腺炎等写入。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Comps.CompProperties_ShowProducer">
-            <summary>濂?绮炬恫绛夋祦浣撲骇鐗╃殑浜т富鏍囪 Comp锛堝ザ涓庣簿娑插叡鐢級銆傝 CumpilationIntegration銆丆ompEquallyMilkable.Milking銆</summary>
+            <summary>奶/精液等流体物品的产主标记 Comp（奶与精液共用）。见 CumpilationIntegration、CompEquallyMilkable.Milking。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Comps.CompShowProducer">
-            <summary>鐗╁搧涓婅褰曚骇涓?producer/producerKind)锛岀敤浜?label銆佸爢鍙犮€佹鏌ラ潰鏉裤€侀鐢ㄥ厑璁稿悕鍗曘€傚ザ鍒跺搧涓庣簿娑插埗鍝佸叡鐢ㄣ€</summary>
+            <summary>在物品上记录产主 (producer/producerKind)，用于 label、堆叠、检查面板、食用许可名单。奶制品与精液制品共用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Shared.Comps.CompShowProducer.CompInspectStringExtra">
-            <summary>鐗╁搧鎮诞/妫€鏌ラ潰鏉匡細鏄剧ず浜т富涓庡厑璁镐娇鐢ㄥ悕鍗曪紙濂朵骇涓荤敤 CompEquallyMilkable.allowedConsumers锛涚簿娑茬瓑鏃?Comp 鏃朵粎鏄剧ず浜т富锛夈€</summary>
+            <summary>物品悬浮/检查面板：显示产主与许可食用者名单（名单来自产主的 CompEquallyMilkable.allowedConsumers）。</summary>
         </member>
         <member name="T:MilkCum.Fluids.Shared.Data.FluidPoolEntry">
             <summary>乳池条目：虚拟槽 <see cref="P:MilkCum.Fluids.Shared.Data.FluidPoolEntry.Site"/>（泌乳 SSOT）、容量、流速倍率、解剖左右标记、序号、代表部位（状态倍率解析）。</summary>
@@ -2037,9 +2052,9 @@
         </member>
         <member name="T:MilkCum.Harmony.CumpilationIntegration">
             <summary>
-            鏈?Mod 宸插悎骞?Cumpilation锛氫负绮炬恫鐗╁搧鎵撲骇涓?producer)锛岄鐢ㄨ鍒欎笌濂跺埗鍝佷竴鑷?CompShowProducer + allowedConsumers)銆?
-            妗跺彲鍏宠仈搴婏細浠呭簥涓诲彲鐢ㄧ┖妗讹紱鍗犵敤鏃舵彁绀衡€滀笉鏄綘鐨勬《鈥濓紱鍏变韩鍗у=娣峰悎绮炬恫銆?
-            7.13: 鍗曟簮(ExtractCum銆丏eflateBucket 鍗曚富銆丟athering from sex)璁?producer锛涙贩鍚堟《/娓呮磥姹＄墿鍥炴敹涓嶈 producer銆?
+            本 Mod 已合并 Cumpilation：精液物品打产主 (producer)，食用规则与奶制品一致 (CompShowProducer + allowedConsumers)。
+            桶可关联床：仅床主可用空桶；有占用时提示「不是你的桶」；共享宿舍 = 混合精液。
+            7.13：单源（ExtractCum、DeflateBucket 单主、性交 Gathering）设 producer；混合桶/清洁回收不设 producer。
             </summary>
         </member>
         <member name="M:MilkCum.Harmony.CumpilationIntegration.JobGiver_Deflate_TryFindBucketFor_Postfix(Verse.Pawn,Verse.Thing@,System.Boolean@)">
@@ -2203,7 +2218,7 @@
             </summary>
         </member>
         <member name="M:MilkCum.PipeSystem.ApplyPatches.Building_Milking_PlaceMilkThing_Patch.Prefix(MilkCum.Core.Building_Milking,Verse.Thing@)">
-            <summary>浜哄ザ锛堝甫 producer 涓斾负浜虹被锛変笉杩涘叆绠￠亾/澶ф《锛岀洿鎺ユ斁缃紱鍔ㄧ墿濂舵墠杩涘叆绠￠亾銆</summary>
+            <summary>人奶（有 producer 且为人形）不进管道/大桶，直接放置；仅动物奶进入管道。</summary>
         </member>
         <member name="T:MilkCum.PipeSystem.ApplyPatches.ThingWithComps_DrawAt_Patch">
             <summary>
@@ -2323,10 +2338,10 @@
             <summary>专业级「哺乳系统」一页：总览说明 + 营养→能量/回缩 + 人形/动物/机械三类设置（可滚动）。</summary>
         </member>
         <member name="T:MilkCum.UI.Widget_CumpilationSettings">
-            <summary>绮炬恫/Cumpilation 璁剧疆锛氳啫鑳€銆佸～鍏呫€佽鐩栥€佹敹闆嗐€佹硠绮剧瓑锛岀粺涓€鍒颁富 mod 璁剧疆鐨勪竴涓?Tab銆</summary>
+            <summary>Cumpilation 系列选项：充盈、填充、覆盖、收集、泄漏等，合并到本 mod 主设置的一个 Tab。</summary>
         </member>
         <member name="F:MilkCum.UI.Widget_MilkTagsTable.FixedProductTagKeys">
-            <summary>濂舵爣绛句腑濮嬬粓淇濈暀鐨勭墿鍝佺绫伙紙浜哄ザ銆佸姩鐗╁ザ銆佺簿娑诧級锛屼笉闅?namesToProducts 绉婚櫎锛涗笖涓庝骇涓婚檺鍒躲€岃皝鍙互鍚冦€嶈仈鍔ㄣ€</summary>
+            <summary>奶标签里固定保留的人奶/动物奶/精液条目，不随 namesToProducts 删除；并与“谁可食用”联动。</summary>
         </member>
         <member name="T:MilkCum.UI.Widget_RaceOverrides">
             <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>
@@ -2337,12 +2352,8 @@
         <member name="F:MilkCum.UI.Window_ProducerRestrictions.AllowSelfNarrowThreshold">
             <summary>窄于此时「允许自己」改为两行布局（第一行挤奶+吃奶，第二行泄精+塞住）。</summary>
         </member>
-        <member name="F:MilkCum.UI.Window_ProducerRestrictions.filter">
-            <summary>筛选：控制表格中显示谁（全部 / 仅殖民者 / 仅囚犯）。
-            当前 UI 不再提供筛选器（你要求删除筛选框），因此默认始终为 All。</summary>
-        </member>
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.FillFilteredPawns(System.Collections.Generic.List{Verse.Pawn})">
-            <summary>按当前筛选填充列表（排除产奶者自己），不排序。调用方负责 Clear。使用 RimWorld 实际返回的 List&lt;Pawn&gt; 直接 for 遍历，避免 IEnumerable 枚举器分配。</summary>
+            <summary>填充列表（排除产奶者自己），不排序。调用方负责 Clear。</summary>
         </member>
         <member name="M:MilkCum.UI.Window_ProducerRestrictions.GetRelationLabel(Verse.Pawn,Verse.Pawn)">
             <summary>产奶者与另一人的关系标签；无关系或异常时返回「—」。兼容无 GetGenderSpecificLabel 的 RimWorld 版本。</summary>

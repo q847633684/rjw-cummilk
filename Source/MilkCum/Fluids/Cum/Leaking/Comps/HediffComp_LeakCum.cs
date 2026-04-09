@@ -1,9 +1,6 @@
 using System.Collections.Generic;
 using Verse;
 using RimWorld;
-using Verse.Noise;
-using RimWorld.QuestGen;
-using rjw;
 using MilkCum.Fluids.Cum.Cumflation;
 using MilkCum.Fluids.Cum;
 using MilkCum.Fluids.Cum.Gathering;
@@ -20,7 +17,7 @@ namespace MilkCum.Fluids.Cum.Leaking
 			base.CompPostTick(ref severityAdjustment);
 			if (!(parent.pawn.TryGetComp(out Comp_SealCum comp) && comp.IsSealed()))
 			{
-				float num = (parent.Severity + GetAverageLooseness() + 0.05f) * Props.leakRate * Settings.LeakRate * 0.004f;
+				float num = (parent.Severity + LeakingUtility.GetAverageVaginalLooseness(parent.pawn) + 0.05f) * Props.leakRate * Settings.LeakRate * 0.004f;
 				if (Rand.Chance(num))
 				{
 					parent.Severity -= 0.005f;
@@ -28,21 +25,6 @@ namespace MilkCum.Fluids.Cum.Leaking
                     DropCumFilth();
 				}
 			}
-		}
-
-		private float GetAverageLooseness()
-		{
-			float num = 0f;
-			int count = 1;
-			foreach (var part in rjw.Genital_Helper.get_AllPartsHediffList(parent.pawn))
-			{
-				if (rjw.Genital_Helper.is_vagina(part))
-				{
-					num += part.Severity;
-					count++;
-				}
-			}
-			return num / count;
 		}
 
 		private void DropCumFilth()

@@ -14,12 +14,20 @@ public static class MenuHelper
         Pawn pawn = thing as Pawn ?? (thing as Building_HoldingPlatform)?.HeldPawn;
         if (pawn == null) { return false; }
         if (!pawn.IsMilkable()) { return false; }
-        if (MilkCumSettings.showMechOptions && pawn.IsColonyMech && MechanitorUtility.IsMechanitor(pawn)) { return true; }
+
+        bool isMech = pawn.IsColonyMech;
+        bool isColonist = pawn.IsFreeNonSlaveColonist;
+        bool isSlave = pawn.IsSlaveOfColony;
+        bool isPrisoner = pawn.IsPrisonerOfColony;
+        bool isAnimal = pawn.IsNormalAnimal() && pawn.Faction == Faction.OfPlayer;
+
+        if (MilkCumSettings.showMechOptions && isMech) { return true; }
         if (MilkCumSettings.showColonistOptions && pawn.IsFreeNonSlaveColonist) { return true; }
         if (MilkCumSettings.showSlaveOptions && pawn.IsSlaveOfColony) { return true; }
         if (MilkCumSettings.showPrisonerOptions && pawn.IsPrisonerOfColony) { return true; }
-        if (MilkCumSettings.showAnimalOptions && pawn.IsNormalAnimal() && pawn.Faction == Faction.OfPlayer) { return true; }
-        if (MilkCumSettings.showMiscOptions && (pawn.IsOnHoldingPlatform || pawn.Faction == Faction.OfPlayer)) { return true; }
+        if (MilkCumSettings.showAnimalOptions && isAnimal) { return true; }
+        bool isMisc = !isMech && !isColonist && !isSlave && !isPrisoner && !isAnimal;
+        if (MilkCumSettings.showMiscOptions && (pawn.IsOnHoldingPlatform || isMisc)) { return true; }
         return false;
     }
     internal static IEnumerable<FloatMenuOption> InjectMenuOptions(this Thing thing, Pawn actor)

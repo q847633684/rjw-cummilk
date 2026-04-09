@@ -1,18 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.AI;
 using RimWorld;
-using Verse.Noise;
-using RimWorld.QuestGen;
-using rjw;
 using MilkCum.Fluids.Cum;
-using MilkCum.Fluids.Cum.Cumflation;
-using MilkCum.Fluids.Cum.Gathering;
 
 namespace MilkCum.Fluids.Cum.Leaking
 {
@@ -39,11 +31,11 @@ namespace MilkCum.Fluids.Cum.Leaking
                 }
             });
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.OnCell);
-            float initialSeverity = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn).Severity;
+            float initialSeverity = MenstruationFluidsCompat.GetOrCreateActiveCumflationForJobs(pawn).Severity;
             deflateRate = (TargetA.Thing?.TryGetComp<Comp_DeflateBucket>()?.deflateRate ?? TargetA.Thing?.TryGetComp<Comp_DeflateClean>()?.deflateRate) ?? 1f;
             //ModLog.Debug($"Deflate rate = {deflateRate}");
             Toil deflate = ToilMaker.MakeToil("MakeNewToils");
-            cumflationHediff = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn);
+            cumflationHediff = MenstruationFluidsCompat.GetOrCreateActiveCumflationForJobs(pawn);
             seenBy = new List<Pawn>{pawn};
             deflate.initAction = delegate
             {
@@ -79,25 +71,11 @@ namespace MilkCum.Fluids.Cum.Leaking
 
         private void ResetTicksToDeflate()
         {
-            float num = GetAverageLooseness() + MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn).Severity + 0.5f;
+            float severity = MenstruationFluidsCompat.TryGetActiveCumflationForJobs(pawn)?.Severity ?? 0f;
+            float num = LeakingUtility.GetAverageVaginalLooseness(pawn) + severity + 0.5f;
             num *= Settings.DeflateRate * deflateRate;
             ModLog.Debug($"Deflate in {25f / num} ticks");
             ticksToDeflate = (int)Math.Round(25f / num);
-        }
-
-        private float GetAverageLooseness()
-        {
-            float num = 0f;
-            int count = 1;
-            foreach (var part in rjw.Genital_Helper.get_AllPartsHediffList(pawn))
-            {
-                if (rjw.Genital_Helper.is_vagina(part))
-                {
-                    num += part.Severity;
-                    count++;
-                }
-            }
-            return num / count;
         }
 
         private bool ShouldEnd()
@@ -119,7 +97,6 @@ namespace MilkCum.Fluids.Cum.Leaking
             {
                 return;
             }
-            List<Pawn> list = new List<Pawn>{pawn};
             if (LeakCum_PrivacyUtil.CanSeeDeflateSpot(seenBy ,pawn.Position, pawn.MapHeld, out Pawn peeker) && peeker != pawn && !seenBy.Contains(peeker))
             {
                 pawn.needs?.mood?.thoughts?.memories?.TryGainMemory(DefOfs.Cumpilation_Thought_SeenWhenDeflating);

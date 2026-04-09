@@ -16,7 +16,17 @@ namespace MilkCum.Harmony;
 /// </summary>
 public static class CumpilationIntegration
 {
-    internal static Pawn CumProducerForNextSpawn;
+    private static readonly Stack<Pawn> CumProducerStack = new Stack<Pawn>();
+
+    private static Pawn CurrentCumProducerForNextSpawn => CumProducerStack.Count > 0 ? CumProducerStack.Peek() : null;
+
+    internal static void PushCumProducerContext(Pawn producer) => CumProducerStack.Push(producer);
+
+    internal static void PopCumProducerContext()
+    {
+        if (CumProducerStack.Count > 0)
+            CumProducerStack.Pop();
+    }
 
     public static void ApplyPatches(HarmonyLib.Harmony harmony)
     {
@@ -61,7 +71,7 @@ public static class CumpilationIntegration
             harmony.Patch(makeThing, postfix: new HarmonyMethod(typeof(CumpilationIntegration), nameof(ThingMaker_MakeThing_Postfix)));
         }
 
-        // 鑷叞/鎬ц涓烘椂鈥滃皠杩涙《鈥濈殑鏀堕泦锛氱簿娑茬洿鎺ョ敓鎴愬湪寤虹瓚鏍硷紝浜т富 = 灏勭簿鐨勫皬浜?
+        // 自慰/性交时“射入桶”的收集：精液直接生成在建筑格，产主=射精者。
         var gatheringType = AccessTools.TypeByName("MilkCum.Fluids.Cum.Gathering.GatheringUtility");
         if (gatheringType != null)
         {
@@ -79,15 +89,17 @@ public static class CumpilationIntegration
     {
         var building = gatherer as Building;
         var link = building?.TryGetComp<CompCumBucketLink>();
+        Pawn producer;
         if (link != null && link.Owner != null)
-            CumProducerForNextSpawn = link.Owner;
+            producer = link.Owner;
         else
-            CumProducerForNextSpawn = AccessTools.Field(props?.GetType(), "pawn")?.GetValue(props) as Pawn;
+            producer = AccessTools.Field(props?.GetType(), "pawn")?.GetValue(props) as Pawn;
+        PushCumProducerContext(producer);
     }
 
     static void Gathering_HandleFluidGatherer_Postfix()
     {
-        CumProducerForNextSpawn = null;
+        PopCumProducerContext();
     }
 
     /// <summary>Only allow bucket if CompCumBucketLink.CanPawnUse(pawn); otherwise clear result and prompt "not your cum bucket" when occupied. TryFindBucketFor returns bool and has (Pawn, out Thing).</summary>
@@ -107,12 +119,12 @@ public static class CumpilationIntegration
 
     static void ExtractCum_SpawnCum_Prefix(Pawn pawn)
     {
-        CumProducerForNextSpawn = pawn;
+        PushCumProducerContext(pawn);
     }
 
     static void ExtractCum_SpawnCum_Postfix()
     {
-        CumProducerForNextSpawn = null;
+        PopCumProducerContext();
     }
 
     static void DeflateBucket_SpawnCum_Prefix(object __instance, object fluid)
@@ -125,27 +137,30 @@ public static class CumpilationIntegration
             pawn = driver.pawn;
             bucket = driver.job?.GetTarget(TargetIndex.A).Thing;
         }
+        Pawn producer;
         var link = bucket?.TryGetComp<CompCumBucketLink>();
         if (link != null && pawn != null)
         {
             link.NotifyPawnUsed(pawn);
             if (link.Owner != null)
             {
-                CumProducerForNextSpawn = link.Owner;
+                producer = link.Owner;
+                PushCumProducerContext(producer);
                 return;
             }
             if (link.IsMixed)
             {
-                CumProducerForNextSpawn = null;
+                PushCumProducerContext(null);
                 return;
             }
         }
-        CumProducerForNextSpawn = GetProducerFromBucketDeflate(__instance, fluid);
+        producer = GetProducerFromBucketDeflate(__instance, fluid);
+        PushCumProducerContext(producer);
     }
 
     static void DeflateBucket_SpawnCum_Postfix()
     {
-        CumProducerForNextSpawn = null;
+        PopCumProducerContext();
     }
 
     /// <summary>
@@ -213,10 +228,13 @@ public static class CumpilationIntegration
 
     static void ThingMaker_MakeThing_Postfix(Thing __result)
     {
-        if (__result == null || __result.def?.defName != "Cumpilation_Cum" || CumProducerForNextSpawn == null)
+        if (__result == null || __result.def?.defName != "Cumpilation_Cum")
+            return;
+        Pawn producer = CurrentCumProducerForNextSpawn;
+        if (producer == null)
             return;
         var comp = __result.TryGetComp<CompShowProducer>();
         if (comp != null)
-            comp.producer = CumProducerForNextSpawn;
+            comp.producer = producer;
     }
 }

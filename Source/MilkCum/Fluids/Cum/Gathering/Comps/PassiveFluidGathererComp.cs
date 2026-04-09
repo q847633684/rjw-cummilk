@@ -3,11 +3,8 @@ using MilkCum.Fluids.Cum.Comps;
 using MilkCum.Harmony;
 using RimWorld;
 using rjw;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace MilkCum.Fluids.Cum.Gathering
@@ -38,7 +35,7 @@ namespace MilkCum.Fluids.Cum.Gathering
 
             if (parent.IsHashIntervalTick(Props.tickIntervall))
             {
-                // onlyFluidFilth: false 浠ヤ究鍚屾椂鍚告敹 EM_HumanMilkFilth 绛夛紙鐢?FluidGatheringDef.filth 鏀寔鐨勬薄鐗╋級锛岄珮绾ф《鍙敹闆嗘瘝涔虫薄鐗?
+                // onlyFluidFilth=false: 同时吸收流体污物与 EM_HumanMilkFilth（由 FluidGatheringDef.filth 支持）。
                 var sexFluidFilths = GatheringUtility.GetNearbyFilth(this.parent, false, Props.range);
                // ModLog.Message($"{parent.def}@{parent.PositionHeld}:Found {filths.Count()} filths and {sexFluidFilths.Count()} Fluid-Associated Filths in range {properties.range}");
                 CleanFilth(sexFluidFilths);
@@ -65,7 +62,7 @@ namespace MilkCum.Fluids.Cum.Gathering
                 int toSpawn = amount / fgDef.filthNecessaryForOneUnit;
                 if (toSpawn <= 0) continue;
 
-                CumpilationIntegration.CumProducerForNextSpawn = producer;
+                CumpilationIntegration.PushCumProducerContext(producer);
                 try
                 {
                     Thing gatheredFluid = ThingMaker.MakeThing(fgDef.thingDef);
@@ -74,7 +71,7 @@ namespace MilkCum.Fluids.Cum.Gathering
                 }
                 finally
                 {
-                    CumpilationIntegration.CumProducerForNextSpawn = null;
+                    CumpilationIntegration.PopCumProducerContext();
                 }
 
                 int remainder = amount % fgDef.filthNecessaryForOneUnit;

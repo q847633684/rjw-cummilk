@@ -7,7 +7,7 @@ using static MilkCum.Core.Constants.Constants;
 namespace MilkCum.UI;
 public class Widget_MilkTagsTable
 {
-    /// <summary>濂舵爣绛句腑濮嬬粓淇濈暀鐨勭墿鍝佺绫伙紙浜哄ザ銆佸姩鐗╁ザ銆佺簿娑诧級锛屼笉闅?namesToProducts 绉婚櫎锛涗笖涓庝骇涓婚檺鍒躲€岃皝鍙互鍚冦€嶈仈鍔ㄣ€</summary>
+    /// <summary>奶标签里固定保留的人奶/动物奶/精液条目，不随 namesToProducts 删除；并与“谁可食用”联动。</summary>
     private static readonly HashSet<string> FixedProductTagKeys = new() { "EM_HumanMilk", "Milk", "Cumpilation_Cum" };
 
     private readonly Dictionary<string, RaceMilkType> namesToProducts;
@@ -26,7 +26,7 @@ public class Widget_MilkTagsTable
         {
             if (!productsToTags.ContainsKey(tag.defName))
             {
-                // 浜哄ザ銆佺簿娑查粯璁ゅ紑鍚€屾樉绀哄姩鐗╁悕銆嶏紝浜т富闄愬埗銆岃皝鍙互鍚冦€嶆墠鐢熸晥
+                // 人奶、精液默认开启“显示动物名”，产主限制“谁可食用”才会生效。
                 bool defaultTagPawn = tag.defName == "EM_HumanMilk" || tag.defName == "Cumpilation_Cum";
                 productsToTags.Add(tag.defName, defaultTagPawn ? new MilkTag(tag.defName, true, false) : tag);
             }

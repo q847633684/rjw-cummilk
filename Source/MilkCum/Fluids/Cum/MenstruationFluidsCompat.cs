@@ -40,15 +40,13 @@ public static class MenstruationFluidsCompat
 	}
 
 	/// <summary>
-	/// 自动泄殖/进度条等使用的「当前充盈 Hediff」：优先 MF 阴道/肛门，否则回退 Cumpilation_Cumflation（旧档）。
+	/// 只读查询：自动泄殖/进度条等使用的当前充盈 Hediff。
+	/// 优先 MF 阴道/肛门，其次旧档 Cumpilation_Cumflation；不会创建新 Hediff。
 	/// </summary>
-	public static Hediff GetActiveCumflationForJobs(Pawn pawn)
+	public static Hediff TryGetActiveCumflationForJobs(Pawn pawn)
 	{
 		if (pawn?.health?.hediffSet == null)
 			return null;
-
-		if (!MenstruationFluidsCumflationDefsPresent)
-			return CumflationUtility.GetOrCreateCumflationHediff(pawn);
 
 		Hediff vaginal = mfVaginal != null ? pawn.health.hediffSet.GetFirstHediffOfDef(mfVaginal) : null;
 		Hediff anal = mfAnal != null ? pawn.health.hediffSet.GetFirstHediffOfDef(mfAnal) : null;
@@ -62,12 +60,30 @@ public static class MenstruationFluidsCompat
 		if (legacy != null)
 			return legacy;
 
+		return null;
+	}
+
+	/// <summary>
+	/// 执行路径使用：获取当前充盈 Hediff；若不存在则按当前环境创建一个可用 Hediff。
+	/// </summary>
+	public static Hediff GetOrCreateActiveCumflationForJobs(Pawn pawn)
+	{
+		Hediff active = TryGetActiveCumflationForJobs(pawn);
+		if (active != null)
+			return active;
+		if (pawn?.health?.hediffSet == null)
+			return null;
+
 		HediffDef def = mfVaginal ?? mfAnal;
 		if (def == null)
 			return CumflationUtility.GetOrCreateCumflationHediff(pawn);
 
-		highest = HediffMaker.MakeHediff(def, pawn);
-		highest.Severity = 0.01f;
-		return highest;
+		Hediff created = HediffMaker.MakeHediff(def, pawn);
+		created.Severity = 0.01f;
+		pawn.health.AddHediff(created);
+		return created;
 	}
+
+	/// <summary>兼容旧调用：保留原方法名，语义等同执行路径的 GetOrCreate。</summary>
+	public static Hediff GetActiveCumflationForJobs(Pawn pawn) => GetOrCreateActiveCumflationForJobs(pawn);
 }

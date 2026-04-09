@@ -45,14 +45,14 @@ public class Recipe_ExtractCum : Recipe_Surgery
 {
 	public override bool AvailableOnNow(Thing thing, BodyPartRecord part = null)
 	{
-		if (thing is Pawn pawn && !(MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn).Severity > 0f))
+		if (thing is Pawn pawn && !(MenstruationFluidsCompat.TryGetActiveCumflationForJobs(pawn)?.Severity > 0f))
 			return false;
 		return base.AvailableOnNow(thing, part);
 	}
 
 	public override void ApplyOnPawn(Pawn pawn, BodyPartRecord part, Pawn billDoer, List<Thing> ingredients, Bill bill)
 	{
-		Hediff cumflationHediff = MenstruationFluidsCompat.GetActiveCumflationForJobs(pawn);
+		Hediff cumflationHediff = MenstruationFluidsCompat.TryGetActiveCumflationForJobs(pawn);
 		if (cumflationHediff?.Severity <= 0 || billDoer == null)
 			return;
 

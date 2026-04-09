@@ -2,7 +2,7 @@ using Verse;
 
 namespace MilkCum.Fluids.Cum.Leaking
 {
-    /// <summary>鏁版嵁宸茬粺涓€鍒?MilkCumSettings锛涙绫讳粎浣滀唬鐞嗭紝渚?Cumpilation 浠ｇ爜璇诲彇銆</summary>
+    /// <summary>数据已统一到 MilkCumSettings；此类仅作代理，供 Cumpilation 旧代码读取。</summary>
     public class Settings : ModSettings
     {
         public static bool EnableFilthGeneration { get => MilkCum.Core.Settings.MilkCumSettings.CumLeak_EnableFilthGeneration; set => MilkCum.Core.Settings.MilkCumSettings.CumLeak_EnableFilthGeneration = value; }
@@ -20,7 +20,7 @@ namespace MilkCum.Fluids.Cum.Leaking
         public override void ExposeData()
         {
             base.ExposeData();
-            // 鏁版嵁宸茬敱 MilkCumSettings.ExposeData 缁熶竴璇诲啓
+            // 数据已由 MilkCumSettings.ExposeData 统一读写
         }
     }
 }
