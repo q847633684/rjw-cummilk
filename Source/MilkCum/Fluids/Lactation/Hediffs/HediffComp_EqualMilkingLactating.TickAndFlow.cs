@@ -18,6 +18,11 @@ namespace MilkCum.Fluids.Lactation.Hediffs;
 
 public partial class HediffComp_EqualMilkingLactating
 {
+    /// <summary>
+    /// 上一观测的乳池总满度：与当前 <see cref="CompEquallyMilkable.Fullness"/> 比较以判断池是否在本 tick 前已变化；
+    /// 若池未变而 <c>Charge</c> 与池不一致，在开启 Charge 桥接设置时暂不覆盖 <c>Charge</c>，交由奶 Comp 的桥接写回池。
+    /// </summary>
+    private float lastObservedPoolFullnessForChargeBridge = -1f;
 
     public override void CompPostTick(ref float severityAdjustment)
     {
@@ -69,9 +74,28 @@ public partial class HediffComp_EqualMilkingLactating
                 }
             }
         }
-        this.Charge = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
+        SyncChargeWithPoolForExternalBridge();
         if (Pawn != null && ModIntegrationGates.RjwModActive && MilkCumSettings.rjwPermanentBreastGainFromLactationEnabled)
             lactationTicksAccumulated++;
+    }
+
+    /// <summary>将 <c>Charge</c> 与乳池对齐；开启 Charge 桥接且池总量未变时，若 <c>Charge</c> 与池不一致则保留差异供奶 Comp 吸收。</summary>
+    private void SyncChargeWithPoolForExternalBridge()
+    {
+        float poolF = CompEquallyMilkable != null ? CompEquallyMilkable.Fullness : 0f;
+        float eps = PoolModelConstants.FloatDustEpsilon;
+        bool poolMoved = lastObservedPoolFullnessForChargeBridge < 0f
+            || Mathf.Abs(poolF - lastObservedPoolFullnessForChargeBridge) > eps;
+        if (poolMoved)
+        {
+            Charge = poolF;
+            lastObservedPoolFullnessForChargeBridge = poolF;
+            return;
+        }
+        if (MilkCumSettings.bridgeExternalLactatingCharge && Mathf.Abs(Charge - poolF) > eps)
+            return;
+        Charge = poolF;
+        lastObservedPoolFullnessForChargeBridge = poolF;
     }
 
     /// <summary>是否达到下一档「因泌乳永久撑大」里程碑；若达到则递增 permanentBreastGainMilestonesDone 并返回 true，由 RJW GameComponent 调用 ApplyPermanentBreastGain。仅当 RJW 已加载且 rjwPermanentBreastGainFromLactationEnabled 时有效。</summary>

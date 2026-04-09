@@ -77,6 +77,13 @@
     <EM.UISection.NutritionBasics>营养与泌乳代谢</EM.UISection.NutritionBasics>
     <EM.UISection.RjwFertilityAndSexBoost>怀孕率与房事奶劲</EM.UISection.RjwFertilityAndSexBoost>
     <EM.UISection.RjwFertilityAndSexBoostDesc>泌乳期怀孕乘数；哺乳后房事、泌乳心情、房事奶劲总闸与强度（Δs 可为 0）。</EM.UISection.RjwFertilityAndSexBoostDesc>
+    <EM.UISection.ThirdPartyLactationBridge>第三方泌乳兼容</EM.UISection.ThirdPartyLactationBridge>
+    <EM.UISection.ThirdPartyLactationBridgeDesc>对此页三个联动子标签均生效。推荐其他模组调用程序集 API：<c>MilkCum.Integration.EqualMilkLactationApi</c>；下方开关用于吸收仍直接写 <c>CompMilkable.fullness</c> 或泌乳 <c>HediffComp_Lactating.Charge</c> 的旧式模组。</EM.UISection.ThirdPartyLactationBridgeDesc>
+    <EM.BridgeExternalCompMilkableFullness>吸收外部对 CompMilkable.fullness 的写入</EM.BridgeExternalCompMilkableFullness>
+    <EM.BridgeExternalCompMilkableFullnessDesc>每 60 tick 检测：若他模组只改了基类 <c>fullness</c> 而未更新本 mod 的按 key 乳池，则把目标总量按比例写回乳池，并同步泌乳 Hediff 的 Charge、排空炎症缓解等。若对方已改用 API 或出现重复结算可关闭。</EM.BridgeExternalCompMilkableFullnessDesc>
+    <EM.BridgeExternalLactatingCharge>吸收外部泌乳 Hediff 的 Charge</EM.BridgeExternalLactatingCharge>
+    <EM.BridgeExternalLactatingChargeDesc>若他模组只改 <c>HediffComp_Lactating.Charge</c>，原版式每 tick 会把 Charge 强行拉回乳池总量。开启本项后：在乳池总量未变而 Charge 与池不一致时，先保留差异，再由奶 Comp 每 60 tick 把 Charge 当作目标总量写回按 key 乳池（副作用与 fullness 桥接一致）。重复结算时可关。</EM.BridgeExternalLactatingChargeDesc>
+    <EM.LogExternalFullnessBridge>记录外部镜像桥接（fullness / Charge，DevMode）</EM.LogExternalFullnessBridge>
     <EM.SubTab.GenesAndAdvanced>基因与高级</EM.SubTab.GenesAndAdvanced>
     <!-- 专业级子 Tab -->
     <EM.SubTab.BreastfeedSystem>哺乳系统</EM.SubTab.BreastfeedSystem>

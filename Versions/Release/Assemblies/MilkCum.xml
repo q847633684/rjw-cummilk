@@ -196,6 +196,15 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwLactatingInSexDescriptionEnabled">
             <summary>性交结束时是否尝试给予 <c>EM_HadSexWhileLactating</c> 心情（旧版默认开）。</summary>
         </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.bridgeExternalCompMilkableFullness">
+            <summary>当第三方模组直接写原版 <c>CompMilkable.fullness</c> 时，每 60 tick 将目标总量回灌到本 mod 乳池并联动 Charge/炎症等；关闭则仅依赖对方调用公开 API。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.bridgeExternalLactatingCharge">
+            <summary>当第三方只改泌乳 Hediff 的 <c>Charge</c> 而未改乳池时，每 60 tick 将目标总量写回乳池（与 <c>HediffComp_EqualMilkingLactating</c> 的 tick 协同，避免先被 Charge=池 覆盖）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.logExternalFullnessBridge">
+            <summary>DevMode：在吸收外部 <c>fullness</c> / <c>Charge</c> 镜像时输出简短日志。</summary>
+        </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwSexAddsLactationBoost">
             <summary>性交结束后是否对泌乳者施加「房事奶劲」进水（<see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwSexLactationBoostDeltaS"/>；旧版默认关，现默认开以贴近近年无总闸行为）。</summary>
         </member>
@@ -1049,6 +1058,12 @@
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedTicksGameForFlow">
             <summary>每 60 tick 在 CompTick 中刷新，供 IsCachedFlowValid 使用，避免每次调用 Find.TickManager.TicksGame。</summary>
         </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.lastSyncedBaseFullness">
+            <summary>兼容桥接：记录最近一次由 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SyncBaseFullness"/> 写入基类 <c>fullness</c> 的值（调试用）。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ExternalFullnessWriteEpsilon">
+            <summary>外部改写 <c>fullness</c> 的检测阈值，避免浮点抖动。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsCachedFlowValid">
             <summary>缓存是否在 60 tick 内有效。</summary>
         </member>
@@ -1111,6 +1126,18 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsInflowEventBurstActive">
             <summary>当前是否处于事件驱动进水子步长突发窗口。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TryBridgeExternalFullnessWrite(System.Single)">
+            <summary>
+            双向桥接：当其他 mod 直接改写基类 <c>fullness</c> 时，把目标总量映射回本模组乳池（<c>breastFullness</c>），
+            并走 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ApplyExternalTotalTarget(System.Single,System.Single,System.String)"/> 以同步泌乳 Hediff Charge、排空炎症缓解等。
+            </summary>
+            <param name="stretchTotal">与当帧池顶格一致的撑大总容量（池单位）。</param>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TryBridgeExternalChargeWrite(System.Single)">
+            <summary>
+            当泌乳 Hediff 的 <c>Charge</c> 与乳池总量不一致且 Hediff tick 未强行覆盖时，将 <c>Charge</c> 视作目标总量写回乳池。
+            </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetDuctTakeFactor(MilkCum.Fluids.Shared.Data.FluidPoolEntry,MilkCum.Fluids.Shared.Data.FluidPoolNetwork,System.Boolean)">
             <summary>扣量导通系数：压力与导管阻力共同决定单位时间可抽取比例。</summary>
@@ -1281,6 +1308,12 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SetFullness(System.Single,System.Nullable{System.Single})">
             <summary>设置总奶量（0～上限）。按 key 比例缩放到目标总水量，唯一写入口之一。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ApplyExternalTotalTarget(System.Single,System.Single,System.String)">
+            <summary>
+            将乳池总目标设为 <paramref name="targetTotal"/>（池单位），按比例缩放各 key；并联动排空炎症缓解、短时进水突发、泌乳 Hediff Charge。
+            供外部模组 API 与 <c>CompMilkable.fullness</c> 桥接共用。
+            </summary>
         </member>
         <member name="T:MilkCum.Fluids.Lactation.Comps.CompProperties_PartialMilk">
             <summary>未满一瓶的人奶：存储实际取量（0~1 池单位），食用时营养按此值计算。</summary>
@@ -1473,6 +1506,15 @@
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.AddLetdownReflexStimulus(System.String)">
             <summary>四层模型：挤奶/吸奶刺激该侧，R += ΔR，Clamp 到 1。仅被刺激的乳池侧提升喷乳反射。</summary>
+        </member>
+        <member name="F:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.lastObservedPoolFullnessForChargeBridge">
+            <summary>
+            上一观测的乳池总满度：与当前 <see cref="P:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.Fullness"/> 比较以判断池是否在本 tick 前已变化；
+            若池未变而 <c>Charge</c> 与池不一致，在开启 Charge 桥接设置时暂不覆盖 <c>Charge</c>，交由奶 Comp 的桥接写回池。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.SyncChargeWithPoolForExternalBridge">
+            <summary>将 <c>Charge</c> 与乳池对齐；开启 Charge 桥接且池总量未变时，若 <c>Charge</c> 与池不一致则保留差异供奶 Comp 吸收。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating.TryConsumeNextPermanentGainMilestone">
             <summary>是否达到下一档「因泌乳永久撑大」里程碑；若达到则递增 permanentBreastGainMilestonesDone 并返回 true，由 RJW GameComponent 调用 ApplyPermanentBreastGain。仅当 RJW 已加载且 rjwPermanentBreastGainFromLactationEnabled 时有效。</summary>
@@ -2251,6 +2293,31 @@
         </member>
         <member name="M:MilkCum.Integration.DubsBadHygiene.DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(Verse.Pawn)">
             <summary>卫生风险系数 0~1（1=最易诱发乳腺炎）。当启用 DBH 联动时用 Hygiene 需求等级（低=高风险）；否则用当前房间清洁度（脏=高风险）。</summary>
+        </member>
+        <member name="T:MilkCum.Integration.EqualMilkLactationApi">
+            <summary>
+            第三方模组接入 TianTian.MilkCum 乳池的推荐入口：比直接写 <c>CompMilkable.fullness</c> 或 <c>HediffComp_Lactating.Charge</c> 更完整
+            （设置里可开启对二者的自动桥接；仍建议优先调用本 API，并优先用 <see cref="M:MilkCum.Integration.EqualMilkLactationApi.TryDrainPoolForConsume(Verse.Pawn,System.Single)"/> 走导管逻辑）。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Integration.EqualMilkLactationApi.TryGetMilkPoolComp(Verse.Pawn)">
+            <summary>取得小人身上的 <see cref="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable"/>（无则 null）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.EqualMilkLactationApi.SyncLactatingChargeFromPool(Verse.Pawn)">
+            <summary>将当前泌乳 Hediff 的 Charge 与乳池总满度对齐，并视降幅调用 <c>OnGathered</c>。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.EqualMilkLactationApi.TryApplyTotalPoolTarget(Verse.Pawn,System.Single)">
+            <summary>
+            将乳池总目标设为 <paramref name="targetPoolUnits"/>（池单位，与 UI/Charge 同单位），按比例分摊到各乳池 key；
+            联动排空炎症缓解、短时进水突发、<see cref="M:MilkCum.Integration.EqualMilkLactationApi.SyncLactatingChargeFromPool(Verse.Pawn)"/>。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Integration.EqualMilkLactationApi.TryDrainPoolForConsume(Verse.Pawn,System.Single)">
+            <summary>
+            按游戏内「手挤」规则从乳池扣量（导管压力/炎症阻力等）：与玩家挤奶一致；扣后同步 Charge。
+            若需无视导管、纯比例改变总量，请用 <see cref="M:MilkCum.Integration.EqualMilkLactationApi.TryApplyTotalPoolTarget(Verse.Pawn,System.Single)"/>。
+            </summary>
+            <returns>实际扣掉的池单位量。</returns>
         </member>
         <member name="T:MilkCum.Integration.ModIntegrationGates">
             <summary>

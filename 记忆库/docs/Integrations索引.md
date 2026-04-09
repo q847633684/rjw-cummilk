@@ -2,6 +2,8 @@
 
 本 mod 与其它 mod/系统的集成入口一览，便于查找与开关。RJW、PipeSystem、VME_Patch 已收口到 `Source/Integrations/` 目录，命名空间未改。
 
+**架构层面（哪些数据跟 RJW、第三方怎么接）**：见 [RJW数据对齐清单与第三方集成.md](RJW数据对齐清单与第三方集成.md)。
+
 ---
 
 ## 一、集成模块列表

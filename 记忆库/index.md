@@ -14,6 +14,7 @@
 | 游戏已接管变量与机制清单 | [docs/游戏已接管变量与机制清单](docs/游戏已接管变量与机制清单.md) | 原版/RJW 已接管项，本 mod 只读不重写 |
 | 药品Def变量参考 | [docs/药品Def变量参考](docs/药品Def变量参考.md) | 药品 ThingDef/ingestible 与本 mod 三种药品 |
 | RJW 乳房定义参数与使用说明 | [docs/RJW乳房定义与rjw-cummilk使用说明](docs/RJW乳房定义与rjw-cummilk使用说明.md) | RJW 乳房 Def/API 参数与本 mod 的读写边界、代码映射 |
+| RJW 数据对齐与第三方集成 | [docs/RJW数据对齐清单与第三方集成](docs/RJW数据对齐清单与第三方集成.md) | 跟 RJW 走的范围、本 mod 自有边界、基因/药与容量档、API 与桥接 |
 | 耐受系统重构设计 | [docs/耐受系统重构设计](docs/耐受系统重构设计.md) | E_tol、进水/衰减公式、落地修改清单 |
 | 与游戏本体及RJW的冲突与优化总结 | [docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) | 冲突与优化 |
 | 与游戏机制对齐清单（泌乳与药品） | [docs/与游戏机制对齐清单-泌乳与药品](docs/与游戏机制对齐清单-泌乳与药品.md) | 已用/未用原版机制对照（SeverityPerDay、剩余时间、药品配置），对齐 RJW Humpshroom 建议 |

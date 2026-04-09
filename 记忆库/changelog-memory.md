@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-04-09
+
+- **新增**：`docs/RJW数据对齐清单与第三方集成.md` — RJW 与本 mod 的数据边界、维护检查清单、第三方 API/桥接推荐、基因·药与 `rjwBreastPoolCapacityMode` 对照、精液侧说明与代码锚点。
+- **更新**：`docs/README.md`、`index.md` 登记与快速查找；`docs/Integrations索引.md` 文首增加指向该文档的链接。
+- **追加**：同文件新增「八、追加的 RJW 对齐」— MilkDef/Comp 替换/Active Patch、性·生育·Lust、无 RJW 降级、药品 SeverityPerDay 只读边界、DBH 卫生；补充维护提示。
+
+---
+
 ## 2026-04-03
 
 - **新增**：`design/拟真子系统开关清单与优先级.md` — 拟真向子系统 SYS-01～09 总表、P0/P1/P2 落地顺序、代谢门控优先级草案、与用户口述需求的对照表；`index.md` design 节已登记。

@@ -393,7 +393,9 @@ public partial class CompEquallyMilkable
         {
             foreach (var v in breastFullness.Values) total += v;
         }
-        fullness = Mathf.Clamp(total, 0f, maxFullness);
+        float stretchMirrorCap = Mathf.Max(0.01f, maxFullness) * PoolModelConstants.StretchCapFactor;
+        fullness = Mathf.Clamp(total, 0f, stretchMirrorCap);
+        lastSyncedBaseFullness = fullness;
     }
 
     /// <summary>泌乳结束时清空乳池（由 HediffComp_EqualMilkingLactating 调用）</summary>
@@ -424,13 +426,66 @@ public partial class CompEquallyMilkable
     /// <summary>设置总奶量（0～上限）。按 key 比例缩放到目标总水量，唯一写入口之一。</summary>
     public void SetFullness(float value, float? cap = null)
     {
-        float target = Mathf.Clamp(value, 0f, cap ?? maxFullness);
+        float capResolved = cap ?? maxFullness;
+        float target = Mathf.Clamp(value, 0f, capResolved);
+        breastFullness ??= new Dictionary<string, float>();
         float total = 0f;
-        if (breastFullness != null)
+        foreach (var v in breastFullness.Values) total += v;
+        if (total <= PoolModelConstants.Epsilon)
         {
-            foreach (var v in breastFullness.Values) total += v;
+            if (target <= PoolModelConstants.Epsilon)
+            {
+                SyncBaseFullness();
+                return;
+            }
+            var entries = GetCachedEntries();
+            if (entries.Count == 0)
+            {
+                SyncBaseFullness();
+                return;
+            }
+            breastFullness.Clear();
+            float sumCap = 0f;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (string.IsNullOrEmpty(entries[i].Key)) continue;
+                sumCap += Mathf.Max(0f, entries[i].Capacity);
+            }
+            if (sumCap < 0.001f)
+            {
+                int n = 0;
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    if (!string.IsNullOrEmpty(entries[i].Key)) n++;
+                }
+                if (n <= 0)
+                {
+                    SyncBaseFullness();
+                    return;
+                }
+                float share = target / n;
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    var e = entries[i];
+                    if (string.IsNullOrEmpty(e.Key)) continue;
+                    float maxF = e.Capacity * PoolModelConstants.StretchCapFactor;
+                    breastFullness[e.Key] = Mathf.Min(maxF, share);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    var e = entries[i];
+                    if (string.IsNullOrEmpty(e.Key)) continue;
+                    float w = Mathf.Max(0f, e.Capacity) / sumCap;
+                    float maxF = e.Capacity * PoolModelConstants.StretchCapFactor;
+                    breastFullness[e.Key] = Mathf.Min(maxF, target * w);
+                }
+            }
+            SyncBaseFullness();
+            return;
         }
-        if (total <= 0f) { SyncBaseFullness(); return; }
         float factor = target / total;
         var keys = new List<string>(breastFullness.Keys);
         for (int i = 0; i < keys.Count; i++)
@@ -439,5 +494,60 @@ public partial class CompEquallyMilkable
             breastFullness[k] = Mathf.Max(0f, breastFullness[k] * factor);
         }
         SyncBaseFullness();
+    }
+
+    /// <summary>
+    /// 将乳池总目标设为 <paramref name="targetTotal"/>（池单位），按比例缩放各 key；并联动排空炎症缓解、短时进水突发、泌乳 Hediff Charge。
+    /// 供外部模组 API 与 <c>CompMilkable.fullness</c> 桥接共用。
+    /// </summary>
+    public void ApplyExternalTotalTarget(float targetTotal, float stretchCap, string logContext = null)
+    {
+        breastFullness ??= new Dictionary<string, float>();
+        float poolBefore = Fullness;
+        if (breastFullness.Count == 0)
+        {
+            if (targetTotal <= PoolModelConstants.Epsilon)
+            {
+                SyncBaseFullness();
+                return;
+            }
+            SetFullness(Mathf.Clamp(targetTotal, 0f, stretchCap), stretchCap);
+            if (Fullness > poolBefore + 0.01f)
+                TriggerInflowEventBurst();
+            Pawn?.LactatingHediffComp()?.SyncChargeFromPool();
+            if (Prefs.DevMode && MilkCumSettings.logExternalFullnessBridge && !string.IsNullOrEmpty(logContext) && Pawn != null)
+                Log.Message("[MilkCum.ExternalPool] " + logContext + " pawn=" + Pawn.LabelShort + " before=" + poolBefore.ToString("F3") + " after=" + Fullness.ToString("F3"));
+            return;
+        }
+        float t = Mathf.Clamp(targetTotal, 0f, stretchCap);
+        if (Mathf.Abs(t - poolBefore) <= PoolModelConstants.FloatDustEpsilon)
+        {
+            SyncBaseFullness();
+            return;
+        }
+        Dictionary<string, float> drainedByKey = null;
+        if (t < poolBefore - PoolModelConstants.FloatDustEpsilon && poolBefore > PoolModelConstants.Epsilon)
+        {
+            float drainTotal = poolBefore - t;
+            drainedByKey = new Dictionary<string, float>();
+            foreach (var kv in breastFullness)
+            {
+                if (kv.Value <= 0f || string.IsNullOrEmpty(kv.Key)) continue;
+                float d = kv.Value * (drainTotal / poolBefore);
+                if (d > PoolModelConstants.Epsilon) drainedByKey[kv.Key] = d;
+            }
+        }
+        SetFullness(t, stretchCap);
+        if (drainedByKey != null && drainedByKey.Count > 0)
+        {
+            NotifyInflammationDrain(drainedByKey);
+            if (poolBefore - t >= 0.01f)
+                lastGatheredTick = Find.TickManager.TicksGame;
+        }
+        if (t > poolBefore + 0.01f)
+            TriggerInflowEventBurst();
+        Pawn?.LactatingHediffComp()?.SyncChargeFromPool();
+        if (Prefs.DevMode && MilkCumSettings.logExternalFullnessBridge && !string.IsNullOrEmpty(logContext) && Pawn != null)
+            Log.Message("[MilkCum.ExternalPool] " + logContext + " pawn=" + Pawn.LabelShort + " before=" + poolBefore.ToString("F3") + " after=" + Fullness.ToString("F3"));
     }
 }

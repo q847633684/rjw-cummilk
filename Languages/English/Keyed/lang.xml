@@ -77,6 +77,13 @@
     <EM.UISection.NutritionBasics>Nutrition &amp; lactation metabolism</EM.UISection.NutritionBasics>
     <EM.UISection.RjwFertilityAndSexBoost>Fertility &amp; post-sex pool boost</EM.UISection.RjwFertilityAndSexBoost>
     <EM.UISection.RjwFertilityAndSexBoostDesc>Lactation fertility multiplier; post-nursing sex bonus; lactating sex thought; master toggle and Δs for post-sex pool boost (Δs may be 0).</EM.UISection.RjwFertilityAndSexBoostDesc>
+    <EM.UISection.ThirdPartyLactationBridge>Third-party lactation compatibility</EM.UISection.ThirdPartyLactationBridge>
+    <EM.UISection.ThirdPartyLactationBridgeDesc>Applies to all integration sub-tabs below. Prefer the public API <c>MilkCum.Integration.EqualMilkLactationApi</c> from other mods; the toggles absorb legacy writes to <c>CompMilkable.fullness</c> and to <c>HediffComp_Lactating.Charge</c>.</EM.UISection.ThirdPartyLactationBridgeDesc>
+    <EM.BridgeExternalCompMilkableFullness>Absorb external CompMilkable.fullness writes</EM.BridgeExternalCompMilkableFullness>
+    <EM.BridgeExternalCompMilkableFullnessDesc>Every 60 ticks, if another mod sets the base <c>fullness</c> field without updating MilkCum's keyed pool, map that total back into the pool and sync lactation hediff charge, drain inflammation relief, etc. Turn off if another mod double-applies or you only use the API.</EM.BridgeExternalCompMilkableFullnessDesc>
+    <EM.BridgeExternalLactatingCharge>Absorb external Lactating Hediff Charge</EM.BridgeExternalLactatingCharge>
+    <EM.BridgeExternalLactatingChargeDesc>When another mod only changes <c>HediffComp_Lactating.Charge</c>, the hediff tick would normally overwrite it from the pool. With this on, a stable pool + mismatched Charge is preserved until the milk comp (60 ticks) maps Charge back into the keyed pool with the same side effects as the fullness bridge. Turn off if you see double application.</EM.BridgeExternalLactatingChargeDesc>
+    <EM.LogExternalFullnessBridge>Log external pool mirrors (fullness / Charge, DevMode)</EM.LogExternalFullnessBridge>
     <EM.SubTab.GenesAndAdvanced>Genes &amp; advanced</EM.SubTab.GenesAndAdvanced>
     <!-- 专业级子 Tab -->
     <EM.SubTab.BreastfeedSystem>Breastfeed system</EM.SubTab.BreastfeedSystem>

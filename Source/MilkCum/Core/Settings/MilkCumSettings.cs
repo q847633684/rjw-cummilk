@@ -110,6 +110,12 @@ internal partial class MilkCumSettings : ModSettings
 	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
 	/// <summary>性交结束时是否尝试给予 <c>EM_HadSexWhileLactating</c> 心情（旧版默认开）。</summary>
 	public static bool rjwLactatingInSexDescriptionEnabled = true;
+	/// <summary>当第三方模组直接写原版 <c>CompMilkable.fullness</c> 时，每 60 tick 将目标总量回灌到本 mod 乳池并联动 Charge/炎症等；关闭则仅依赖对方调用公开 API。</summary>
+	public static bool bridgeExternalCompMilkableFullness = true;
+	/// <summary>当第三方只改泌乳 Hediff 的 <c>Charge</c> 而未改乳池时，每 60 tick 将目标总量写回乳池（与 <c>HediffComp_EqualMilkingLactating</c> 的 tick 协同，避免先被 Charge=池 覆盖）。</summary>
+	public static bool bridgeExternalLactatingCharge = true;
+	/// <summary>DevMode：在吸收外部 <c>fullness</c> / <c>Charge</c> 镜像时输出简短日志。</summary>
+	public static bool logExternalFullnessBridge = false;
 	/// <summary>性交结束后是否对泌乳者施加「房事奶劲」进水（<see cref="rjwSexLactationBoostDeltaS"/>；旧版默认关，现默认开以贴近近年无总闸行为）。</summary>
 	public static bool rjwSexAddsLactationBoost = true;
 	/// <summary>房事奶劲强度（池逻辑 Δs）；需 <see cref="rjwSexAddsLactationBoost"/> 且 &gt;0；可与总闸配合关死本项。</summary>
@@ -173,6 +179,9 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
 		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
 		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
+		Scribe_Values.Look(ref bridgeExternalCompMilkableFullness, "EM.BridgeExternalCompMilkableFullness", true);
+		Scribe_Values.Look(ref bridgeExternalLactatingCharge, "EM.BridgeExternalLactatingCharge", true);
+		Scribe_Values.Look(ref logExternalFullnessBridge, "EM.LogExternalFullnessBridge", false);
 		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", true);
 		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
 		ExposeRiskData();

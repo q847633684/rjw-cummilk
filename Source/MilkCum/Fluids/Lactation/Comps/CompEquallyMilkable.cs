@@ -129,6 +129,10 @@ public partial class CompEquallyMilkable : CompMilkable
     internal float CachedPressureForDisplay, CachedLetdownForDisplay, CachedConditionsForDisplay;
     /// <summary>每 60 tick 在 CompTick 中刷新，供 IsCachedFlowValid 使用，避免每次调用 Find.TickManager.TicksGame。</summary>
     private int cachedTicksGameForFlow = -1;
+    /// <summary>兼容桥接：记录最近一次由 <see cref="SyncBaseFullness"/> 写入基类 <c>fullness</c> 的值（调试用）。</summary>
+    private float lastSyncedBaseFullness = -1f;
+    /// <summary>外部改写 <c>fullness</c> 的检测阈值，避免浮点抖动。</summary>
+    private const float ExternalFullnessWriteEpsilon = 0.0005f;
 
     /// <summary>缓存是否在 60 tick 内有效。</summary>
     internal bool IsCachedFlowValid() => CachedFlowTick >= 0 && cachedTicksGameForFlow >= 0 && (cachedTicksGameForFlow - CachedFlowTick) <= 60;
@@ -310,6 +314,9 @@ public partial class CompEquallyMilkable : CompMilkable
             }
             if (Fullness > stretchTotal)
                 SetFullness(stretchTotal, stretchTotal);
+            // 在 maxFullness / stretchTotal 与池顶格校正之后再桥接，避免误用旧 cap；并联动 Charge/炎症等（见 ApplyExternalTotalTarget）。
+            TryBridgeExternalFullnessWrite(stretchTotal);
+            TryBridgeExternalChargeWrite(stretchTotal);
         }
         // 基因/物种/设置驱动的 Lactating 维护、EM_LactatingGain、胀满 hediff 变化很慢，20 tick（约 1 秒）足够
         if (parent.IsHashIntervalTick(120))
@@ -393,4 +400,34 @@ public partial class CompEquallyMilkable : CompMilkable
 
     /// <summary>当前是否处于事件驱动进水子步长突发窗口。</summary>
     internal bool IsInflowEventBurstActive() => inflowEventBurstTicksRemaining > 0;
+
+    /// <summary>
+    /// 双向桥接：当其他 mod 直接改写基类 <c>fullness</c> 时，把目标总量映射回本模组乳池（<c>breastFullness</c>），
+    /// 并走 <see cref="ApplyExternalTotalTarget"/> 以同步泌乳 Hediff Charge、排空炎症缓解等。
+    /// </summary>
+    /// <param name="stretchTotal">与当帧池顶格一致的撑大总容量（池单位）。</param>
+    private void TryBridgeExternalFullnessWrite(float stretchTotal)
+    {
+        if (!MilkCumSettings.bridgeExternalCompMilkableFullness) return;
+        float poolTotal = Fullness;
+        float baseField = fullness;
+        if (Mathf.Abs(baseField - poolTotal) <= ExternalFullnessWriteEpsilon) return;
+        float target = Mathf.Clamp(baseField, 0f, stretchTotal);
+        ApplyExternalTotalTarget(target, stretchTotal, "CompMilkable.fullness bridge");
+    }
+
+    /// <summary>
+    /// 当泌乳 Hediff 的 <c>Charge</c> 与乳池总量不一致且 Hediff tick 未强行覆盖时，将 <c>Charge</c> 视作目标总量写回乳池。
+    /// </summary>
+    private void TryBridgeExternalChargeWrite(float stretchTotal)
+    {
+        if (!MilkCumSettings.bridgeExternalLactatingCharge) return;
+        var lact = Pawn?.LactatingHediffComp();
+        if (lact == null) return;
+        float poolTotal = Fullness;
+        float ch = lact.Charge;
+        if (Mathf.Abs(ch - poolTotal) <= ExternalFullnessWriteEpsilon) return;
+        float target = Mathf.Clamp(ch, 0f, stretchTotal);
+        ApplyExternalTotalTarget(target, stretchTotal, "HediffComp_Lactating.Charge bridge");
+    }
 }

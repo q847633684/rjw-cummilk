@@ -124,6 +124,7 @@ public class Widget_AdvancedSettings
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationLog".Translate(), ref MilkCumSettings.lactationLog);
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationPoolTickLog".Translate(), ref MilkCumSettings.lactationPoolTickLog);
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.MilkingActionLog".Translate(), ref MilkCumSettings.milkingActionLog);
+		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LogExternalFullnessBridge".Translate(), ref MilkCumSettings.logExternalFullnessBridge);
 		Widgets.CheckboxLabeled(list.GetRect(UNIT_SIZE), "EM.LactationDrugIntakeLog".Translate(), ref MilkCumSettings.lactationDrugIntakeLog);
 		list.Gap(4f);
 		DrawOptionalModsDevBlock(list);
@@ -500,6 +501,14 @@ public class Widget_AdvancedSettings
 	{
 		var list = new Listing_Standard();
 		list.Begin(content);
+		DrawEmUISectionHeading(list, "EM.UISection.ThirdPartyLactationBridge", "EM.UISection.ThirdPartyLactationBridgeDesc", 0f);
+		Rect rBridge = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rBridge, "EM.BridgeExternalCompMilkableFullness".Translate(), ref MilkCumSettings.bridgeExternalCompMilkableFullness, false);
+		TooltipHandler.TipRegion(rBridge, "EM.BridgeExternalCompMilkableFullnessDesc".Translate());
+		Rect rCh = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rCh, "EM.BridgeExternalLactatingCharge".Translate(), ref MilkCumSettings.bridgeExternalLactatingCharge, false);
+		TooltipHandler.TipRegion(rCh, "EM.BridgeExternalLactatingChargeDesc".Translate());
+		list.Gap(6f);
 		if (subTab == SubTabIntegration_RJW)
 		{
 			if (ModIntegrationGates.RjwModActive)

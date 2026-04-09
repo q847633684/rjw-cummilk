@@ -21,6 +21,7 @@
 | [参数联动表.md](参数联动表.md) | 设置参数—影响逻辑—建议联动、默认值参考。 |
 | [药品Def变量参考.md](药品Def变量参考.md) | 药品 ThingDef、ingestible/outcomeDoers/comps 变量与本 mod 三种药品汇总。 |
 | [RJW乳房定义与rjw-cummilk使用说明.md](RJW乳房定义与rjw-cummilk使用说明.md) | RJW 乳房 Def/API 与本 mod 使用映射，包含读写边界与关键代码入口。 |
+| [RJW数据对齐清单与第三方集成.md](RJW数据对齐清单与第三方集成.md) | **架构边界**：哪些跟 RJW 数据走、哪些本 mod 自有；基因/药与容量三档；第三方 API 与桥接推荐顺序。 |
 | [游戏已接管变量与机制清单.md](游戏已接管变量与机制清单.md) | 原版/RJW 已接管的变量与机制，本 mod 只读不重写。 |
 | [HarmonyPatch主题清单.md](HarmonyPatch主题清单.md) | 主 mod / RJW / VME / Pipe 的 Patch 按主题分类与注册顺序。 |
 | [Integrations索引.md](Integrations索引.md) | RJW、PipeSystem、VME、Dubs 路径/命名空间/Harmony ID 收口。 |
@@ -71,6 +72,7 @@
 - **查药品 Def 字段** → [药品Def变量参考.md](药品Def变量参考.md)
 - **修错前先查** → [报错修复记录.md](报错修复记录.md)
 - **Patch/集成收口** → [HarmonyPatch主题清单.md](HarmonyPatch主题清单.md)、[Integrations索引.md](Integrations索引.md)
+- **RJW 对齐与第三方接入** → [RJW数据对齐清单与第三方集成.md](RJW数据对齐清单与第三方集成.md)
 
 ---
 
