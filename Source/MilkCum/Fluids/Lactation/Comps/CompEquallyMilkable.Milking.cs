@@ -110,7 +110,8 @@ public partial class CompEquallyMilkable
     }
 
     /// <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。drainedKeys 非空时对被扣量侧对应的乳腺炎做额外排空缓解。</summary>
-    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null, ICollection<string> drainedKeys = null)
+    /// <param name="skipMilkingMoodMemories">为 true 时不写入允许/强制挤奶类记忆（如穿戴式挤奶器自采集）。</param>
+    public void SpawnBottlesForDrainedAmount(float totalDrained, Pawn doer, Building_Milking milkingSpot = null, ICollection<string> drainedKeys = null, bool skipMilkingMoodMemories = false)
     {
         if (totalDrained <= 0f)
         {
@@ -157,7 +158,7 @@ public partial class CompEquallyMilkable
             float fullnessAfterTotal = Fullness;
             MilkCumSettings.MilkingActionLogMessage($"pawn={pawn.LabelShort} tick={tick} mode=SpawnBottles drained={totalDrained:F3} bottlesSpawned={bottlesSpawned} fullnessBefore={fullnessBeforeTotal:F3} fullnessAfter={fullnessAfterTotal:F3} doer={doer?.LabelShort}");
         }
-        if (parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
+        if (!skipMilkingMoodMemories && parent is Pawn milkedPawn && milkedPawn.RaceProps.Humanlike && milkedPawn.needs?.mood?.thoughts?.memories != null)
         {
             if (MilkPermissionExtensions.IsAllowedMilking(milkedPawn, doer))
             {

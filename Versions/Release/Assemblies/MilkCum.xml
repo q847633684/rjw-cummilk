@@ -94,6 +94,15 @@
         <member name="F:MilkCum.Core.MilkCumDefOf.EM_NursedSomeone">
             <summary>3.1：哺乳者获得「哺乳了某人」记忆，用于社交/关系。</summary>
         </member>
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_PenisMilkingApparel">
+            <summary>可穿戴阴茎挤奶装置（原 Milking Machine mod 迁入）。</summary>
+        </member>
+        <member name="F:MilkCum.Core.MilkCumDefOf.EM_BreastMilkingApparel">
+            <summary>可穿戴乳房挤奶装置。</summary>
+        </member>
+        <member name="F:MilkCum.Core.MilkCumDefOf.Sex">
+            <summary>RJW 性需求；用于穿戴式阴茎挤奶的刺激结算。</summary>
+        </member>
         <member name="T:MilkCum.Core.Settings.MilkCumSettings">
             <summary>`MilkCumSettings` 的查询/计算型访问器分块。</summary>
             <summary>`MilkCumSettings` 的 Cum/Leak 配置分块与序列化。</summary>
@@ -1184,8 +1193,9 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetMilkQualityForProducer(Verse.Pawn)">
             <summary>根据泌乳者状态计算奶瓶品质（0~1）：有乳腺炎偏低，L 高偏高。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SpawnBottlesForDrainedAmount(System.Single,Verse.Pawn,MilkCum.Core.Building_Milking,System.Collections.Generic.ICollection{System.String})">
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SpawnBottlesForDrainedAmount(System.Single,Verse.Pawn,MilkCum.Core.Building_Milking,System.Collections.Generic.ICollection{System.String},System.Boolean)">
             <summary>流速驱动挤奶：根据已扣池总量生成奶瓶并处理心情/乳腺炎等（不再次扣池）。由 JobDriver 按速率逐 tick 扣池后调用。1 池单位 = 1 瓶，不做采集加成。drainedKeys 非空时对被扣量侧对应的乳腺炎做额外排空缓解。</summary>
+            <param name="skipMilkingMoodMemories">为 true 时不写入允许/强制挤奶类记忆（如穿戴式挤奶器自采集）。</param>
         </member>
         <member name="F:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.cachedEntries">
             <summary>缓存乳池条目（与侧行同次构建）；脏或超过 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetEntriesCacheMaxTicksForPawn"/> 时失效。</summary>
@@ -1948,6 +1958,37 @@
         <member name="M:MilkCum.Fluids.Lactation.World.WorldComponent_MilkCumAbsorptionDelay.GetMetabolicRate(Verse.Pawn)">
             <summary>�?pawn 代谢率（原版 StatDef MetabolicRate，营养消耗倍率）。≤0、NaN、无 stat 时返�?1f。见 记忆库/docs/泌乳系统逻辑图</summary>
         </member>
+        <member name="T:MilkCum.Fluids.MilkingApparel.CompProperties_MilkingApparel">
+            <summary>穿戴时添加/脱下时移除指定 Hediff（替代 VEF ApparelHediffs）。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.MilkingApparel.Hediff_BreastMilkingApparel">
+            <summary>
+            乳房穿戴式挤奶：泌乳状态下按间隔从 <see cref="T:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable"/> 乳池扣量并 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SpawnBottlesForDrainedAmount(System.Single,Verse.Pawn,MilkCum.Core.Building_Milking,System.Collections.Generic.ICollection{System.String},System.Boolean)"/>，与手挤/机器共用同一套池与奶瓶逻辑。
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.MilkingApparel.Hediff_PenisMilkingApparel">
+            <summary>
+            阴茎穿戴式挤奶：每 tick 按与 <see cref="F:MilkCum.Core.MilkCumDefOf.EM_MilkingElectric"/> 相同的基准流速从虚拟精池扣量（满度平方压）；关闭虚拟池时单根阴茎每 tick 不超过「旧版日脉冲量 / 每日 tick」以免爆炸。
+            性满足改为约每游戏小时、且精池有压时触发一次。
+            </summary>
+        </member>
+        <member name="T:MilkCum.Fluids.MilkingApparel.MilkingApparelFlowUtility">
+            <summary>
+            穿戴式阴茎采集与 <see cref="T:MilkCum.Core.Building_Milking"/> 电泵对齐的流速：基准 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.milkingWorkTotalBase"/> 与 <see cref="F:MilkCum.Core.MilkCumDefOf.EM_MilkingElectric"/> 的采集速度偏移；精池满度用平方压（类比乳侧 f²）。
+            </summary>
+        </member>
+        <member name="F:MilkCum.Fluids.MilkingApparel.MilkingApparelFlowUtility.TicksPerGameSecond">
+            <summary>与 JobDriver 一致：每游戏秒 60 tick，故每 tick 流速 = (池单位/秒) / 60。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.MilkingApparel.MilkingApparelFlowUtility.GetSemenPoolPressureSquared(Verse.Pawn)">
+            <summary>虚拟精池总满度比值的平方；关闭虚拟池时返回 1（由 Hediff 侧再按日上限封顶）。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.MilkingApparel.MilkingApparelFlowUtility.GetPenisMilkingFlowPerGameSecond(Verse.Pawn)">
+            <summary>与机器挤奶相同的「池单位/秒」基准 × 电泵速度倍率 × 精池压（平方）。</summary>
+        </member>
+        <member name="T:MilkCum.Fluids.MilkingApparel.MilkingApparelProductUtility">
+            <summary>阴茎穿戴式采集：解析产物 ThingDef（consumable / FluidGatheringDef），并带产主 Comp 落地。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Shared.Comps.CompProperties_MilkQuality">
             <summary>奶瓶品质（0~1）：由产奶时泌乳者状态决定，可用于描述/交易等。有乳腺炎时降低，L 高时提高。</summary>
         </member>
@@ -2218,7 +2259,7 @@
             </summary>
         </member>
         <member name="M:MilkCum.PipeSystem.ApplyPatches.Building_Milking_PlaceMilkThing_Patch.Prefix(MilkCum.Core.Building_Milking,Verse.Thing@)">
-            <summary>浜哄ザ锛堝甫 producer 涓斾负浜虹被锛変笉杩涘叆绠￠亾/澶ф《锛岀洿鎺ユ斁缃紱鍔ㄧ墿濂舵墠杩涘叆绠￠亾銆</summary>
+            <summary>人奶（有 producer 且为人形）不进管道/大桶，直接放置；仅动物奶进入管道。</summary>
         </member>
         <member name="T:MilkCum.PipeSystem.ApplyPatches.ThingWithComps_DrawAt_Patch">
             <summary>
@@ -2341,7 +2382,7 @@
             <summary>Cumpilation 系列选项：充盈、填充、覆盖、收集、泄漏等，合并到本 mod 主设置的一个 Tab。</summary>
         </member>
         <member name="F:MilkCum.UI.Widget_MilkTagsTable.FixedProductTagKeys">
-            <summary>濂舵爣绛句腑濮嬬粓淇濈暀鐨勭墿鍝佺绫伙紙浜哄ザ銆佸姩鐗╁ザ銆佺簿娑诧級锛屼笉闅?namesToProducts 绉婚櫎锛涗笖涓庝骇涓婚檺鍒躲€岃皝鍙互鍚冦€嶈仈鍔ㄣ€</summary>
+            <summary>奶标签里固定保留的人奶/动物奶/精液条目，不随 namesToProducts 删除；并与“谁可食用”联动。</summary>
         </member>
         <member name="T:MilkCum.UI.Widget_RaceOverrides">
             <summary>种族覆盖子 Tab：白名单、黑名单。流速倍率已移至设置「RJW」区块与乳房容量一起。</summary>

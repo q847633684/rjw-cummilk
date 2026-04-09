@@ -73,4 +73,13 @@ public static class MilkCumDefOf
     public static ThingDef EM_UndergroundMilkPipe;
     public static ThingDef EM_MilkValve;
     public static ThingDef EM_MilkContainer;
+
+    /// <summary>可穿戴阴茎挤奶装置（原 Milking Machine mod 迁入）。</summary>
+    public static ThingDef EM_PenisMilkingApparel;
+    /// <summary>可穿戴乳房挤奶装置。</summary>
+    public static ThingDef EM_BreastMilkingApparel;
+    public static HediffDef EM_Hediff_PenisMilkingApparel;
+    public static HediffDef EM_Hediff_BreastMilkingApparel;
+    /// <summary>RJW 性需求；用于穿戴式阴茎挤奶的刺激结算。</summary>
+    public static NeedDef Sex;
 }

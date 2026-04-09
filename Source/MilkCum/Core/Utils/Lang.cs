@@ -93,6 +93,27 @@ public static class Lang
             MilkCumDefOf.EM_MilkingElectric.SetDefaultLabel(Lang.Join(Lang.Electric, Lang.Milking, Lang.Pump));
             MilkCumDefOf.EM_MilkingElectric.SetDefaultDesc(Lang.DesignatedFor.Replace("{0}", Lang.Join(Lang.Milking, $"({Lang.Self})")));
         }
+
+        if (MilkCumDefOf.EM_PenisMilkingApparel != null)
+        {
+            MilkCumDefOf.EM_PenisMilkingApparel.SetDefaultLabel("阴茎挤奶束带");
+            MilkCumDefOf.EM_PenisMilkingApparel.SetDefaultDesc("固定在阴茎上的束带。佩戴时按与电挤奶泵相同的基准流速（可调挤奶总时长与电泵采集速度）从精池持续排出体液；关闭虚拟精池时单日总排出量仍按阴茎容量封顶。性需求约每游戏小时在精池有存量时略微满足。");
+        }
+        if (MilkCumDefOf.EM_BreastMilkingApparel != null)
+        {
+            MilkCumDefOf.EM_BreastMilkingApparel.SetDefaultLabel("乳房挤奶束带");
+            MilkCumDefOf.EM_BreastMilkingApparel.SetDefaultDesc("固定在乳房上的束带。泌乳时按本模组乳池逻辑周期性排出奶（与手挤/挤奶机共用池与奶瓶规则）。");
+        }
+        if (MilkCumDefOf.EM_Hediff_PenisMilkingApparel != null)
+        {
+            MilkCumDefOf.EM_Hediff_PenisMilkingApparel.SetDefaultLabel("阴茎挤奶（穿戴）");
+            MilkCumDefOf.EM_Hediff_PenisMilkingApparel.SetDefaultDesc("佩戴阴茎挤奶束带，持续刺激使人难以集中精神。");
+        }
+        if (MilkCumDefOf.EM_Hediff_BreastMilkingApparel != null)
+        {
+            MilkCumDefOf.EM_Hediff_BreastMilkingApparel.SetDefaultLabel("乳房挤奶（穿戴）");
+            MilkCumDefOf.EM_Hediff_BreastMilkingApparel.SetDefaultDesc("佩戴乳房挤奶束带，持续刺激使人难以集中精神。");
+        }
     }
     public static DefInjectionPackage.DefInjection DefInjectionFor(this Def def, string field)
     {
