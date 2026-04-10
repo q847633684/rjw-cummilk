@@ -4,10 +4,12 @@ using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Cum.Common;
 using MilkCum.Fluids.Shared.Data;
+using MilkCum.Integration.RjwBallsOvaries;
 using RimWorld;
 using rjw;
 using UnityEngine;
 using Verse;
+using System.Linq;
 
 namespace MilkCum.Fluids.Cum.Comps;
 
@@ -55,6 +57,7 @@ public class CompVirtualSemenPool : ThingComp
         }
 
         float actual = Mathf.Min(nominal, avail);
+        actual *= RjwBallsOvariesIntegration.GetVirtualSemenDrawFactor(pawn);
         if (actual <= PoolModelConstants.Epsilon) return 0f;
 
         if (keys.Count == 1)
@@ -140,10 +143,100 @@ public class CompVirtualSemenPool : ThingComp
         }
     }
 
+    /// <summary>
+    /// 拓扑变化（键集合变化）时，按新键容量比例重分旧总量；键集合不变时保持原键值。
+    /// 该迁移用于精池左右槽切换/缺失恢复等场景，尽量保持总量连续。
+    /// </summary>
+    private void MigrateFullnessForNewTopology(List<FluidPoolEntry> entries)
+    {
+        if (entries == null || entries.Count == 0)
+        {
+            fullnessByKey.Clear();
+            return;
+        }
+
+        var capByKey = new Dictionary<string, float>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            string k = entries[i].Key;
+            if (string.IsNullOrEmpty(k)) continue;
+            capByKey.TryGetValue(k, out float c);
+            capByKey[k] = c + Mathf.Max(0f, entries[i].Capacity);
+        }
+
+        var newKeys = new HashSet<string>(capByKey.Keys);
+        if (newKeys.Count == 0)
+        {
+            fullnessByKey.Clear();
+            return;
+        }
+
+        var oldKeys = new HashSet<string>(fullnessByKey.Keys.Where(k => !string.IsNullOrEmpty(k)));
+        if (oldKeys.SetEquals(newKeys))
+            return;
+
+        float total = 0f;
+        foreach (float v in fullnessByKey.Values)
+            total += Mathf.Max(0f, v);
+        fullnessByKey.Clear();
+        if (total <= PoolModelConstants.Epsilon)
+            return;
+
+        float sumCap = 0f;
+        foreach (float c in capByKey.Values)
+            sumCap += Mathf.Max(0f, c);
+        if (sumCap < PoolModelConstants.FloatDustEpsilon)
+        {
+            float share = total / newKeys.Count;
+            foreach (string k in newKeys)
+                fullnessByKey[k] = share;
+            return;
+        }
+
+        foreach (var kv in capByKey)
+            fullnessByKey[kv.Key] = total * (Mathf.Max(0f, kv.Value) / sumCap);
+    }
+
+    /// <summary>按当前条目容量即刻钳制精池值，避免降容后一段时间仍保留超上限值。</summary>
+    private void ClampToEntryCaps(List<FluidPoolEntry> entries)
+    {
+        if (entries == null || entries.Count == 0)
+        {
+            fullnessByKey.Clear();
+            return;
+        }
+
+        var capByKey = new Dictionary<string, float>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            string k = entries[i].Key;
+            if (string.IsNullOrEmpty(k)) continue;
+            capByKey.TryGetValue(k, out float c);
+            capByKey[k] = c + Mathf.Max(0f, entries[i].Capacity);
+        }
+
+        var toRemove = new List<string>();
+        foreach (string k in fullnessByKey.Keys)
+        {
+            if (!capByKey.ContainsKey(k))
+                toRemove.Add(k);
+        }
+        for (int i = 0; i < toRemove.Count; i++)
+            fullnessByKey.Remove(toRemove[i]);
+
+        foreach (var kv in capByKey)
+        {
+            fullnessByKey.TryGetValue(kv.Key, out float cur);
+            fullnessByKey[kv.Key] = Mathf.Clamp(cur, 0f, kv.Value);
+        }
+    }
+
     private void PreparePoolState(List<FluidPoolEntry> entries)
     {
         MergeObsoletePerPartSemenKeysIntoLateral(entries);
+        MigrateFullnessForNewTopology(entries);
         EnsureKeysInitialized(entries);
+        ClampToEntryCaps(entries);
     }
 
     private void Refill(Pawn pawn, float deltaDays)
@@ -158,6 +251,7 @@ public class CompVirtualSemenPool : ThingComp
         PreparePoolState(entries);
         float daysFull = Mathf.Max(0.01f, MilkCumSettings.Cum_SemenPoolDaysForFullRefill);
         float baseFrac = Mathf.Min(1f, deltaDays / daysFull);
+        float refillBallz = RjwBallsOvariesIntegration.GetVirtualSemenRefillMultiplier(pawn);
         for (int i = 0; i < entries.Count; i++)
         {
             FluidPoolEntry e = entries[i];
@@ -166,7 +260,7 @@ public class CompVirtualSemenPool : ThingComp
             fullnessByKey.TryGetValue(k, out float cur);
             float cap = e.Capacity;
             float deficit = Mathf.Max(0f, cap - cur);
-            float add = deficit * Mathf.Min(1f, baseFrac * Mathf.Max(0.01f, e.FlowMultiplier));
+            float add = deficit * Mathf.Min(1f, baseFrac * Mathf.Max(0.01f, e.FlowMultiplier) * refillBallz);
             fullnessByKey[k] = Mathf.Min(cap, cur + add);
         }
 

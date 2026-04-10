@@ -74,13 +74,7 @@ internal partial class MilkCumSettings
 				breastfeedSettings ??= new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
 				cumpilationSettings ??= new Widget_CumpilationSettings();
 				if (subTabIndex == 0) breastfeedSettings.DrawBreastfeedSystemFull(contentRect);
-				else if (subTabIndex == 1) cumpilationSettings.Draw(contentRect);
-				else
-				{
-					GUI.color = Color.gray;
-					Widgets.Label(contentRect, "EM.SubTab.FluidsGirlJuicePlaceholder".Translate());
-					GUI.color = Color.white;
-				}
+				else cumpilationSettings.Draw(contentRect);
 				break;
 			case (int)MainTabIndex.HealthRisk:
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.HealthRisk, subTabIndex);
@@ -120,16 +114,13 @@ internal partial class MilkCumSettings
 				return new List<TabRecord>
 				{
 					new("EM.SubTab.BreastfeedSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.CumSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-					new("EM.SubTab.FluidBehavior".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+					new("EM.SubTab.CumSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 				};
 			case (int)MainTabIndex.HealthRisk:
 				return new List<TabRecord>
 				{
 					new("EM.SubTab.MastitisSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.HygieneSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-					new("EM.SubTab.ToleranceSystem".Translate(), () => subTabIndex = 2, subTabIndex == 2),
-					new("EM.SubTab.OverflowPollution".Translate(), () => subTabIndex = 3, subTabIndex == 3)
+					new("EM.SubTab.OverflowPollution".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 				};
 			case (int)MainTabIndex.Permissions:
 				return new List<TabRecord>
@@ -141,15 +132,15 @@ internal partial class MilkCumSettings
 				return new List<TabRecord>
 				{
 					new("EM.SubTab.BalanceCore".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.BalanceAdvancedModel".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-					new("EM.SubTab.BalanceColonistExtras".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+					new("EM.SubTab.BalanceRealism".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.BalanceAdvancedModel".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+					new("EM.SubTab.BalanceColonistExtras".Translate(), () => subTabIndex = 3, subTabIndex == 3)
 				};
 			case (int)MainTabIndex.Integrations:
 				return new List<TabRecord>
 				{
 					new("EM.SubTab.RJWIntegration".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.DBHIntegration".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-					new("EM.SubTab.NutritionSystem".Translate(), () => subTabIndex = 2, subTabIndex == 2)
+					new("EM.SubTab.NutritionSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 				};
 			case (int)MainTabIndex.DataRaces:
 				return new List<TabRecord>

@@ -45,10 +45,9 @@
     <li>rim.job.world</li>
     <li>rjw.menstruation</li>
     <li>eltoro.rjw.menstruation.fluids</li>
-    <li>drilledhead.milkexpanded</li>
-    <li>akaster.vme.patch</li>
     <li>oskarpotocki.vanillafactionsexpanded.core</li>
     <li>c0ffee.rimworld.animations</li>
+    <li>TeheeItsMe525.RJWGenderOrgansMod</li>
   </loadAfter>
 
   <!-- 本 mod 需在这些 mod 之前加载（如 rjw-genes 依赖本 mod 的 Def） -->
@@ -58,6 +57,7 @@
 
   <!-- 已知冲突：与以下 mod 同时启用会导致功能重复或报错，请勿同时订阅 -->
   <incompatibleWith>
+    <li>akaster.equalmilking</li>
     <li>rjw.milk.humanoid</li>
     <li>Mlie.MilkableColonists</li>
     <li>tory187.rjw.gatheredrjw</li>
@@ -74,5 +74,6 @@
   - 药物：进入泌乳期使用 EM_Prolactin 或 EM_Lucilactin；泌乳期增加产奶量使用催乳剂（Cumpilation_Galactogogues）。
   - RJW 流体力学、群交、填充、生物雕塑循环、Slug（Biotech）、非精液处理器（Samenstein/Spermatuch）。
   - 硬前置：RJW Menstruation Cycle（rjw.menstruation）与 RJW Menstruation - Fluids（eltoro）。充盈由 MF 负责；桶泄/脏泄/手术等与 MF 内部精液列表联动，编译需能在 Directory.Build.props 配置路径下找到 RJW_Menstruation 与 RJW_Menstruation_Fluids 程序集。
+  - 可选：RJW Balls &amp; Ovaries（TeheeItsMe525.RJWGenderOrgansMod）— 检测到后默认开启性腺与虚拟精池/泌乳进水的数值联动，可在「联动 → RJW」中分项关闭。
   </description>
 </ModMetaData>

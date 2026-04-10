@@ -59,21 +59,12 @@
 
 ---
 
-## 三、VME（独立 Harmony：com.akaster.rimworld.mod.equalmilking.vme_harmonypatch）
-
-| 类型 | 文件 | 目标 |
-|------|------|------|
-| `CompAssignableToPawn_Box_Patch` | VanillaMilkExpandedHarmony.cs | 分配候选等 |
-| `JobGiver_LayMilk_Patch` | VanillaMilkExpandedHarmony.cs | 下蛋 Job |
-
----
-
-## 四、PipeSystem（独立 Harmony：com.akaster.rimworld.mod.equalmilking.pipe）
+## 三、PipeSystem（独立 Harmony：com.akaster.rimworld.mod.equalmilking.pipe）
 
 通过 `Harmony.PatchAll()` 应用本程序集中该命名空间下所有带 `[HarmonyPatch]` 的类（若有）；主要逻辑为管道/龙头注册与事件，非 Patch 类数量少。
 
 ---
 
-## 五、统一注册入口（可选实现）
+## 四、统一注册入口（可选实现）
 
 （代码侧未使用 Registry，仅文档按主题分类。）

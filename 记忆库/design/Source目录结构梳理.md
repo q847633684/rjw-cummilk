@@ -44,7 +44,6 @@
 | `MilkCum/Harmony/Lactation/` | 乳汁相关补丁（MilkingPatch、BreastfeedPatch、MilkProductConsumptionPatch） | `MilkCum.Harmony` |
 | `MilkCum/Harmony/` | 其余补丁（Compatibility、Consumption/Recipe 等） | `MilkCum.Harmony` |
 | `MilkCum/Integration/RJW/` | RJW 集成 | `MilkCum.RJW` 等 |
-| `MilkCum/Integration/VanillaExpanded/` | VCE（Vanilla Milk Expanded） | `MilkCum.Integration.VanillaExpanded` |
 | `MilkCum/Integration/PipeSystem/` | 奶管道（VE Framework） | `MilkCum.PipeSystem` |
 | `MilkCum/Integration/DubsBadHygiene/` | Dubs Bad Hygiene | `MilkCum.Integration.DubsBadHygiene` |
 | `MilkCum/UI/` | 设置界面、表格、列、窗口 | `MilkCum.UI` |
@@ -65,7 +64,7 @@
 | Fluids/Lactation/（Comps, Hediffs, Jobs, Data） | ✅ Fluids/Lactation/（含 Helpers、Givers、Thoughts、World） |
 | Fluids/Cum/（Comps, Hediffs, Cumflation, Bukkake） | ✅ Fluids/Cum/（Cumpilation.* 子模块） |
 | Fluids/Shared/（Data: FluidPoolState/Entry/FluidTag；Models；Helpers） | ✅ Fluids/Shared/Data、Models、Helpers |
-| Integration/（RJW, DubsBadHygiene, VanillaExpanded） | ✅ Integration/（RJW、DubsBadHygiene、VanillaExpanded/VCE、PipeSystem） |
+| Integration/（RJW, DubsBadHygiene） | ✅ Integration/（RJW、DubsBadHygiene、PipeSystem） |
 | Harmony/、UI/、Debug/ | ✅ 与设计一致 |
 
 ---

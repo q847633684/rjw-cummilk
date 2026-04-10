@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MilkCum.Core.Constants;
 using MilkCum.Fluids.Shared.Data;
+using MilkCum.Integration.RjwBallsOvaries;
 using RimWorld;
 using rjw;
 using UnityEngine;
@@ -81,7 +82,7 @@ public static class RjwSemenPoolEconomy
         try
         {
             float leftCap = 0f, rightCap = 0f, ambCap = 0f;
-            float leftFlow = 0f, rightFlow = 0f, ambFlow = 0f;
+            float leftFlowWeighted = 0f, rightFlowWeighted = 0f, ambFlowWeighted = 0f;
             BodyPartRecord leftPart = null, rightPart = null, ambPart = null;
             for (int i = 0; i < rows.Count; i++)
             {
@@ -90,27 +91,34 @@ public static class RjwSemenPoolEconomy
                 if (BodyPartLaterality.IsExclusiveLeft(part))
                 {
                     leftCap += r.NominalFluidAmount;
-                    leftFlow += r.FlowMultiplier;
+                    leftFlowWeighted += r.FlowMultiplier * r.NominalFluidAmount;
                     leftPart ??= part;
                 }
                 else if (BodyPartLaterality.IsExclusiveRight(part))
                 {
                     rightCap += r.NominalFluidAmount;
-                    rightFlow += r.FlowMultiplier;
+                    rightFlowWeighted += r.FlowMultiplier * r.NominalFluidAmount;
                     rightPart ??= part;
                 }
                 else
                 {
                     ambCap += r.NominalFluidAmount;
-                    ambFlow += r.FlowMultiplier;
+                    ambFlowWeighted += r.FlowMultiplier * r.NominalFluidAmount;
                     ambPart ??= part;
                 }
             }
 
             leftCap += ambCap * 0.5f;
             rightCap += ambCap * 0.5f;
-            leftFlow += ambFlow * 0.5f;
-            rightFlow += ambFlow * 0.5f;
+            leftFlowWeighted += ambFlowWeighted * 0.5f;
+            rightFlowWeighted += ambFlowWeighted * 0.5f;
+            float ballzCapMul = RjwBallsOvariesIntegration.GetVirtualSemenCapacityMultiplier(pawn);
+            leftCap *= ballzCapMul;
+            rightCap *= ballzCapMul;
+            leftFlowWeighted *= ballzCapMul;
+            rightFlowWeighted *= ballzCapMul;
+            float leftFlow = leftCap > PoolModelConstants.Epsilon ? leftFlowWeighted / leftCap : 1f;
+            float rightFlow = rightCap > PoolModelConstants.Epsilon ? rightFlowWeighted / rightCap : 1f;
             int poolIdx = 0;
             if (leftCap > PoolModelConstants.Epsilon)
             {

@@ -2,6 +2,7 @@ using MilkCum.Core;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Comps;
+using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Shared.Data;
 using MilkCum.Integration.DubsBadHygiene;
 using RimWorld;
@@ -140,5 +141,18 @@ public static class MilkRealismHelper
         if (!MilkCumSettings.realismRjwStretchMilestone) return tPool01;
         int steps = Mathf.Max(1, Mathf.RoundToInt(MilkCumSettings.realismRjwStretchMilestoneSteps));
         return Mathf.Floor(Mathf.Clamp01(tPool01) * steps) / steps;
+    }
+
+    /// <summary>SYS-10：人类泌乳建立期进水倍率；非人形、永久泌乳基因、未开启设置时为 1。</summary>
+    public static float GetLactationEstablishmentInflowMultiplier(Pawn pawn, HediffComp_EqualMilkingLactating lact)
+    {
+        if (!MilkCumSettings.realismLactationEstablishment || pawn == null || lact?.parent == null) return 1f;
+        if (!pawn.RaceProps.Humanlike) return 1f;
+        if (MilkCumDefOf.EM_Permanent_Lactation != null && pawn.genes?.HasActiveGene(MilkCumDefOf.EM_Permanent_Lactation) == true)
+            return 1f;
+        float rampDays = Mathf.Clamp(MilkCumSettings.realismEstablishmentDays, 0.25f, 30f);
+        float minMul = Mathf.Clamp(MilkCumSettings.realismEstablishmentMinMult, 0.05f, 1f);
+        float ageDays = lact.parent.ageTicks / (float)GenDate.TicksPerDay;
+        return Mathf.Lerp(minMul, 1f, Mathf.Clamp01(ageDays / rampDays));
     }
 }

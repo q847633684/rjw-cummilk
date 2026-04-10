@@ -20,7 +20,6 @@ Source/
 │   └── WorldComponent_EqualMilkingAbsorptionDelay.cs
 ├── RJW/                    # 另一项目（RJW.csproj）— 与 RJW 的集成
 ├── PipeSystem/             # 另一项目（PipeSystem.csproj）
-└── VME_Patch/              # 另一项目（VME_HarmonyPatch.csproj）
 ```
 
 **现状问题简述：**
@@ -79,7 +78,6 @@ Source/
 │
 ├── RJW/                                    # 独立项目（若保持单独编译）
 ├── PipeSystem/
-└── VME_Patch/
 ```
 
 **分组含义：**

@@ -5,17 +5,6 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。仅存三档：纯严重度 / 纯重量 / 纯体积。</summary>
-public enum RjwBreastPoolCapacityMode : byte
-{
-    /// <summary>严重度×系数。</summary>
-    Severity = 0,
-    /// <summary>RJW PartSize 估算乳房重量（kg）×系数；无有效重量数据时为 0（不进池）。</summary>
-    RjwBreastWeight = 1,
-    /// <summary>RJW <c>BreastSize.volume</c>（升）×系数；无有效体积数据时为 0（不进池）。新安装默认。</summary>
-    RjwBreastVolume = 2,
-}
-
 /// <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
 public enum MainTabIndex
 {
@@ -88,10 +77,8 @@ internal partial class MilkCumSettings : ModSettings
 	// 泌乳期意义/操纵/移动收益：开关与百分比(0~0.20 = 0%~20%)
 	public static bool lactatingGainEnabled = true;
 	public static float lactatingGainCapModPercent = 0.10f;
-	/// <summary>RJW 胸围容量系数：单侧基容量 =（由 <see cref="rjwBreastPoolCapacityMode"/> 选定的严重度/体积/重量等基值）× 本系数，默认 2。仅当 RJW（rim.job.world）在 mod 列表中时乳房池才使用 RJW 数据。</summary>
+	/// <summary>RJW 胸围容量系数：单侧基容量 = RJW <c>BreastSize.volume</c>（升）× 本系数（再裁剪上限）；无有效体积则为 0、不进池。默认 2。仅当 RJW（rim.job.world）在列表中时乳房池使用 RJW 数据。流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
 	public static float rjwBreastCapacityCoefficient = 2f;
-	/// <summary>乳池单侧基容量来源：默认 <see cref="RjwBreastPoolCapacityMode.RjwBreastVolume"/>（体积/重量无有效 RJW 尺寸则为 0）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
-	public static RjwBreastPoolCapacityMode rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastVolume;
 	/// <summary>RJW 乳房阶段标签含 “Nipple” 时，对进水/高潮产液流速倍率施加的百分比修正（0=关闭）；限制在约 ±15% 内。</summary>
 	public static float rjwNippleStageFlowBonusPercent = 0f;
 	/// <summary>泌乳期临时体型增益（0~1 段）：RJW Severity 增量，满 L 时生效；默认 0.15。</summary>
@@ -168,8 +155,6 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
 		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
 		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
-		Scribe_Values.Look(ref rjwBreastPoolCapacityMode, "EM.RjwBreastPoolCapMode", RjwBreastPoolCapacityMode.RjwBreastVolume);
-		rjwBreastPoolCapacityMode = (RjwBreastPoolCapacityMode)Mathf.Clamp((int)rjwBreastPoolCapacityMode, 0, 2);
 		Scribe_Values.Look(ref rjwNippleStageFlowBonusPercent, "EM.RjwNippleStageFlowBonusPct", 0f);
 		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "EM.RjwLactatingSeverityBonus", 0.15f);
 		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "EM.RjwLactatingStretchSeverityBonus", 0.05f);
@@ -198,6 +183,7 @@ internal partial class MilkCumSettings : ModSettings
 		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);
 		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
 		ExposeCumData();
+		ExposeBallzIntegrationData();
 		Scribe_Deep.Look(ref humanlikeBreastfeed, "EM.HumanlikeBreastfeed");
 		Scribe_Deep.Look(ref animalBreastfeed, "EM.AnimalBreastfeed");
 		Scribe_Deep.Look(ref mechanoidBreastfeed, "EM.MechanoidBreastfeed");

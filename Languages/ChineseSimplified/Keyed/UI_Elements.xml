@@ -3,4 +3,24 @@
 	<EM.HealthTabVirtualSemenPoolHeader>虚拟精液槽（左/右睾丸）</EM.HealthTabVirtualSemenPoolHeader>
 	<EM.VirtualSemenPoolLeft>左睾丸</EM.VirtualSemenPoolLeft>
 	<EM.VirtualSemenPoolRight>右睾丸</EM.VirtualSemenPoolRight>
+	<EM.BallzSemenPoolModifiersTip>性腺模组联动：虚拟精池容量×{0}，回充×{1}，可取出×{2}。</EM.BallzSemenPoolModifiersTip>
+	<EM.UISection.BallzGonads>RJW 睾丸与卵巢（性腺）</EM.UISection.BallzGonads>
+	<EM.UISection.BallzGonadsDesc>检测到性腺模组时采用更严的窄带修正：性腺容量与睾酮拨动都很小；装备与去势环惩罚更重；雌激素→泌乳默认关闭（可选开启后仍仅约 ±0.7%）。子项除雌激素外默认开；总开关可整块关闭。</EM.UISection.BallzGonadsDesc>
+	<EM.BallzIntegrationNotDetected>未启用 RJW 性腺模组 — 以下选项在启用该包之前不会产生效果。</EM.BallzIntegrationNotDetected>
+	<EM.Ballz.Enable>启用性腺联动</EM.Ballz.Enable>
+	<EM.Ballz.EnableDesc>总开关：GenericTesticles 等性腺、TestosteroneEffect/EstrogenEffect、Neutered、Elastrated、木质/钢制/超凡假睾等。</EM.Ballz.EnableDesc>
+	<EM.Ballz.GonadSemenCapacity>按性腺缩放虚拟精池容量</EM.Ballz.GonadSemenCapacity>
+	<EM.Ballz.GonadSemenCapacityDesc>有机睾丸：极窄带（约 96%～103%）。无有机睾丸时假体：木约 12%、钢约 18%、超凡约 28% 基线容量；总乘子上限约 105%。</EM.Ballz.GonadSemenCapacityDesc>
+	<EM.Ballz.TestosteroneRefill>睾酮影响精池回充</EM.Ballz.TestosteroneRefill>
+	<EM.Ballz.TestosteroneRefillDesc>仅在有有机睾丸时，TestosteroneEffect 对回充作小幅拨动（约 90%～104%），高低睾酮都不拉满夸张倍率。</EM.Ballz.TestosteroneRefillDesc>
+	<EM.Ballz.TestosteroneRequiresPenisPool>睾酮需有有机睾丸才生效</EM.Ballz.TestosteroneRequiresPenisPool>
+	<EM.Ballz.TestosteroneRequiresPenisPoolDesc>开启时：只有性腺部位上存在 Ballz 有机睾丸 Hediff 时才套用睾酮对回充的修正（去势或仅假体睾丸不响应）。关闭则只要挂着 TestosteroneEffect 就参与回充。</EM.Ballz.TestosteroneRequiresPenisPoolDesc>
+	<EM.Ballz.TesticleGear>睾丸装备影响虚拟精池</EM.Ballz.TesticleGear>
+	<EM.Ballz.TesticleGearDesc>更严的压迫模型：拉伸/负重对回充削弱更大；笼/紧缚/分隔器对回充与取出打击更重。舒适托仍不参与数值。</EM.Ballz.TesticleGearDesc>
+	<EM.Ballz.NeuteredNoSemen>去势后阻断虚拟精池</EM.Ballz.NeuteredNoSemen>
+	<EM.Ballz.NeuteredNoSemenDesc>存在 Neutered Hediff 时：不回充且无法从虚拟精池取出（已有存量会随射精用尽）。</EM.Ballz.NeuteredNoSemenDesc>
+	<EM.Ballz.ElastrationPenalty>去势环期减缓精池回充</EM.Ballz.ElastrationPenalty>
+	<EM.Ballz.ElastrationPenaltyDesc>按 Elastrated 严重度逐步压低回充；RecoveringFromElastration 再叠一小段惩罚。</EM.Ballz.ElastrationPenaltyDesc>
+	<EM.Ballz.EstrogenLactation>雌激素对泌乳的微量标签</EM.Ballz.EstrogenLactation>
+	<EM.Ballz.EstrogenLactationDesc>默认关闭。开启后 EstrogenEffect 对进水影响约 ±0.7% 量级（硬钳 ±2%）；泌乳仍主要由催乳素/泌乳 Hediff 与设置决定。</EM.Ballz.EstrogenLactationDesc>
 </LanguageData>

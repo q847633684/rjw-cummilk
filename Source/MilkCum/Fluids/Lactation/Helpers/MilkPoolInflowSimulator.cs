@@ -3,6 +3,7 @@ using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Shared.Data;
+using MilkCum.Integration.RjwBallsOvaries;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -51,6 +52,7 @@ public static class MilkPoolInflowSimulator
         float drive = MilkCumSettings.GetEffectiveDrive(effectiveLForFlow);
         float raceFlow = MilkCumSettings.defaultFlowMultiplierForHumanlike;
         basePerDayUnscaled = drive * hungerFactor * raceFlow;
+        basePerDayUnscaled *= MilkRealismHelper.GetLactationEstablishmentInflowMultiplier(pawn, lactatingComp);
         flowPerTickScale = ApplyPawnWideInflowMultipliers(
             pawn,
             drainReliefBoost,
@@ -63,6 +65,7 @@ public static class MilkPoolInflowSimulator
         float s = flowPerTickScaleFromBase;
         s *= MilkRealismHelper.GetCircadianInflowMultiplier(pawn);
         s *= MilkRealismHelper.GetMetabolicInflowMultiplier(pawn);
+        s *= RjwBallsOvariesIntegration.GetLactationInflowMultiplier(pawn);
         s *= drainReliefBoost;
         return s;
     }

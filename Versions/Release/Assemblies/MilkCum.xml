@@ -111,10 +111,11 @@
         </member>
         <member name="T:MilkCum.Core.Settings.MilkCumSettings">
             <summary>`MilkCumSettings` 的查询/计算型访问器分块。</summary>
+            <summary>与 RJW Balls &amp; Ovaries（性腺模组）联动开关；默认全开，仅在检测到该模组时生效。</summary>
             <summary>`MilkCumSettings` 的 Cum/Leak 配置分块与序列化。</summary>
             <summary>`MilkCumSettings` 的数据映射、默认产物与相关序列化分块。</summary>
             <summary>`MilkCumSettings` 的流体模型参数、公式方法与序列化分块。</summary>
-            <summary>拟真子系统 SYS-01～09：默认全开（新安装或设置中无存档键时）；已写入 Mod 设置的键仍按保存值读取。见 记忆库/design/拟真子系统开关清单与优先级.md。</summary>
+            <summary>拟真子系统 SYS-01～10：默认全开（新安装或设置中无存档键时），SYS-10 泌乳建立除外；已写入 Mod 设置的键仍按保存值读取。见 记忆库/design/拟真子系统开关清单与优先级.md。</summary>
             <summary>`MilkCumSettings` 的风险与耐受配置分块与序列化。</summary>
             <summary>`MilkCumSettings` 的设置窗口状态与 UI 渲染分块。</summary>
         </member>
@@ -123,6 +124,15 @@
         </member>
         <member name="M:MilkCum.Core.Settings.MilkCumSettings.GetProlactinToleranceFactor(System.Single)">
             <summary>兼容旧调用；恒为 1，耐受不再用作泌乳倍率。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.Integration_Ballz_EstrogenLactation">
+            <summary>默认关：泌乳几乎不应由雌激素条驱动；开启后仍仅为 ±1% 量级背景项。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.Integration_Ballz_TestosteroneRequiresPenisPool">
+            <summary>睾酮仅在有「有机睾丸」Hediff 时调节精池回充（去势/假体无活体睾丸组织则不套用）；关闭则任意小人只要有 TestosteroneEffect 即参与回充。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.Integration_Ballz_TesticleGear">
+            <summary>睾丸装备：仅压迫/缺血/机械梗阻，不奖励情趣增产量。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.milkingWorkTotalBase">
             <summary>挤奶流速基准：baseFlowPerSecond = 60/基准值（池单位/秒）。默认 60 → 满池约 1 瓶/秒（现实时间）；调大则变慢。</summary>
@@ -296,6 +306,15 @@
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.realismCircadian">
             <summary>SYS-09：昼夜节律对进水的弱正弦修正。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.realismLactationEstablishment">
+            <summary>SYS-10：人类泌乳建立 — 自 Lactating 起若干游戏日内进水自低渐增至满倍率；非人形与永久泌乳基因不套用。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.realismEstablishmentDays">
+            <summary>自出现泌乳至进水达 100% 的游戏日数。</summary>
+        </member>
+        <member name="F:MilkCum.Core.Settings.MilkCumSettings.realismEstablishmentMinMult">
+            <summary>第 0 日进水相对满倍率的下限（与 1 之间线性插值）。</summary>
         </member>
         <member name="T:MilkCum.Core.Settings.RjwBreastPoolCapacityMode">
             <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。仅存三档：纯严重度 / 纯重量 / 纯体积。</summary>
@@ -564,6 +583,15 @@
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool.MergeObsoletePerPartSemenKeysIntoLateral(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
             <summary>较早版本每条阴茎 <c>Semen_{loadID}</c> 键：合并入当前左/右槽（按容量比例），再删除旧键。</summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool.MigrateFullnessForNewTopology(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>
+            拓扑变化（键集合变化）时，按新键容量比例重分旧总量；键集合不变时保持原键值。
+            该迁移用于精池左右槽切换/缺失恢复等场景，尽量保持总量连续。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool.ClampToEntryCaps(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>按当前条目容量即刻钳制精池值，避免降容后一段时间仍保留超上限值。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Cum.Comps.CompVirtualSemenPool.GetSemenPoolDisplayRows(Verse.Pawn)">
             <summary>健康页：左/右虚拟睾丸槽当前量与容量。</summary>
@@ -1709,6 +1737,9 @@
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRealismHelper.QuantizePoolStretchT(System.Single)">
             <summary>RJW 同步：可选将 t_pool 量化成里程碑，减轻 severity 微抖。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRealismHelper.GetLactationEstablishmentInflowMultiplier(Verse.Pawn,MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating)">
+            <summary>SYS-10：人类泌乳建立期进水倍率；非人形、永久泌乳基因、未开启设置时为 1。</summary>
+        </member>
         <member name="T:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper">
             <summary>
             泌乳相关健康：乳房胀满、奶水瘀积、乳腺炎、乳房化脓；炎症 I 与 MTB；Lactating 维护。
@@ -2326,6 +2357,30 @@
             乳房虚拟乳池与 RJW 胸形经济：<see cref="F:MilkCum.Integration.ModIntegrationGates.RjwModActive"/> 为 false 时相关系统明确不运行（与 About 中 RJW 依赖一致）。
             </summary>
         </member>
+        <member name="T:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration">
+            <summary>
+            与 TeheeItsMe525.RJWGenderOrgansMod 联动，按可辩护的生理方向简化：有机睾丸体量略影响储精上限；睾酮仅在有活体睾丸组织时调节生精/回充；去势与去势环按缺血坏死逻辑；装备只体现压迫与机械梗阻，不奖励「情趣增产量」；雌激素对泌乳仅作极小的背景修饰（泌乳主因仍为本 mod 催乳素/泌乳轴）。
+            未加载该模组或总开关关闭时所有乘子为中性值。
+            </summary>
+        </member>
+        <member name="M:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration.GetVirtualSemenCapacityMultiplier(Verse.Pawn)">
+            <summary>虚拟精池左右槽总容量的额外乘子（在 RJW 阴茎体量汇总之后）。有机睾丸仅作小幅修正；假体不分泌，容量显著压低。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration.GetVirtualSemenRefillMultiplier(Verse.Pawn)">
+            <summary>精池每 tick 回充在基础公式上的乘子（睾酮、去势环、恢复期等）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration.GetVirtualSemenDrawFactor(Verse.Pawn)">
+            <summary>从虚拟池可取出的比例；去势后为 0（与回充为 0 配合，池会逐渐用尽）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration.GetLactationInflowMultiplier(Verse.Pawn)">
+            <summary>泌乳全局进水乘子（在昼夜节律、代谢等之后）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration.TesticleGearCapacityMultiplier(Verse.Pawn)">
+            <summary>装备不改变「储精上限」的生理基础，仅对紧缚类给极小的象征性压缩（无增容奖励）。</summary>
+        </member>
+        <member name="M:MilkCum.Integration.RjwBallsOvaries.RjwBallsOvariesIntegration.EstrogenLactationFactor(Verse.Pawn)">
+            <summary>雌激素与乳腺发育相关，但不驱动泌乳主流量；仅作极小背景修饰（泌乳仍主要由催乳素/泌乳 Hediff 与设置决定）。</summary>
+        </member>
         <member name="M:MilkCum.PipeSystem.ApplyPatches.Building_Milking_PlaceMilkThing_Patch.Prefix(MilkCum.Core.Building_Milking,Verse.Thing@)">
             <summary>人奶（有 producer 且为人形）不进管道/大桶，直接放置；仅动物奶进入管道。</summary>
         </member>
@@ -2425,14 +2480,17 @@
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawDevBreastPoolTopologyBlock(Verse.Listing_Standard,Verse.Pawn)">
             <summary>Dev：当前选中小人的全局拓扑模式 + 各池条目 Key/Site 缩写，便于与日志自检对照。</summary>
         </member>
+        <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawBreastPoolTabRealism(Verse.Listing_Standard)">
+            <summary>数值平衡 · 生理拟真：SYS 开关与配套滑条（与导管/组织适应数值分栏）。</summary>
+        </member>
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawIntegrationSectionExtended(UnityEngine.Rect,System.Int32)">
-            <summary>专业级：RJW / DBH / 营养系统 三子 Tab。</summary>
+            <summary>外来工具：RJW 与营养系统两子页；第三方桥接勾选对两页均显示在顶部。</summary>
         </member>
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawBreastPoolTabCore(Verse.Listing_Standard)">
             <summary>数值平衡 · 核心：容量拓扑、RJW 胸形/阶段、挤奶、满池渗漏、L 上限。</summary>
         </member>
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawBreastPoolTabAdvancedModel(Verse.Listing_Standard)">
-            <summary>数值平衡 · 导管与拟真：示意图、拟真子系统、组织适应、导管进出。</summary>
+            <summary>数值平衡 · 导管与模型：示意图、组织适应、导管进出与压力/导通（强度与节奏类滑条）。</summary>
         </member>
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawBreastPoolTabColonistExtras(Verse.Listing_Standard)">
             <summary>数值平衡 · 殖民者加成：泌乳属性增益与参数提示。</summary>

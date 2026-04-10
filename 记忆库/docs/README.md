@@ -23,8 +23,9 @@
 | [RJW乳房定义与rjw-cummilk使用说明.md](RJW乳房定义与rjw-cummilk使用说明.md) | RJW 乳房 Def/API 与本 mod 使用映射，包含读写边界与关键代码入口。 |
 | [RJW数据对齐清单与第三方集成.md](RJW数据对齐清单与第三方集成.md) | **架构边界**：哪些跟 RJW 数据走、哪些本 mod 自有；基因/药与容量三档；第三方 API 与桥接推荐顺序。 |
 | [游戏已接管变量与机制清单.md](游戏已接管变量与机制清单.md) | 原版/RJW 已接管的变量与机制，本 mod 只读不重写。 |
-| [HarmonyPatch主题清单.md](HarmonyPatch主题清单.md) | 主 mod / RJW / VME / Pipe 的 Patch 按主题分类与注册顺序。 |
-| [Integrations索引.md](Integrations索引.md) | RJW、PipeSystem、VME、Dubs 路径/命名空间/Harmony ID 收口。 |
+| [HarmonyPatch主题清单.md](HarmonyPatch主题清单.md) | 主 mod / RJW / Pipe 的 Patch 按主题分类与注册顺序。 |
+| [Integrations索引.md](Integrations索引.md) | RJW、PipeSystem、Dubs 路径/命名空间/Harmony ID 收口。 |
+| [冲突矩阵与载入策略.md](冲突矩阵与载入策略.md) | 互斥/排序/可选联动的判定规则与当前 packageId 矩阵。 |
 
 ### 冲突、兼容与报错
 

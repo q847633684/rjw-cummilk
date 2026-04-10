@@ -20,16 +20,16 @@
 
   <!-- 泌乳乳房与药物相关 Hediff（与 Def 英文分轨） -->
   <EM_BreastsEngorged.label>乳房胀满</EM_BreastsEngorged.label>
-  <EM_BreastsEngorged.description>奶水攒得太满，乳房沉甸甸、绷得发紧，走路做事都不利索。多半是没及时挤净。把奶水排空了，一般会松快很多。</EM_BreastsEngorged.description>
+  <EM_BreastsEngorged.description>奶水攒得太满，乳房沉甸甸、绷得发紧，走路做事都不利索。多半是未及时排空带来的「生理性胀满」不适；排空后通常会松快很多。若排空仍不见好、闷痛加重，更像瘀积那一路，而不是单纯的「太满」。</EM_BreastsEngorged.description>
   <EM_BreastsEngorged.stages.0.label>胀硬不适</EM_BreastsEngorged.stages.0.label>
 
   <EM_LactationalMilkStasis.label>奶水瘀积</EM_LactationalMilkStasis.label>
-  <EM_LactationalMilkStasis.description>奶水涨在里头却出路不顺，乳房发闷、发硬，一碰就揪着疼。老挤不干净的话，很容易拖成发炎。勤挤、尽量挤空，才有机会慢慢消下去。</EM_LactationalMilkStasis.description>
+  <EM_LactationalMilkStasis.description>奶水涨在里头却出路不顺，乳房发闷、发硬，一碰就揪着疼。在本 mod 里表示排出不畅/久满带来的瘀积风险；老挤不干净的话，发炎掷骰会更容易找上门。勤挤、尽量挤空，才有机会慢慢消下去。</EM_LactationalMilkStasis.description>
   <EM_LactationalMilkStasis.stages.0.label>隐隐绷痛</EM_LactationalMilkStasis.stages.0.label>
   <EM_LactationalMilkStasis.stages.1.label>闷痛结块</EM_LactationalMilkStasis.stages.1.label>
 
   <EM_Mastitis.label>乳腺炎</EM_Mastitis.label>
-  <EM_Mastitis.description>乳房又红又烫，肿痛钻心，人也没精神，像烧起来一样。淤奶拖久了、身子不干净或者胸口带伤，都容易招来。得多歇着、照样把奶水挤空、别糟蹋伤口；再拖下去，恐怕会化脓成大病。</EM_Mastitis.description>
+  <EM_Mastitis.description>乳房又红又烫，肿痛钻心，人也没精神，像烧起来一样。本 mod 用简化的风险模型（不是完整细菌感染模拟）：淤奶拖久了、身子不干净或胸口带伤都会抬高风险。得多歇着、照样把奶水挤空、别糟蹋伤口；再拖下去，恐怕会化脓成大病。</EM_Mastitis.description>
   <EM_Mastitis.stages.0.label>肿痛初起</EM_Mastitis.stages.0.label>
   <EM_Mastitis.stages.1.label>红肿蔓延</EM_Mastitis.stages.1.label>
   <EM_Mastitis.stages.2.label>高热恶化</EM_Mastitis.stages.2.label>

@@ -135,7 +135,7 @@
         <defName>EM_BreastsEngorged</defName>
         <hediffClass>HediffWithComps</hediffClass>
         <label>Engorged breasts</label>
-        <description>The breasts are heavy and tight with milk, making it awkward to move or work. Usually from not emptying them in time. Draining them properly usually brings relief.</description>
+        <description>The breasts are heavy and tight with milk, making it awkward to move or work. This is mostly “too full” discomfort (physiologic engorgement): emptying on time usually brings relief. It is not the same as a blocked-duct picture—see “Backed-up milk” if emptying stops helping.</description>
         <defaultLabelColor>(0.95,0.85,0.6)</defaultLabelColor>
         <isBad>true</isBad>
         <stages>
@@ -159,7 +159,7 @@
         <defName>EM_LactationalMilkStasis</defName>
         <hediffClass>HediffWithComps</hediffClass>
         <label>Backed-up milk</label>
-        <description>Milk is building inside with nowhere to go; the breast feels dense and tender, and even a light touch hurts. If milk keeps getting left behind, it can turn into inflammation. Frequent, thorough emptying is the way to ease it.</description>
+        <description>Milk is building inside with nowhere to go; the breast feels dense and tender, and even a light touch hurts. In this mod it models poor drainage / stasis risk: if milk keeps getting left behind, inflammation risk rises. Frequent, thorough emptying is the main way to ease it.</description>
         <defaultLabelColor>(0.92,0.7,0.45)</defaultLabelColor>
         <initialSeverity>0.15</initialSeverity>
         <maxSeverity>1.0</maxSeverity>
@@ -201,7 +201,7 @@
         <defName>EM_Mastitis</defName>
         <hediffClass>HediffWithComps</hediffClass>
         <label>Mastitis</label>
-        <description>The breast is hot, red, and painfully swollen; you feel drained and feverish, as if burning up. Lingering backed-up milk, poor cleanliness, or chest injuries all invite it. Rest, keep emptying the breast, and keep wounds clean—or it may fester into something worse.</description>
+        <description>The breast is hot, red, and painfully swollen; you feel drained and feverish, as if burning up. The mod uses a simplified risk model (not a full infection simulator): lingering backed-up milk, poor cleanliness, or chest injuries all push risk. Rest, keep emptying the breast, and keep wounds clean—or it may fester into something worse.</description>
         <defaultLabelColor>(0.9,0.55,0.35)</defaultLabelColor>
         <initialSeverity>0.2</initialSeverity>
         <maxSeverity>1.0</maxSeverity>

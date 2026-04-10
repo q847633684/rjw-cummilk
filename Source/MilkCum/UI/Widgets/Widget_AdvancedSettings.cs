@@ -8,6 +8,7 @@ using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Fluids.Shared.Data;
 using MilkCum.Core.Utils;
 using MilkCum.Integration.DubsBadHygiene;
+using MilkCum.Integration.RjwBallsOvaries;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -17,13 +18,6 @@ using static MilkCum.Core.Constants.Constants;
 namespace MilkCum.UI;
 public class Widget_AdvancedSettings
 {
-	private static string RjwBreastPoolCapacityModeLabel(RjwBreastPoolCapacityMode mode) => mode switch
-	{
-		RjwBreastPoolCapacityMode.RjwBreastWeight => "EM.RjwCapacityMode_Weight".Translate(),
-		RjwBreastPoolCapacityMode.RjwBreastVolume => "EM.RjwCapacityMode_Volume".Translate(),
-		_ => "EM.RjwCapacityMode_Severity".Translate(),
-	};
-
 	/// <summary>泌乳相关设置页内二级标题：灰标题 + 可选说明，与下方控件成组。</summary>
 	private static void DrawEmUISectionHeading(Listing_Standard list, string titleKey, string descKey = null, float gapBefore = 10f)
 	{
@@ -48,19 +42,17 @@ public class Widget_AdvancedSettings
 	private int _lastAdvancedScrollKey = -1;
 	private Vector2 _sectionScrollPosition = Vector2.zero;
 
-	// 健康子 Tab 索引（专业级：4 个 = 乳腺炎 / 卫生 / 耐受 / 溢出）
+	// 健康子 Tab：乳腺炎（含卫生风险滑条与 DBH 说明）/ 溢出与杂项
 	private const int SubTabHealth_Mastitis = 0;
-	private const int SubTabHealth_DBH = 1;
-	private const int SubTabHealth_Tolerance = 2;
-	private const int SubTabHealth_Overflow = 3;
-	// 数值平衡子 Tab
+	private const int SubTabHealth_Overflow = 1;
+	// 数值平衡子 Tab（拟真 SYS 与导管/适应数值分栏，避免混在同一页）
 	private const int SubTabBalance_Core = 0;
-	private const int SubTabBalance_AdvancedModel = 1;
-	private const int SubTabBalance_ColonistExtras = 2;
-	// 模组联动：RJW / DBH / 营养系统
+	private const int SubTabBalance_Realism = 1;
+	private const int SubTabBalance_AdvancedModel = 2;
+	private const int SubTabBalance_ColonistExtras = 3;
+	// 外来工具：RJW / 营养系统（DBH 说明与卫生风险滑条在「健康风险 → 乳腺炎」）
 	private const int SubTabIntegration_RJW = 0;
-	private const int SubTabIntegration_DBH = 1;
-	private const int SubTabIntegration_Nutrition = 2;
+	private const int SubTabIntegration_Nutrition = 1;
 
 	private static int MakeAdvancedScrollKey(int mainTab, int subTab) => unchecked(mainTab * 256 + subTab);
 
@@ -191,8 +183,8 @@ public class Widget_AdvancedSettings
 		yield return ("EM.OptionalMod_RJW", ModIntegrationGates.RjwModActive);
 		yield return ("EM.OptionalMod_DBH", DubsBadHygieneIntegration.IsDubsBadHygieneActive());
 		yield return ("EM.OptionalMod_VEFCore", ModLister.GetModWithIdentifier("oskarpotocki.vanillafactionsexpanded.core") != null);
-		yield return ("EM.OptionalMod_MilkExpanded", ModLister.GetModWithIdentifier("drilledhead.milkexpanded") != null);
 		yield return ("EM.OptionalMod_RJWGenes", ModLister.GetModWithIdentifier("vegapnk.rjw.genes") != null);
+		yield return ("EM.OptionalMod_BallzGonads", RjwBallsOvariesIntegration.IsModActive);
 	}
 
 	private static string AbbrevPoolKeyForDev(string key)
@@ -248,10 +240,6 @@ public class Widget_AdvancedSettings
 		list.Begin(content);
 		if (subTab == SubTabHealth_Mastitis)
 			DrawMastitisBlock(list);
-		else if (subTab == SubTabHealth_DBH)
-			DrawDbhBlock(list);
-		else if (subTab == SubTabHealth_Tolerance)
-			DrawToleranceBlock(list);
 		else if (subTab == SubTabHealth_Overflow)
 			DrawOverflowBlock(list);
 		list.End();
@@ -379,24 +367,12 @@ public class Widget_AdvancedSettings
 		TooltipHandler.TipRegion(rMtbAnimal, "EM.MastitisMtbDaysMultiplierAnimalDesc".Translate());
 	}
 
-	private void DrawDbhBlock(Listing_Standard list)
-	{
-		if (!DubsBadHygieneIntegration.IsDubsBadHygieneActive()) return;
-		DrawEmUISectionHeading(list, "EM.DubsBadHygieneSection", "EM.SectionDesc_DBH", 0f);
-		GUI.color = Color.gray;
-		list.Label("EM.DbhMastitisHygieneAuto".Translate());
-		GUI.color = Color.white;
-	}
-
-	private void DrawToleranceBlock(Listing_Standard list)
+	private void DrawOverflowBlock(Listing_Standard list)
 	{
 		GUI.color = Color.gray;
 		list.Label("EM.ToleranceVanillaOnlyBody".Translate());
 		GUI.color = Color.white;
-	}
-
-	private void DrawOverflowBlock(Listing_Standard list)
-	{
+		list.Gap(6f);
 		DrawEmUISectionHeading(list, "EM.UISection.OverflowFilthAndLetters", "EM.UISection.OverflowFilthAndLettersDesc", 0f);
 		string overflowFilth = MilkCumSettings.overflowFilthDefName ?? "";
 		Rect rFilth = list.GetRect(UNIT_SIZE);
@@ -468,6 +444,13 @@ public class Widget_AdvancedSettings
 				DrawBreastPoolBalancePageHeader(list);
 				DrawBreastPoolTabCore(list);
 				break;
+			case SubTabBalance_Realism:
+				GUI.color = Color.gray;
+				list.Label("EM.UISection.BalanceSubTabRealismBlurb".Translate());
+				GUI.color = Color.white;
+				list.Gap(6f);
+				DrawBreastPoolTabRealism(list);
+				break;
 			case SubTabBalance_AdvancedModel:
 				GUI.color = Color.gray;
 				list.Label("EM.UISection.BalanceSubTabAdvancedBlurb".Translate());
@@ -492,11 +475,15 @@ public class Widget_AdvancedSettings
 		GUI.color = Color.gray;
 		list.Label("EM.UISection.BalanceBreastPoolPage".Translate());
 		list.Label("EM.SectionDesc_BreastPool".Translate());
+		list.Label("EM.UISection.BalanceVsRealismHint".Translate());
 		GUI.color = Color.white;
 		list.Gap(6f);
 	}
 
-	/// <summary>专业级：RJW / DBH / 营养系统 三子 Tab。</summary>
+	/// <summary>数值平衡 · 生理拟真：SYS 开关与配套滑条（与导管/组织适应数值分栏）。</summary>
+	private static void DrawBreastPoolTabRealism(Listing_Standard list) => DrawRealismSettingsBlock(list);
+
+	/// <summary>外来工具：RJW 与营养系统两子页；第三方桥接勾选对两页均显示在顶部。</summary>
 	private float DrawIntegrationSectionExtended(Rect content, int subTab)
 	{
 		var list = new Listing_Standard();
@@ -526,8 +513,6 @@ public class Widget_AdvancedSettings
 				GUI.color = Color.white;
 			}
 		}
-		else if (subTab == SubTabIntegration_DBH)
-			DrawDbhBlock(list);
 		else if (subTab == SubTabIntegration_Nutrition)
 			DrawNutritionBlock(list);
 		list.End();
@@ -558,6 +543,7 @@ public class Widget_AdvancedSettings
 		Toggle("EM.Realism.StressLetdown", ref MilkCumSettings.realismStressLetdown);
 		Toggle("EM.Realism.WeaningCurve", ref MilkCumSettings.realismWeaningCurve);
 		Toggle("EM.Realism.Circadian", ref MilkCumSettings.realismCircadian);
+		Toggle("EM.Realism.LactationEstablishment", ref MilkCumSettings.realismLactationEstablishment);
 		list.Gap(4f);
 		float ce = MilkCumSettings.realismComplianceExponent;
 		Widgets.HorizontalSlider(list.GetRect(UNIT_SIZE), ref ce, new FloatRange(0.5f, 3f), "EM.Realism.ComplianceExponent".Translate(ce.ToString("F2")), 0.05f);
@@ -574,6 +560,15 @@ public class Widget_AdvancedSettings
 		float ca = MilkCumSettings.realismCircadianAmplitude;
 		Widgets.HorizontalSlider(list.GetRect(UNIT_SIZE), ref ca, new FloatRange(0f, 0.25f), "EM.Realism.CircadianAmplitude".Translate(ca.ToString("F2")), 0.01f);
 		MilkCumSettings.realismCircadianAmplitude = ca;
+		float ed = MilkCumSettings.realismEstablishmentDays;
+		Widgets.HorizontalSlider(list.GetRect(UNIT_SIZE), ref ed, new FloatRange(0.5f, 14f), "EM.Realism.EstablishmentDays".Translate(ed.ToString("F1")), 0.1f);
+		MilkCumSettings.realismEstablishmentDays = ed;
+		float em = MilkCumSettings.realismEstablishmentMinMult;
+		Widgets.HorizontalSlider(list.GetRect(UNIT_SIZE), ref em, new FloatRange(0.05f, 1f), "EM.Realism.EstablishmentMinMult".Translate(em.ToString("F2")), 0.02f);
+		MilkCumSettings.realismEstablishmentMinMult = em;
+		GUI.color = Color.gray;
+		list.Label("EM.Realism.LactationEstablishmentDesc".Translate());
+		GUI.color = Color.white;
 	}
 
 	private void DrawNutritionBlock(Listing_Standard list)
@@ -601,20 +596,8 @@ public class Widget_AdvancedSettings
 		list.Label("EM.RjwBreastSizeSectionHint".Translate());
 		if (ModIntegrationGates.RjwModActive)
 			list.Label("EM.RjwBreastPoolAutoLinked".Translate());
+		list.Label("EM.BreastPoolBaseCapacityRjwVolumeOnly".Translate());
 		GUI.color = Color.white;
-		list.Gap(4f);
-		Rect rCapMode = list.GetRect(UNIT_SIZE);
-		if (Widgets.ButtonText(rCapMode, "EM.RjwBreastPoolCapacityMode".Translate(RjwBreastPoolCapacityModeLabel(MilkCumSettings.rjwBreastPoolCapacityMode))))
-		{
-			var opts = new List<FloatMenuOption>
-			{
-				new FloatMenuOption("EM.RjwCapacityMode_Severity".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.Severity),
-				new FloatMenuOption("EM.RjwCapacityMode_Weight".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastWeight),
-				new FloatMenuOption("EM.RjwCapacityMode_Volume".Translate(), () => MilkCumSettings.rjwBreastPoolCapacityMode = RjwBreastPoolCapacityMode.RjwBreastVolume),
-			};
-			Find.WindowStack.Add(new FloatMenu(opts));
-		}
-		TooltipHandler.TipRegion(rCapMode, "EM.RjwBreastPoolCapacityModeTip".Translate());
 		list.Gap(4f);
 		list.Label("EM.BreastPoolLayoutVirtualLRFixed".Translate());
 		list.Gap(4f);
@@ -703,14 +686,12 @@ public class Widget_AdvancedSettings
 		TooltipHandler.TipRegion(rCapDurationMult, "EM.LactationLevelCapDurationMultiplierDesc".Translate());
 	}
 
-	/// <summary>数值平衡 · 导管与拟真：示意图、拟真子系统、组织适应、导管进出。</summary>
+	/// <summary>数值平衡 · 导管与模型：示意图、组织适应、导管进出与压力/导通（强度与节奏类滑条）。</summary>
 	private void DrawBreastPoolTabAdvancedModel(Listing_Standard list)
 	{
 		DrawEmUISectionHeading(list, "EM.UISection.PoolSchematicPreview", "EM.UISection.PoolSchematicPreviewDesc", 0f);
 		Rect rSchematic = list.GetRect(298f);
 		LactationPoolSchematicGraph.DrawInRect(rSchematic);
-		list.Gap(6f);
-		DrawRealismSettingsBlock(list);
 		list.Gap(6f);
 
 		DrawEmUISectionHeading(list, "EM.UISection.TissueAdaptation", "EM.UISection.TissueAdaptationDesc", 0f);
@@ -867,6 +848,50 @@ public class Widget_AdvancedSettings
 			TooltipHandler.TipRegion(rSevDelta, "EM.RjwPermanentBreastGainDeltaDesc".Translate());
 		}
 		GUI.enabled = rjwBreastGui;
+		DrawBallzGonadsIntegrationBlock(list);
+	}
+
+	private static void DrawBallzGonadsIntegrationBlock(Listing_Standard list)
+	{
+		list.Gap(8f);
+		if (!RjwBallsOvariesIntegration.IsModActive)
+		{
+			GUI.color = Color.gray;
+			list.Label("EM.BallzIntegrationNotDetected".Translate());
+			GUI.color = Color.white;
+			return;
+		}
+
+		DrawEmUISectionHeading(list, "EM.UISection.BallzGonads", "EM.UISection.BallzGonadsDesc", 0f);
+		Rect rEn = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rEn, "EM.Ballz.Enable".Translate(), ref MilkCumSettings.Integration_Ballz_Enable, false);
+		TooltipHandler.TipRegion(rEn, "EM.Ballz.EnableDesc".Translate());
+		if (!MilkCumSettings.Integration_Ballz_Enable)
+			return;
+		Rect rCap = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rCap, "EM.Ballz.GonadSemenCapacity".Translate(), ref MilkCumSettings.Integration_Ballz_GonadSemenCapacity, false);
+		TooltipHandler.TipRegion(rCap, "EM.Ballz.GonadSemenCapacityDesc".Translate());
+		Rect rT = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rT, "EM.Ballz.TestosteroneRefill".Translate(), ref MilkCumSettings.Integration_Ballz_TestosteroneRefill, false);
+		TooltipHandler.TipRegion(rT, "EM.Ballz.TestosteroneRefillDesc".Translate());
+		if (MilkCumSettings.Integration_Ballz_TestosteroneRefill)
+		{
+			Rect rTp = list.GetRect(UNIT_SIZE);
+			Widgets.CheckboxLabeled(rTp, "EM.Ballz.TestosteroneRequiresPenisPool".Translate(), ref MilkCumSettings.Integration_Ballz_TestosteroneRequiresPenisPool, false);
+			TooltipHandler.TipRegion(rTp, "EM.Ballz.TestosteroneRequiresPenisPoolDesc".Translate());
+		}
+		Rect rN = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rN, "EM.Ballz.NeuteredNoSemen".Translate(), ref MilkCumSettings.Integration_Ballz_NeuteredNoSemen, false);
+		TooltipHandler.TipRegion(rN, "EM.Ballz.NeuteredNoSemenDesc".Translate());
+		Rect rE = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rE, "EM.Ballz.ElastrationPenalty".Translate(), ref MilkCumSettings.Integration_Ballz_ElastrationPenalty, false);
+		TooltipHandler.TipRegion(rE, "EM.Ballz.ElastrationPenaltyDesc".Translate());
+		Rect rG = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rG, "EM.Ballz.TesticleGear".Translate(), ref MilkCumSettings.Integration_Ballz_TesticleGear, false);
+		TooltipHandler.TipRegion(rG, "EM.Ballz.TesticleGearDesc".Translate());
+		Rect rL = list.GetRect(UNIT_SIZE);
+		Widgets.CheckboxLabeled(rL, "EM.Ballz.EstrogenLactation".Translate(), ref MilkCumSettings.Integration_Ballz_EstrogenLactation, false);
+		TooltipHandler.TipRegion(rL, "EM.Ballz.EstrogenLactationDesc".Translate());
 	}
 
 	// Draw(Rect) removed; use DrawSection(mainTab, subTab) instead.

@@ -4,7 +4,7 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>拟真子系统 SYS-01～09：默认全开（新安装或设置中无存档键时）；已写入 Mod 设置的键仍按保存值读取。见 记忆库/design/拟真子系统开关清单与优先级.md。</summary>
+/// <summary>拟真子系统 SYS-01～10：默认全开（新安装或设置中无存档键时），SYS-10 泌乳建立除外；已写入 Mod 设置的键仍按保存值读取。见 记忆库/design/拟真子系统开关清单与优先级.md。</summary>
 internal partial class MilkCumSettings
 {
     /// <summary>SYS-01：非线性顺应性进水（近撑大上限时有效进流降低）。</summary>
@@ -74,6 +74,13 @@ internal partial class MilkCumSettings
     public static float realismCircadianAmplitude = 0.08f;
     public static float realismCircadianPhaseHours = 14f;
 
+    /// <summary>SYS-10：人类泌乳建立 — 自 Lactating 起若干游戏日内进水自低渐增至满倍率；非人形与永久泌乳基因不套用。</summary>
+    public static bool realismLactationEstablishment;
+    /// <summary>自出现泌乳至进水达 100% 的游戏日数。</summary>
+    public static float realismEstablishmentDays = 3f;
+    /// <summary>第 0 日进水相对满倍率的下限（与 1 之间线性插值）。</summary>
+    public static float realismEstablishmentMinMult = 0.35f;
+
     internal static void ExposeRealismData()
     {
         Scribe_Values.Look(ref realismComplianceInflow, "EM.Realism.ComplianceInflow", true);
@@ -114,5 +121,8 @@ internal partial class MilkCumSettings
         Scribe_Values.Look(ref realismCircadian, "EM.Realism.Circadian", true);
         Scribe_Values.Look(ref realismCircadianAmplitude, "EM.Realism.CircadianAmplitude", 0.08f);
         Scribe_Values.Look(ref realismCircadianPhaseHours, "EM.Realism.CircadianPhaseHours", 14f);
+        Scribe_Values.Look(ref realismLactationEstablishment, "EM.Realism.LactationEstablishment", false);
+        Scribe_Values.Look(ref realismEstablishmentDays, "EM.Realism.EstablishmentDays", 3f);
+        Scribe_Values.Look(ref realismEstablishmentMinMult, "EM.Realism.EstablishmentMinMult", 0.35f);
     }
 }

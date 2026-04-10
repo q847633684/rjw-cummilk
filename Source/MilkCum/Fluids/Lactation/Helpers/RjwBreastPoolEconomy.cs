@@ -182,36 +182,24 @@ public static class RjwBreastPoolEconomy
     }
 
     /// <summary>
-    /// 单侧虚拟池基容量（组织适应前）：由 <see cref="MilkCumSettings.rjwBreastPoolCapacityMode"/> 在「纯严重度 / 纯 RJW 重量 / 纯 RJW 体积」三选一。
-    /// 泌乳流速仍由 <see cref="GetBreastHediffFlowMultiplier"/>（GetFluidMultiplier）单独决定。
-    /// 体积/重量档在无法得到有效 RJW 尺寸时结果为 0、不进池。
+    /// 单侧虚拟池基容量（组织适应前）：RJW <c>BreastSize.volume</c>（升）× <see cref="MilkCumSettings.rjwBreastCapacityCoefficient"/>，裁剪到 [0.01, 10]；无有效体积为 0、不进池。
+    /// 泌乳流速仍由 <see cref="GetBreastHediffFlowMultiplier"/> 单独决定。
     /// </summary>
-    public static float ComputeBaseCapacityPerSide(Hediff h, float volumeLiters, float weightKg, bool hasBreastSize)
+    public static float ComputeBaseCapacityPerSide(Hediff h, float volumeLiters, bool hasValidVolume)
     {
-        if (h?.def == null) return 0f;
+        if (h?.def == null || !hasValidVolume || volumeLiters <= 0f) return 0f;
         float coeff = MilkCumSettings.rjwBreastCapacityCoefficient;
-        float sev = GetSeverityForPoolEconomy(h);
-        float severityCap = Mathf.Clamp(sev * coeff, 0f, 10f);
-        float weightCap = hasBreastSize && weightKg > 0f ? Mathf.Clamp(weightKg * coeff, 0.01f, 10f) : 0f;
-        float volumeCap = hasBreastSize && volumeLiters > 0f ? Mathf.Clamp(volumeLiters * coeff, 0.01f, 10f) : 0f;
-
-        return MilkCumSettings.rjwBreastPoolCapacityMode switch
-        {
-            RjwBreastPoolCapacityMode.RjwBreastWeight => weightCap >= 0.01f ? weightCap : 0f,
-            RjwBreastPoolCapacityMode.RjwBreastVolume => volumeCap >= 0.01f ? volumeCap : 0f,
-            _ => severityCap,
-        };
+        float volumeCap = Mathf.Clamp(volumeLiters * coeff, 0.01f, 10f);
+        return volumeCap >= 0.01f ? volumeCap : 0f;
     }
 
-    /// <summary>兼容入口：内部调用 <see cref="PartSizeCalculator.TryGetBreastSize"/> 一次。</summary>
+    /// <summary>内部调用 <see cref="PartSizeCalculator.TryGetBreastSize"/>，仅按体积推导基容量。</summary>
     public static float ComputeBaseCapacityPerSide(Hediff h)
     {
         if (h == null) return 0f;
-        bool has = PartSizeCalculator.TryGetBreastSize(h, out var bs);
-        float vol = has ? bs.volume : 0f;
-        float w = has ? bs.weight : 0f;
-        bool usable = has && (vol > 0f || w > 0f);
-        return ComputeBaseCapacityPerSide(h, vol, w, usable);
+        if (!PartSizeCalculator.TryGetBreastSize(h, out var bs)) return 0f;
+        float vol = bs.volume;
+        return ComputeBaseCapacityPerSide(h, vol, vol > 0f);
     }
 
     /// <summary>当前小人、在启用 RJW 胸池时的乳房快照（虚拟左·右）。</summary>
@@ -291,9 +279,8 @@ public static class RjwBreastPoolEconomy
             if (!IsChestOrUnpartedBreastSlot(p) && !IsLateralBreastLeafPart(p)) continue;
             bool hasBs = PartSizeCalculator.TryGetBreastSize(h, out var bs);
             float vol = hasBs ? bs.volume : 0f;
-            float w = hasBs ? bs.weight : 0f;
-            bool usableSize = hasBs && (vol > 0f || w > 0f);
-            float baseCap = ComputeBaseCapacityPerSide(h, vol, w, usableSize);
+            bool usableSize = hasBs && vol > 0f;
+            float baseCap = ComputeBaseCapacityPerSide(h, vol, usableSize);
             if (baseCap <= PoolModelConstants.Epsilon) continue;
             float flow = GetBreastHediffFlowMultiplier(h);
             cands.Add(new Cand(i, h, p, baseCap, flow));
@@ -390,7 +377,7 @@ public static class RjwBreastPoolEconomy
         float w = hasBs ? bs.weight : 0f;
         float cup = hasBs ? bs.cupSize : 0f;
         float band = hasBs ? bs.bandSize : 0f;
-        bool usableSize = hasBs && (vol > 0f || w > 0f);
+        bool usableSize = hasBs && vol > 0f;
         float baseCap = c.BaseCap;
         float flow = c.Flow;
         result.Add(new RjwBreastPoolSnapshot(

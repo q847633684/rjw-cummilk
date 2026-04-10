@@ -9,6 +9,8 @@ using MilkCum.Fluids.Cum.Common;
 using MilkCum.Fluids.Lactation.Hediffs;
 using MilkCum.Fluids.Lactation.Helpers;
 using MilkCum.Fluids.Shared.Data;
+using MilkCum.Core.Settings;
+using MilkCum.Integration.RjwBallsOvaries;
 using RimWorld;
 using rjw;
 using UnityEngine;
@@ -116,6 +118,8 @@ internal static class BreastPoolTooltipHelper
             sb.AppendLine("EM.PoolBreastTooltipSiblingPairHint".Translate());
             sb.AppendLine();
         }
+        sb.AppendLine("EM.PoolBreastTooltipHealthHint".Translate());
+        sb.AppendLine();
 
         if (!singleLeafRow)
         {
@@ -286,6 +290,10 @@ public static class HediffComp_SexPart_CompTipStringExtra_Patch
                     : "EM.VirtualSemenPoolRight".Translate();
                 sb.AppendLine($"{side}: {current.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)} / {capacity.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute)}");
             }
+
+            string ballzHint = RjwBallsOvariesIntegration.SemenTooltipHintFor(pawn);
+            if (!string.IsNullOrEmpty(ballzHint))
+                sb.AppendLine(ballzHint);
 
             __result = (__result ?? "") + sb.ToString();
         }

@@ -19,8 +19,9 @@
 | 与游戏本体及RJW的冲突与优化总结 | [docs/与游戏本体及RJW的冲突与优化总结](docs/与游戏本体及RJW的冲突与优化总结.md) | 冲突与优化 |
 | 与游戏机制对齐清单（泌乳与药品） | [docs/与游戏机制对齐清单-泌乳与药品](docs/与游戏机制对齐清单-泌乳与药品.md) | 已用/未用原版机制对照（SeverityPerDay、剩余时间、药品配置），对齐 RJW Humpshroom 建议 |
 | UI 文案前后对照 | [docs/UI文案前后对照](docs/UI文案前后对照.md) | 术语统一、健康页悬停、硬编码冒号、改文建议与实施顺序 |
-| Integrations 索引 | [docs/Integrations索引](docs/Integrations索引.md) | RJW、PipeSystem、VME、Dubs 路径/命名空间/Harmony ID 收口 |
-| Harmony Patch 主题清单 | [docs/HarmonyPatch主题清单](docs/HarmonyPatch主题清单.md) | 主 mod / RJW / VME / Pipe 的 Patch 按主题分类与注册顺序 |
+| Integrations 索引 | [docs/Integrations索引](docs/Integrations索引.md) | RJW、PipeSystem、Dubs 路径/命名空间/Harmony ID 收口 |
+| Harmony Patch 主题清单 | [docs/HarmonyPatch主题清单](docs/HarmonyPatch主题清单.md) | 主 mod / RJW / Pipe 的 Patch 按主题分类与注册顺序 |
+| 冲突矩阵与载入策略 | [docs/冲突矩阵与载入策略](docs/冲突矩阵与载入策略.md) | 互斥、排序、可选联动的 packageId 级矩阵与维护准则 |
 | 其它 | 见 [docs/README](docs/README.md) | 待办、建议评估、模拟、设置UI、脚本、报错记录、Integrations 等 |
 
 ---

@@ -3,4 +3,24 @@
 	<EM.HealthTabVirtualSemenPoolHeader>Virtual semen (testicles)</EM.HealthTabVirtualSemenPoolHeader>
 	<EM.VirtualSemenPoolLeft>Left testicle</EM.VirtualSemenPoolLeft>
 	<EM.VirtualSemenPoolRight>Right testicle</EM.VirtualSemenPoolRight>
+	<EM.BallzSemenPoolModifiersTip>RJW gonads link: virtual pool capacity ×{0}, refill ×{1}, draw ×{2}.</EM.BallzSemenPoolModifiersTip>
+	<EM.UISection.BallzGonads>RJW Balls &amp; Ovaries (gonads)</EM.UISection.BallzGonads>
+	<EM.UISection.BallzGonadsDesc>When the gonads mod is active, apply tight physiology-flavoured modifiers: narrow gonad capacity band, testosterone band ~90–104% with organic testes, harsh gear/elastration penalties, estrogen→milk off by default (optional ±0.7% if enabled). Master switch disables the whole block.</EM.UISection.BallzGonadsDesc>
+	<EM.BallzIntegrationNotDetected>RJW Balls &amp; Ovaries not in the mod list — these options have no effect until that package is enabled.</EM.BallzIntegrationNotDetected>
+	<EM.Ballz.Enable>Enable gonads integration</EM.Ballz.Enable>
+	<EM.Ballz.EnableDesc>Master switch for hooks into GenericTesticles, hormones (TestosteroneEffect / EstrogenEffect), Neutered, Elastrated, and prosthetic gonads.</EM.Ballz.EnableDesc>
+	<EM.Ballz.GonadSemenCapacity>Scale virtual semen capacity by gonads</EM.Ballz.GonadSemenCapacity>
+	<EM.Ballz.GonadSemenCapacityDesc>Organic testicles: very tight band (~96–103%). Prosthetics without organic testes: wood ~12%, steel ~18%, archotech ~28% of baseline cap. Final multiplier clamped ≤105%.</EM.Ballz.GonadSemenCapacityDesc>
+	<EM.Ballz.TestosteroneRefill>Testosterone affects semen refill</EM.Ballz.TestosteroneRefill>
+	<EM.Ballz.TestosteroneRefillDesc>TestosteroneEffect only nudges refill (~90–104%) when organic testes exist. Hypo- and hyper-androgenism are both damped for gameplay stability.</EM.Ballz.TestosteroneRefillDesc>
+	<EM.Ballz.TestosteroneRequiresPenisPool>Require organic testicles for testosterone</EM.Ballz.TestosteroneRequiresPenisPool>
+	<EM.Ballz.TestosteroneRequiresPenisPoolDesc>When on, testosterone only affects refill if the pawn has living testicular tissue (Ballz organic testicle hediff on Gonads). Castrated or prosthetic-only scrotums do not respond. Turn off to apply testosterone to everyone who has the hormone hediff.</EM.Ballz.TestosteroneRequiresPenisPoolDesc>
+	<EM.Ballz.TesticleGear>Testicle apparel affects semen pool</EM.Ballz.TesticleGear>
+	<EM.Ballz.TesticleGearDesc>Stricter constriction model: stretchers/rings cut refill more; cages/bindings/separator hit refill and draw harder. Comfort harness remains neutral.</EM.Ballz.TesticleGearDesc>
+	<EM.Ballz.NeuteredNoSemen>Neutered blocks semen pool</EM.Ballz.NeuteredNoSemen>
+	<EM.Ballz.NeuteredNoSemenDesc>Neutered hediff: no refill and no draw from the virtual semen pool (existing stock drains until empty).</EM.Ballz.NeuteredNoSemenDesc>
+	<EM.Ballz.ElastrationPenalty>Elastration slows semen refill</EM.Ballz.ElastrationPenalty>
+	<EM.Ballz.ElastrationPenaltyDesc>Elastrated severity progressively cuts refill; RecoveringFromElastration applies a small extra penalty.</EM.Ballz.ElastrationPenaltyDesc>
+	<EM.Ballz.EstrogenLactation>Estrogen micro-tag for milk inflow</EM.Ballz.EstrogenLactation>
+	<EM.Ballz.EstrogenLactationDesc>Off by default. If enabled, EstrogenEffect changes inflow by at most about ±0.7% (hard-clamped ±2%). Prolactin / lactation hediffs remain the real drivers.</EM.Ballz.EstrogenLactationDesc>
 </LanguageData>
