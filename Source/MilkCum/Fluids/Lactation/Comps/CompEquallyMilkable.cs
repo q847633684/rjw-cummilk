@@ -57,10 +57,7 @@ public partial class CompEquallyMilkable : CompMilkable
     {
         get
         {
-            if (milkSettings == null && parent is Pawn pawn)
-            {
-                milkSettings = pawn.GetDefaultMilkSetting();
-            }
+            if (milkSettings == null && parent is Pawn pw) milkSettings = pw.GetDefaultMilkSetting();
             return milkSettings;
         }
     }
@@ -141,13 +138,23 @@ public partial class CompEquallyMilkable : CompMilkable
     internal float GetPoolBaseTotal()
     {
         var entries = GetCachedEntries();
-        if (entries.Count == 0) return Mathf.Max(0.01f, maxFullness - CapacityAdaptation);
+        if (entries.Count == 0)
+            return !ModIntegrationGates.RjwModActive ? 0f : Mathf.Max(0.01f, maxFullness - CapacityAdaptation);
         float sum = 0f;
         for (int i = 0; i < entries.Count; i++) sum += entries[i].Capacity;
         return Mathf.Max(0.01f, sum);
     }
+
+    /// <summary>Σ(基容×撑大系数)，与进水/顶格一致；<paramref name="entries"/> 为空时为 0。</summary>
+    internal static float SumStretchCapsForEntries(List<FluidPoolEntry> entries)
+    {
+        float s = 0f;
+        if (entries != null)
+            for (int i = 0; i < entries.Count; i++) s += PoolModelConstants.CapacityStretchCap(entries[i].Capacity);
+        return s;
+    }
     /// <summary>池撑大总容量（= 基础×StretchCapFactor），供 RJW 撑大/回缩同步用。</summary>
-    internal float GetPoolStretchTotal() => GetPoolBaseTotal() * PoolModelConstants.StretchCapFactor;
+    internal float GetPoolStretchTotal() => PoolModelConstants.CapacityStretchCap(GetPoolBaseTotal());
     /// <summary>池基础总容量（含组织适应摊入各乳池侧后的 entries 之和），与 maxFullness 一致；供 UI/外部读取。</summary>
     public float GetPoolBaseCapacityTotal() => GetPoolBaseTotal();
     /// <summary>物理撑大总容量（池内可蓄满上限）；UI 满度分母、乳腺炎比例等应优先用本值而非仅 maxFullness。</summary>
@@ -215,12 +222,9 @@ public partial class CompEquallyMilkable : CompMilkable
     /// <summary>读档时调用（PostLoadInit）：确保列表非 null、移除无效引用；名单为空时预填子女/伴侣（仅同地图）。</summary>
     public void EnsureAllowedLists()
     {
-        allowedBreastfeeders ??= new List<Pawn>();
-        allowedMilkers ??= new List<Pawn>();
-        allowedConsumers ??= new List<Pawn>();
-        RemoveDestroyedFromAllowedList(allowedBreastfeeders);
-        RemoveDestroyedFromAllowedList(allowedMilkers);
-        RemoveDestroyedFromAllowedList(allowedConsumers);
+        SanitizeAllowedRef(ref allowedBreastfeeders);
+        SanitizeAllowedRef(ref allowedMilkers);
+        SanitizeAllowedRef(ref allowedConsumers);
         if (parent is Pawn p)
         {
             TryFillAllowedListFromDefaults(p, allowedBreastfeeders);
@@ -228,9 +232,9 @@ public partial class CompEquallyMilkable : CompMilkable
         }
     }
 
-    private static void RemoveDestroyedFromAllowedList(List<Pawn> list)
+    private static void SanitizeAllowedRef(ref List<Pawn> list)
     {
-        if (list == null) return;
+        list ??= new List<Pawn>();
         list.RemoveAll(p => p == null || p.Destroyed);
     }
 
@@ -252,130 +256,120 @@ public partial class CompEquallyMilkable : CompMilkable
     /// <summary>显式刷新并返回当前是否处于可泌乳活动状态；CompTick 每 60 tick 调用，避免 getter 产生隐式状态变更。</summary>
     internal bool IsActiveNow()
     {
-        if (parent.Faction == null || parent is not Pawn pawn || !parent.SpawnedOrAnyParentSpawned || !pawn.IsColonyPawn())
+        if (parent.Faction == null || parent is not Pawn pawn || !parent.SpawnedOrAnyParentSpawned || !pawn.IsColonyPawn()
+            || !ModIntegrationGates.RjwModActive)
         {
             cachedActive = false;
             return false;
         }
-        int entryCount = pawn == Pawn
-            ? GetCachedEntries().Count
-            : pawn.GetResolvedBreastPoolEntries().Count;
-        cachedActive = pawn.IsLactating() && pawn.IsMilkable() && entryCount > 0;
+        int n = pawn == Pawn ? GetCachedEntries().Count : pawn.GetResolvedBreastPoolEntries().Count;
+        cachedActive = pawn.IsLactating() && pawn.IsMilkable() && n > 0;
         return cachedActive;
     }
 
     public override void CompTick()
     {
-        if (!parent.IsHashIntervalTick(60)) { return; }
+        if (!parent.IsHashIntervalTick(60)) return;
         int now = Find.TickManager.TicksGame;
         cachedTicksGameForFlow = now;
         updateTick = now + 120;
+        bool rjw = ModIntegrationGates.RjwModActive;
         IsActiveNow();
         if (parent is Pawn p)
         {
-            if (cachedEntries == null || (now - lastBaseCapacityTick) > BaseCapacityCacheInterval)
+            if (!rjw)
             {
-                float dualBase = RjwBreastPoolEconomy.GetTotalDualPoolBaseCapacityBeforeAdaptation(p);
-                cachedBaseMaxFullness = dualBase >= 0.01f
-                    ? dualBase
-                    : Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+                cachedBaseMaxFullness = 0f;
+                maxFullness = 0f;
                 lastBaseCapacityTick = now;
+                if (Fullness > 0f) SetFullness(0f, 0f);
             }
-            float baseMax = cachedBaseMaxFullness;
-            if (MilkCumSettings.enableTissueAdaptation)
+            else
             {
-                float effectiveMax = baseMax + CapacityAdaptation;
-                float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
-                float realTicksPassed = 60f;
-                float daysPassed = realTicksPassed / GenDate.TicksPerDay;
-                float theta = Mathf.Max(0f, MilkCumSettings.adaptationTheta);
-                float omega = Mathf.Max(0f, MilkCumSettings.adaptationOmega);
-                float fastGrow = theta * Mathf.Max(P - 0.80f, 0f);
-                float fastDecay = omega * (1f - P);
-                float slowGrow = Mathf.Max(0f, MilkCumSettings.adaptationSlowTheta) * Mathf.Max(P - 0.90f, 0f);
-                float slowDecay = Mathf.Max(0f, MilkCumSettings.adaptationSlowOmega) * Mathf.Max(0f, 0.95f - P);
-                capacityAdaptationFast += daysPassed * (fastGrow - fastDecay);
-                capacityRemodelSlow += daysPassed * (slowGrow - slowDecay);
-                float capMax = baseMax * Mathf.Clamp(MilkCumSettings.adaptationCapMaxRatio, 0f, 1f);
-                capacityAdaptationFast = Mathf.Clamp(capacityAdaptationFast, 0f, capMax);
-                capacityRemodelSlow = Mathf.Clamp(capacityRemodelSlow, 0f, capMax);
+                bool tissue = MilkCumSettings.enableTissueAdaptation;
+                if (cachedEntries == null || (now - lastBaseCapacityTick) > BaseCapacityCacheInterval)
+                {
+                    float dualBase = RjwBreastPoolEconomy.GetTotalDualPoolBaseCapacityBeforeAdaptation(p);
+                    cachedBaseMaxFullness = dualBase >= 0.01f
+                        ? dualBase
+                        : Mathf.Max(0.01f, p.GetLeftBreastCapacityFactor() + p.GetRightBreastCapacityFactor());
+                    lastBaseCapacityTick = now;
+                }
+                float baseMax = cachedBaseMaxFullness;
+                if (tissue)
+                {
+                    float effectiveMax = baseMax + CapacityAdaptation;
+                    float P = effectiveMax > 0f ? Mathf.Clamp01(Fullness / effectiveMax) : 0f;
+                    float daysPassed = 60f / GenDate.TicksPerDay;
+                    float theta = Mathf.Max(0f, MilkCumSettings.adaptationTheta);
+                    float omega = Mathf.Max(0f, MilkCumSettings.adaptationOmega);
+                    capacityAdaptationFast += daysPassed * (theta * Mathf.Max(P - 0.80f, 0f) - omega * (1f - P));
+                    capacityRemodelSlow += daysPassed * (
+                        Mathf.Max(0f, MilkCumSettings.adaptationSlowTheta) * Mathf.Max(P - 0.90f, 0f)
+                        - Mathf.Max(0f, MilkCumSettings.adaptationSlowOmega) * Mathf.Max(0f, 0.95f - P));
+                    float capMax = baseMax * Mathf.Clamp(MilkCumSettings.adaptationCapMaxRatio, 0f, 1f);
+                    capacityAdaptationFast = Mathf.Clamp(capacityAdaptationFast, 0f, capMax);
+                    capacityRemodelSlow = Mathf.Clamp(capacityRemodelSlow, 0f, capMax);
+                }
+                maxFullness = baseMax + CapacityAdaptation;
+                if (tissue) SetEntriesCacheDirty();
+                var entriesForCap = GetCachedEntries();
+                float stretchTotal = entriesForCap.Count > 0 ? SumStretchCapsForEntries(entriesForCap) : maxFullness;
+                if (Fullness > stretchTotal) SetFullness(stretchTotal, stretchTotal);
+                TryBridgeExternalWrites(stretchTotal);
             }
-            maxFullness = baseMax + CapacityAdaptation;
-            if (MilkCumSettings.enableTissueAdaptation)
-                SetEntriesCacheDirty();
-            // 池子上限统一为撑大总容量（开/关压力因子都在此处停产、允许填到撑大、溢出）
-            var entriesForCap = GetCachedEntries();
-            float stretchTotal = maxFullness;
-            if (entriesForCap.Count > 0)
-            {
-                stretchTotal = 0f;
-                for (int i = 0; i < entriesForCap.Count; i++)
-                    stretchTotal += entriesForCap[i].Capacity * PoolModelConstants.StretchCapFactor;
-            }
-            if (Fullness > stretchTotal)
-                SetFullness(stretchTotal, stretchTotal);
-            // 在 maxFullness / stretchTotal 与池顶格校正之后再桥接，避免误用旧 cap；并联动 Charge/炎症等（见 ApplyExternalTotalTarget）。
-            TryBridgeExternalFullnessWrite(stretchTotal);
-            TryBridgeExternalChargeWrite(stretchTotal);
         }
-        // 基因/物种/设置驱动的 Lactating 维护、EM_LactatingGain、胀满 hediff 变化很慢，20 tick（约 1 秒）足够
         if (parent.IsHashIntervalTick(120))
         {
             EnsureEntriesCacheDirtyIfBreastCountChanged();
-            MilkRelatedHealthHelper.EnsureLactatingHediffFromConditions(Pawn);
-            ApplyDrugInducedLactationEffects();
-            var milkComp120 = Pawn.CompEquallyMilkable();
-            MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, milkComp120);
-            MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Pawn, milkComp120);
+            if (rjw)
+            {
+                MilkRelatedHealthHelper.EnsureLactatingHediffFromConditions(Pawn);
+                ApplyDrugInducedLactationEffects();
+                MilkRelatedHealthHelper.UpdateBreastsEngorged(Pawn, this);
+                MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Pawn, this);
+            }
         }
-        if (!cachedActive) { return; }
-        // LOD：当前地图每 60 tick；非当前地图 300 tick；未载入地图（商队等）600 tick，降低多档负担
-        bool onCurrentMap = Pawn?.MapHeld != null && Pawn.MapHeld == Find.CurrentMap;
-        bool notOnAnyMap = Pawn?.MapHeld == null;
-        int interval = onCurrentMap ? 60 : (notOnAnyMap ? PoolModelConstants.LODIntervalNotOnMapTicks : 300);
+        if (!cachedActive) return;
+        var map = Pawn?.MapHeld;
+        bool onCurrentMap = map != null && map == Find.CurrentMap;
+        int interval = onCurrentMap ? 60 : (map == null ? PoolModelConstants.LODIntervalNotOnMapTicks : 300);
         if (onCurrentMap || parent.IsHashIntervalTick(interval))
         {
             UpdateMilkPools();
             if (inflowEventBurstTicksRemaining > 0)
                 inflowEventBurstTicksRemaining = Mathf.Max(0, inflowEventBurstTicksRemaining - 60);
-            if (ModIntegrationGates.RjwModActive && Pawn != null && Pawn.IsInLactatingState())
+            if (Pawn != null && Pawn.IsInLactatingState())
                 RJWLactatingBreastSizeGameComponent.SyncRJWBreastSeverityFromPool(Pawn);
         }
-        if (parent.IsHashIntervalTick(2000))
+        if (parent.IsHashIntervalTick(2000) && rjw)
         {
-            var milkComp2k = Pawn.CompEquallyMilkable();
-            MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, milkComp2k);
-            MilkRelatedHealthHelper.TryTriggerBreastAbscessFromMtb(Pawn, milkComp2k);
+            MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Pawn, this);
+            MilkRelatedHealthHelper.TryTriggerBreastAbscessFromMtb(Pawn, this);
         }
     }
 
     /// <summary>由 GameComponent 每 2500 tick 集中调用，移除已销毁/空的 allowed 列表引用。</summary>
     internal void CleanupAllowedLists()
     {
-        RemoveDestroyedFromAllowedList(allowedBreastfeeders);
-        RemoveDestroyedFromAllowedList(allowedMilkers);
-        RemoveDestroyedFromAllowedList(allowedConsumers);
+        allowedBreastfeeders?.RemoveAll(p => p == null || p.Destroyed);
+        allowedMilkers?.RemoveAll(p => p == null || p.Destroyed);
+        allowedConsumers?.RemoveAll(p => p == null || p.Destroyed);
     }
 
     /// <summary>药物诱发泌乳时仅添加 EM_LactatingGain。每 120 tick 检查一次，状态变化时才增删（有缓存，减少重复查找）</summary>
     private void ApplyDrugInducedLactationEffects()
     {
-        if (Pawn == null || !Pawn.RaceProps.Humanlike) return;
-        bool nowLactatingWithDrug = Pawn.IsLactating() && Pawn.HasDrugInducedLactation();
-        if (cachedWasLactatingWithDrugInduced == nowLactatingWithDrug)
-            return;
-        cachedWasLactatingWithDrugInduced = nowLactatingWithDrug;
-
-        if (MilkCumDefOf.EM_LactatingGain != null)
+        if (Pawn == null || !Pawn.RaceProps.Humanlike || MilkCumDefOf.EM_LactatingGain == null) return;
+        bool nowDrug = Pawn.IsLactating() && Pawn.HasDrugInducedLactation();
+        if (cachedWasLactatingWithDrugInduced == nowDrug) return;
+        cachedWasLactatingWithDrugInduced = nowDrug;
+        var gain = Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactatingGain);
+        if (nowDrug)
         {
-            if (nowLactatingWithDrug)
-            {
-                if (Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactatingGain) == null)
-                    Pawn.health.AddHediff(MilkCumDefOf.EM_LactatingGain, Pawn.GetBreastOrChestPart());
-            }
-            else if (Pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactatingGain) is Hediff gain)
-                Pawn.health.RemoveHediff(gain);
+            if (gain == null) Pawn.health.AddHediff(MilkCumDefOf.EM_LactatingGain, Pawn.GetBreastOrChestPart());
         }
+        else if (gain != null) Pawn.health.RemoveHediff(gain);
     }
 
     /// <summary>是否有躯干/乳房损伤；委托给 MilkRelatedHealthHelper，供炎症模型等使用</summary>
@@ -401,33 +395,14 @@ public partial class CompEquallyMilkable : CompMilkable
     /// <summary>当前是否处于事件驱动进水子步长突发窗口。</summary>
     internal bool IsInflowEventBurstActive() => inflowEventBurstTicksRemaining > 0;
 
-    /// <summary>
-    /// 双向桥接：当其他 mod 直接改写基类 <c>fullness</c> 时，把目标总量映射回本模组乳池（<c>breastFullness</c>），
-    /// 并走 <see cref="ApplyExternalTotalTarget"/> 以同步泌乳 Hediff Charge、排空炎症缓解等。
-    /// </summary>
-    /// <param name="stretchTotal">与当帧池顶格一致的撑大总容量（池单位）。</param>
-    private void TryBridgeExternalFullnessWrite(float stretchTotal)
+    /// <summary>基类 <c>fullness</c> 与泌乳 <c>Charge</c> 的外部改写桥接回乳池（设置项）；在池顶格校正之后调用。</summary>
+    private void TryBridgeExternalWrites(float stretchTotal)
     {
-        if (!MilkCumSettings.bridgeExternalCompMilkableFullness) return;
-        float poolTotal = Fullness;
-        float baseField = fullness;
-        if (Mathf.Abs(baseField - poolTotal) <= ExternalFullnessWriteEpsilon) return;
-        float target = Mathf.Clamp(baseField, 0f, stretchTotal);
-        ApplyExternalTotalTarget(target, stretchTotal, "CompMilkable.fullness bridge");
-    }
-
-    /// <summary>
-    /// 当泌乳 Hediff 的 <c>Charge</c> 与乳池总量不一致且 Hediff tick 未强行覆盖时，将 <c>Charge</c> 视作目标总量写回乳池。
-    /// </summary>
-    private void TryBridgeExternalChargeWrite(float stretchTotal)
-    {
-        if (!MilkCumSettings.bridgeExternalLactatingCharge) return;
-        var lact = Pawn?.LactatingHediffComp();
-        if (lact == null) return;
-        float poolTotal = Fullness;
-        float ch = lact.Charge;
-        if (Mathf.Abs(ch - poolTotal) <= ExternalFullnessWriteEpsilon) return;
-        float target = Mathf.Clamp(ch, 0f, stretchTotal);
-        ApplyExternalTotalTarget(target, stretchTotal, "HediffComp_Lactating.Charge bridge");
+        float pool = Fullness;
+        if (MilkCumSettings.bridgeExternalCompMilkableFullness && Mathf.Abs(fullness - pool) > ExternalFullnessWriteEpsilon)
+            ApplyExternalTotalTarget(Mathf.Clamp(fullness, 0f, stretchTotal), stretchTotal, "CompMilkable.fullness bridge");
+        if (MilkCumSettings.bridgeExternalLactatingCharge && Pawn?.LactatingHediffComp() is { } lact
+            && Mathf.Abs(lact.Charge - pool) > ExternalFullnessWriteEpsilon)
+            ApplyExternalTotalTarget(Mathf.Clamp(lact.Charge, 0f, stretchTotal), stretchTotal, "HediffComp_Lactating.Charge bridge");
     }
 }

@@ -2,6 +2,7 @@
 <LanguageData>
     <Equal_Milking>MilkCum</Equal_Milking>
     <MilkCum_ModName>MilkCum</MilkCum_ModName>
+    <EM.RequiresRJWActive>RJW (rim.job.world) is not in the active mod list. MilkCum's equal-milking breast pool requires RJW — enable RJW or remove MilkCum (see About.xml modDependencies).</EM.RequiresRJWActive>
     <MilkFullness>Fullness</MilkFullness>
     <LactatingStoppedBecauseFull>Full — milk production paused.</LactatingStoppedBecauseFull>
     <LactatingStoppedBecauseHungry>Hungry — milk production paused.</LactatingStoppedBecauseHungry>
@@ -32,7 +33,7 @@
     <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
     <EM.SectionDesc_RJW>When RJW (rim.job.world) is in the mod list, nursing/lust/sex-need hooks, fertility factor, post-sex pool boost (Δs slider), sex thought, and orgasm milk are all active automatically. This tab: fertility and Δs sliders, plus optional permanent breast milestones. Breast pool capacity and topology are on Balance → "Core scaling".</EM.SectionDesc_RJW>
     <EM.RjwIntegrationBreastPoolNavHint>RJW breast pool &amp; size (capacity, topology, flow): main tab {0} → sub-tab "Core scaling".</EM.RjwIntegrationBreastPoolNavHint>
-    <EM.SectionDesc_BreastPool>With RJW in the mod list, left/right pool capacity and flow use RJW breast data automatically. Without RJW, symmetric dual-pool behaviour applies. Below: capacity mode, topology, coefficient, flow multiplier, remaining days, lactation efficiency and gain.</EM.SectionDesc_BreastPool>
+    <EM.SectionDesc_BreastPool>With RJW (rim.job.world) active in the mod list, left/right pool capacity and flow use RJW breast data. Without RJW active, the equal-milking breast pool does not run (see About.xml modDependencies). Below: capacity mode, topology, coefficient, flow multiplier, remaining days, lactation efficiency and gain.</EM.SectionDesc_BreastPool>
     <EM.RjwBreastSizeSectionHint>Dual-pool data source:</EM.RjwBreastSizeSectionHint>
     <EM.RjwBreastPoolAutoLinked>RJW detected: breast pool capacity and flow are linked to RJW breasts automatically.</EM.RjwBreastPoolAutoLinked>
     <EM.RjwIntegrationFeaturesAutoOn>RJW detected: nursing/lust, sex-need bonus, post-nursing sex satisfaction, lactating sex thought, and post-sex pool boost (when Δs &gt; 0) are enabled automatically.</EM.RjwIntegrationFeaturesAutoOn>

@@ -73,6 +73,12 @@
         <member name="F:MilkCum.Core.Constants.PoolModelConstants.LODIntervalNotOnMapTicks">
             <summary>LOD：未载入地图的 Pawn（如商队、囚犯）更新池的 tick 间隔，降低多档负担。</summary>
         </member>
+        <member name="M:MilkCum.Core.Constants.PoolModelConstants.CapacityStretchCap(System.Single)">
+            <summary>单侧/条目撑大上限：基容×<see cref="F:MilkCum.Core.Constants.PoolModelConstants.StretchCapFactor"/>。</summary>
+        </member>
+        <member name="M:MilkCum.Core.Constants.PoolModelConstants.CapacityStretchCapMin001(System.Single)">
+            <summary>满度比例分母等用，避免除零。</summary>
+        </member>
         <member name="T:MilkCum.Core.MilkCumDefOf">
             <summary>本 mod 的 Def 统一由此类引用（EM = Equal Milking）。技能/文档中的 EMDefOf 即指此类。</summary>
         </member>
@@ -1070,6 +1076,9 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetPoolBaseTotal">
             <summary>池基础总容量（按 entries 累加），供 RJW 撑大/回缩同步用；无条目时退回 maxFullness - CapacityAdaptation。</summary>
         </member>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.SumStretchCapsForEntries(System.Collections.Generic.List{MilkCum.Fluids.Shared.Data.FluidPoolEntry})">
+            <summary>Σ(基容×撑大系数)，与进水/顶格一致；<paramref name="entries"/> 为空时为 0。</summary>
+        </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetPoolStretchTotal">
             <summary>池撑大总容量（= 基础×StretchCapFactor），供 RJW 撑大/回缩同步用。</summary>
         </member>
@@ -1127,17 +1136,8 @@
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.IsInflowEventBurstActive">
             <summary>当前是否处于事件驱动进水子步长突发窗口。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TryBridgeExternalFullnessWrite(System.Single)">
-            <summary>
-            双向桥接：当其他 mod 直接改写基类 <c>fullness</c> 时，把目标总量映射回本模组乳池（<c>breastFullness</c>），
-            并走 <see cref="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.ApplyExternalTotalTarget(System.Single,System.Single,System.String)"/> 以同步泌乳 Hediff Charge、排空炎症缓解等。
-            </summary>
-            <param name="stretchTotal">与当帧池顶格一致的撑大总容量（池单位）。</param>
-        </member>
-        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TryBridgeExternalChargeWrite(System.Single)">
-            <summary>
-            当泌乳 Hediff 的 <c>Charge</c> 与乳池总量不一致且 Hediff tick 未强行覆盖时，将 <c>Charge</c> 视作目标总量写回乳池。
-            </summary>
+        <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.TryBridgeExternalWrites(System.Single)">
+            <summary>基类 <c>fullness</c> 与泌乳 <c>Charge</c> 的外部改写桥接回乳池（设置项）；在池顶格校正之后调用。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable.GetDuctTakeFactor(MilkCum.Fluids.Shared.Data.FluidPoolEntry,MilkCum.Fluids.Shared.Data.FluidPoolNetwork,System.Boolean)">
             <summary>扣量导通系数：压力与导管阻力共同决定单位时间可抽取比例。</summary>
@@ -1723,7 +1723,7 @@
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateLactationalMilkStasis(Verse.Pawn,MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable)">
             <summary>奶水瘀积：各侧满池 tick 取最大参与久满判定；缓解要求每一侧相对撑大容量比例均 &lt; 0.56。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating,System.Single,System.Single)">
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(MilkCum.Fluids.Lactation.Hediffs.HediffComp_EqualMilkingLactating)">
             <summary>更新炎症 I 并尝试 I 阈值触发乳腺炎。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.MilkRelatedHealthHelper.TryTriggerMastitisFromMtb(Verse.Pawn,MilkCum.Fluids.Lactation.Comps.CompEquallyMilkable)">
@@ -2323,6 +2323,7 @@
             <summary>
             联动是否生效以「对应 mod 已在当前 mod 列表中激活」为准，不再叠加单独的启用勾选项。
             检测时机与调试工具页的「可选模组」列表一致。
+            乳房虚拟乳池与 RJW 胸形经济：<see cref="F:MilkCum.Integration.ModIntegrationGates.RjwModActive"/> 为 false 时相关系统明确不运行（与 About 中 RJW 依赖一致）。
             </summary>
         </member>
         <member name="M:MilkCum.PipeSystem.ApplyPatches.Building_Milking_PlaceMilkThing_Patch.Prefix(MilkCum.Core.Building_Milking,Verse.Thing@)">

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace MilkCum.Core.Constants;
 
 public static class Constants
@@ -57,4 +59,10 @@ public static class PoolModelConstants
     public const float MastitisDrainageReliefSeverityPerDay = 0.01f;
     /// <summary>LOD：未载入地图的 Pawn（如商队、囚犯）更新池的 tick 间隔，降低多档负担。</summary>
     public const int LODIntervalNotOnMapTicks = 600;
+
+    /// <summary>单侧/条目撑大上限：基容×<see cref="StretchCapFactor"/>。</summary>
+    public static float CapacityStretchCap(float capacity) => capacity * StretchCapFactor;
+
+    /// <summary>满度比例分母等用，避免除零。</summary>
+    public static float CapacityStretchCapMin001(float capacity) => Mathf.Max(0.001f, CapacityStretchCap(capacity));
 }

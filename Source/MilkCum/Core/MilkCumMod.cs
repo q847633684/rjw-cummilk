@@ -32,6 +32,8 @@ public class MilkCumMod : Mod
 			catch { /* 忽略反射失败 */ }
 		}
 		milkCumMod = content;
+		if (!ModIntegrationGates.RjwModActive)
+			Log.Error("[MilkCum] " + "EM.RequiresRJWActive".Translate());
 	}
 
 	public override void DoSettingsWindowContents(Rect inRect)

@@ -85,7 +85,7 @@ internal static class BreastPoolTooltipHelper
         var b = lactComp.GetFlowPerDayBreakdown();
         float totalMilk = lf + rf + af;
         float totalBaseCap = Mathf.Max(0.001f, lc + rc + ac);
-        float totalStretchCap = totalBaseCap * PoolModelConstants.StretchCapFactor;
+        float totalStretchCap = PoolModelConstants.CapacityStretchCap(totalBaseCap);
         float flowTotal = lflow + rflow + aflow;
         string totalPercent = totalBaseCap >= 0.001f ? (totalMilk / totalBaseCap).ToStringPercent() : "0%";
 
@@ -172,7 +172,7 @@ internal static class BreastPoolTooltipHelper
     {
         sb.AppendLine(sideTitle);
         string pct = cap >= 0.001f ? (full / cap).ToStringPercent() : "0%";
-        float stretch = cap * PoolModelConstants.StretchCapFactor;
+        float stretch = PoolModelConstants.CapacityStretchCap(cap);
         sb.Append(Tab).AppendLine("EM.PoolBreastSideMilkLine".Translate(
             full.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),
             cap.ToStringByStyle(ToStringStyle.FloatMaxTwo, ToStringNumberSense.Absolute),

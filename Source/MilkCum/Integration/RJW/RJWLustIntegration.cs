@@ -27,17 +27,12 @@ public static class RJWLustIntegration
     public static void OnBreastfeedComplete(Pawn mother, Pawn baby)
     {
         if (mother == null) return;
-        if (ModIntegrationGates.RjwModActive)
-        {
-            AddSexNeed(mother, SexNeedPerBreastfeedComplete);
-            if (baby != null) AddSexNeed(baby, SexNeedPerBreastfeedComplete);
-        }
-        if (ModIntegrationGates.RjwModActive)
-        {
-            int now = Find.TickManager.TicksGame;
-            LastNursedTick[mother] = now;
-            if (baby != null) LastNursedTick[baby] = now;
-        }
+        if (!ModIntegrationGates.RjwModActive) return;
+        AddSexNeed(mother, SexNeedPerBreastfeedComplete);
+        if (baby != null) AddSexNeed(baby, SexNeedPerBreastfeedComplete);
+        int now = Find.TickManager.TicksGame;
+        LastNursedTick[mother] = now;
+        if (baby != null) LastNursedTick[baby] = now;
     }
 
     /// <summary>刚哺乳/吸奶的 tick 记录，用于性行为结束时额外满足 Need_Sex。</summary>

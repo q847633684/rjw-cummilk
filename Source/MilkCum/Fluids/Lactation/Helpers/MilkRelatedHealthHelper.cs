@@ -3,7 +3,6 @@ using MilkCum.Core;
 using MilkCum.Core.Constants;
 using MilkCum.Core.Settings;
 using MilkCum.Fluids.Lactation.Comps;
-using MilkCum.Fluids.Shared.Data;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -52,7 +51,7 @@ public static class MilkRelatedHealthHelper
     {
         if (MilkCumDefOf.EM_BreastsEngorged == null || pawn == null || !pawn.RaceProps.Humanlike || !pawn.IsLactating()) return;
         if (comp == null) return;
-        var entries = PoolEntriesForHealth(comp, pawn);
+        var entries = comp.GetResolvedBreastPoolEntries();
         if (entries.Count == 0) return;
         float th = PoolModelConstants.FullnessThresholdFactor;
         bool anyAtEngorgedLevel = false;
@@ -86,7 +85,7 @@ public static class MilkRelatedHealthHelper
             RemoveLactationalMilkStasis(pawn);
             return;
         }
-        var entries = PoolEntriesForHealth(comp, pawn);
+        var entries = comp.GetResolvedBreastPoolEntries();
         if (entries.Count == 0) return;
         int maxTicks = 0;
         bool allSidesPoolLow = true;
@@ -96,7 +95,7 @@ public static class MilkRelatedHealthHelper
             if (string.IsNullOrEmpty(e.Key)) continue;
             int t = comp.GetTicksFullPoolForKey(e.Key);
             if (t > maxTicks) maxTicks = t;
-            float stretch = Mathf.Max(0.001f, e.Capacity * PoolModelConstants.StretchCapFactor);
+            float stretch = PoolModelConstants.CapacityStretchCapMin001(e.Capacity);
             float cur = comp.GetFullnessForKey(e.Key);
             if (cur / stretch >= 0.56f)
                 allSidesPoolLow = false;
@@ -127,13 +126,11 @@ public static class MilkRelatedHealthHelper
     }
 
     /// <summary>更新炎症 I 并尝试 I 阈值触发乳腺炎。</summary>
-    public static void UpdateInflammationAndTryTriggerMastitis(HediffComp_EqualMilkingLactating lactatingComp, float fullness, float maxFullness)
+    public static void UpdateInflammationAndTryTriggerMastitis(HediffComp_EqualMilkingLactating lactatingComp)
     {
         if (!MilkCumSettings.enableInflammationModel || lactatingComp == null) return;
         var milkComp = lactatingComp.CompEquallyMilkable;
         if (milkComp == null) return;
-        _ = fullness;
-        _ = maxFullness;
         float stasisScale = MilkRealismHelper.GetStasisTermScale(milkComp);
         lactatingComp.UpdateInflammation(milkComp, 60f / 3600f, stasisScale);
         lactatingComp.TryTriggerMastitisFromInflammation();
@@ -149,7 +146,7 @@ public static class MilkRelatedHealthHelper
         float hygieneRisk = DubsBadHygieneIntegration.GetHygieneRiskFactorForMastitis(pawn);
         bool badHygiene = hygieneRisk >= 0.4f;
         bool torsoInjury = HasTorsoOrBreastInjury(pawn);
-        var entries = PoolEntriesForHealth(comp, pawn);
+        var entries = comp.GetResolvedBreastPoolEntries();
         if (entries.Count == 0) return;
         int dayTicks = (int)PoolModelConstants.TicksPerGameDay;
         for (int i = 0; i < entries.Count; i++)
@@ -211,7 +208,7 @@ public static class MilkRelatedHealthHelper
         if (mastitis == null || mastitis.Severity < 0.66f) return;
         int dayTicks = (int)PoolModelConstants.TicksPerGameDay;
         bool anySideLongFull = false;
-        foreach (var e in PoolEntriesForHealth(comp, pawn))
+        foreach (var e in comp.GetResolvedBreastPoolEntries())
         {
             if (string.IsNullOrEmpty(e.Key)) continue;
             if (comp.GetTicksFullPoolForKey(e.Key) >= dayTicks)
@@ -268,12 +265,6 @@ public static class MilkRelatedHealthHelper
             BumpDown(pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_BreastAbscess), 0.04f);
         if (MilkCumDefOf.EM_LactationalMilkStasis != null)
             BumpDown(pawn.health.hediffSet.GetFirstHediffOfDef(MilkCumDefOf.EM_LactationalMilkStasis), 0.025f);
-    }
-
-    private static List<FluidPoolEntry> PoolEntriesForHealth(CompEquallyMilkable comp, Pawn pawn)
-    {
-        if (comp == null || pawn == null) return new List<FluidPoolEntry>();
-        return comp.GetResolvedBreastPoolEntries();
     }
 
     /// <summary>是否有躯干/乳房损伤（乳腺炎 MTB 风险）</summary>

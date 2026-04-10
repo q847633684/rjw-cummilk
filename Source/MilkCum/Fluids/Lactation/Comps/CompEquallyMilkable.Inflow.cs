@@ -20,7 +20,7 @@ public partial class CompEquallyMilkable
 
     /// <summary>单侧撑大上限：基容×StretchCapFactor，再套 SYS-02a 形变缓冲。</summary>
     private float GetPerSideStretchCapForEntry(FluidPoolEntry e) =>
-        MilkRealismHelper.GetPerSideStretchCap(e, e.Capacity * PoolModelConstants.StretchCapFactor);
+        MilkRealismHelper.GetPerSideStretchCap(e, PoolModelConstants.CapacityStretchCap(e.Capacity));
 
     /// <summary>单侧通道 + 顺应性；<paramref name="sharedChannelWeight"/> = max(0, core×顺应性)，供单一泌乳轴按权重分配。</summary>
     private void PrepareSideInflowRow(
@@ -102,7 +102,7 @@ public partial class CompEquallyMilkable
         }
         if (MilkCumSettings.enableLetdownReflex)
             lactatingComp.DecayLetdownReflex(60f / 60f); // Δt = 60 tick = 1 分钟
-        MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp, Fullness, maxFullness);
+        MilkRelatedHealthHelper.UpdateInflammationAndTryTriggerMastitis(lactatingComp);
         float residualL = lactatingComp.CurrentLactationAmount;
         float extraFall60 = 0f;
         float pendingNeedDelta = 0f;
@@ -121,9 +121,7 @@ public partial class CompEquallyMilkable
             }
         }
         float fullnessBefore = Fullness;
-        float stretchTotal = 0f;
-        for (int i = 0; i < entries.Count; i++)
-            stretchTotal += entries[i].Capacity * PoolModelConstants.StretchCapFactor;
+        float stretchTotal = SumStretchCapsForEntries(entries);
         var network = FluidPoolNetwork.Build(entries, breastFullness);
         fullnessBeforePerKeyCache.Clear();
         if (MilkCumSettings.lactationPoolTickLog && Pawn != null)

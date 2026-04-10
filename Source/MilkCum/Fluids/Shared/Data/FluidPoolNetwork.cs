@@ -52,7 +52,7 @@ public sealed class FluidPoolNetwork
             var e = sorted[i];
             float f = 0f;
             if (fullnessByKey != null && fullnessByKey.TryGetValue(e.Key, out float v)) f = v;
-            var n = new Node(e.Key, e.PoolIndex, e.Capacity, e.Capacity * PoolModelConstants.StretchCapFactor, f, e.IsLeft, e.SourcePart);
+            var n = new Node(e.Key, e.PoolIndex, e.Capacity, PoolModelConstants.CapacityStretchCap(e.Capacity), f, e.IsLeft, e.SourcePart);
             g.keyToIndex[e.Key] = g.nodes.Count;
             g.nodes.Add(n);
         }

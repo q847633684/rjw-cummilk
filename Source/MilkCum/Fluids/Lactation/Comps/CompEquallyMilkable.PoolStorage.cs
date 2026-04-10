@@ -287,10 +287,9 @@ public partial class CompEquallyMilkable
             }
         }
 
-        float stretch = PoolModelConstants.StretchCapFactor;
         foreach (var kv in capByKeyForMilk)
         {
-            float maxF = kv.Value * stretch;
+            float maxF = PoolModelConstants.CapacityStretchCap(kv.Value);
             if (breastFullness.TryGetValue(kv.Key, out float v) && v > maxF)
                 breastFullness[kv.Key] = maxF;
         }
@@ -393,7 +392,7 @@ public partial class CompEquallyMilkable
         {
             foreach (var v in breastFullness.Values) total += v;
         }
-        float stretchMirrorCap = Mathf.Max(0.01f, maxFullness) * PoolModelConstants.StretchCapFactor;
+        float stretchMirrorCap = PoolModelConstants.CapacityStretchCap(Mathf.Max(0.01f, maxFullness));
         fullness = Mathf.Clamp(total, 0f, stretchMirrorCap);
         lastSyncedBaseFullness = fullness;
     }
@@ -468,7 +467,7 @@ public partial class CompEquallyMilkable
                 {
                     var e = entries[i];
                     if (string.IsNullOrEmpty(e.Key)) continue;
-                    float maxF = e.Capacity * PoolModelConstants.StretchCapFactor;
+                    float maxF = PoolModelConstants.CapacityStretchCap(e.Capacity);
                     breastFullness[e.Key] = Mathf.Min(maxF, share);
                 }
             }
@@ -479,7 +478,7 @@ public partial class CompEquallyMilkable
                     var e = entries[i];
                     if (string.IsNullOrEmpty(e.Key)) continue;
                     float w = Mathf.Max(0f, e.Capacity) / sumCap;
-                    float maxF = e.Capacity * PoolModelConstants.StretchCapFactor;
+                    float maxF = PoolModelConstants.CapacityStretchCap(e.Capacity);
                     breastFullness[e.Key] = Mathf.Min(maxF, target * w);
                 }
             }

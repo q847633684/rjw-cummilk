@@ -2,6 +2,7 @@
 <LanguageData>
     <Equal_Milking>精液和母乳</Equal_Milking>
     <MilkCum_ModName>精液和母乳</MilkCum_ModName>
+    <EM.RequiresRJWActive>当前模组列表中未激活 RJW（rim.job.world）。本 mod 的平等挤奶乳房乳池依赖 RJW，请启用 RJW 或移除本 mod（见 About.xml 的 modDependencies）。</EM.RequiresRJWActive>
     <MilkFullness>奶量</MilkFullness>
     <LactatingStoppedBecauseFull>已满，暂停产奶。</LactatingStoppedBecauseFull>
     <LactatingStoppedBecauseHungry>饥饿，暂停产奶。</LactatingStoppedBecauseHungry>
@@ -32,7 +33,7 @@
     <EM.SectionDesc_DefaultByRole>这里是各路人马新来的默认脾气：殖民者、奴隶、囚犯、畜生、机械、怪东西各一套。没单独改过的人用这里的规矩；在奶表上还能逐个覆盖。</EM.SectionDesc_DefaultByRole>
     <EM.SectionDesc_RJW>若 mod 列表里有 RJW（rim.job.world）：哺乳/性需求、泌乳期性需求加成、哺乳后房事餍足、房事记忆、高潮产奶、房事奶劲（下方 Δs 滑条）等联动一律自动开启。本页只留怀孕率滑条、房事奶劲强弱、以及可选「永久胀杯里程碑」。虚拟乳池容量与拓扑在「数值平衡」→「核心倍率」。</EM.SectionDesc_RJW>
     <EM.RjwIntegrationBreastPoolNavHint>乳池与 RJW 胸形联动：请打开主 Tab「{0}」→ 子 Tab「核心倍率」（容量模式、拓扑、系数等）。</EM.RjwIntegrationBreastPoolNavHint>
-    <EM.SectionDesc_BreastPool>装着 RJW 时，左右奶池容量与流速会自动跟 RJW 胸形数据挂钩；没装 RJW 时仍按对称双池那套走。下面可调容量来源、拓扑、系数、流速、能泌几天、挤奶效率与劲头。</EM.SectionDesc_BreastPool>
+    <EM.SectionDesc_BreastPool>当 RJW（rim.job.world）在模组列表中激活时，左右乳池容量与流速与 RJW 胸形数据挂钩。未激活 RJW 时，平等挤奶的乳房乳池系统不运行（见 About.xml 的 modDependencies）。下面可调容量来源、拓扑、系数、流速、能泌几天、挤奶效率与劲头。</EM.SectionDesc_BreastPool>
     <EM.RjwBreastSizeSectionHint>双池数据来源：</EM.RjwBreastSizeSectionHint>
     <EM.RjwBreastPoolAutoLinked>已检测到 RJW：乳房乳池容量与流速已自动与 RJW 胸形联动。</EM.RjwBreastPoolAutoLinked>
     <EM.RjwIntegrationFeaturesAutoOn>已检测到 RJW：哺乳/性需求相关联动（含房事记忆、房事奶劲在 Δs&gt;0 时）已自动开启。</EM.RjwIntegrationFeaturesAutoOn>

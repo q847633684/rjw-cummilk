@@ -199,7 +199,7 @@ public class RJWLactatingBreastSizeGameComponent : Verse.GameComponent
                     float baseSide = RjwBreastPoolEconomy.CapacitySumForStableBreastBaseKey(entries, s.PoolKey);
                     if (baseSide < PoolModelConstants.Epsilon)
                         baseSide = Mathf.Max(PoolModelConstants.Epsilon, s.BaseCapacityPerSide * 2f);
-                    float vanillaStretch = baseSide * PoolModelConstants.StretchCapFactor;
+                    float vanillaStretch = PoolModelConstants.CapacityStretchCap(baseSide);
                     float stretchSide = MilkRealismHelper.GetPerSideStretchCapFromBase(baseSide, vanillaStretch);
                     string b = s.PoolKey;
                     float fulSide = milkComp.GetFullnessForKey(RjwBreastPoolEconomy.AppendVirtualBreastStorageSuffix(b, true))

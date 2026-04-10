@@ -206,7 +206,7 @@ public static class PawnMilkPoolExtensions
         if (entries.Count == 0) return 1f;
         var e = entries.FirstOrDefault(x => x.Key == poolKey);
         if (string.IsNullOrEmpty(e.Key)) return 1f;
-        float stretch = e.Capacity * PoolModelConstants.StretchCapFactor;
+        float stretch = PoolModelConstants.CapacityStretchCap(e.Capacity);
         float fullE = milkComp.GetFullnessForKey(poolKey);
         float pressure = MilkCumSettings.enablePressureFactor
             ? MilkCumSettings.GetPressureFactor(fullE / Mathf.Max(0.001f, stretch))
@@ -232,29 +232,25 @@ public static class PawnMilkPoolExtensions
         var rows = RjwBreastPoolEconomy.GetBreastPoolSideRows(pawn);
         var entries = comp.GetResolvedBreastPoolEntries();
         var keys = new HashSet<string>();
-        bool siblingCluster = ModIntegrationGates.RjwModActive;
         BodyPartRecord clusterParent = null;
         int clusterLateralRows = 0;
-        if (siblingCluster)
+        for (int i = 0; i < rows.Count; i++)
+        {
+            if (!BreastSideRowMatchesHoveredHediff(rows[i], breastHediff)) continue;
+            clusterParent = rows[i].BreastHediff?.Part?.parent;
+            break;
+        }
+
+        if (clusterParent != null)
         {
             for (int i = 0; i < rows.Count; i++)
             {
-                if (!BreastSideRowMatchesHoveredHediff(rows[i], breastHediff)) continue;
-                clusterParent = rows[i].BreastHediff?.Part?.parent;
-                break;
-            }
-
-            if (clusterParent != null)
-            {
-                for (int i = 0; i < rows.Count; i++)
-                {
-                    var r = rows[i];
-                    BodyPartRecord p = r.BreastHediff?.Part;
-                    if (p == null || p.parent != clusterParent) continue;
-                    if (!RjwBreastPoolEconomy.IsLateralBreastLeafPart(p)) continue;
-                    clusterLateralRows++;
-                    RjwBreastPoolEconomy.AddVirtualBreastStorageKeysForSideRow(r, keys);
-                }
+                var r = rows[i];
+                BodyPartRecord p = r.BreastHediff?.Part;
+                if (p == null || p.parent != clusterParent) continue;
+                if (!RjwBreastPoolEconomy.IsLateralBreastLeafPart(p)) continue;
+                clusterLateralRows++;
+                RjwBreastPoolEconomy.AddVirtualBreastStorageKeysForSideRow(r, keys);
             }
         }
 
@@ -268,7 +264,7 @@ public static class PawnMilkPoolExtensions
             }
         }
 
-        siblingPairHasMultipleLeaves = siblingCluster && clusterParent != null && clusterLateralRows >= 2;
+        siblingPairHasMultipleLeaves = clusterParent != null && clusterLateralRows >= 2;
 
         foreach (string vk in keys.OrderBy(k => k))
         {

@@ -169,7 +169,7 @@ public partial class HediffComp_EqualMilkingLactating
             for (int i = 0; i < entries.Count; i++)
             {
                 if (entries[i].Key != kv.Key) continue;
-                stretch = Mathf.Max(0.001f, entries[i].Capacity * PoolModelConstants.StretchCapFactor);
+                stretch = PoolModelConstants.CapacityStretchCapMin001(entries[i].Capacity);
                 break;
             }
             float ratio = kv.Value / stretch;
@@ -204,7 +204,7 @@ public partial class HediffComp_EqualMilkingLactating
         {
             var e = entries[i];
             if (string.IsNullOrEmpty(e.Key)) continue;
-            float stretch = Mathf.Max(0.001f, e.Capacity * PoolModelConstants.StretchCapFactor);
+            float stretch = PoolModelConstants.CapacityStretchCapMin001(e.Capacity);
             float fk = comp.GetFullnessForKey(e.Key);
             float pk = fk / stretch;
             float excess = Mathf.Max(0f, pk - stasisTh);
