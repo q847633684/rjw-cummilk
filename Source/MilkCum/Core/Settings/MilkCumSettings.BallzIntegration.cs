@@ -19,13 +19,13 @@ internal partial class MilkCumSettings
 
     private static void ExposeBallzIntegrationData()
     {
-        Scribe_Values.Look(ref Integration_Ballz_Enable, "EM.Integration.Ballz.Enable", true);
-        Scribe_Values.Look(ref Integration_Ballz_GonadSemenCapacity, "EM.Integration.Ballz.GonadSemenCapacity", true);
-        Scribe_Values.Look(ref Integration_Ballz_TestosteroneRefill, "EM.Integration.Ballz.TestosteroneRefill", true);
-        Scribe_Values.Look(ref Integration_Ballz_NeuteredNoSemen, "EM.Integration.Ballz.NeuteredNoSemen", true);
-        Scribe_Values.Look(ref Integration_Ballz_ElastrationPenalty, "EM.Integration.Ballz.ElastrationPenalty", true);
-        Scribe_Values.Look(ref Integration_Ballz_EstrogenLactation, "EM.Integration.Ballz.EstrogenLactation", false);
-        Scribe_Values.Look(ref Integration_Ballz_TestosteroneRequiresPenisPool, "EM.Integration.Ballz.TestosteroneRequiresPenisPool", true);
-        Scribe_Values.Look(ref Integration_Ballz_TesticleGear, "EM.Integration.Ballz.TesticleGear", true);
+        Scribe_Values.Look(ref Integration_Ballz_Enable, "MC2.EM.Integration.Ballz.Enable", true);
+        Scribe_Values.Look(ref Integration_Ballz_GonadSemenCapacity, "MC2.EM.Integration.Ballz.GonadSemenCapacity", true);
+        Scribe_Values.Look(ref Integration_Ballz_TestosteroneRefill, "MC2.EM.Integration.Ballz.TestosteroneRefill", true);
+        Scribe_Values.Look(ref Integration_Ballz_NeuteredNoSemen, "MC2.EM.Integration.Ballz.NeuteredNoSemen", true);
+        Scribe_Values.Look(ref Integration_Ballz_ElastrationPenalty, "MC2.EM.Integration.Ballz.ElastrationPenalty", true);
+        Scribe_Values.Look(ref Integration_Ballz_EstrogenLactation, "MC2.EM.Integration.Ballz.EstrogenLactation", false);
+        Scribe_Values.Look(ref Integration_Ballz_TestosteroneRequiresPenisPool, "MC2.EM.Integration.Ballz.TestosteroneRequiresPenisPool", true);
+        Scribe_Values.Look(ref Integration_Ballz_TesticleGear, "MC2.EM.Integration.Ballz.TesticleGear", true);
     }
 }

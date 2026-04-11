@@ -28,7 +28,7 @@ internal partial class MilkCumSettings
 		inRect.yMin += unitSize;
 
 		bool needPawnCache = pawnDefs == null
-			|| (mainTabIndex == (int)MainTabIndex.DataRaces && _prevMainTabForPawnCache != (int)MainTabIndex.DataRaces);
+			|| (mainTabIndex == (int)MainTabIndex.Data && _prevMainTabForPawnCache != (int)MainTabIndex.Data);
 		if (needPawnCache)
 		{
 			pawnDefs = GetMilkablePawns();
@@ -38,15 +38,15 @@ internal partial class MilkCumSettings
 
 		List<TabRecord> mainTabs = new()
 		{
-			new("EM.Tab.CoreSystems".Translate(), () => { mainTabIndex = (int)MainTabIndex.CoreSystems; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.CoreSystems),
-			new("EM.Tab.HealthRisk".Translate(), () => { mainTabIndex = (int)MainTabIndex.HealthRisk; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.HealthRisk),
+			new("EM.Tab.Lactation".Translate(), () => { mainTabIndex = (int)MainTabIndex.Lactation; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Lactation),
+			new("EM.Tab.Semen".Translate(), () => { mainTabIndex = (int)MainTabIndex.Semen; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Semen),
+			new("EM.Tab.Nectar".Translate(), () => { mainTabIndex = (int)MainTabIndex.Nectar; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Nectar),
 			new("EM.Tab.Permissions".Translate(), () => { mainTabIndex = (int)MainTabIndex.Permissions; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Permissions),
-			new("EM.Tab.Balance".Translate(), () => { mainTabIndex = (int)MainTabIndex.Balance; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Balance),
-			new("EM.Tab.Integrations".Translate(), () => { mainTabIndex = (int)MainTabIndex.Integrations; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Integrations),
-			new("EM.Tab.DataRaces".Translate(), () => { mainTabIndex = (int)MainTabIndex.DataRaces; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.DataRaces)
+			new("EM.Tab.Data".Translate(), () => { mainTabIndex = (int)MainTabIndex.Data; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Data),
+			new("EM.Tab.Integrations".Translate(), () => { mainTabIndex = (int)MainTabIndex.Integrations; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Integrations)
 		};
 		if (Prefs.DevMode)
-			mainTabs.Add(new TabRecord("EM.Tab.DevTools".Translate(), () => { mainTabIndex = (int)MainTabIndex.DevTools; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.DevTools));
+			mainTabs.Add(new TabRecord("EM.Tab.Debug".Translate(), () => { mainTabIndex = (int)MainTabIndex.Debug; subTabIndex = 0; }, mainTabIndex == (int)MainTabIndex.Debug));
 		if (mainTabIndex >= mainTabs.Count) mainTabIndex = 0;
 		TabDrawer.DrawTabs(inRect, mainTabs);
 		inRect.yMin += unitSize;
@@ -62,35 +62,45 @@ internal partial class MilkCumSettings
 		Widgets.DrawMenuSection(inRect);
 		Rect contentRect = inRect.ContractedBy(unitSize / 2);
 
-		bool useAdvancedSettings = mainTabIndex == (int)MainTabIndex.HealthRisk || mainTabIndex == (int)MainTabIndex.Permissions
-			|| mainTabIndex == (int)MainTabIndex.Balance || mainTabIndex == (int)MainTabIndex.Integrations || mainTabIndex == (int)MainTabIndex.DevTools;
-		// 勿每帧 new：否则 ScrollView/_sectionScrollPosition 归零，无法滚动或拖条。
+		bool useAdvancedSettings =
+			(mainTabIndex == (int)MainTabIndex.Lactation && subTabIndex > 0)
+			|| (mainTabIndex == (int)MainTabIndex.Semen && subTabIndex == 1)
+			|| (mainTabIndex == (int)MainTabIndex.Permissions && subTabIndex == 0)
+			|| mainTabIndex == (int)MainTabIndex.Integrations
+			|| mainTabIndex == (int)MainTabIndex.Debug;
 		if (useAdvancedSettings)
 			advancedSettings ??= new Widget_AdvancedSettings();
 
 		switch (mainTabIndex)
 		{
-			case (int)MainTabIndex.CoreSystems:
+			case (int)MainTabIndex.Lactation:
 				breastfeedSettings ??= new Widget_BreastfeedSettings(humanlikeBreastfeed, animalBreastfeed, mechanoidBreastfeed);
-				cumpilationSettings ??= new Widget_CumpilationSettings();
-				if (subTabIndex == 0) breastfeedSettings.DrawBreastfeedSystemFull(contentRect);
-				else cumpilationSettings.Draw(contentRect);
+				if (subTabIndex == 0)
+					breastfeedSettings.DrawBreastfeedSystemFull(contentRect);
+				else
+					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Lactation, subTabIndex);
 				break;
-			case (int)MainTabIndex.HealthRisk:
-				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.HealthRisk, subTabIndex);
+			case (int)MainTabIndex.Semen:
+				cumpilationSettings ??= new Widget_CumpilationSettings();
+				if (subTabIndex == 0)
+					cumpilationSettings.Draw(contentRect);
+				else
+					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Semen, subTabIndex);
+				break;
+			case (int)MainTabIndex.Nectar:
+				DrawNectarPlaceholder(contentRect);
 				break;
 			case (int)MainTabIndex.Permissions:
 				defaultSettingWidget ??= new Widget_DefaultSetting(colonistSetting, slaveSetting, prisonerSetting, animalSetting, mechSetting, entitySetting);
-				if (subTabIndex == 0) advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Permissions, 0);
-				else defaultSettingWidget.Draw(contentRect);
-				break;
-			case (int)MainTabIndex.Balance:
-				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Balance, subTabIndex);
+				if (subTabIndex == 0)
+					advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Permissions, 0);
+				else
+					defaultSettingWidget.Draw(contentRect);
 				break;
 			case (int)MainTabIndex.Integrations:
 				advancedSettings.DrawSection(contentRect, (int)MainTabIndex.Integrations, subTabIndex);
 				break;
-			case (int)MainTabIndex.DataRaces:
+			case (int)MainTabIndex.Data:
 				milkableTable ??= new Widget_MilkableTable(namesToProducts);
 				milkTagsTable ??= new Widget_MilkTagsTable(namesToProducts, productsToTags);
 				raceOverridesWidget ??= new Widget_RaceOverrides();
@@ -100,27 +110,45 @@ internal partial class MilkCumSettings
 				else if (subTabIndex == 2) raceOverridesWidget.Draw(contentRect);
 				else geneSetting.Draw(contentRect);
 				break;
-			case (int)MainTabIndex.DevTools:
+			case (int)MainTabIndex.Debug:
 				advancedSettings.DrawDevModeSection(contentRect);
 				break;
 		}
+	}
+
+	private static void DrawNectarPlaceholder(Rect contentRect)
+	{
+		var list = new Listing_Standard { maxOneColumn = true, ColumnWidth = contentRect.width - 20f };
+		list.Begin(contentRect);
+		list.Gap(8f);
+		GUI.color = Color.gray;
+		list.Label("EM.Nectar.PlaceholderTitle".Translate());
+		list.Gap(6f);
+		GUI.color = Color.white;
+		list.Label("EM.Nectar.PlaceholderDesc".Translate());
+		list.End();
 	}
 
 	private List<TabRecord> GetSubTabs()
 	{
 		switch (mainTabIndex)
 		{
-			case (int)MainTabIndex.CoreSystems:
+			case (int)MainTabIndex.Lactation:
 				return new List<TabRecord>
 				{
 					new("EM.SubTab.BreastfeedSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.CumSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1)
+					new("EM.SubTab.BalanceCore".Translate(), () => subTabIndex = 1, subTabIndex == 1),
+					new("EM.SubTab.MastitisSystem".Translate(), () => subTabIndex = 2, subTabIndex == 2),
+					new("EM.SubTab.OverflowPollution".Translate(), () => subTabIndex = 3, subTabIndex == 3),
+					new("EM.SubTab.BalanceRealism".Translate(), () => subTabIndex = 4, subTabIndex == 4),
+					new("EM.SubTab.BalanceAdvancedModel".Translate(), () => subTabIndex = 5, subTabIndex == 5),
+					new("EM.SubTab.BalanceColonistExtras".Translate(), () => subTabIndex = 6, subTabIndex == 6)
 				};
-			case (int)MainTabIndex.HealthRisk:
+			case (int)MainTabIndex.Semen:
 				return new List<TabRecord>
 				{
-					new("EM.SubTab.MastitisSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.OverflowPollution".Translate(), () => subTabIndex = 1, subTabIndex == 1)
+					new("EM.SubTab.CumSystem".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.BallzIntegration".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 				};
 			case (int)MainTabIndex.Permissions:
 				return new List<TabRecord>
@@ -128,21 +156,7 @@ internal partial class MilkCumSettings
 					new("EM.SubTab.MenuVisibility".Translate(), () => subTabIndex = 0, subTabIndex == 0),
 					new("EM.SubTab.DefaultBehavior".Translate(), () => subTabIndex = 1, subTabIndex == 1)
 				};
-			case (int)MainTabIndex.Balance:
-				return new List<TabRecord>
-				{
-					new("EM.SubTab.BalanceCore".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.BalanceRealism".Translate(), () => subTabIndex = 1, subTabIndex == 1),
-					new("EM.SubTab.BalanceAdvancedModel".Translate(), () => subTabIndex = 2, subTabIndex == 2),
-					new("EM.SubTab.BalanceColonistExtras".Translate(), () => subTabIndex = 3, subTabIndex == 3)
-				};
-			case (int)MainTabIndex.Integrations:
-				return new List<TabRecord>
-				{
-					new("EM.SubTab.RJWIntegration".Translate(), () => subTabIndex = 0, subTabIndex == 0),
-					new("EM.SubTab.NutritionSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1)
-				};
-			case (int)MainTabIndex.DataRaces:
+			case (int)MainTabIndex.Data:
 				return new List<TabRecord>
 				{
 					new("EM.SubTab.Milk".Translate(), () => subTabIndex = 0, subTabIndex == 0),
@@ -150,7 +164,14 @@ internal partial class MilkCumSettings
 					new("EM.SubTab.RaceOverrides".Translate(), () => subTabIndex = 2, subTabIndex == 2),
 					new("EM.SubTab.GenesAndAdvanced".Translate(), () => subTabIndex = 3, subTabIndex == 3)
 				};
-			case (int)MainTabIndex.DevTools:
+			case (int)MainTabIndex.Integrations:
+				return new List<TabRecord>
+				{
+					new("EM.SubTab.RJWIntegration".Translate(), () => subTabIndex = 0, subTabIndex == 0),
+					new("EM.SubTab.NutritionSystem".Translate(), () => subTabIndex = 1, subTabIndex == 1)
+				};
+			case (int)MainTabIndex.Nectar:
+			case (int)MainTabIndex.Debug:
 			default:
 				return new List<TabRecord>();
 		}

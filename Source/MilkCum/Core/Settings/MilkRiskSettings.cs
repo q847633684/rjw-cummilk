@@ -17,12 +17,12 @@ public class MilkRiskSettings : IExposable
 
 	public void ExposeData()
 	{
-		Scribe_Values.Look(ref allowMastitis, "EM.AllowMastitis", true);
-		Scribe_Values.Look(ref mastitisBaseMtbDays, "EM.MastitisBaseMtbDays", 1.5f);
-		Scribe_Values.Look(ref overFullnessRiskMultiplier, "EM.OverFullnessRiskMultiplier", 1.5f);
-		Scribe_Values.Look(ref hygieneRiskMultiplier, "EM.HygieneRiskMultiplier", 1f);
-		Scribe_Values.Look(ref mastitisInfectionRiskFactor, "EM.MastitisInfectionRiskFactor", 1.2f);
-		Scribe_Values.Look(ref mastitisMtbDaysMultiplierHumanlike, "EM.MastitisMtbDaysMultiplierHumanlike", 1f);
-		Scribe_Values.Look(ref mastitisMtbDaysMultiplierAnimal, "EM.MastitisMtbDaysMultiplierAnimal", 1f);
+		Scribe_Values.Look(ref allowMastitis, "MC2.EM.AllowMastitis", true);
+		Scribe_Values.Look(ref mastitisBaseMtbDays, "MC2.EM.MastitisBaseMtbDays", 1.5f);
+		Scribe_Values.Look(ref overFullnessRiskMultiplier, "MC2.EM.OverFullnessRiskMultiplier", 1.5f);
+		Scribe_Values.Look(ref hygieneRiskMultiplier, "MC2.EM.HygieneRiskMultiplier", 1f);
+		Scribe_Values.Look(ref mastitisInfectionRiskFactor, "MC2.EM.MastitisInfectionRiskFactor", 1.2f);
+		Scribe_Values.Look(ref mastitisMtbDaysMultiplierHumanlike, "MC2.EM.MastitisMtbDaysMultiplierHumanlike", 1f);
+		Scribe_Values.Look(ref mastitisMtbDaysMultiplierAnimal, "MC2.EM.MastitisMtbDaysMultiplierAnimal", 1f);
 	}
 }

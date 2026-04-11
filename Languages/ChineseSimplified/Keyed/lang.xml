@@ -9,16 +9,25 @@
     <CurrentMechEnergyFallPerDay>每日能量消耗</CurrentMechEnergyFallPerDay>
     <SomeonesRoom>{PAWN_labelShort} 的 {1}</SomeonesRoom>
     <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
-    <!-- 主 Tab / 子 Tab 标签（方案 B：精液/母乳/基因与种族/权限与默认） -->
-    <!-- 专业级 7 主 Tab -->
-    <EM.Tab.CoreSystems>核心机制</EM.Tab.CoreSystems>
-    <EM.Tab.HealthRisk>健康风险</EM.Tab.HealthRisk>
+    <!-- 主 Tab / 子 Tab：按体液 + 横切分层 -->
+    <EM.Tab.Lactation>泌乳</EM.Tab.Lactation>
+    <EM.Tab.Semen>精液与泄漏</EM.Tab.Semen>
+    <EM.Tab.Nectar>妹汁（规划中）</EM.Tab.Nectar>
     <EM.Tab.Permissions>权限规则</EM.Tab.Permissions>
-    <EM.Tab.Balance>数值平衡</EM.Tab.Balance>
+    <EM.Tab.Data>数据与映射</EM.Tab.Data>
     <EM.Tab.Integrations>外来工具</EM.Tab.Integrations>
+    <EM.Tab.Debug>调试工具</EM.Tab.Debug>
+    <!-- 旧版 MilkCum.dll 仍使用下列主 Tab 键；未重新编译前缺键会显示原文 key -->
+    <EM.Tab.CoreSystems>核心机制</EM.Tab.CoreSystems>
+    <EM.Tab.CoreSystem>核心机制</EM.Tab.CoreSystem>
+    <EM.Tab.HealthRisk>健康风险</EM.Tab.HealthRisk>
+    <EM.Tab.Balance>数值平衡</EM.Tab.Balance>
     <EM.Tab.DataRaces>数据种族</EM.Tab.DataRaces>
+    <EM.Tab.DataRace>数据种族</EM.Tab.DataRace>
     <EM.Tab.DevTools>调试工具</EM.Tab.DevTools>
-    <!-- 旧主 Tab（方案 B 后未使用，保留兼容） -->
+    <EM.SubTab.BallzIntegration>性腺联动 (Ballz)</EM.SubTab.BallzIntegration>
+    <EM.Nectar.PlaceholderTitle>妹汁系统</EM.Nectar.PlaceholderTitle>
+    <EM.Nectar.PlaceholderDesc>尚未实装。后续版本将在此 Tab 提供妹汁相关选项。</EM.Nectar.PlaceholderDesc>
     <EM.MenuSuckleFrom>吸 {0} 的奶</EM.MenuSuckleFrom>
     <EM.JobReportBreastfeed>母乳喂养 TargetA。</EM.JobReportBreastfeed>
     <EM.JobReportSuckleFrom>吸 TargetA 的奶。</EM.JobReportSuckleFrom>
@@ -30,8 +39,8 @@
     <EM.ToleranceVanillaOnlyBody>催乳素耐受、泌乳 Hediff 合并等由原版与你的 Def 驱动。本 mod 不再单独用「催乳素耐受」去乘水池进水或泌乳流速。若 XML 仍挂 EM 催乳素耐受 Hediff，它主要影响心情/界面提示，不再在这里二次打折产量。</EM.ToleranceVanillaOnlyBody>
     <EM.SectionDesc_IdentityAndMenu>右键某人时要不要冒出「喂催乳素」「哺乳/吸奶」之类条目。按身份（机械体、自己人、奴隶、囚犯、畜生、别的）分开勾，免得菜单又长又杂。</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>这里是各路人马新来的默认脾气：殖民者、奴隶、囚犯、畜生、机械、怪东西各一套。没单独改过的人用这里的规矩；在奶表上还能逐个覆盖。</EM.SectionDesc_DefaultByRole>
-    <EM.SectionDesc_RJW>若 mod 列表里有 RJW（rim.job.world）：哺乳/性需求、泌乳期性需求加成、哺乳后房事餍足、房事记忆、高潮产奶、房事奶劲（下方 Δs 滑条）等联动一律自动开启。本页：怀孕率滑条、房事奶劲强弱、可选「永久胀杯里程碑」；若同时启用 RJW 性腺模组，另有性腺/激素与虚拟精池、泌乳进水的联动开关。虚拟乳池容量与拓扑：「数值平衡」→「核心倍率」。生理拟真（SYS 开关）：「数值平衡」→「生理拟真」。导管脉冲、组织适应 θ/ω 等数值：「数值平衡」→「导管与模型」。</EM.SectionDesc_RJW>
-    <EM.RjwIntegrationBreastPoolNavHint>乳池与 RJW 胸形联动：请打开主 Tab「{0}」→ 子 Tab「核心倍率」（容量模式、拓扑、系数等）。</EM.RjwIntegrationBreastPoolNavHint>
+    <EM.SectionDesc_RJW>若 mod 列表里有 RJW（rim.job.world）：哺乳/性需求、泌乳期性需求加成、哺乳后房事餍足、房事记忆、高潮产奶、房事奶劲（下方 Δs 滑条）等联动一律自动开启。本页：怀孕率滑条、房事奶劲强弱、可选「永久胀杯里程碑」。性腺/激素与虚拟精池等：在启用 RJW 性腺模组时，请至「精液与泄漏」→「性腺联动 (Ballz)」。虚拟乳池容量与拓扑：「泌乳」→「核心倍率」。生理拟真（SYS 开关）：「泌乳」→「生理拟真」。导管脉冲、组织适应 θ/ω 等：「泌乳」→「导管与模型」。</EM.SectionDesc_RJW>
+    <EM.RjwIntegrationBreastPoolNavHint>乳池与 RJW 胸形联动：主 Tab「{0}」→ 子 Tab「{1}」（容量、拓扑、流速等）。</EM.RjwIntegrationBreastPoolNavHint>
     <EM.SectionDesc_BreastPool>当 RJW（rim.job.world）在模组列表中激活时，左右乳池容量与流速与 RJW 胸形数据挂钩。未激活 RJW 时，平等挤奶的乳房乳池系统不运行（见 About.xml 的 modDependencies）。下面可调容量来源、拓扑、系数、流速、能泌几天、挤奶效率与劲头。</EM.SectionDesc_BreastPool>
     <EM.RjwBreastSizeSectionHint>双池数据来源：</EM.RjwBreastSizeSectionHint>
     <EM.RjwBreastPoolAutoLinked>已检测到 RJW：乳房乳池容量与流速已自动与 RJW 胸形联动。</EM.RjwBreastPoolAutoLinked>

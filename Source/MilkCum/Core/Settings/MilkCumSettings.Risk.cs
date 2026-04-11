@@ -19,6 +19,6 @@ internal partial class MilkCumSettings
 
 	private static void ExposeRiskData()
 	{
-		Scribe_Deep.Look(ref _risk, "EM.MilkRiskSettings");
+		Scribe_Deep.Look(ref _risk, "MC2.EM.MilkRiskSettings");
 	}
 }

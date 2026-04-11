@@ -56,7 +56,7 @@ public class Widget_AdvancedSettings
 
 	private static int MakeAdvancedScrollKey(int mainTab, int subTab) => unchecked(mainTab * 256 + subTab);
 
-	/// <summary>专业级 7 主 Tab：按 mainTab 分发到健康/权限/数值/联动等区块。</summary>
+	/// <summary>按 mainTab 分发到泌乳子页、权限菜单、精液 Ballz、联动等（泌乳哺乳子 Tab 由 UI 直接绘制）。</summary>
 	public void DrawSection(Rect inRect, int mainTab, int subTab)
 	{
 		int sectionKey = MakeAdvancedScrollKey(mainTab, subTab);
@@ -93,15 +93,40 @@ public class Widget_AdvancedSettings
 
 	private float DrawAdvancedMainContent(Rect content, int mainTab, int subTab)
 	{
-		if (mainTab == (int)MainTabIndex.HealthRisk)
-			return DrawHealthSection(content, subTab);
+		if (mainTab == (int)MainTabIndex.Lactation)
+		{
+			// subTab 0：哺乳与营养 — 由 MilkCumSettings.UI 调用 Widget_BreastfeedSettings
+			if (subTab == 1)
+				return DrawBreastPoolMain(content, SubTabBalance_Core);
+			if (subTab == 2)
+				return DrawHealthSection(content, SubTabHealth_Mastitis);
+			if (subTab == 3)
+				return DrawHealthSection(content, SubTabHealth_Overflow);
+			if (subTab == 4)
+				return DrawBreastPoolMain(content, SubTabBalance_Realism);
+			if (subTab == 5)
+				return DrawBreastPoolMain(content, SubTabBalance_AdvancedModel);
+			if (subTab == 6)
+				return DrawBreastPoolMain(content, SubTabBalance_ColonistExtras);
+			return content.height;
+		}
+		if (mainTab == (int)MainTabIndex.Semen && subTab == 1)
+			return DrawSemenBallzSection(content);
 		if (mainTab == (int)MainTabIndex.Permissions && subTab == 0)
 			return DrawPermissionsMenuSection(content);
-		if (mainTab == (int)MainTabIndex.Balance)
-			return DrawBreastPoolMain(content, subTab);
 		if (mainTab == (int)MainTabIndex.Integrations)
 			return DrawIntegrationSectionExtended(content, subTab);
 		return content.height;
+	}
+
+	private static float DrawSemenBallzSection(Rect content)
+	{
+		var list = new Listing_Standard { maxOneColumn = true, ColumnWidth = content.width - 20f };
+		list.Begin(content);
+		list.Gap(6f);
+		DrawBallzGonadsIntegrationBlock(list);
+		list.End();
+		return list.MaxColumnHeightSeen;
 	}
 
 	/// <summary>DevMode: selected pawn lactation debug. Only when playing and map active; avoids InvalidCastException in Mod settings.</summary>
@@ -794,7 +819,7 @@ public class Widget_AdvancedSettings
 	private void DrawRjwBlock(Listing_Standard list)
 	{
 		GUI.color = Color.gray;
-		list.Label("EM.RjwIntegrationBreastPoolNavHint".Translate("EM.Tab.Balance".Translate()));
+		list.Label("EM.RjwIntegrationBreastPoolNavHint".Translate("EM.Tab.Lactation".Translate(), "EM.SubTab.BalanceCore".Translate()));
 		list.Label("EM.RjwIntegrationFeaturesAutoOn".Translate());
 		GUI.color = Color.white;
 		list.Gap(6f);
@@ -848,7 +873,6 @@ public class Widget_AdvancedSettings
 			TooltipHandler.TipRegion(rSevDelta, "EM.RjwPermanentBreastGainDeltaDesc".Translate());
 		}
 		GUI.enabled = rjwBreastGui;
-		DrawBallzGonadsIntegrationBlock(list);
 	}
 
 	private static void DrawBallzGonadsIntegrationBlock(Listing_Standard list)

@@ -180,10 +180,7 @@
             <summary>仅当 DevMode 且 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.milkingActionLog"/> 为 true 时输出；与 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.lactationLog"/> 无关。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient">
-            <summary>RJW 胸围容量系数：单侧基容量 =（由 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode"/> 选定的严重度/体积/重量等基值）× 本系数，默认 2。仅当 RJW（rim.job.world）在 mod 列表中时乳房池才使用 RJW 数据。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode">
-            <summary>乳池单侧基容量来源：默认 <see cref="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastVolume"/>（体积/重量无有效 RJW 尺寸则为 0）；流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
+            <summary>RJW 胸围容量系数：单侧基容量 = RJW <c>BreastSize.volume</c>（升）× 本系数（再裁剪上限）；无有效体积则为 0、不进池。默认 2。仅当 RJW（rim.job.world）在列表中时乳房池使用 RJW 数据。流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.rjwNippleStageFlowBonusPercent">
             <summary>RJW 乳房阶段标签含 “Nipple” 时，对进水/高潮产液流速倍率施加的百分比修正（0=关闭）；限制在约 ±15% 内。</summary>
@@ -232,6 +229,9 @@
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.lactationLevelCapDurationMultiplier">
             <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
+        </member>
+        <member name="M:MilkCum.Core.Settings.MilkCumSettings.ExposeData">
+            <summary>Mod 设置序列化键前缀 <c>MC2.EM.*</c>；与旧版 <c>EM.*</c> 不兼容，升级后配置重置为默认。</summary>
         </member>
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.Cum_EnableVirtualSemenPool">
             <summary>启用左/右虚拟睾丸精液池：全身射精器官汇入两侧，射精量受池存量限制并在游戏日内回充。</summary>
@@ -316,20 +316,8 @@
         <member name="F:MilkCum.Core.Settings.MilkCumSettings.realismEstablishmentMinMult">
             <summary>第 0 日进水相对满倍率的下限（与 1 之间线性插值）。</summary>
         </member>
-        <member name="T:MilkCum.Core.Settings.RjwBreastPoolCapacityMode">
-            <summary>乳池单侧基容量如何从 RJW 乳房 Hediff 推导（再乘 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient"/> 的语义见各模式说明）。仅存三档：纯严重度 / 纯重量 / 纯体积。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.Severity">
-            <summary>严重度×系数。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastWeight">
-            <summary>RJW PartSize 估算乳房重量（kg）×系数；无有效重量数据时为 0（不进池）。</summary>
-        </member>
-        <member name="F:MilkCum.Core.Settings.RjwBreastPoolCapacityMode.RjwBreastVolume">
-            <summary>RJW <c>BreastSize.volume</c>（升）×系数；无有效体积数据时为 0（不进池）。新安装默认。</summary>
-        </member>
         <member name="T:MilkCum.Core.Settings.MainTabIndex">
-            <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
+            <summary>设置主 Tab：按体液子系统 + 横切分层。泌乳 / 精液 / 妹汁(占位) / 权限 / 数据映射 / 联动 / 调试(仅 DevMode)。</summary>
         </member>
         <member name="T:MilkCum.Core.Settings.MilkRiskSettings">
             <summary>乳腺炎与耐受相关的设置分组。</summary>
@@ -1902,15 +1890,14 @@
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetNippleStageFlowDecorMultiplier(Verse.Hediff)">
             <summary>验收阶段 4：RJW 乳房 Hediff 当前阶段标签含 “Nipple” 时，对进水/产液倍率施加小幅修饰（默认关闭，百分比为 0 时不生效）。</summary>
         </member>
-        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.ComputeBaseCapacityPerSide(Verse.Hediff,System.Single,System.Single,System.Boolean)">
+        <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.ComputeBaseCapacityPerSide(Verse.Hediff,System.Single,System.Boolean)">
             <summary>
-            单侧虚拟池基容量（组织适应前）：由 <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastPoolCapacityMode"/> 在「纯严重度 / 纯 RJW 重量 / 纯 RJW 体积」三选一。
-            泌乳流速仍由 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastHediffFlowMultiplier(Verse.Hediff)"/>（GetFluidMultiplier）单独决定。
-            体积/重量档在无法得到有效 RJW 尺寸时结果为 0、不进池。
+            单侧虚拟池基容量（组织适应前）：RJW <c>BreastSize.volume</c>（升）× <see cref="F:MilkCum.Core.Settings.MilkCumSettings.rjwBreastCapacityCoefficient"/>，裁剪到 [0.01, 10]；无有效体积为 0、不进池。
+            泌乳流速仍由 <see cref="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastHediffFlowMultiplier(Verse.Hediff)"/> 单独决定。
             </summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.ComputeBaseCapacityPerSide(Verse.Hediff)">
-            <summary>兼容入口：内部调用 <see cref="M:rjw.PartSizeCalculator.TryGetBreastSize(Verse.Hediff,rjw.BreastSize@)"/> 一次。</summary>
+            <summary>内部调用 <see cref="M:rjw.PartSizeCalculator.TryGetBreastSize(Verse.Hediff,rjw.BreastSize@)"/>，仅按体积推导基容量。</summary>
         </member>
         <member name="M:MilkCum.Fluids.Lactation.Helpers.RjwBreastPoolEconomy.GetBreastPoolSnapshots(Verse.Pawn)">
             <summary>当前小人、在启用 RJW 胸池时的乳房快照（虚拟左·右）。</summary>
@@ -2469,7 +2456,7 @@
             <summary>与 RJW / 原版习惯一致：每子区段在视口高度之上额外需要的高度（上一帧由 Listing 测量）。</summary>
         </member>
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawSection(UnityEngine.Rect,System.Int32,System.Int32)">
-            <summary>专业级 7 主 Tab：按 mainTab 分发到健康/权限/数值/联动等区块。</summary>
+            <summary>按 mainTab 分发到泌乳子页、权限菜单、精液 Ballz、联动等（泌乳哺乳子 Tab 由 UI 直接绘制）。</summary>
         </member>
         <member name="M:MilkCum.UI.Widget_AdvancedSettings.DrawDevModeSection(UnityEngine.Rect)">
             <summary>DevMode: selected pawn lactation debug. Only when playing and map active; avoids InvalidCastException in Mod settings.</summary>

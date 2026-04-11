@@ -2,7 +2,6 @@ using UnityEngine;
 using Verse;
 using RimWorld;
 using HarmonyLib;
-using System.Reflection;
 using MilkCum.Core.Settings;
 
 namespace MilkCum.Core;
@@ -15,22 +14,7 @@ public class MilkCumMod : Mod
 		: base(content)
 	{
 		Harmony = new HarmonyLib.Harmony("com.akaster.rimworld.mod.milkcum");
-		try
-		{
-			Settings = base.GetSettings<MilkCumSettings>();
-		}
-		catch (System.InvalidCastException)
-		{
-			Verse.Log.Warning("[MilkCum] Saved settings type was invalid or from an older version, using defaults.");
-			Settings = new MilkCumSettings();
-			// 让基类也使用当前实例，以便保存时写入正确对象
-			try
-			{
-				var field = typeof(Mod).GetField("settings", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-				field?.SetValue(this, Settings);
-			}
-			catch { /* 忽略反射失败 */ }
-		}
+		Settings = GetSettings<MilkCumSettings>();
 		milkCumMod = content;
 		if (!ModIntegrationGates.RjwModActive)
 			Log.Error("[MilkCum] " + "EM.RequiresRJWActive".Translate());

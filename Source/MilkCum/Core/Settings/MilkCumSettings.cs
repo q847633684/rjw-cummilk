@@ -5,16 +5,16 @@ using Verse;
 
 namespace MilkCum.Core.Settings;
 
-/// <summary>专业级 UI：按系统类型分层。核心机制 / 健康风险 / 权限规则 / 数值平衡 / 模组联动 / 数据种族 / 调试工具（仅 DevMode）。</summary>
+/// <summary>设置主 Tab：按体液子系统 + 横切分层。泌乳 / 精液 / 妹汁(占位) / 权限 / 数据映射 / 联动 / 调试(仅 DevMode)。</summary>
 public enum MainTabIndex
 {
-	CoreSystems = 0,
-	HealthRisk = 1,
-	Permissions = 2,
-	Balance = 3,
-	Integrations = 4,
-	DataRaces = 5,
-	DevTools = 6
+	Lactation = 0,
+	Semen = 1,
+	Nectar = 2,
+	Permissions = 3,
+	Data = 4,
+	Integrations = 5,
+	Debug = 6
 }
 
 [StaticConstructorOnStartup]
@@ -133,67 +133,68 @@ internal partial class MilkCumSettings : ModSettings
 	public static IEnumerable<ThingDef> productDefs;
 	public static Dictionary<ThingDef, RaceMilkType> defaultMilkProducts;
 
+	/// <summary>Mod 设置序列化键前缀 <c>MC2.EM.*</c>；与旧版 <c>EM.*</c> 不兼容，升级后配置重置为默认。</summary>
 	public override void ExposeData()
 	{
 		base.ExposeData();
-		Scribe_Values.Look(ref milkingWorkTotalBase, "EM.MilkingWorkTotalBase", 60f);
-		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "EM.FemaleAnimalAdultAlwaysLactating", false);
-		Scribe_Values.Look(ref showMechOptions, "EM.ShowMechOptions", true);
-		Scribe_Values.Look(ref showColonistOptions, "EM.ShowColonistOptions", true);
-		Scribe_Values.Look(ref showSlaveOptions, "EM.ShowSlaveOptions", true);
-		Scribe_Values.Look(ref showPrisonerOptions, "EM.ShowPrisonerOptions", true);
-		Scribe_Values.Look(ref showAnimalOptions, "EM.ShowAnimalOptions", true);
-		Scribe_Values.Look(ref showMiscOptions, "EM.ShowMiscOptions", true);
-		Scribe_Values.Look(ref defaultSucklerIncludeChildren, "EM.DefaultSucklerIncludeChildren", true);
-		Scribe_Values.Look(ref defaultSucklerIncludeLover, "EM.DefaultSucklerIncludeLover", true);
-		Scribe_Values.Look(ref defaultSucklerIncludeSpouse, "EM.DefaultSucklerIncludeSpouse", true);
-		Scribe_Values.Look(ref defaultSucklerExcludeParents, "EM.DefaultSucklerExcludeParents", true);
-		Scribe_Values.Look(ref nutritionToEnergyFactor, "EM.NutritionToEnergyFactor", 100f);
-		Scribe_Values.Look(ref lactationExtraNutritionBasis, "EM.LactationExtraNutritionFactor", 150);
-		Scribe_Values.Look(ref reabsorbNutritionEnabled, "EM.ReabsorbNutritionEnabled", true);
-		Scribe_Values.Look(ref reabsorbNutritionEfficiency, "EM.ReabsorbNutritionEfficiency", 0.5f);
-		Scribe_Values.Look(ref lactatingGainEnabled, "EM.LactatingGainEnabled", true);
-		Scribe_Values.Look(ref lactatingGainCapModPercent, "EM.LactatingGainCapModPercent", 0.10f);
-		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "EM.RjwBreastCapacityCoefficient", 2f);
-		Scribe_Values.Look(ref rjwNippleStageFlowBonusPercent, "EM.RjwNippleStageFlowBonusPct", 0f);
-		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "EM.RjwLactatingSeverityBonus", 0.15f);
-		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "EM.RjwLactatingStretchSeverityBonus", 0.05f);
-		Scribe_Values.Look(ref rjwPermanentBreastGainFromLactationEnabled, "EM.RjwPermanentBreastGainFromLactationEnabled", false);
-		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
-		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
-		Scribe_Values.Look(ref rjwLactationFertilityFactor, "EM.RjwLactationFertilityFactor", 0.85f);
-		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "EM.RjwSexSatisfactionAfterNursingEnabled", true);
-		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "EM.RjwLactatingInSexDescriptionEnabled", true);
-		Scribe_Values.Look(ref bridgeExternalCompMilkableFullness, "EM.BridgeExternalCompMilkableFullness", true);
-		Scribe_Values.Look(ref bridgeExternalLactatingCharge, "EM.BridgeExternalLactatingCharge", true);
-		Scribe_Values.Look(ref logExternalFullnessBridge, "EM.LogExternalFullnessBridge", false);
-		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "EM.RjwSexAddsLactationBoost", true);
-		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "EM.RjwSexLactationBoostDeltaS", 0.15f);
+		Scribe_Values.Look(ref milkingWorkTotalBase, "MC2.EM.MilkingWorkTotalBase", 60f);
+		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "MC2.EM.FemaleAnimalAdultAlwaysLactating", false);
+		Scribe_Values.Look(ref showMechOptions, "MC2.EM.ShowMechOptions", true);
+		Scribe_Values.Look(ref showColonistOptions, "MC2.EM.ShowColonistOptions", true);
+		Scribe_Values.Look(ref showSlaveOptions, "MC2.EM.ShowSlaveOptions", true);
+		Scribe_Values.Look(ref showPrisonerOptions, "MC2.EM.ShowPrisonerOptions", true);
+		Scribe_Values.Look(ref showAnimalOptions, "MC2.EM.ShowAnimalOptions", true);
+		Scribe_Values.Look(ref showMiscOptions, "MC2.EM.ShowMiscOptions", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeChildren, "MC2.EM.DefaultSucklerIncludeChildren", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeLover, "MC2.EM.DefaultSucklerIncludeLover", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeSpouse, "MC2.EM.DefaultSucklerIncludeSpouse", true);
+		Scribe_Values.Look(ref defaultSucklerExcludeParents, "MC2.EM.DefaultSucklerExcludeParents", true);
+		Scribe_Values.Look(ref nutritionToEnergyFactor, "MC2.EM.NutritionToEnergyFactor", 100f);
+		Scribe_Values.Look(ref lactationExtraNutritionBasis, "MC2.EM.LactationExtraNutritionFactor", 150);
+		Scribe_Values.Look(ref reabsorbNutritionEnabled, "MC2.EM.ReabsorbNutritionEnabled", true);
+		Scribe_Values.Look(ref reabsorbNutritionEfficiency, "MC2.EM.ReabsorbNutritionEfficiency", 0.5f);
+		Scribe_Values.Look(ref lactatingGainEnabled, "MC2.EM.LactatingGainEnabled", true);
+		Scribe_Values.Look(ref lactatingGainCapModPercent, "MC2.EM.LactatingGainCapModPercent", 0.10f);
+		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "MC2.EM.RjwBreastCapacityCoefficient", 2f);
+		Scribe_Values.Look(ref rjwNippleStageFlowBonusPercent, "MC2.EM.RjwNippleStageFlowBonusPct", 0f);
+		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "MC2.EM.RjwLactatingSeverityBonus", 0.15f);
+		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "MC2.EM.RjwLactatingStretchSeverityBonus", 0.05f);
+		Scribe_Values.Look(ref rjwPermanentBreastGainFromLactationEnabled, "MC2.EM.RjwPermanentBreastGainFromLactationEnabled", false);
+		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "MC2.EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
+		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "MC2.EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
+		Scribe_Values.Look(ref rjwLactationFertilityFactor, "MC2.EM.RjwLactationFertilityFactor", 0.85f);
+		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "MC2.EM.RjwSexSatisfactionAfterNursingEnabled", true);
+		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "MC2.EM.RjwLactatingInSexDescriptionEnabled", true);
+		Scribe_Values.Look(ref bridgeExternalCompMilkableFullness, "MC2.EM.BridgeExternalCompMilkableFullness", true);
+		Scribe_Values.Look(ref bridgeExternalLactatingCharge, "MC2.EM.BridgeExternalLactatingCharge", true);
+		Scribe_Values.Look(ref logExternalFullnessBridge, "MC2.EM.LogExternalFullnessBridge", false);
+		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "MC2.EM.RjwSexAddsLactationBoost", true);
+		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "MC2.EM.RjwSexLactationBoostDeltaS", 0.15f);
 		ExposeRiskData();
-		Scribe_Values.Look(ref overflowFilthDefName, "EM.OverflowFilthDefName", "Filth_Vomit");
-		Scribe_Values.Look(ref lactationLevelCap, "EM.LactationLevelCap", 0f);
-		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "EM.LactationLevelCapDurationMultiplier", 1.5f);
-		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "EM.AiPreferHighFullnessTargets", true);
-		Scribe_Collections.Look(ref raceCanAlwaysLactate, "EM.RaceCanAlwaysLactate", LookMode.Value);
-		Scribe_Collections.Look(ref raceCannotLactate, "EM.RaceCannotLactate", LookMode.Value);
-		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "EM.DefaultFlowMultiplierForHumanlike", 2f);
+		Scribe_Values.Look(ref overflowFilthDefName, "MC2.EM.OverflowFilthDefName", "Filth_Vomit");
+		Scribe_Values.Look(ref lactationLevelCap, "MC2.EM.LactationLevelCap", 0f);
+		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "MC2.EM.LactationLevelCapDurationMultiplier", 1.5f);
+		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "MC2.EM.AiPreferHighFullnessTargets", true);
+		Scribe_Collections.Look(ref raceCanAlwaysLactate, "MC2.EM.RaceCanAlwaysLactate", LookMode.Value);
+		Scribe_Collections.Look(ref raceCannotLactate, "MC2.EM.RaceCannotLactate", LookMode.Value);
+		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "MC2.EM.DefaultFlowMultiplierForHumanlike", 2f);
 		ExposeModelData();
-		Scribe_Values.Look(ref lactationPoolTickLog, "EM.LactationPoolTickLog", false);
-		Scribe_Values.Look(ref milkingActionLog, "EM.MilkingActionLog", false);
-		Scribe_Values.Look(ref lactationLog, "EM.LactationLog", true);
-		Scribe_Values.Look(ref lactationDrugIntakeLog, "EM.LactationDrugIntakeLog", false);
+		Scribe_Values.Look(ref lactationPoolTickLog, "MC2.EM.LactationPoolTickLog", false);
+		Scribe_Values.Look(ref milkingActionLog, "MC2.EM.MilkingActionLog", false);
+		Scribe_Values.Look(ref lactationLog, "MC2.EM.LactationLog", true);
+		Scribe_Values.Look(ref lactationDrugIntakeLog, "MC2.EM.LactationDrugIntakeLog", false);
 		ExposeCumData();
 		ExposeBallzIntegrationData();
-		Scribe_Deep.Look(ref humanlikeBreastfeed, "EM.HumanlikeBreastfeed");
-		Scribe_Deep.Look(ref animalBreastfeed, "EM.AnimalBreastfeed");
-		Scribe_Deep.Look(ref mechanoidBreastfeed, "EM.MechanoidBreastfeed");
+		Scribe_Deep.Look(ref humanlikeBreastfeed, "MC2.EM.HumanlikeBreastfeed");
+		Scribe_Deep.Look(ref animalBreastfeed, "MC2.EM.AnimalBreastfeed");
+		Scribe_Deep.Look(ref mechanoidBreastfeed, "MC2.EM.MechanoidBreastfeed");
 		ExposeDataMappings();
-		Scribe_Deep.Look(ref colonistSetting, "EM.ColonistSetting");
-		Scribe_Deep.Look(ref slaveSetting, "EM.SlaveSetting");
-		Scribe_Deep.Look(ref prisonerSetting, "EM.PrisonerSetting");
-		Scribe_Deep.Look(ref animalSetting, "EM.AnimalSetting");
-		Scribe_Deep.Look(ref mechSetting, "EM.MechSetting");
-		Scribe_Deep.Look(ref entitySetting, "EM.EntitySetting");
+		Scribe_Deep.Look(ref colonistSetting, "MC2.EM.ColonistSetting");
+		Scribe_Deep.Look(ref slaveSetting, "MC2.EM.SlaveSetting");
+		Scribe_Deep.Look(ref prisonerSetting, "MC2.EM.PrisonerSetting");
+		Scribe_Deep.Look(ref animalSetting, "MC2.EM.AnimalSetting");
+		Scribe_Deep.Look(ref mechSetting, "MC2.EM.MechSetting");
+		Scribe_Deep.Look(ref entitySetting, "MC2.EM.EntitySetting");
 		ExposeRealismData();
 	}
 

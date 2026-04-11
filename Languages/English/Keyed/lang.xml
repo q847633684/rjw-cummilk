@@ -9,15 +9,25 @@
     <CurrentMechEnergyFallPerDay>Daily energy draw</CurrentMechEnergyFallPerDay>
     <SomeonesRoom>{PAWN_labelShort}'s {1}</SomeonesRoom>
     <EM_Prolactin_Tolerance.description>Tolerance to prolactin builds with use: weaker drug effect and faster daily lactation-severity decay; tolerance recovers after stopping the drug. At high tolerance (≥75%), long-term use may risk kidney damage (roughly one roll about every 180 days on average).</EM_Prolactin_Tolerance.description>
-    <!-- Main / Sub tab labels (方案 B: 精液/母乳/基因与种族/权限与默认) -->
-    <!-- 专业级 7 主 Tab -->
-    <EM.Tab.CoreSystems>Core systems</EM.Tab.CoreSystems>
-    <EM.Tab.HealthRisk>Health &amp; risk</EM.Tab.HealthRisk>
+    <!-- Main / Sub tab labels: fluid-first IA + cross-cutting tabs -->
+    <EM.Tab.Lactation>Lactation</EM.Tab.Lactation>
+    <EM.Tab.Semen>Semen &amp; leak</EM.Tab.Semen>
+    <EM.Tab.Nectar>Nectar (planned)</EM.Tab.Nectar>
     <EM.Tab.Permissions>Permissions &amp; rules</EM.Tab.Permissions>
-    <EM.Tab.Balance>Balance &amp; scaling</EM.Tab.Balance>
+    <EM.Tab.Data>Data &amp; mapping</EM.Tab.Data>
     <EM.Tab.Integrations>Integrations</EM.Tab.Integrations>
+    <EM.Tab.Debug>Dev &amp; diagnostics</EM.Tab.Debug>
+    <!-- Legacy tab keys if an older MilkCum.dll is still loaded (rebuild mod to use new IA keys above). -->
+    <EM.Tab.CoreSystems>Core systems</EM.Tab.CoreSystems>
+    <EM.Tab.CoreSystem>Core systems</EM.Tab.CoreSystem>
+    <EM.Tab.HealthRisk>Health &amp; risk</EM.Tab.HealthRisk>
+    <EM.Tab.Balance>Balance &amp; scaling</EM.Tab.Balance>
     <EM.Tab.DataRaces>Data &amp; races</EM.Tab.DataRaces>
+    <EM.Tab.DataRace>Data &amp; races</EM.Tab.DataRace>
     <EM.Tab.DevTools>Dev &amp; diagnostics</EM.Tab.DevTools>
+    <EM.SubTab.BallzIntegration>Gonads (Ballz)</EM.SubTab.BallzIntegration>
+    <EM.Nectar.PlaceholderTitle>Nectar system</EM.Nectar.PlaceholderTitle>
+    <EM.Nectar.PlaceholderDesc>Not implemented yet. Settings for this fluid will appear here in a future version.</EM.Nectar.PlaceholderDesc>
     <!-- Legacy (unused after 方案 B) -->
     <EM.MenuSuckleFrom>Suck {0}'s milk</EM.MenuSuckleFrom>
     <EM.JobReportBreastfeed>breastfeeding TargetA.</EM.JobReportBreastfeed>
@@ -30,8 +40,8 @@
     <EM.ToleranceVanillaOnlyBody>Drug tolerance and lactating hediff merge are handled by vanilla and your defs. This mod no longer multiplies pool inflow or milk flow by a separate prolactin-tolerance factor. If EM prolactin tolerance hediff still exists from XML, it can affect thoughts or UI only—not a second penalty on output here.</EM.ToleranceVanillaOnlyBody>
     <EM.SectionDesc_IdentityAndMenu>Controls whether right-clicking a pawn of each type shows "Give prolactin", "Breastfeed/suckle", etc. in the float menu. Check by target identity (mechanoid/colonist/slave/prisoner/animal/misc) to reduce clutter.</EM.SectionDesc_IdentityAndMenu>
     <EM.SectionDesc_DefaultByRole>These are the defaults for this role (colonist/slave/prisoner/animal/mechanoid/entity). New or unset pawns use these; you can override per pawn in the Milk main table.</EM.SectionDesc_DefaultByRole>
-    <EM.SectionDesc_RJW>When RJW (rim.job.world) is in the mod list, nursing/lust/sex-need hooks, fertility factor, post-sex pool boost (Δs slider), sex thought, and orgasm milk are all active automatically. This tab: fertility and Δs sliders, plus optional permanent breast milestones, and (if RJW Balls &amp; Ovaries is active) gonad/hormone links to virtual semen pools and milk inflow. Breast pool capacity and topology: Balance → Core scaling. Optional physiology realism (SYS toggles): Balance → Physiology realism. Duct timing and adaptation sliders: Balance → Duct &amp; model.</EM.SectionDesc_RJW>
-    <EM.RjwIntegrationBreastPoolNavHint>RJW breast pool &amp; size (capacity, topology, flow): main tab {0} → sub-tab "Core scaling".</EM.RjwIntegrationBreastPoolNavHint>
+    <EM.SectionDesc_RJW>When RJW (rim.job.world) is in the mod list, nursing/lust/sex-need hooks, fertility factor, post-sex pool boost (Δs slider), sex thought, and orgasm milk are all active automatically. This tab: fertility and Δs sliders, plus optional permanent breast milestones. Gonad/hormone links to virtual semen pools: Semen → Gonads (Ballz) when RJW Balls &amp; Ovaries is active. Breast pool capacity and topology: Lactation → Core scaling. Optional physiology realism (SYS toggles): Lactation → Physiology realism. Duct timing and adaptation sliders: Lactation → Duct &amp; model.</EM.SectionDesc_RJW>
+    <EM.RjwIntegrationBreastPoolNavHint>RJW breast pool &amp; size (capacity, topology, flow): main tab {0} → sub-tab {1}.</EM.RjwIntegrationBreastPoolNavHint>
     <EM.SectionDesc_BreastPool>With RJW (rim.job.world) active in the mod list, left/right pool capacity and flow use RJW breast data. Without RJW active, the equal-milking breast pool does not run (see About.xml modDependencies). Below: capacity mode, topology, coefficient, flow multiplier, remaining days, lactation efficiency and gain.</EM.SectionDesc_BreastPool>
     <EM.RjwBreastSizeSectionHint>Dual-pool data source:</EM.RjwBreastSizeSectionHint>
     <EM.RjwBreastPoolAutoLinked>RJW detected: breast pool capacity and flow are linked to RJW breasts automatically.</EM.RjwBreastPoolAutoLinked>

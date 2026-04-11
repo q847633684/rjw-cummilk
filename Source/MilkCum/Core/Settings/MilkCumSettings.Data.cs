@@ -15,9 +15,9 @@ internal partial class MilkCumSettings
 
 	private static void ExposeDataMappings()
 	{
-		Scribe_Collections.Look(ref genes, "EM.Genes", LookMode.Deep);
-		Scribe_Collections.Look(ref namesToProducts, "EM.NamesToProducts", LookMode.Value, LookMode.Deep);
-		Scribe_Collections.Look(ref productsToTags, "EM.ProductsToTags", LookMode.Value, LookMode.Deep);
+		Scribe_Collections.Look(ref genes, "MC2.EM.Genes", LookMode.Deep);
+		Scribe_Collections.Look(ref namesToProducts, "MC2.EM.NamesToProducts", LookMode.Value, LookMode.Deep);
+		Scribe_Collections.Look(ref productsToTags, "MC2.EM.ProductsToTags", LookMode.Value, LookMode.Deep);
 	}
 
 	private static IEnumerable<ThingDef> GetMilkablePawns()
