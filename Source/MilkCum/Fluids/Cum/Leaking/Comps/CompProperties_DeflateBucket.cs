@@ -1,0 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+using Verse;
+using Verse.AI;
+using RimWorld;
+using Verse.Noise;
+using RimWorld.QuestGen;
+using rjw;
+using MilkCum.Fluids.Cum.Cumflation;
+
+namespace MilkCum.Fluids.Cum.Leaking
+{
+	public class CompProperties_DeflateBucket : CompProperties
+	{
+		public float deflateMult = 1f;
+		public float deflateRate = 1f;
+		public CompProperties_DeflateBucket()
+		{
+			compClass = typeof(Comp_DeflateBucket);
+		}
+	}
+}

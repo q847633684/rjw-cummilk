@@ -32,7 +32,7 @@
           <hediffDef>ToxicBuildup</hediffDef>
           <severity>0.25</severity>
         </li>
-        <li Class="Cumpilation.Fluids.Slug.IngestionOutcomeDoer_PermanentSlugChange">
+        <li Class="MilkCum.Fluids.Cum.Fluids.Slug.IngestionOutcomeDoer_PermanentSlugChange">
           <fluid>Cumpilation_Slug</fluid>
           <allowMen>true</allowMen>
           <allowWomen>false</allowWomen>

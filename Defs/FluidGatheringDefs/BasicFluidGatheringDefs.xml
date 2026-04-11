@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
-    <Cumpilation.Gathering.FluidGatheringDef>
+    <MilkCum.Fluids.Cum.Gathering.FluidGatheringDef>
         <defName>Cumpilation_Basic_Cum_Gathering</defName>
         <fluidDef>Cum</fluidDef>
         <thingDef>Cumpilation_Cum</thingDef>
@@ -11,10 +11,10 @@
 
         <canBeRetrievedFromFilth>true</canBeRetrievedFromFilth>
         <filthNecessaryForOneUnit>10</filthNecessaryForOneUnit>
-    </Cumpilation.Gathering.FluidGatheringDef>
+    </MilkCum.Fluids.Cum.Gathering.FluidGatheringDef>
 
 
-    <Cumpilation.Gathering.FluidGatheringDef>
+    <MilkCum.Fluids.Cum.Gathering.FluidGatheringDef>
         <defName>Cumpilation_Basic_InsectSpunk_Gathering</defName>
         <fluidDef>InsectSpunk</fluidDef>
         <thingDef>InsectJelly</thingDef>
@@ -24,6 +24,6 @@
 
         <canBeRetrievedFromFilth>true</canBeRetrievedFromFilth>
         <filthNecessaryForOneUnit>15</filthNecessaryForOneUnit>
-    </Cumpilation.Gathering.FluidGatheringDef>
+    </MilkCum.Fluids.Cum.Gathering.FluidGatheringDef>
 
 </Defs>

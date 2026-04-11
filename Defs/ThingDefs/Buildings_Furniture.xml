@@ -67,11 +67,11 @@
         <uiIconOffset>(0, -0.05)</uiIconOffset>
         <comps>
             <li Class="CompProperties_Styleable" />
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket">
                 <deflateMult>1</deflateMult>
                 <deflateRate>1.25</deflateRate>
             </li>
-            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -141,11 +141,11 @@
             <li>ComplexFurniture</li>
         </researchPrerequisites>
         <comps>
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket">
                 <deflateMult>1.25</deflateMult>
                 <deflateRate>1.5</deflateRate>
             </li>
-            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -215,7 +215,7 @@
             <li>Electricity</li>
         </researchPrerequisites>
         <comps>
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket">
                 <deflateMult>1.5</deflateMult>
                 <deflateRate>2.0</deflateRate>
             </li>
@@ -225,7 +225,7 @@
                 <basePowerConsumption>50</basePowerConsumption>
             </li>
             <li Class="CompProperties_Flickable" />
-            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 </Defs>

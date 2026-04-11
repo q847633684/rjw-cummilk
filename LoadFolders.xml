@@ -6,7 +6,6 @@
 		<li IfModActive="Ludeon.RimWorld.Ideology">Mods/Ideology</li>
 		<li IfModActive="Dubwise.DubsBadHygiene,Dubwise.DubsBadHygiene.Lite">Mods/DBH</li>
 		<li IfModNotActive="winderig.processor">Mods/Not-Semen-Processor</li>
-		<li IfModActive="DRILLEDHEAD.MILKEXPANDED">Integrations/VME_HarmonyPatch</li>
 		<li IfModActive="rim.job.world">Integrations/RJW</li>
 		<li IfModActive="oskarpotocki.vanillafactionsexpanded.core">Integrations/PipeSystem</li>
 	</v1.6>

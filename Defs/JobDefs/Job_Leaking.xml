@@ -3,7 +3,7 @@
 
     <JobDef>
         <defName>DeflateBucket</defName>
-        <driverClass>Cumpilation.Leaking.JobDriver_DeflateBucket</driverClass>
+        <driverClass>MilkCum.Fluids.Cum.Leaking.JobDriver_DeflateBucket</driverClass>
         <reportString>deflating into TargetA.</reportString>
         <casualInterruptible>false</casualInterruptible>
         <suspendable>false</suspendable>
@@ -11,7 +11,7 @@
 
     <JobDef>
         <defName>DeflateClean</defName>
-        <driverClass>Cumpilation.Leaking.JobDriver_DeflateClean</driverClass>
+        <driverClass>MilkCum.Fluids.Cum.Leaking.JobDriver_DeflateClean</driverClass>
         <reportString>deflating into TargetA.</reportString>
         <casualInterruptible>false</casualInterruptible>
         <suspendable>false</suspendable>
@@ -19,7 +19,7 @@
 
     <JobDef>
         <defName>DeflateDirty</defName>
-        <driverClass>Cumpilation.Leaking.JobDriver_DeflateDirty</driverClass>
+        <driverClass>MilkCum.Fluids.Cum.Leaking.JobDriver_DeflateDirty</driverClass>
         <reportString>deflating onto the floor.</reportString>
         <casualInterruptible>false</casualInterruptible>
         <suspendable>false</suspendable>

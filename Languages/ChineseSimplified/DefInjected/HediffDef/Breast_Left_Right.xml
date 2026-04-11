@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LanguageData>
-    <Breast_Left.label>左乳</Breast_Left.label>
-    <Breast_Left.labelNoun>左乳</Breast_Left.labelNoun>
-    <Breast_Left.description>左乳。用于等量泌乳的独立左池容量与流速。</Breast_Left.description>
-    <Breast_Right.label>右乳</Breast_Right.label>
-    <Breast_Right.labelNoun>右乳</Breast_Right.labelNoun>
-    <Breast_Right.description>右乳。用于等量泌乳的独立右池容量与流速。</Breast_Right.description>
-</LanguageData>

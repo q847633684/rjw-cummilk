@@ -10,14 +10,14 @@
             <xpath>Defs/ThingDef[@Name="DubsDirtyTerletBase"]</xpath>
             <value>
                 <comps>
-                    <li Class="Cumpilation.Leaking.CompProperties_DeflateClean" />
+                    <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateClean" />
                 </comps>
             </value>
         </nomatch>
         <match Class="PatchOperationAdd">
             <xpath>Defs/ThingDef[@Name="DubsDirtyTerletBase"]/comps</xpath>
             <value>
-                <li Class="Cumpilation.Leaking.CompProperties_DeflateClean" />
+                <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateClean" />
             </value>
         </match>
     </Operation>
@@ -29,14 +29,14 @@
             <xpath>Defs/ThingDef[@Name="DubsDirtyShowerBase"]</xpath>
             <value>
                 <comps>
-                    <li Class="Cumpilation.Leaking.CompProperties_DeflateClean" />
+                    <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateClean" />
                 </comps>
             </value>
         </nomatch>
         <match Class="PatchOperationAdd">
             <xpath>Defs/ThingDef[@Name="DubsDirtyShowerBase"]/comps</xpath>
             <value>
-                <li Class="Cumpilation.Leaking.CompProperties_DeflateClean">
+                <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateClean">
                 </li>
             </value>
         </match>

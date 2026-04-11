@@ -14,7 +14,7 @@
 	<Operation Class="PatchOperationAdd">
 		<xpath>Defs/rjw.HediffDef_SexPart[@Name="NaturalPrivatePartPenis"]/comps</xpath>
 		<value>
-			<li Class="Cumpilation.Common.HediffCompProperties_SpawnOtherHediffOverTime">
+			<li Class="MilkCum.Fluids.Cum.Common.HediffCompProperties_SpawnOtherHediffOverTime">
                 <!-- Check (& Increase) every 2400 ticks; Had 2000 first but if it's divisble by 3 and 4 we get a nice number for increase every bump. -->
                  <!-- For a natural penis, things should be 'full' after 4 days-->
                 <tickInterval>2400</tickInterval>

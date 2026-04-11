@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThingDef Name="EM_MilkingApparelBase" ParentName="ApparelMakeableBase" Abstract="True">
+    <techLevel>Industrial</techLevel>
+    <costStuffCount>45</costStuffCount>
+    <stuffCategories>
+      <li>Leathery</li>
+      <li>Fabric</li>
+    </stuffCategories>
+    <thingCategories>
+      <li>Apparel</li>
+    </thingCategories>
+    <statBases>
+      <MaxHitPoints>180</MaxHitPoints>
+      <WorkToMake>7000</WorkToMake>
+      <Mass>1</Mass>
+      <EquipDelay>0.8</EquipDelay>
+    </statBases>
+    <tickerType>Never</tickerType>
+    <apparel>
+      <countsAsClothingForNudity>false</countsAsClothingForNudity>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="EM_MilkingApparelBase">
+    <defName>EM_PenisMilkingApparel</defName>
+    <label>penis milking harness</label>
+    <description>A harness attached to the penis. While worn it drains fluid every tick using the same base flow formula as the electric milking pump (milking duration setting + pump AnimalGatherSpeed), scaled by semen pool fullness squared. With the virtual semen pool off, per-day volume per penis is capped like the old daily pulse. Sex need ticks up about once per in-game hour while the pool has pressure.</description>
+    <graphicData>
+      <texPath>PM/PM</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>1.0</drawSize>
+    </graphicData>
+    <apparel>
+      <bodyPartGroups>
+        <li>GenitalsBPG</li>
+      </bodyPartGroups>
+      <wornGraphicPath>PM/PM</wornGraphicPath>
+      <layers>
+        <li>Shell</li>
+      </layers>
+      <canBeDesiredForIdeo>true</canBeDesiredForIdeo>
+    </apparel>
+    <comps>
+      <li Class="MilkCum.Fluids.MilkingApparel.CompProperties_MilkingApparel">
+        <hediffWhileWorn>EM_Hediff_PenisMilkingApparel</hediffWhileWorn>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef ParentName="EM_MilkingApparelBase">
+    <defName>EM_BreastMilkingApparel</defName>
+    <label>breast milking harness</label>
+    <description>A harness attached to the breasts. While worn and lactating it periodically drains the milk pool and spawns bottles like hand or machine milking.</description>
+    <graphicData>
+      <texPath>BM/BM</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>1.0</drawSize>
+    </graphicData>
+    <apparel>
+      <bodyPartGroups>
+        <li>ChestBPG</li>
+      </bodyPartGroups>
+      <wornGraphicPath>BM/BM</wornGraphicPath>
+      <layers>
+        <li>Shell</li>
+      </layers>
+      <canBeDesiredForIdeo>true</canBeDesiredForIdeo>
+    </apparel>
+    <comps>
+      <li Class="MilkCum.Fluids.MilkingApparel.CompProperties_MilkingApparel">
+        <hediffWhileWorn>EM_Hediff_BreastMilkingApparel</hediffWhileWorn>
+      </li>
+    </comps>
+  </ThingDef>
+
+</Defs>

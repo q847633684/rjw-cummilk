@@ -1,0 +1,96 @@
+using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
+using RimWorld;
+using Verse;
+using UnityEngine;
+using MilkCum.Core;
+
+namespace MilkCum.RJW;
+
+/// <summary>哺乳后性行为额外满足 Need_Sex；泌乳期怀孕概率乘数；性互动中泌乳状态（Thought）。3.2：性行为后可选增加少量泌乳池进水。</summary>
+public static class RJWSexAndFertility
+{
+    private const float SexSatisfactionBonusAfterNursing = 0.06f;
+
+    /// <summary>3.2：性行为后为泌乳者增加少量池进水（<see cref="MilkCumSettings.rjwSexAddsLactationBoost"/> 与 Δs）。</summary>
+    public static void ApplyPostSexLactationBoost(Pawn pawn)
+    {
+        if (pawn?.health?.hediffSet == null || !ModIntegrationGates.RjwModActive
+            || !MilkCumSettings.rjwSexAddsLactationBoost
+            || MilkCumSettings.rjwSexLactationBoostDeltaS <= 0f) return;
+        var hediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Lactating) as HediffWithComps;
+        if (hediff?.comps == null) return;
+        foreach (var c in hediff.comps)
+        {
+            if (c is HediffComp_EqualMilkingLactating comp)
+            {
+                float deltaS = MilkCumSettings.rjwSexLactationBoostDeltaS;
+                comp.AddFromDrug(deltaS);
+                break;
+            }
+        }
+    }
+
+    public static void GiveSexSatisfactionAfterNursing(Pawn pawn)
+    {
+        if (pawn?.needs == null || !ModIntegrationGates.RjwModActive
+            || !MilkCumSettings.rjwSexSatisfactionAfterNursingEnabled) return;
+        if (!RJWLustIntegration.WasRecentlyNursed(pawn)) return;
+        RJWLustIntegration.AddSexNeed(pawn, SexSatisfactionBonusAfterNursing);
+    }
+}
+
+[HarmonyPatch]
+public static class JobDriver_Sex_End_Patch
+{
+    private static MethodBase cachedSexBaseInitiatorEnd;
+
+    static MethodBase TargetMethod()
+    {
+        if (cachedSexBaseInitiatorEnd != null)
+            return cachedSexBaseInitiatorEnd;
+        var t = AccessTools.TypeByName("rjw.JobDriver_SexBaseInitiator");
+        if (t == null) return null;
+        cachedSexBaseInitiatorEnd = AccessTools.Method(t, "End");
+        return cachedSexBaseInitiatorEnd;
+    }
+
+    [HarmonyPostfix]
+    static void Postfix(Verse.AI.JobDriver __instance)
+    {
+        Pawn initiator = __instance.pawn;
+        Pawn partner = (Pawn)AccessTools.Property(__instance.GetType(), "Partner")?.GetValue(__instance);
+        RJWSexAndFertility.GiveSexSatisfactionAfterNursing(initiator);
+        if (partner != null) RJWSexAndFertility.GiveSexSatisfactionAfterNursing(partner);
+        RJWSexAndFertility.ApplyPostSexLactationBoost(initiator);
+        if (partner != null) RJWSexAndFertility.ApplyPostSexLactationBoost(partner);
+        if (ModIntegrationGates.RjwModActive && MilkCumSettings.rjwLactatingInSexDescriptionEnabled
+            && MilkCumDefOf.EM_HadSexWhileLactating != null)
+        {
+            if (initiator?.needs?.mood?.thoughts?.memories != null && initiator.IsInLactatingState())
+                initiator.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_HadSexWhileLactating);
+            if (partner?.needs?.mood?.thoughts?.memories != null && partner.IsInLactatingState())
+                partner.needs.mood.thoughts.memories.TryGainMemory(MilkCumDefOf.EM_HadSexWhileLactating);
+        }
+    }
+}
+
+[HarmonyPatch]
+public static class PawnCapacityWorker_Fertility_Lactating_Patch
+{
+    static System.Reflection.MethodBase TargetMethod()
+    {
+        return AccessTools.Method(AccessTools.TypeByName("rjw.PawnCapacityWorker_Fertility"), "CalculateCapacityLevel");
+    }
+
+    [HarmonyPostfix]
+    static void Postfix(HediffSet diffSet, ref float __result)
+    {
+        Pawn pawn = diffSet?.pawn;
+        if (pawn == null || __result <= 0f) return;
+        if (!pawn.IsInLactatingState()) return;
+        float factor = Mathf.Clamp01(MilkCumSettings.rjwLactationFertilityFactor);
+        __result *= factor;
+    }
+}

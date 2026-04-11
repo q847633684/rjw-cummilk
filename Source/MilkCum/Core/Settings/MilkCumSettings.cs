@@ -1,0 +1,256 @@
+using System.Collections.Generic;
+using RimWorld;
+using UnityEngine;
+using Verse;
+
+namespace MilkCum.Core.Settings;
+
+/// <summary>设置主 Tab：按体液子系统 + 横切分层。泌乳 / 精液 / 妹汁(占位) / 权限 / 数据映射 / 联动 / 调试(仅 DevMode)。</summary>
+public enum MainTabIndex
+{
+	Lactation = 0,
+	Semen = 1,
+	Nectar = 2,
+	Permissions = 3,
+	Data = 4,
+	Integrations = 5,
+	Debug = 6
+}
+
+[StaticConstructorOnStartup]
+internal partial class MilkCumSettings : ModSettings
+{
+	/// <summary>挤奶流速基准：baseFlowPerSecond = 60/基准值（池单位/秒）。默认 60 → 满池约 1 瓶/秒（现实时间）；调大则变慢。</summary>
+	public static float milkingWorkTotalBase = 60f;
+	public static bool femaleAnimalAdultAlwaysLactating = false;
+	public static bool showMechOptions = true;
+	public static bool showColonistOptions = true;
+	public static bool showSlaveOptions = true;
+	public static bool showPrisonerOptions = true;
+	public static bool showAnimalOptions = true;
+	public static bool showMiscOptions = true;
+	/// <summary>默认允许用奶规则（名单为空时）：是否把「子女」算入默认允许。</summary>
+	public static bool defaultSucklerIncludeChildren = true;
+	/// <summary>默认允许用奶规则：是否把「恋人」算入默认允许。</summary>
+	public static bool defaultSucklerIncludeLover = true;
+	/// <summary>默认允许用奶规则：是否把「配偶」算入默认允许。</summary>
+	public static bool defaultSucklerIncludeSpouse = true;
+	/// <summary>默认允许用奶规则：是否排除「父母」（母亲/父亲）。</summary>
+	public static bool defaultSucklerExcludeParents = true;
+	public static float nutritionToEnergyFactor = 100f;
+	/// <summary>泌乳额外营养基准：以 150 为 1:1，将每日泌乳进水量折算成额外营养（用于进食上限校正）。</summary>
+	public static int lactationExtraNutritionBasis = 150;
+	/// <summary>回缩吸收开关：开启时，池内剩余奶量会按下方效率转成营养；关闭时，未被吸奶消耗的部分全部作废。</summary>
+	public static bool reabsorbNutritionEnabled = true;
+	/// <summary>回缩吸收效率，0~1：吸收的池单位折成营养的比例，默认 0.5 避免满池挂机过强。</summary>
+	public static float reabsorbNutritionEfficiency = 0.5f;
+	/// <summary>DevMode 且勾选时，每 60 tick 输出泌乳小人的营养/奶池/回缩/吸奶明细到日志。</summary>
+	public static bool lactationPoolTickLog = false;
+	/// <summary>DevMode 下输出挤奶扣池明细；不依赖 <see cref="lactationLog"/>。已存档，「调试工具」可勾选。</summary>
+	public static bool milkingActionLog = false;
+	/// <summary>DevMode 时打开：输出泌乳关键流程日志（进水/衰减/溢出等），关闭可减少刷屏；仅用于细查 PoolTickLog 不方便的情况。</summary>
+	public static bool lactationLog = true;
+	/// <summary>DevMode 时打开：每次药物带来进水（AddFromDrug）时输出调试日志，包含 ΔS、进水量与剩余时间变化。</summary>
+	public static bool lactationDrugIntakeLog = false;
+	/// <summary>仅在 DevMode 且 lactationLog 打开时调用：辅助输出与 L/池/污物/衰减表相关的详细日志。</summary>
+	public static void LactationLog(string message)
+	{
+		if (Verse.Prefs.DevMode && lactationLog && !string.IsNullOrEmpty(message))
+			Verse.Log.Message("[MilkCum.Lactation] " + message);
+	}
+	/// <summary>仅当 DevMode 且 lactationPoolTickLog 为 true 时输出，用于每步营养/奶池/回缩/吸奶明细。</summary>
+	public static void PoolTickLog(string message)
+	{
+		if (Verse.Prefs.DevMode && lactationPoolTickLog && !string.IsNullOrEmpty(message))
+			Verse.Log.Message("[MilkCum.Pool] " + message);
+	}
+
+	/// <summary>仅当 DevMode 且 <see cref="milkingActionLog"/> 为 true 时输出；与 <see cref="lactationLog"/> 无关。</summary>
+	public static void MilkingActionLogMessage(string message)
+	{
+		if (Verse.Prefs.DevMode && milkingActionLog && !string.IsNullOrEmpty(message))
+			Verse.Log.Message("[MilkCum.Milking] " + message);
+	}
+	public static HumanlikeBreastfeed humanlikeBreastfeed = new();
+	public static AnimalBreastfeed animalBreastfeed = new();
+	public static MechanoidBreastfeed mechanoidBreastfeed = new();
+	// 泌乳期意义/操纵/移动收益：开关与百分比(0~0.20 = 0%~20%)
+	public static bool lactatingGainEnabled = true;
+	public static float lactatingGainCapModPercent = 0.10f;
+	/// <summary>RJW 胸围容量系数：单侧基容量 = RJW <c>BreastSize.volume</c>（升）× 本系数（再裁剪上限）；无有效体积则为 0、不进池。默认 2。仅当 RJW（rim.job.world）在列表中时乳房池使用 RJW 数据。流速仍独立走 <c>GetFluidMultiplier</c>。</summary>
+	public static float rjwBreastCapacityCoefficient = 2f;
+	/// <summary>RJW 乳房阶段标签含 “Nipple” 时，对进水/高潮产液流速倍率施加的百分比修正（0=关闭）；限制在约 ±15% 内。</summary>
+	public static float rjwNippleStageFlowBonusPercent = 0f;
+	/// <summary>泌乳期临时体型增益（0~1 段）：RJW Severity 增量，满 L 时生效；默认 0.15。</summary>
+	public static float rjwLactatingSeverityBonus = 0.15f;
+	/// <summary>池 1→1.2 撑大段对应的 RJW Severity 增量；默认 0.05。</summary>
+	public static float rjwLactatingStretchSeverityBonus = 0.05f;
+	/// <summary>是否启用「因泌乳永久撑大」：每达到一定泌乳时长即通过 RJW 的 SetSeverity 永久增加乳房体型，不在本 mod 内维护单独数字。</summary>
+	public static bool rjwPermanentBreastGainFromLactationEnabled = false;
+	/// <summary>每多少游戏日泌乳触发一次永久体型增益（每里程碑对每乳调用 comp.SetSeverity(Min(1f, base + delta))）。</summary>
+	public static float rjwPermanentBreastGainDaysPerMilestone = 10f;
+	/// <summary>每次里程碑永久增加的 Severity 量（RJW 定义），上限 1。</summary>
+	public static float rjwPermanentBreastGainSeverityDelta = 0.03f;
+	/// <summary>泌乳期对 RJW 生育能力的倍率（0~1），1 = 不影响，0.85 = 略微降低怀孕率。</summary>
+	public static float rjwLactationFertilityFactor = 0.85f;
+	/// <summary>哺乳后不久性交是否额外满足 RJW <c>Need_Sex</c>（旧版默认开）。</summary>
+	public static bool rjwSexSatisfactionAfterNursingEnabled = true;
+	/// <summary>性交结束时是否尝试给予 <c>EM_HadSexWhileLactating</c> 心情（旧版默认开）。</summary>
+	public static bool rjwLactatingInSexDescriptionEnabled = true;
+	/// <summary>当第三方模组直接写原版 <c>CompMilkable.fullness</c> 时，每 60 tick 将目标总量回灌到本 mod 乳池并联动 Charge/炎症等；关闭则仅依赖对方调用公开 API。</summary>
+	public static bool bridgeExternalCompMilkableFullness = true;
+	/// <summary>当第三方只改泌乳 Hediff 的 <c>Charge</c> 而未改乳池时，每 60 tick 将目标总量写回乳池（与 <c>HediffComp_EqualMilkingLactating</c> 的 tick 协同，避免先被 Charge=池 覆盖）。</summary>
+	public static bool bridgeExternalLactatingCharge = true;
+	/// <summary>DevMode：在吸收外部 <c>fullness</c> / <c>Charge</c> 镜像时输出简短日志。</summary>
+	public static bool logExternalFullnessBridge = false;
+	/// <summary>性交结束后是否对泌乳者施加「房事奶劲」进水（<see cref="rjwSexLactationBoostDeltaS"/>；旧版默认关，现默认开以贴近近年无总闸行为）。</summary>
+	public static bool rjwSexAddsLactationBoost = true;
+	/// <summary>房事奶劲强度（池逻辑 Δs）；需 <see cref="rjwSexAddsLactationBoost"/> 且 &gt;0；可与总闸配合关死本项。</summary>
+	public static float rjwSexLactationBoostDeltaS = 0.15f;
+	// 乳腺炎/卫生等相关配置已拆分到 MilkCumSettings.Risk.cs。
+	// 满池溢出地面污物：Def 名称，空或无效时回退 Filth_Vomit
+	public static string overflowFilthDefName = "Filth_Vomit";
+	/// <summary>泌乳水平上限（L_cap）：&gt;0 时，吃药超过此值的部分不再增加进水量 L，只增加 Severity（延长泌乳时间），流速由 min(L, cap) 决定，更符合生理（身体需更长时间消耗药效）。0 = 关闭。</summary>
+	public static float lactationLevelCap = 0f;
+	/// <summary>上限溢出转时间时的倍数：超出 cap 的 ΔL 转为 Severity 时乘以该系数，使「只延长时间」的收益更大（&gt;1 则延长更多天），补偿不提高流速。默认 1.5。</summary>
+	public static float lactationLevelCapDurationMultiplier = 1.5f;
+	// 压力/炎症/适应/导管等模型参数与方法已拆分到 MilkCumSettings.Model.cs。
+	// AI 挤奶工作：是否优先选择更满的一侧作为目标（低满度的会先去找更满的一侧）。 
+	public static bool aiPreferHighFullnessTargets = true;
+	// 物种兼容表：允许名单（defName 在此列表中视为始终可泌乳）；禁止名单（defName 在此列表中视为永不泌乳）。
+	public static List<string> raceCanAlwaysLactate = new();
+	public static List<string> raceCannotLactate = new();
+	// 人形种族默认流速倍率：2 = 在标准体型、乳量等级 1 时约等于一次就能挤空；与 RJW/其他泌乳类 mod 联动时也可调。
+	public static float defaultFlowMultiplierForHumanlike = 2f;
+	// 压力/炎症/组织适应/品质/提醒等模型参数已拆分到 MilkCumSettings.Model.cs。
+	public static MilkSettings colonistSetting = new();
+	public static MilkSettings slaveSetting = new();
+	public static MilkSettings prisonerSetting = new();
+	public static MilkSettings animalSetting = new();
+	public static MilkSettings mechSetting = new();
+	public static MilkSettings entitySetting = new();
+	public static IEnumerable<ThingDef> pawnDefs;
+	public static IEnumerable<ThingDef> productDefs;
+	public static Dictionary<ThingDef, RaceMilkType> defaultMilkProducts;
+
+	/// <summary>Mod 设置序列化键前缀 <c>MC2.EM.*</c>；与旧版 <c>EM.*</c> 不兼容，升级后配置重置为默认。</summary>
+	public override void ExposeData()
+	{
+		base.ExposeData();
+		Scribe_Values.Look(ref milkingWorkTotalBase, "MC2.EM.MilkingWorkTotalBase", 60f);
+		Scribe_Values.Look(ref femaleAnimalAdultAlwaysLactating, "MC2.EM.FemaleAnimalAdultAlwaysLactating", false);
+		Scribe_Values.Look(ref showMechOptions, "MC2.EM.ShowMechOptions", true);
+		Scribe_Values.Look(ref showColonistOptions, "MC2.EM.ShowColonistOptions", true);
+		Scribe_Values.Look(ref showSlaveOptions, "MC2.EM.ShowSlaveOptions", true);
+		Scribe_Values.Look(ref showPrisonerOptions, "MC2.EM.ShowPrisonerOptions", true);
+		Scribe_Values.Look(ref showAnimalOptions, "MC2.EM.ShowAnimalOptions", true);
+		Scribe_Values.Look(ref showMiscOptions, "MC2.EM.ShowMiscOptions", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeChildren, "MC2.EM.DefaultSucklerIncludeChildren", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeLover, "MC2.EM.DefaultSucklerIncludeLover", true);
+		Scribe_Values.Look(ref defaultSucklerIncludeSpouse, "MC2.EM.DefaultSucklerIncludeSpouse", true);
+		Scribe_Values.Look(ref defaultSucklerExcludeParents, "MC2.EM.DefaultSucklerExcludeParents", true);
+		Scribe_Values.Look(ref nutritionToEnergyFactor, "MC2.EM.NutritionToEnergyFactor", 100f);
+		Scribe_Values.Look(ref lactationExtraNutritionBasis, "MC2.EM.LactationExtraNutritionFactor", 150);
+		Scribe_Values.Look(ref reabsorbNutritionEnabled, "MC2.EM.ReabsorbNutritionEnabled", true);
+		Scribe_Values.Look(ref reabsorbNutritionEfficiency, "MC2.EM.ReabsorbNutritionEfficiency", 0.5f);
+		Scribe_Values.Look(ref lactatingGainEnabled, "MC2.EM.LactatingGainEnabled", true);
+		Scribe_Values.Look(ref lactatingGainCapModPercent, "MC2.EM.LactatingGainCapModPercent", 0.10f);
+		Scribe_Values.Look(ref rjwBreastCapacityCoefficient, "MC2.EM.RjwBreastCapacityCoefficient", 2f);
+		Scribe_Values.Look(ref rjwNippleStageFlowBonusPercent, "MC2.EM.RjwNippleStageFlowBonusPct", 0f);
+		Scribe_Values.Look(ref rjwLactatingSeverityBonus, "MC2.EM.RjwLactatingSeverityBonus", 0.15f);
+		Scribe_Values.Look(ref rjwLactatingStretchSeverityBonus, "MC2.EM.RjwLactatingStretchSeverityBonus", 0.05f);
+		Scribe_Values.Look(ref rjwPermanentBreastGainFromLactationEnabled, "MC2.EM.RjwPermanentBreastGainFromLactationEnabled", false);
+		Scribe_Values.Look(ref rjwPermanentBreastGainDaysPerMilestone, "MC2.EM.RjwPermanentBreastGainDaysPerMilestone", 10f);
+		Scribe_Values.Look(ref rjwPermanentBreastGainSeverityDelta, "MC2.EM.RjwPermanentBreastGainSeverityDelta", 0.03f);
+		Scribe_Values.Look(ref rjwLactationFertilityFactor, "MC2.EM.RjwLactationFertilityFactor", 0.85f);
+		Scribe_Values.Look(ref rjwSexSatisfactionAfterNursingEnabled, "MC2.EM.RjwSexSatisfactionAfterNursingEnabled", true);
+		Scribe_Values.Look(ref rjwLactatingInSexDescriptionEnabled, "MC2.EM.RjwLactatingInSexDescriptionEnabled", true);
+		Scribe_Values.Look(ref bridgeExternalCompMilkableFullness, "MC2.EM.BridgeExternalCompMilkableFullness", true);
+		Scribe_Values.Look(ref bridgeExternalLactatingCharge, "MC2.EM.BridgeExternalLactatingCharge", true);
+		Scribe_Values.Look(ref logExternalFullnessBridge, "MC2.EM.LogExternalFullnessBridge", false);
+		Scribe_Values.Look(ref rjwSexAddsLactationBoost, "MC2.EM.RjwSexAddsLactationBoost", true);
+		Scribe_Values.Look(ref rjwSexLactationBoostDeltaS, "MC2.EM.RjwSexLactationBoostDeltaS", 0.15f);
+		ExposeRiskData();
+		Scribe_Values.Look(ref overflowFilthDefName, "MC2.EM.OverflowFilthDefName", "Filth_Vomit");
+		Scribe_Values.Look(ref lactationLevelCap, "MC2.EM.LactationLevelCap", 0f);
+		Scribe_Values.Look(ref lactationLevelCapDurationMultiplier, "MC2.EM.LactationLevelCapDurationMultiplier", 1.5f);
+		Scribe_Values.Look(ref aiPreferHighFullnessTargets, "MC2.EM.AiPreferHighFullnessTargets", true);
+		Scribe_Collections.Look(ref raceCanAlwaysLactate, "MC2.EM.RaceCanAlwaysLactate", LookMode.Value);
+		Scribe_Collections.Look(ref raceCannotLactate, "MC2.EM.RaceCannotLactate", LookMode.Value);
+		Scribe_Values.Look(ref defaultFlowMultiplierForHumanlike, "MC2.EM.DefaultFlowMultiplierForHumanlike", 2f);
+		ExposeModelData();
+		Scribe_Values.Look(ref lactationPoolTickLog, "MC2.EM.LactationPoolTickLog", false);
+		Scribe_Values.Look(ref milkingActionLog, "MC2.EM.MilkingActionLog", false);
+		Scribe_Values.Look(ref lactationLog, "MC2.EM.LactationLog", true);
+		Scribe_Values.Look(ref lactationDrugIntakeLog, "MC2.EM.LactationDrugIntakeLog", false);
+		ExposeCumData();
+		ExposeBallzIntegrationData();
+		Scribe_Deep.Look(ref humanlikeBreastfeed, "MC2.EM.HumanlikeBreastfeed");
+		Scribe_Deep.Look(ref animalBreastfeed, "MC2.EM.AnimalBreastfeed");
+		Scribe_Deep.Look(ref mechanoidBreastfeed, "MC2.EM.MechanoidBreastfeed");
+		ExposeDataMappings();
+		Scribe_Deep.Look(ref colonistSetting, "MC2.EM.ColonistSetting");
+		Scribe_Deep.Look(ref slaveSetting, "MC2.EM.SlaveSetting");
+		Scribe_Deep.Look(ref prisonerSetting, "MC2.EM.PrisonerSetting");
+		Scribe_Deep.Look(ref animalSetting, "MC2.EM.AnimalSetting");
+		Scribe_Deep.Look(ref mechSetting, "MC2.EM.MechSetting");
+		Scribe_Deep.Look(ref entitySetting, "MC2.EM.EntitySetting");
+		ExposeRealismData();
+	}
+
+	internal void UpdateMilkCumSettings()
+	{
+		EventHelper.TriggerSettingsChanged();
+		pawnDefs = GetMilkablePawns();
+		defaultMilkProducts = GetDefaultMilkProducts();
+		if (HediffDefOf.Lactating != null)
+		{
+			HediffDefOf.Lactating.maxSeverity = 100f; // 允许 severity 按公式自由提高到 100。
+		}
+		else
+		{
+			Log.Warning("[MilkCum] HediffDefOf.Lactating is null, skip maxSeverity patch.");
+		}
+		foreach (ThingDef pawnDef in pawnDefs)
+		{
+			UpdateEqualMilkableComp(pawnDef);
+		}
+		productDefs = GetProductDefs();
+		foreach (ThingDef milkDef in productDefs)
+		{
+			AddOrSetShowProducerComp(milkDef);
+		}
+		// Recipe products from human milk (e.g. vanilla Milk) can show producer
+		ThingDef vanillaMilk = DefDatabase<ThingDef>.GetNamedSilentFail("Milk");
+		if (vanillaMilk != null)
+		{
+			AddOrSetShowProducerComp(vanillaMilk);
+			if (!productsToTags.ContainsKey("Milk"))
+				productsToTags.Add("Milk", new MilkTag("Milk", true, false));
+		}
+		// 人奶：默认开启「显示生产者」，产线有上限，可在标签里手动关闭。
+		ThingDef humanMilkDef = DefDatabase<ThingDef>.GetNamedSilentFail("EM_HumanMilk");
+		if (humanMilkDef != null && !productsToTags.ContainsKey("EM_HumanMilk"))
+			productsToTags.Add("EM_HumanMilk", new MilkTag("EM_HumanMilk", true, false));
+		// 本 mod 主精液物品 defName 为 Cumpilation_Cum；须带 CompShowProducer，CumpilationIntegration 才能在生成时写入产主。
+		ThingDef cumpilationCum = DefDatabase<ThingDef>.GetNamedSilentFail("Cumpilation_Cum");
+		if (cumpilationCum != null)
+		{
+			AddOrSetShowProducerComp(cumpilationCum);
+			if (!productsToTags.ContainsKey("Cumpilation_Cum"))
+				productsToTags.Add("Cumpilation_Cum", new MilkTag("Cumpilation_Cum", true, false));
+		}
+		// rjw-genes 等若另有 Cum_Cum，同样保证产主组件与标签
+		ThingDef cumCum = DefDatabase<ThingDef>.GetNamedSilentFail("Cum_Cum");
+		if (cumCum != null)
+		{
+			AddOrSetShowProducerComp(cumCum);
+			if (!productsToTags.ContainsKey("Cum_Cum"))
+				productsToTags.Add("Cum_Cum", new MilkTag("Cum_Cum", true, false));
+		}
+		foreach (Pawn pawn in PawnsFinder.AllMaps)
+		{
+			pawn.LactatingHediffWithComps()?.SetDirty();
+		}
+	}
+}

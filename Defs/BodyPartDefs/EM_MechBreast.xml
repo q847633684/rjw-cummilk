@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 与 MechChest 同生态位拆成左右叶；父节点 MechChest 由补丁改为 conceptual。 -->
+<Defs>
+	<BodyPartDef>
+		<defName>MechBreast</defName>
+		<label>mech breast</label>
+		<hitPoints>16</hitPoints>
+		<frostbiteVulnerability>0.0</frostbiteVulnerability>
+		<skinCovered>false</skinCovered>
+		<solid>true</solid>
+		<canSuggestAmputation>false</canSuggestAmputation>
+		<bleedRate>0</bleedRate>
+	</BodyPartDef>
+</Defs>

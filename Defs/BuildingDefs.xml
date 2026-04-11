@@ -58,10 +58,13 @@
         <costList>
             <Steel>20</Steel>
         </costList>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
         <comps>
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket） -->
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket" />
-            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
     </ThingDef>
 
@@ -87,17 +90,18 @@
             </li>
             <li Class="CompProperties_Flickable" />
             <!-- 作为 Cumpilation 泄精目标（DeflateBucket），电泵效率稍高 -->
-            <li Class="Cumpilation.Leaking.CompProperties_DeflateBucket">
+            <li Class="MilkCum.Fluids.Cum.Leaking.CompProperties_DeflateBucket">
                 <deflateMult>1.5</deflateMult>
                 <deflateRate>1</deflateRate>
             </li>
-            <li Class="MilkCum.Milk.Comps.CompProperties_CumBucketLink" />
+            <li Class="MilkCum.Fluids.Cum.Comps.CompProperties_CumBucketLink" />
         </comps>
         <costList>
             <Steel>20</Steel>
             <ComponentIndustrial>1</ComponentIndustrial>
         </costList>
         <researchPrerequisites>
+            <li>Machining</li>
             <li>Electricity</li>
         </researchPrerequisites>
     </ThingDef>

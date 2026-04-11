@@ -75,6 +75,9 @@
             <Steel>2</Steel>
         </costList>
         <designationCategory>EM_PipeNetworks</designationCategory>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
     </ThingDef>
 
     <ThingDef ParentName="EM_MilkPipeBase">
@@ -95,6 +98,9 @@
             <Steel>4</Steel>
         </costList>
         <designationCategory>EM_PipeNetworks</designationCategory>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -143,6 +149,9 @@
         <neverMultiSelect>false</neverMultiSelect>
         <tickerType>Normal</tickerType>
         <designationCategory>EM_PipeNetworks</designationCategory>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
         <constructEffect>ConstructMetal</constructEffect>
     </ThingDef>
 </Defs>

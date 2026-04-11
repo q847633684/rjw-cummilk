@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 本 mod 在 RJW 的 Chest 父节点下挂左右乳；不修改 RJW 仓库。 -->
+<Defs>
+	<BodyPartDef>
+		<defName>Breast</defName>
+		<label>breast</label>
+		<hitPoints>12</hitPoints>
+		<frostbiteVulnerability>0.01</frostbiteVulnerability>
+		<skinCovered>true</skinCovered>
+		<solid>false</solid>
+		<canSuggestAmputation>false</canSuggestAmputation>
+		<bleedRate>1.0</bleedRate>
+		<tags>
+			<li>Mirrored</li>
+		</tags>
+	</BodyPartDef>
+</Defs>

@@ -94,6 +94,9 @@
             </li>
         </comps>
         <designationCategory>EM_PipeNetworks</designationCategory>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
     </ThingDef>
     <ThingDef ParentName="EM_MilkTapBase">
         <defName>EM_HumanMilkTap</defName>
@@ -150,5 +153,8 @@
             </li>
         </comps>
         <designationCategory>EM_PipeNetworks</designationCategory>
+        <researchPrerequisites>
+            <li>Machining</li>
+        </researchPrerequisites>
     </ThingDef>
 </Defs>

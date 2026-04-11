@@ -1,201 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-    <Equal_Milking>平等产奶</Equal_Milking>
-    <!-- 主 Tab / 子 Tab 标签 -->
-    <EM.Tab.MilkAndFluids>产奶与体液</EM.Tab.MilkAndFluids>
-    <EM.Tab.Breastfeed>哺乳</EM.Tab.Breastfeed>
-    <EM.Tab.HealthAndRisk>健康与风险</EM.Tab.HealthAndRisk>
-    <EM.Tab.EfficiencyAndInterface>效率与界面</EM.Tab.EfficiencyAndInterface>
-    <EM.Tab.IntegrationAndAdvanced>联动与扩展</EM.Tab.IntegrationAndAdvanced>
+    <Equal_Milking>精液和母乳</Equal_Milking>
+    <MilkCum_ModName>精液和母乳</MilkCum_ModName>
+    <EM.RequiresRJWActive>当前模组列表中未激活 RJW（rim.job.world）。本 mod 的平等挤奶乳房乳池依赖 RJW，请启用 RJW 或移除本 mod（见 About.xml 的 modDependencies）。</EM.RequiresRJWActive>
+    <MilkFullness>奶量</MilkFullness>
+    <LactatingStoppedBecauseFull>已满，暂停产奶。</LactatingStoppedBecauseFull>
+    <LactatingStoppedBecauseHungry>饥饿，暂停产奶。</LactatingStoppedBecauseHungry>
+    <CurrentMechEnergyFallPerDay>每日能量消耗</CurrentMechEnergyFallPerDay>
+    <SomeonesRoom>{PAWN_labelShort} 的 {1}</SomeonesRoom>
+    <EM_Prolactin_Tolerance.description>对催乳素逐渐产生耐受。会减弱药效并加快泌乳严重度每日衰减；停止用药后耐受会随时间恢复。高度耐受（≥75%）时，长期使用可能导致肾脏损伤，平均约每 180 天有一次发生概率。</EM_Prolactin_Tolerance.description>
+    <!-- 主 Tab / 子 Tab：按体液 + 横切分层 -->
+    <EM.Tab.Lactation>泌乳</EM.Tab.Lactation>
+    <EM.Tab.Semen>精液与泄漏</EM.Tab.Semen>
+    <EM.Tab.Nectar>妹汁（规划中）</EM.Tab.Nectar>
+    <EM.Tab.Permissions>权限规则</EM.Tab.Permissions>
+    <EM.Tab.Data>数据与映射</EM.Tab.Data>
+    <EM.Tab.Integrations>外来工具</EM.Tab.Integrations>
+    <EM.Tab.Debug>调试工具</EM.Tab.Debug>
+    <!-- 旧版 MilkCum.dll 仍使用下列主 Tab 键；未重新编译前缺键会显示原文 key -->
+    <EM.Tab.CoreSystems>核心机制</EM.Tab.CoreSystems>
+    <EM.Tab.CoreSystem>核心机制</EM.Tab.CoreSystem>
+    <EM.Tab.HealthRisk>健康风险</EM.Tab.HealthRisk>
+    <EM.Tab.Balance>数值平衡</EM.Tab.Balance>
+    <EM.Tab.DataRaces>数据种族</EM.Tab.DataRaces>
+    <EM.Tab.DataRace>数据种族</EM.Tab.DataRace>
+    <EM.Tab.DevTools>调试工具</EM.Tab.DevTools>
+    <EM.SubTab.BallzIntegration>性腺联动 (Ballz)</EM.SubTab.BallzIntegration>
+    <EM.Nectar.PlaceholderTitle>妹汁系统</EM.Nectar.PlaceholderTitle>
+    <EM.Nectar.PlaceholderDesc>尚未实装。后续版本将在此 Tab 提供妹汁相关选项。</EM.Nectar.PlaceholderDesc>
+    <EM.MenuSuckleFrom>吸 {0} 的奶</EM.MenuSuckleFrom>
+    <EM.JobReportBreastfeed>母乳喂养 TargetA。</EM.JobReportBreastfeed>
+    <EM.JobReportSuckleFrom>吸 TargetA 的奶。</EM.JobReportSuckleFrom>
     <EM.SubTab.Milk>产奶表</EM.SubTab.Milk>
     <EM.SubTab.MilkTags>奶标签</EM.SubTab.MilkTags>
     <EM.SubTab.RaceOverrides>种族覆盖</EM.SubTab.RaceOverrides>
-    <EM.SubTab.Fluids>精液/体液</EM.SubTab.Fluids>
-    <EM.SubTab.BreastfeedOverview>总览</EM.SubTab.BreastfeedOverview>
-    <EM.SubTab.Mastitis>乳腺炎</EM.SubTab.Mastitis>
-    <EM.SubTab.DBH>DBH</EM.SubTab.DBH>
-    <EM.SubTab.ToleranceOverflow>耐受与溢出</EM.SubTab.ToleranceOverflow>
-    <EM.SubTab.LoadFromDef>从 Def 加载</EM.SubTab.LoadFromDef>
-    <EM.SectionDesc_Mastitis>乳腺炎/堵塞：总开关决定是否启用；下方参数控制基准 MTB、满池过久与卫生的风险系数、人形/动物乘数。仅影响「是否触发」与「多容易触发」，不决定卫生数据来源（卫生数据来源在 DBH 子页设置）。</EM.SectionDesc_Mastitis>
-    <EM.SectionDesc_DBH>当已安装 Dubs Bad Hygiene 时，此处可选乳腺炎/堵塞的「卫生」风险用 DBH 的卫生需求（小人卫生条）还是原版房间清洁度。勾选=用 DBH；不勾=用房间清洁度。</EM.SectionDesc_DBH>
-    <EM.SectionDesc_LoadFromDef>点击后，将 EM_Defaults Def 中的关键默认值（乳腺炎、耐受、基准泌乳天数等）写入当前存档设置。不会覆盖种族白名单/黑名单。其他 mod 可 patch 该 Def 修改默认值。</EM.SectionDesc_LoadFromDef>
-    <EM.SectionDesc_ToleranceOverflow>耐受是否影响泌乳效率、影响曲线的指数；满池溢出时生成的地面污物 Def；挤奶 AI 是否优先更满的目标。下方为池模型参考显示。</EM.SectionDesc_ToleranceOverflow>
-    <EM.SectionDesc_IdentityAndMenu>控制右键点击某类单位时，是否在浮动菜单中显示「给催乳素」「哺乳/吸奶」等选项。按目标的身份（机械体/殖民者/奴隶/囚犯/动物/其它）分别勾选，可减少无关菜单项。</EM.SectionDesc_IdentityAndMenu>
-    <EM.SectionDesc_DefaultByRole>此处为该身份（殖民者/奴隶/囚犯/动物/机械/实体）的默认值。新加入或未单独设置过的单位会使用此默认；在 Milk 主界面表格中可对每个单位单独覆盖。</EM.SectionDesc_DefaultByRole>
-    <EM.SectionDesc_MilkingSelf>「挤奶（自身）」：允许该身份单位自己给自己挤奶（自动接挤奶自己的工作）。关闭则只能由别人挤或手动指派。主界面表格中可对单个单位单独开关。</EM.SectionDesc_MilkingSelf>
-    <EM.SectionDesc_Efficiency>泌乳期严重度对应的效率与产奶量倍率、泌乳期意识/操纵/移动增益及其上限百分比、动物成年雌性是否常乳。仅影响本 mod 的泌乳与产奶计算。</EM.SectionDesc_Efficiency>
-    <EM.LactationEfficiencyMovedHint>泌乳效率与意识/操纵/移动增益已移至「联动与扩展 → 乳房与池」，与容量、流速、剩余天数一起调节。此处仅保留动物常乳。</EM.LactationEfficiencyMovedHint>
-    <EM.SectionDesc_RJW>当 rim.job.world (RJW) 已启用时生效。控制泌乳与乳房尺寸、性需求、哺乳后满足、怀孕概率、性行为描述及性行为后奶池增益等联动。</EM.SectionDesc_RJW>
-    <EM.SectionDesc_BreastPool>第一项「泌乳期增大 RJW 乳房」控制左右池容量与流速来源（勾选=用 RJW 乳房数据，不勾=人形对称双池、左右一起增加）。下方还控制容量系数、流速倍率、剩余天数、泌乳效率与增益。多剂或更大乳房见 Docs/乳房容量模拟计算。</EM.SectionDesc_BreastPool>
-    <EM.RjwBreastSizeSectionHint>双池数据来源（下方为勾选项，勾选=启用）：</EM.RjwBreastSizeSectionHint>
-    <EM.SubTab.IdentityAndMenu>身份与菜单</EM.SubTab.IdentityAndMenu>
-    <EM.SubTab.RJW>RJW</EM.SubTab.RJW>
+    <EM.SectionDesc_Mastitis>管乳房红肿、堵奶这类祸事会不会找上门、又多容易找上门。总闸一关，久涨、脏乱、带伤也不再惹出乳腺炎。下面的滑条调「平均隔多少天出事」「涨太久有多险」「人脏屋脏有多险」，人与畜生还能分开算。若装着 Dubs Bad Hygiene 且能读到卫生需求，乳腺炎的「脏」自动按小人身上泥垢条算；否则按屋子洁净度。</EM.SectionDesc_Mastitis>
+    <EM.SectionDesc_DBH>营地里若激活了 Dubs Bad Hygiene，且存在卫生（Hygiene）需求，乳腺炎/堵奶的卫生风险会自动用小人泥垢条；否则仍按房间洁净度。</EM.SectionDesc_DBH>
+    <EM.ToleranceVanillaOnlyBody>催乳素耐受、泌乳 Hediff 合并等由原版与你的 Def 驱动。本 mod 不再单独用「催乳素耐受」去乘水池进水或泌乳流速。若 XML 仍挂 EM 催乳素耐受 Hediff，它主要影响心情/界面提示，不再在这里二次打折产量。</EM.ToleranceVanillaOnlyBody>
+    <EM.SectionDesc_IdentityAndMenu>右键某人时要不要冒出「喂催乳素」「哺乳/吸奶」之类条目。按身份（机械体、自己人、奴隶、囚犯、畜生、别的）分开勾，免得菜单又长又杂。</EM.SectionDesc_IdentityAndMenu>
+    <EM.SectionDesc_DefaultByRole>这里是各路人马新来的默认脾气：殖民者、奴隶、囚犯、畜生、机械、怪东西各一套。没单独改过的人用这里的规矩；在奶表上还能逐个覆盖。</EM.SectionDesc_DefaultByRole>
+    <EM.SectionDesc_RJW>若 mod 列表里有 RJW（rim.job.world）：哺乳/性需求、泌乳期性需求加成、哺乳后房事餍足、房事记忆、高潮产奶、房事奶劲（下方 Δs 滑条）等联动一律自动开启。本页：怀孕率滑条、房事奶劲强弱、可选「永久胀杯里程碑」。性腺/激素与虚拟精池等：在启用 RJW 性腺模组时，请至「精液与泄漏」→「性腺联动 (Ballz)」。虚拟乳池容量与拓扑：「泌乳」→「核心倍率」。生理拟真（SYS 开关）：「泌乳」→「生理拟真」。导管脉冲、组织适应 θ/ω 等：「泌乳」→「导管与模型」。</EM.SectionDesc_RJW>
+    <EM.RjwIntegrationBreastPoolNavHint>乳池与 RJW 胸形联动：主 Tab「{0}」→ 子 Tab「{1}」（容量、拓扑、流速等）。</EM.RjwIntegrationBreastPoolNavHint>
+    <EM.SectionDesc_BreastPool>当 RJW（rim.job.world）在模组列表中激活时，左右乳池容量与流速与 RJW 胸形数据挂钩。未激活 RJW 时，平等挤奶的乳房乳池系统不运行（见 About.xml 的 modDependencies）。下面可调容量来源、拓扑、系数、流速、能泌几天、挤奶效率与劲头。</EM.SectionDesc_BreastPool>
+    <EM.RjwBreastSizeSectionHint>双池数据来源：</EM.RjwBreastSizeSectionHint>
+    <EM.RjwBreastPoolAutoLinked>已检测到 RJW：乳房乳池容量与流速已自动与 RJW 胸形联动。</EM.RjwBreastPoolAutoLinked>
+    <EM.RjwIntegrationFeaturesAutoOn>已检测到 RJW：哺乳/性需求相关联动（含房事记忆、房事奶劲在 Δs&gt;0 时）已自动开启。</EM.RjwIntegrationFeaturesAutoOn>
+    <EM.DbhMastitisHygieneAuto>已检测到 DBH：乳腺炎/堵塞的卫生风险在可用时自动使用卫生（Hygiene）需求。</EM.DbhMastitisHygieneAuto>
+    <!-- 设置页二级分组标题 -->
+    <EM.UISection.BalanceBreastPoolPage>乳房与乳池（数值平衡）</EM.UISection.BalanceBreastPoolPage>
+    <EM.UISection.BalanceVsRealismHint>分清两类：「生理拟真」= SYS 编号子系统的开关及其配套滑条（机制长什么样）。「导管与模型」= 示意图，以及导管、组织适应、压力与导通等数值（强弱与节奏怎么调）。</EM.UISection.BalanceVsRealismHint>
+    <EM.UISection.BalanceSubTabRealismBlurb>本页只有 SYS-01～10 与 SYS-02c 开关；导管子步/脉冲、导通上下限、组织 θ/ω 等在「导管与模型」。</EM.UISection.BalanceSubTabRealismBlurb>
+    <EM.UISection.BalanceSubTabAdvancedBlurb>示意图、组织适应，以及导管进水与排奶/机械相关滑条（数值平衡用，不是 SYS 拟真总闸）。</EM.UISection.BalanceSubTabAdvancedBlurb>
+    <EM.UISection.BalanceSubTabColonistBlurb>泌乳期殖民者属性加成与下方参数速查。</EM.UISection.BalanceSubTabColonistBlurb>
+    <EM.UISection.PoolCapacity>容量与虚拟乳池布局</EM.UISection.PoolCapacity>
+    <EM.UISection.PoolCapacityDesc>池键、拓扑与单侧基容量倍率（装着 RJW 时吃 RJW 胸形数据）。</EM.UISection.PoolCapacityDesc>
+    <EM.UISection.RjwShapeAndStageFlow>RJW 胸形与阶段流速修正</EM.UISection.RjwShapeAndStageFlow>
+    <EM.UISection.RjwShapeAndStageFlowDesc>泌乳/撑满段的胸形严重度加成，以及乳头阶段对进水与高潮产液的百分比修正。</EM.UISection.RjwShapeAndStageFlowDesc>
+    <EM.UISection.MilkingThroughput>挤奶流速与工作量</EM.UISection.MilkingThroughput>
+    <EM.UISection.MilkingThroughputDesc>池子往瓶里流多快、挤奶工作有多「费手」。</EM.UISection.MilkingThroughputDesc>
+    <EM.UISection.OverflowResidual>满池残余渗漏</EM.UISection.OverflowResidual>
+    <EM.UISection.OverflowResidualDesc>很满时的少量被动渗出；可按奶劲 L、瘀火等放大。</EM.UISection.OverflowResidualDesc>
+    <EM.UISection.DrugLactationLevelCap>药物泌乳水平上限（L）</EM.UISection.DrugLactationLevelCap>
+    <EM.UISection.DrugLactationLevelCapDesc>封顶后多嗑只延长时间，不再把流速顶更高。</EM.UISection.DrugLactationLevelCapDesc>
+    <EM.UISection.PoolSchematicPreview>乳池示意图（参考）</EM.UISection.PoolSchematicPreview>
+    <EM.UISection.PoolSchematicPreviewDesc>帮助理解用，不是逐 tick 仿真。</EM.UISection.PoolSchematicPreviewDesc>
+    <EM.UISection.TissueAdaptation>组织适应（慢变量）</EM.UISection.TissueAdaptation>
+    <EM.UISection.TissueAdaptationDesc>θ、ω：乳腺慢适应（详见各滑条说明）。</EM.UISection.TissueAdaptationDesc>
+    <EM.UISection.DuctInflowRouting>进水脉冲与导管走奶</EM.UISection.DuctInflowRouting>
+    <EM.UISection.DuctInflowRoutingDesc>子步数、脉冲持续、共享预算、跨边惩罚、炎症对进水的阻力。</EM.UISection.DuctInflowRoutingDesc>
+    <EM.UISection.DuctDrainAndMachine>排奶、机械吸力与导通</EM.UISection.DuctDrainAndMachine>
+    <EM.UISection.DuctDrainAndMachineDesc>手挤与机挤阻力、压力曲线、导管导通上下限。</EM.UISection.DuctDrainAndMachineDesc>
+    <EM.UISection.LactationColonistStatGain>泌乳期属性加成</EM.UISection.LactationColonistStatGain>
+    <EM.UISection.LactationColonistStatGainDesc>可选：泌乳时小幅提升意识/操作/移动，并设上限比例。</EM.UISection.LactationColonistStatGainDesc>
+    <EM.UISection.MastitisSwitches>乳腺炎与瘀肿模型</EM.UISection.MastitisSwitches>
+    <EM.UISection.MastitisSwitchesDesc>总闸与按左/右乳追踪的瘀肿火气 I。</EM.UISection.MastitisSwitchesDesc>
+    <EM.UISection.MastitisMtbAndRisk>发病间隔与风险倍率</EM.UISection.MastitisMtbAndRisk>
+    <EM.UISection.MastitisMtbAndRiskDesc>基础 MTB、久涨、卫生、感染、人形与畜生倍率。</EM.UISection.MastitisMtbAndRiskDesc>
+    <EM.UISection.OverflowFilthAndLetters>溢出污迹与信件</EM.UISection.OverflowFilthAndLetters>
+    <EM.UISection.OverflowFilthAndLettersDesc>涨破池子落哪种污迹；满池提醒信与冷却。</EM.UISection.OverflowFilthAndLettersDesc>
+    <EM.UISection.DrugTimingReference>药物/分娩基准天数</EM.UISection.DrugTimingReference>
+    <EM.UISection.MilkingAiPreference>挤奶 AI 选侧</EM.UISection.MilkingAiPreference>
+    <EM.UISection.MilkingAiPreferenceDesc>是否优先挤更涨的一侧。</EM.UISection.MilkingAiPreferenceDesc>
+    <EM.UISection.PermProducerNote>产奶标签与限制说明</EM.UISection.PermProducerNote>
+    <EM.UISection.PermDrugRoles>药物分工（提示）</EM.UISection.PermDrugRoles>
+    <EM.UISection.PermProlactinMenu>右键菜单：催乳与泌乳相关</EM.UISection.PermProlactinMenu>
+    <EM.UISection.PermProlactinMenuDesc>按身份开关「喂催乳素」等条目，减轻菜单噪音。</EM.UISection.PermProlactinMenuDesc>
+    <EM.UISection.NutritionBasics>营养与泌乳代谢</EM.UISection.NutritionBasics>
+    <EM.UISection.RjwFertilityAndSexBoost>怀孕率与房事奶劲</EM.UISection.RjwFertilityAndSexBoost>
+    <EM.UISection.RjwFertilityAndSexBoostDesc>泌乳期怀孕乘数；哺乳后房事、泌乳心情、房事奶劲总闸与强度（Δs 可为 0）。</EM.UISection.RjwFertilityAndSexBoostDesc>
+    <EM.UISection.ThirdPartyLactationBridge>第三方泌乳兼容</EM.UISection.ThirdPartyLactationBridge>
+    <EM.UISection.ThirdPartyLactationBridgeDesc>对此页三个联动子标签均生效。推荐其他模组调用程序集 API：<c>MilkCum.Integration.EqualMilkLactationApi</c>；下方开关用于吸收仍直接写 <c>CompMilkable.fullness</c> 或泌乳 <c>HediffComp_Lactating.Charge</c> 的旧式模组。</EM.UISection.ThirdPartyLactationBridgeDesc>
+    <EM.BridgeExternalCompMilkableFullness>吸收外部对 CompMilkable.fullness 的写入</EM.BridgeExternalCompMilkableFullness>
+    <EM.BridgeExternalCompMilkableFullnessDesc>每 60 tick 检测：若他模组只改了基类 <c>fullness</c> 而未更新本 mod 的按 key 乳池，则把目标总量按比例写回乳池，并同步泌乳 Hediff 的 Charge、排空炎症缓解等。若对方已改用 API 或出现重复结算可关闭。</EM.BridgeExternalCompMilkableFullnessDesc>
+    <EM.BridgeExternalLactatingCharge>吸收外部泌乳 Hediff 的 Charge</EM.BridgeExternalLactatingCharge>
+    <EM.BridgeExternalLactatingChargeDesc>若他模组只改 <c>HediffComp_Lactating.Charge</c>，原版式每 tick 会把 Charge 强行拉回乳池总量。开启本项后：在乳池总量未变而 Charge 与池不一致时，先保留差异，再由奶 Comp 每 60 tick 把 Charge 当作目标总量写回按 key 乳池（副作用与 fullness 桥接一致）。重复结算时可关。</EM.BridgeExternalLactatingChargeDesc>
+    <EM.LogExternalFullnessBridge>记录外部镜像桥接（fullness / Charge，DevMode）</EM.LogExternalFullnessBridge>
     <EM.SubTab.GenesAndAdvanced>基因与高级</EM.SubTab.GenesAndAdvanced>
-    <EM.SubTab.BreastPool>乳房与池</EM.SubTab.BreastPool>
-    <EM.BreastfeedOverviewDesc>谁可以喂谁在下方按人形/动物/机械族设置。此处为单次哺乳时长与机械族营养→能量。</EM.BreastfeedOverviewDesc>
+    <!-- 专业级子 Tab -->
+    <EM.SubTab.BreastfeedSystem>哺乳系统</EM.SubTab.BreastfeedSystem>
+    <EM.SubTab.CumSystem>精液系统</EM.SubTab.CumSystem>
+    <EM.SubTab.MastitisSystem>乳腺炎</EM.SubTab.MastitisSystem>
+    <EM.SubTab.OverflowPollution>溢出与污染</EM.SubTab.OverflowPollution>
+    <EM.SubTab.MenuVisibility>菜单显示</EM.SubTab.MenuVisibility>
+    <EM.SubTab.DefaultBehavior>默认行为</EM.SubTab.DefaultBehavior>
+    <EM.SubTab.BalanceCore>核心倍率</EM.SubTab.BalanceCore>
+    <EM.SubTab.BalanceRealism>生理拟真</EM.SubTab.BalanceRealism>
+    <EM.SubTab.BalanceAdvancedModel>导管与模型</EM.SubTab.BalanceAdvancedModel>
+    <EM.SubTab.BalanceColonistExtras>殖民者加成</EM.SubTab.BalanceColonistExtras>
+    <EM.SubTab.RJWIntegration>RJW 联动</EM.SubTab.RJWIntegration>
+    <EM.SubTab.NutritionSystem>营养系统</EM.SubTab.NutritionSystem>
+    <EM.SectionDesc_NutritionIntegration>吃进去的东西与乳房里的奶怎么互相拆借：机械族把营养换成电、泌乳让人更容易饿、涨满的奶回缩时能不能填一点肚子。和「核心机制 → 哺乳」里是同一套说法。</EM.SectionDesc_NutritionIntegration>
+    <EM.BreastfeedOverviewDesc>谁准喂谁、喂多久，在下方按人形、畜生、机械分开定。这里只管一次叼住多久、机械喝奶怎么换算成能量。</EM.BreastfeedOverviewDesc>
     <EM.LactationExtraNutritionFactor>泌乳额外饥饿：{0}（0=关闭，150=1:1，300=双倍）</EM.LactationExtraNutritionFactor>
-    <EM.BreastfeedCapacityFactor>吸奶容量系数</EM.BreastfeedCapacityFactor>
-    <EM.MilkingWorkTotalBase>挤奶工作量基准</EM.MilkingWorkTotalBase>
-    <EM.MilkingCapacityFactor>挤奶容量系数</EM.MilkingCapacityFactor>
-    <EM.LactatingGain>泌乳期增益（意识/操纵/移动）</EM.LactatingGain>
-    <EM.LactatingGainDesc>开启后药物引起的泌乳期给予意识/操纵/移动加成，下方百分比控制强度（0%～20%）。</EM.LactatingGainDesc>
-    <EM.LactatingGainPercent>增益偏移：{0}</EM.LactatingGainPercent>
-    <EM.LactatingEfficiencyMultiplier>挤奶与吸奶产出倍率：{0}</EM.LactatingEfficiencyMultiplier>
-    <EM.LactatingEfficiencyMultiplierDesc>控制「挤奶一次」和「吸奶/哺乳一次」能产出多少奶的倍率，默认 1.25。调高 = 同样池满度下挤奶或吸奶产出的奶更多；不影响池子灌满速度（灌满速度由上方「流速倍率」控制）。吃越多催乳素、Lactating 层数越高，本倍率叠得越明显。</EM.LactatingEfficiencyMultiplierDesc>
-    <EM.FedByColumnTip>被喂食者：指定“允许哪些泌乳者喂我”。列表为空=任意泌乳者；非空=仅列表中的泌乳者。</EM.FedByColumnTip>
+    <EM.MilkingWorkTotalBase>挤奶工作量基准：{0}</EM.MilkingWorkTotalBase>
+    <EM.MilkingWorkTotalBaseDesc>数值越大挤奶越慢（每挤出一点奶要更多“工作量刻度”）。默认 60 约等于满流速时现实时间每秒一瓶的量级；调小会加快挤奶工的速度。</EM.MilkingWorkTotalBaseDesc>
+    <EM.RjwPermanentBreastGainSection>泌乳导致的永久乳房成长（RJW）</EM.RjwPermanentBreastGainSection>
+    <EM.RjwPermanentBreastGain>泌乳中按里程碑永久提高 RJW 乳房严重度</EM.RjwPermanentBreastGain>
+    <EM.RjwPermanentBreastGainDesc>RJW 已加载时：每累计下方若干泌乳游戏日，把 RJW 乳房严重度加上一档增量。默认关闭。</EM.RjwPermanentBreastGainDesc>
+    <EM.RjwPermanentBreastGainDays>每档间隔（游戏日）：{0}</EM.RjwPermanentBreastGainDays>
+    <EM.RjwPermanentBreastGainDaysDesc>两次永久加严重度之间要累计的泌乳天数。</EM.RjwPermanentBreastGainDaysDesc>
+    <EM.RjwPermanentBreastGainDelta>每档严重度增量：{0}</EM.RjwPermanentBreastGainDelta>
+    <EM.RjwPermanentBreastGainDeltaDesc>每达标一次增加的 RJW 乳房严重度（上限 1）。</EM.RjwPermanentBreastGainDeltaDesc>
+    <EM.PoolSchematicTitle>示意图：奶池满度随时间（非逐 tick 仿真）</EM.PoolSchematicTitle>
+    <EM.PoolSchematicTip>纵轴归一化（0 空，1 满池容量）。青线使用与游戏内一致的 GetEffectiveDrive（先做 L 封顶再算激素饱和）。绿线在满位附近按「溢出残余压力」滑块 r 略抬高，在后段再按人形流速倍率、挤奶工作量基准做一点挤出下落示意。仍非单步池仿真。</EM.PoolSchematicTip>
+    <EM.PoolSchematicReflectedTitle>本图大致反映的内容</EM.PoolSchematicReflectedTitle>
+    <EM.PoolSchematicReflectedBullets>L 上限与溢出转严重度系数；进水子步数与 Burst 时长；乳压因子开关与 Pc；激素饱和（GetEffectiveDrive，含 A、LRef）；近满残余压力滑块 r（此处不用 L/I 动态缩放，只读滑条）；人形流速倍率与挤奶工作量基准（后段绿线下拽）。</EM.PoolSchematicReflectedBullets>
+    <EM.PoolSchematicExcludedTitle>本图不反映</EM.PoolSchematicExcludedTitle>
+    <EM.PoolSchematicExcludedBullets>营养与回吸；乳腺炎与卫生—炎症整套；逐人导管拓扑；乳头阶段 / RJW 容量模式；多池拓扑。</EM.PoolSchematicExcludedBullets>
+    <EM.PoolSchematicFooterSeeTooltip>鼠标悬停整块示意图可查看「反映 / 不反映」完整列表。</EM.PoolSchematicFooterSeeTooltip>
+    <EM.PoolSchematicAxisTime>时间轴 →（一次药效归一化尺度）</EM.PoolSchematicAxisTime>
+    <EM.PoolSchematicAxisLevel>量级 ↑（归一化）</EM.PoolSchematicAxisLevel>
+    <EM.PoolSchematicLegendFullness>池满度（示意）</EM.PoolSchematicLegendFullness>
+    <EM.PoolSchematicLegendDrive>有效驱动（封顶 L + 饱和）</EM.PoolSchematicLegendDrive>
+    <EM.PoolSchematicLegendCapacity>池容量顶线</EM.PoolSchematicLegendCapacity>
+    <EM.PoolSchematicLegendStack>叠剂示意竖线</EM.PoolSchematicLegendStack>
+    <EM.PoolSchematicDoseHint>再给药</EM.PoolSchematicDoseHint>
+    <EM.PoolSchematicCapOnNote>已设 L 上限 {0}：青线会先顶平，再多嗑主要堆在游戏内的泌乳严重度/时长（溢出系数 ×{1}）。对照绿线斜率理解「水进了但劲不跟着无限涨」。</EM.PoolSchematicCapOnNote>
+    <EM.PoolSchematicCapOffNote>未启用 L 上限：示意下奶劲与满度一起爬升。若要看见封顶后的平台形曲线，请打开上面的泌乳水平上限。</EM.PoolSchematicCapOffNote>
+    <EM.LactatingGain>泌乳劲头（意识/操纵/移动）</EM.LactatingGain>
+    <EM.LactatingGainDesc>开启后，催乳药催起的泌乳会让人更清醒、手脚更稳；下方百分比调节强弱（0%～20%）。</EM.LactatingGainDesc>
+    <EM.LactatingGainPercent>劲头强弱：{0}</EM.LactatingGainPercent>
     <EM.ProducerRestrictionsColumn>谁可使用我的奶 / 谁可吃奶制品或精液制品</EM.ProducerRestrictionsColumn>
     <EM.ProducerRestrictionsColumnTip>女性（泌乳者）：谁可以使用我的奶、谁可以吃我的奶制品。男性：谁可以吃我的精液制品。与「谁可以喂我」不同——那列是在被喂食者上设置的。</EM.ProducerRestrictionsColumnTip>
     <EM.ProducerRestrictionsTitle>{0} 的指定</EM.ProducerRestrictionsTitle>
-    <EM.WhoCanSuckleFromMe>谁可以使用我的奶</EM.WhoCanSuckleFromMe>
-    <EM.WhoCanSuckleFromMeDefault>下方名单默认已勾选子女与伴侣；可添加或移除。</EM.WhoCanSuckleFromMeDefault>
-    <EM.WhoCanUseMyMilkProducts>谁可以吃我的奶制品</EM.WhoCanUseMyMilkProducts>
-    <EM.WhoCanUseMyMilkProductsDefault>默认：仅自己。添加小人则他们也允许食用我的奶或用我奶做的食物。</EM.WhoCanUseMyMilkProductsDefault>
-    <EM.WhoCanUseMyCumProducts>谁可以吃我的精液制品</EM.WhoCanUseMyCumProducts>
-    <EM.WhoCanUseMyCumProductsDefault>默认：仅自己。添加小人则他们也允许食用我的精液或精液制品。</EM.WhoCanUseMyCumProductsDefault>
+    <EM.MilkTagsTableHeaderDesc>奶制品/精液制品在信息中是否显示种族或产奶者名称。开启「显示动物名」后，产主限制（谁可以吃我的制品）才会生效。</EM.MilkTagsTableHeaderDesc>
+    <EM.RequiresRJWMod>需要已启用 RJW（亲密与身形那一套）。</EM.RequiresRJWMod>
+    <EM.WindowSearchTitle>选择物品</EM.WindowSearchTitle>
+    <EM.SearchItemsPlaceholder>按物品名或内部短名搜索…</EM.SearchItemsPlaceholder>
+    <EM.Lactating>泌乳</EM.Lactating>
+    <EM.MilkFullnessColumnTip>奶池涨满几成（0～100%）。身上没挂这套泌乳算法时显示「-」。</EM.MilkFullnessColumnTip>
+    <EM.MilkRemainingDaysColumnTip>粗算还能泌几天（看奶劲与基准日子）。没在泌或天生一直泌的，显示「-」。</EM.MilkRemainingDaysColumnTip>
+    <EM.MilkEquivalentDoseColumnTip>把现在的奶劲折成「相当于嗑了几剂催乳药」（只读）。约莫一剂药 ≈ 半分奶劲。</EM.MilkEquivalentDoseColumnTip>
+    <EM.LactatingColumnTip>是否处于泌乳状态。蓝色=临时，红色=永久（层数）。</EM.LactatingColumnTip>
+    <EM.GeneConfigTitle>奶类型基因配置</EM.GeneConfigTitle>
     <EM.ProducerRestrictionsHint>女性：谁可以使用我的奶、谁可以吃奶制品。男性：谁可以吃精液制品。在奶表格中点击对应行的「指定」列，按产奶者/产精者分别设置。</EM.ProducerRestrictionsHint>
-    <EM.HealthTabRestrictionsButton>谁可用我的奶 / 奶制品 / 精液制品</EM.HealthTabRestrictionsButton>
-    <EM.Specify>指定</EM.Specify>
-    <EM.DrugRoleHint>进入泌乳期用 Prolactin / Lucilactin；已有泌乳时提高产奶量用 Galactogogues。</EM.DrugRoleHint>
+    <EM.DefaultSucklerRulesSection>默认「谁可以使用我的奶」（名单为空时）</EM.DefaultSucklerRulesSection>
+    <EM.DefaultSucklerIncludeChildren>包含子女</EM.DefaultSucklerIncludeChildren>
+    <EM.DefaultSucklerIncludeChildrenDesc>勾选时，产奶者的子女默认允许使用奶。</EM.DefaultSucklerIncludeChildrenDesc>
+    <EM.DefaultSucklerIncludeLover>包含恋人</EM.DefaultSucklerIncludeLover>
+    <EM.DefaultSucklerIncludeLoverDesc>勾选时，恋人默认允许。</EM.DefaultSucklerIncludeLoverDesc>
+    <EM.DefaultSucklerIncludeSpouse>包含配偶</EM.DefaultSucklerIncludeSpouse>
+    <EM.DefaultSucklerIncludeSpouseDesc>勾选时，配偶默认允许。</EM.DefaultSucklerIncludeSpouseDesc>
+    <EM.DefaultSucklerExcludeParents>排除父母（母亲/父亲）</EM.DefaultSucklerExcludeParents>
+    <EM.DefaultSucklerExcludeParentsDesc>勾选时，产奶者的父母默认不允许使用奶。</EM.DefaultSucklerExcludeParentsDesc>
+    <EM.RestrictionsTableHeaderName>姓名</EM.RestrictionsTableHeaderName>
+    <EM.RestrictionsTableHeaderRelation>关系</EM.RestrictionsTableHeaderRelation>
+    <EM.RestrictionsTableHeaderBreastfeed>吸奶</EM.RestrictionsTableHeaderBreastfeed>
+    <EM.RestrictionsTableHeaderBreastfeedTip>允许此人直接吸奶（哺乳）。</EM.RestrictionsTableHeaderBreastfeedTip>
+    <EM.RestrictionsTableHeaderMilking>挤奶</EM.RestrictionsTableHeaderMilking>
+    <EM.RestrictionsTableHeaderMilkingTip>允许此人使用挤奶器对该产主进行挤奶。</EM.RestrictionsTableHeaderMilkingTip>
+    <EM.RestrictionsTableHeaderConsume>使用制品</EM.RestrictionsTableHeaderConsume>
+    <EM.RestrictionsTableHeaderConsumeTip>允许此人食用该产主产出的奶/精液制品（含加工食物）。</EM.RestrictionsTableHeaderConsumeTip>
+    <EM.RestrictionsFilterEmpty>当前筛选下没有小人。</EM.RestrictionsFilterEmpty>
+    <EM.RestrictionsFilterEmptyHint>换换上头「全部 / 自己人 / 囚徒」筛子，或等这类人来齐地图。</EM.RestrictionsFilterEmptyHint>
+    <EM.RestrictionsAllowSelfSection>允许自己（对自己的操作）</EM.RestrictionsAllowSelfSection>
+    <EM.RestrictionsAllowOthersSection>允许他人（他人对自己的操作）</EM.RestrictionsAllowOthersSection>
+    <EM.RestrictionsAllowSelf_Milking>挤奶</EM.RestrictionsAllowSelf_Milking>
+    <EM.RestrictionsAllowSelf_MilkingTip>允许自己使用挤奶器或接「自己挤奶」工作。</EM.RestrictionsAllowSelf_MilkingTip>
+    <EM.RestrictionsAllowSelf_Consume>吃奶</EM.RestrictionsAllowSelf_Consume>
+    <EM.RestrictionsAllowSelf_ConsumeTip>允许自己食用产出的奶/精液制品（含加工食物）。关则自己也不能吃自己的制品。</EM.RestrictionsAllowSelf_ConsumeTip>
+    <EM.RestrictionsAllowOthers_Milking>被他人挤奶</EM.RestrictionsAllowOthers_Milking>
+    <EM.RestrictionsAllowOthers_MilkingTip>允许其他殖民者/对应工作来对该角色使用挤奶器或接「挤奶」工作。关则仅自定「自己挤奶」仍可能生效（若下方允许）。</EM.RestrictionsAllowOthers_MilkingTip>
+    <EM.DrugRoleHint>要催出泌乳：催乳素、露西催乳那一类。已经在泌了想再猛一点：用催奶散之类。</EM.DrugRoleHint>
     <EM.AnimalAdultFemaleAlwaysLactating>动物：成年雌性常乳</EM.AnimalAdultFemaleAlwaysLactating>
     <EM.MenuProlactinShow>菜单：催乳素→{0}</EM.MenuProlactinShow>
-    <EM.RJWSection>--- RJW 联动（启用 rim.job.world 时生效）---</EM.RJWSection>
-    <EM.RjwBreastSize>泌乳期增大 RJW 乳房</EM.RjwBreastSize>
-    <EM.RjwBreastSizeDesc>开启时：泌乳期临时增加 RJW 乳房 Severity（外观变大），且池容量与产奶流速按 RJW 乳房数据计算（Severity×容量系数、fluidMultiplier）。关闭时：不改变外观，且容量与流速不使用 RJW 乳房。</EM.RjwBreastSizeDesc>
+    <EM.BreastPoolBaseCapacityRjwVolumeOnly>乳池单侧基容量固定为：RJW BreastSize.volume（升）× 下方容量系数（无有效体积则该叶不进池）。</EM.BreastPoolBaseCapacityRjwVolumeOnly>
+    <EM.BreastPoolLayoutVirtualLRFixed>乳池布局：虚拟左/右（固定）</EM.BreastPoolLayoutVirtualLRFixed>
+    <EM.RjwNippleStageFlowBonusPct>乳头阶段流速修正 %：{0}</EM.RjwNippleStageFlowBonusPct>
+    <EM.RjwNippleStageFlowBonusPctDesc>RJW 乳房当前阶段标签含 “Nipple” 时，泌乳进水与高潮产液倍率乘以 (1+本值/100)。0 为关闭；约 ±15% 内裁剪。</EM.RjwNippleStageFlowBonusPctDesc>
     <EM.RjwBreastCapacityCoefficient>乳房容量系数：{0}</EM.RjwBreastCapacityCoefficient>
-    <EM.RjwBreastCapacityCoefficientDesc>左/右池容量 = RJW 乳房 Severity × 本系数（1=不变）。可与流速倍率、泌乳效率等一起调节。</EM.RjwBreastCapacityCoefficientDesc>
-    <EM.RjwBreastCapacityCoefficientDescLong>左/右池容量 = RJW 乳房 Severity × 本系数；总容量 = 左+右。系数越大池越大，灌满需时越长；默认 2 时 Severity 0.5 双乳总容量=2。详见 Docs/乳房容量模拟计算.md。</EM.RjwBreastCapacityCoefficientDescLong>
-    <EM.DefaultFlowMultiplierForHumanlikeDescLong>产奶流速（池单位/天）的全局倍率；与容量系数、基准天数一起决定单次剂量下的灌满时间与剩余天数。默认 2 ≈ 单次剂量约 1 游戏日灌满。</EM.DefaultFlowMultiplierForHumanlikeDescLong>
-    <EM.BaselineMilkDurationDays>药物泌乳基准天数：{0} 日</EM.BaselineMilkDurationDays>
-    <EM.BaselineMilkDurationDaysDesc>参与 L 衰减：单次剂量（L≈0.5）时剩余天数 ≈ 本值。默认 5 即约 5 日；多剂叠加时总天数 &lt; 剂数×本值。</EM.BaselineMilkDurationDaysDesc>
-    <EM.BirthInducedMilkDurationDays>分娩泌乳基准天数：{0} 日</EM.BirthInducedMilkDurationDays>
-    <EM.BirthInducedMilkDurationDaysDesc>分娩诱发泌乳的参考持续天数（当前仅作显示参考，L 衰减由药物基准参与）。</EM.BirthInducedMilkDurationDaysDesc>
-    <EM.BreastPoolParamsHint>容量、灌满时间、剩余天数由上方参数共同决定；详见 参数联动表 与 乳房容量模拟计算。</EM.BreastPoolParamsHint>
+    <EM.RjwBreastCapacityCoefficientDescLong>左一池、右一池各自基容量 = RJW 体积（升）× 本系数（再裁剪上限）；总基容量为各格之和。系数 2 将「升」标度映射进池单位；流速仍由 GetFluidMultiplier 等单独决定。</EM.RjwBreastCapacityCoefficientDescLong>
+    <EM.RjwLactatingSeverityBonus>泌乳时胸形额外胀：{0}</EM.RjwLactatingSeverityBonus>
+    <EM.RjwLactatingSeverityBonusDesc>泌着奶时，在 RJW 胸形原本胀度的基础上再加一截（奶池还没撑到极限那段）。默认 0.15。</EM.RjwLactatingSeverityBonusDesc>
+    <EM.RjwLactatingStretchSeverityBonus>奶池撑满时再胀一截：{0}</EM.RjwLactatingStretchSeverityBonus>
+    <EM.RjwLactatingStretchSeverityBonusDesc>奶池已经鼓到「再涨就要撑破皮」那一段时，胸形再多胀一点点。默认 0.05。</EM.RjwLactatingStretchSeverityBonusDesc>
+    <EM.DefaultFlowMultiplierForHumanlikeDescLong>一天能往池里灌多少奶的全局倍率；跟容量、吃药后能泌几天绑在一起，决定一剂药多久把池灌满。默认 2 时，一剂药大约一昼夜灌满。</EM.DefaultFlowMultiplierForHumanlikeDescLong>
+    <EM.BreastPoolParamsHint>能装多少、多久灌满、还能泌几天，上头几个数拧在一起才算得准；想扒公式可翻作者写的联动表与容量笔谈。</EM.BreastPoolParamsHint>
     <EM.BreastPoolParamsInToleranceHint>药物/分娩基准天数已移至「联动与扩展 → 乳房与池」子页，与乳房容量、流速一起调节。</EM.BreastPoolParamsInToleranceHint>
-    <EM.RjwLustFromNursing>哺乳/吸奶增加性需求</EM.RjwLustFromNursing>
-    <EM.RjwLustFromNursingDesc>哺乳或刚被哺乳后，母亲与婴儿获得少量性需求满足。</EM.RjwLustFromNursingDesc>
-    <EM.RjwSexNeedLactatingBonus>泌乳期性需求随时间小幅提升</EM.RjwSexNeedLactatingBonus>
-    <EM.RjwSexNeedLactatingBonusDesc>泌乳期小人获得少量性需求加成。</EM.RjwSexNeedLactatingBonusDesc>
-    <EM.RjwSexSatisfactionAfterNursing>哺乳后性行为额外满足</EM.RjwSexSatisfactionAfterNursing>
-    <EM.RjwSexSatisfactionAfterNursingDesc>刚哺乳后不久进行性行为获得额外满足。</EM.RjwSexSatisfactionAfterNursingDesc>
     <EM.RjwLactationFertility>泌乳期怀孕概率：{0}</EM.RjwLactationFertility>
-    <EM.RjwLactationFertilityDesc>母亲泌乳时怀孕概率乘以此值（0～1）。</EM.RjwLactationFertilityDesc>
-    <EM.RjwLactatingInSexDesc>性互动中显示泌乳状态</EM.RjwLactatingInSexDesc>
-    <EM.RjwLactatingInSexDescDesc>泌乳期小人在 RJW 性互动中可能获得不同描述。</EM.RjwLactatingInSexDescDesc>
-    <EM.RjwSexAddsLactationBoost>性行为后增加奶池</EM.RjwSexAddsLactationBoost>
-    <EM.RjwSexAddsLactationBoostDesc>开启后，参与性行为的泌乳者会获得少量奶池进水（ΔL），受耐受与种族倍率影响。</EM.RjwSexAddsLactationBoostDesc>
-    <EM.RjwSexLactationBoostDeltaS>性行为泌乳 Δs：{0}</EM.RjwSexLactationBoostDeltaS>
-    <EM.DubsBadHygieneSection>--- Dubs Bad Hygiene（乳腺炎卫生触发）---</EM.DubsBadHygieneSection>
-    <EM.UseDubsBadHygieneForMastitis>乳腺炎/堵塞使用 DBH 卫生需求</EM.UseDubsBadHygieneForMastitis>
-    <EM.UseDubsBadHygieneForMastitisDesc>开启时，Dubs Bad Hygiene 的卫生需求过低会提高乳腺炎/堵塞风险；关闭则改用房间清洁度。</EM.UseDubsBadHygieneForMastitisDesc>
-    <EM.MastitisAndToleranceSection>乳腺炎与耐受（可调）</EM.MastitisAndToleranceSection>
+    <EM.RjwSexSatisfactionAfterNursing>哺乳后不久房事额外解渴</EM.RjwSexSatisfactionAfterNursing>
+    <EM.RjwSexSatisfactionAfterNursingDesc>哺乳结束一段时间内再办事，会多涨一截性需求（RJW Need_Sex）。</EM.RjwSexSatisfactionAfterNursingDesc>
+    <EM.RjwLactatingInSexDesc>泌乳时房事记一笔心情</EM.RjwLactatingInSexDesc>
+    <EM.RjwLactatingInSexDescDesc>云雨结束时若仍泌乳，可能获得「泌乳中房事」类心情（与 RJW 描述联动）。</EM.RjwLactatingInSexDescDesc>
+    <EM.RjwSexAddsLactationBoost>房事过后添奶劲（总闸）</EM.RjwSexAddsLactationBoost>
+    <EM.RjwSexAddsLactationBoostDesc>勾选且 RJW 已加载时，云雨过后可按下方强度往奶池渗一小股奶劲（还吃身子的腻味、种族脾性）。不勾则完全不走这条，与滑条是否为 0 无关。</EM.RjwSexAddsLactationBoostDesc>
+    <EM.RjwSexLactationBoostDeltaS>房事奶劲强度（Δs）：{0}</EM.RjwSexLactationBoostDeltaS>
+    <EM.RjwSexLactationBoostDeltaSDesc>0 即不开进水，但仍保留总闸勾选状态；通常取 0.05～0.5。</EM.RjwSexLactationBoostDeltaSDesc>
+    <EM.DubsBadHygieneSection>—— 洗浴与洁净（Dubs Bad Hygiene）——</EM.DubsBadHygieneSection>
     <EM.AllowMastitis>允许乳腺炎/堵塞风险</EM.AllowMastitis>
     <EM.AllowMastitisDesc>关闭后，满池、卫生或受伤不再触发乳腺炎。</EM.AllowMastitisDesc>
-    <EM.MastitisBaseMtbDays>乳腺炎基准 MTB（天）：{0}</EM.MastitisBaseMtbDays>
+    <EM.EnableInflammationModel>按左/右乳追踪瘀肿火气</EM.EnableInflammationModel>
+    <EM.EnableInflammationModelDesc>关上：不再给每侧乳房单独记瘀火，挤奶也不按侧泄火，瘀火涨到临界点也不会硬拽出乳腺炎。久涨、脏乱、带伤那条「日子到了就倒霉」的规矩仍听总闸的。</EM.EnableInflammationModelDesc>
+    <EM.InflammationModelSection>—— 瘀肿火气（分左乳、右乳记）——</EM.InflammationModelSection>
+    <EM.InflammationAlpha>瘀积有多猛：{0}</EM.InflammationAlpha>
+    <EM.InflammationAlphaDesc>奶水涨过「起算线」之后，多出来的那截越鼓，瘀火叠得越快；前面这个数就是那股劲头有多大。满度是这一侧奶量占撑大上限的几成。</EM.InflammationAlphaDesc>
+    <EM.InflammationBeta>带伤添火：{0}</EM.InflammationBeta>
+    <EM.InflammationBetaDesc>躯干或乳房带伤时，每个时辰往两边乳房各添多少瘀火（不分左右谁更惨，一视同仁）。</EM.InflammationBetaDesc>
+    <EM.InflammationGamma>脏乱掺和进来：{0}</EM.InflammationGamma>
+    <EM.InflammationGammaDesc>人脏屋脏时，瘀积与污秽拧在一起有多紧；瘀得越满，脏越要命。</EM.InflammationGammaDesc>
+    <EM.InflammationRho>身子自己败火：{0}</EM.InflammationRho>
+    <EM.InflammationRhoDesc>每个时辰瘀火按这个比例自己退；越大好得越快。</EM.InflammationRhoDesc>
+    <EM.InflammationCrit>瘀火涨到这就闹乳腺炎：{0}</EM.InflammationCrit>
+    <EM.InflammationCritDesc>左右取最凶的那一侧：若瘀火 ≥ 此数、又允许乳腺炎，就可能发作或加重。若开着奶瓶品质，奶质好时身子更扛折腾，等效门槛会略抬高。</EM.InflammationCritDesc>
+    <EM.InflammationStasisFullnessThreshold>瘀积从几成满开始算：{0}</EM.InflammationStasisFullnessThreshold>
+    <EM.InflammationStasisFullnessThresholdDesc>相对撑大上限，奶量低于这条线时瘀积几乎不算数；高过线才明显往瘀火上浇油。</EM.InflammationStasisFullnessThresholdDesc>
+    <EM.InflammationStasisExponent>瘀积曲线有多陡：{0}</EM.InflammationStasisExponent>
+    <EM.InflammationStasisExponentDesc>越大越「平时还好，一撑满就炸」。</EM.InflammationStasisExponentDesc>
+    <EM.InflammationHygieneBaselineFactor>脏也得配瘀才作妖：{0}</EM.InflammationHygieneBaselineFactor>
+    <EM.InflammationHygieneBaselineFactorDesc>瘀还轻的时候，脏意被压在底数与满脏之间；趋近 0 时几乎不涨，除非奶已经鼓得很满。</EM.InflammationHygieneBaselineFactorDesc>
+    <EM.InflammationDrainReliefScale>挤奶泄火有多灵：{0}</EM.InflammationDrainReliefScale>
+    <EM.InflammationDrainReliefScaleDesc>每从这一侧撸下多少奶（占撑大上限的几成），瘀火就按「系数×这个比例」往下卸，还受下一条单次上限卡着。</EM.InflammationDrainReliefScaleDesc>
+    <EM.InflammationDrainReliefMaxPerEvent>单次挤奶最多泄多少火：{0}</EM.InflammationDrainReliefMaxPerEvent>
+    <EM.InflammationDrainReliefMaxPerEventDesc>同一侧一趟流程里，瘀火一次最多跌多少。</EM.InflammationDrainReliefMaxPerEventDesc>
+    <EM.MastitisBaseMtbDays>乳腺炎平均隔几天发作：{0}</EM.MastitisBaseMtbDays>
     <EM.OverFullnessRiskMultiplier>满池过久风险系数：{0}</EM.OverFullnessRiskMultiplier>
     <EM.HygieneRiskMultiplier>卫生风险系数：{0}</EM.HygieneRiskMultiplier>
-    <EM.MastitisMtbDaysMultiplierHumanlike>人形乳腺炎 MTB 乘数：{0}</EM.MastitisMtbDaysMultiplierHumanlike>
-    <EM.MastitisMtbDaysMultiplierHumanlikeDesc>人形小人的乳腺炎基准 MTB 乘数。&gt;1 表示乳腺炎更少发生。</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
-    <EM.MastitisMtbDaysMultiplierAnimal>动物乳腺炎 MTB 乘数：{0}</EM.MastitisMtbDaysMultiplierAnimal>
-    <EM.MastitisMtbDaysMultiplierAnimalDesc>非人形（动物）的乳腺炎基准 MTB 乘数。在启用动物乳腺炎时使用。</EM.MastitisMtbDaysMultiplierAnimalDesc>
-    <EM.AllowToleranceAffectMilk>耐受影响泌乳效率</EM.AllowToleranceAffectMilk>
-    <EM.AllowToleranceAffectMilkDesc>关闭后，催乳素耐受不降低产奶流速或持续时间（E_tol = 1）。</EM.AllowToleranceAffectMilkDesc>
-    <EM.ToleranceFlowImpactExponent>耐受影响指数：{0}</EM.ToleranceFlowImpactExponent>
-    <EM.OverflowFilthSection>溢出污物</EM.OverflowFilthSection>
-    <EM.OverflowFilthDefName>满池溢出时生成的地面污物 Def 名称</EM.OverflowFilthDefName>
-    <EM.BaselineMilkDurationReference>参考：药物泌乳基准 {0} 天，分娩 {1} 天（池模型）。</EM.BaselineMilkDurationReference>
+    <EM.MastitisInfectionRiskFactor>感染风险系数：{0}</EM.MastitisInfectionRiskFactor>
+    <EM.MastitisInfectionRiskFactorDesc>又脏又瘀还带伤时，发作日子会再除以这个数——越大越容易倒楣（破皮遇污那种糟心事）。1 表示不额外加码；想略狠一点可试 1.1～1.5。</EM.MastitisInfectionRiskFactorDesc>
+    <EM.MastitisMtbDaysMultiplierHumanlike>人形发作间隔倍率：{0}</EM.MastitisMtbDaysMultiplierHumanlike>
+    <EM.MastitisMtbDaysMultiplierHumanlikeDesc>把人形「平均隔几天发作」再乘这道数。大于 1 就更少闹病。</EM.MastitisMtbDaysMultiplierHumanlikeDesc>
+    <EM.MastitisMtbDaysMultiplierAnimal>畜生发作间隔倍率：{0}</EM.MastitisMtbDaysMultiplierAnimal>
+    <EM.MastitisMtbDaysMultiplierAnimalDesc>畜生那条「隔几天发作」再乘这道数；只有开着畜生乳腺炎时才算。</EM.MastitisMtbDaysMultiplierAnimalDesc>
+    <EM.OverflowFilthDefName>奶涨破池时地上留哪种污迹（内部短名）</EM.OverflowFilthDefName>
     <EM.AiPreferHighFullnessTargets>挤奶时优先满度更高的目标</EM.AiPreferHighFullnessTargets>
-    <EM.AiPreferHighFullnessTargetsDesc>开启时，殖民者会优先挤满度更高的小人（降低溢出风险）。</EM.AiPreferHighFullnessTargetsDesc>
-    <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）</EM.RaceOverridesSection>
-    <EM.RaceCanAlwaysLactate>视为可产奶的种族（defName，逗号分隔）</EM.RaceCanAlwaysLactate>
-    <EM.RaceCannotLactate>视为不可产奶的种族（defName，逗号分隔）</EM.RaceCannotLactate>
+    <EM.AiPreferHighFullnessTargetsDesc>勾上：干活的人会先找涨得最狠的那个挤，少溅一地奶。</EM.AiPreferHighFullnessTargetsDesc>
+    <EM.RaceOverridesSection>种族覆盖（白名单 / 黑名单）。催乳进水只认 Hediff severity，此处不再有按种族乘 Δs。</EM.RaceOverridesSection>
+    <EM.RaceCanAlwaysLactate>这些种族一律当作能产奶（内部短名，逗号隔开）</EM.RaceCanAlwaysLactate>
+    <EM.RaceCannotLactate>这些种族一律当作不能产奶（内部短名，逗号隔开）</EM.RaceCannotLactate>
     <EM.DefaultFlowMultiplierForHumanlike>流速倍率：{0}</EM.DefaultFlowMultiplierForHumanlike>
-    <EM.DefaultFlowMultiplierForHumanlikeDesc>所有单位奶池流速倍率（1=不变）。可与 RJW/种族 mod 配合平衡。</EM.DefaultFlowMultiplierForHumanlikeDesc>
+    <EM.OverflowResidualFlowFactor>残余压力下限：{0}</EM.OverflowResidualFlowFactor>
+    <EM.OverflowResidualFlowFactorDesc>单侧达到撑大容量近满阈值时，压力系数至少为该比例（0～100%），便于维持微量进水与污物溢出。设为 0% 即关闭。</EM.OverflowResidualFlowFactorDesc>
+    <EM.OverflowResidualDynamicScaling>奶劲与瘀火一起调节渗奶</EM.OverflowResidualDynamicScaling>
+    <EM.OverflowResidualDynamicScalingDesc>勾上后：渗奶强度 ≈ 基准 × 奶劲/(奶劲+参考) ×（1 + 加成×瘀火/临界点），再封顶在 1。奶劲低就漏得少；瘀火高漏得凶，像瘀久了皮开肉绽那样。</EM.OverflowResidualDynamicScalingDesc>
+    <EM.OverflowResidualLactationRefL>奶劲要多高才漏得狠：{0}</EM.OverflowResidualLactationRefL>
+    <EM.OverflowResidualLactationRefLDesc>越大，越要奶劲足，渗奶才接近满强度。</EM.OverflowResidualLactationRefLDesc>
+    <EM.OverflowResidualInflammationBoost>瘀火顶到临界点时多漏几成：{0}</EM.OverflowResidualInflammationBoost>
+    <EM.OverflowResidualInflammationBoostDesc>瘀火涨到与「闹乳腺炎那条线」齐平时，渗奶乘 (1+本值)。0 表示瘀火再凶也不额外渗。</EM.OverflowResidualInflammationBoostDesc>
+    <EM.LactationLevelCap>泌乳水平上限：{0}</EM.LactationLevelCap>
+    <EM.LactationLevelCapDesc>大于 0 时，药劲超过这条线的部分不再把流速顶更高，只把能泌的日子拉长——身子消化药力总得花时间。0 表示不封顶。</EM.LactationLevelCapDesc>
+    <EM.LactationLevelCapDurationMultiplier>上限溢出→时间倍数：{0}</EM.LactationLevelCapDurationMultiplier>
+    <EM.LactationLevelCapDurationMultiplierDesc>达到上限时，超出部分转为「持续时间」时乘以该倍数。&gt;1 则延长更多天，补偿不提高流速。默认 1.5。</EM.LactationLevelCapDurationMultiplierDesc>
     <EM.DevModeLactationPanel>泌乳状态（开发模式，选中小人）</EM.DevModeLactationPanel>
-    <EM.DevModeNoPawnSelected>未选中小人。在游戏中选中一名小人可查看 L、左/右池、E、卫生风险、溢出累计。</EM.DevModeNoPawnSelected>
-    <EM.DevModeNotLactating>{0} 未处于泌乳期（无平等产奶泌乳 hediff）。</EM.DevModeNotLactating>
+    <EM.DevModeBreastPoolTopology>乳池拓扑（调试）</EM.DevModeBreastPoolTopology>
+    <EM.DevModeBreastPoolTopologyDisabled>仅当 mod 列表中启用 RJW（rim.job.world）时，才显示基于 RJW 的乳池拓扑调试信息。</EM.DevModeBreastPoolTopologyDisabled>
+    <EM.DevModeBreastPoolTopologyNoEntries>当前无乳池条目（无可泌乳胸叶或身体部位）。</EM.DevModeBreastPoolTopologyNoEntries>
+    <EM.DevModeBreastPoolTopologyEntriesHeader>共 {0} 条：</EM.DevModeBreastPoolTopologyEntriesHeader>
+    <EM.DevModeBreastPoolUiHint>界面分列：虚拟左/右 → 左栏汇总解剖左且 Site 为左乳槽；右栏汇总解剖右。胸位合并且多池时「右乳」合计可能误导，以每条 Key 为准。每叶一池 → 一叶一键。</EM.DevModeBreastPoolUiHint>
+    <EM.DevModeBreastPoolTopologyTruncated>（列表过长已截断；完整键见存档或 记忆库/docs/乳池拓扑决策表.md。）</EM.DevModeBreastPoolTopologyTruncated>
+    <EM.DevModeNoPawnSelected>先在游戏里点中一个人，才看得见奶劲、左右池、耐受、卫生险、涨破累计。</EM.DevModeNoPawnSelected>
+    <EM.DevModeNotLactating>{0} 这会儿没在泌乳。</EM.DevModeNotLactating>
     <EM.DevModeNoGame>未在游戏中。请载入存档后再查看选中小人的泌乳信息。</EM.DevModeNoGame>
-    <EM.LoadDefaultsFromDef>从 Def 加载默认</EM.LoadDefaultsFromDef>
-    <EM.LoadDefaultsFromDefDesc>将 EM_Defaults Def 中的关键默认值应用到当前设置（其他 mod 可 patch 该 Def 以修改默认值）。不会覆盖种族白名单/黑名单。</EM.LoadDefaultsFromDefDesc>
-    <EM.DefaultsDefLabel>平等产奶默认值</EM.DefaultsDefLabel>
+    <EM.LactationLog>泌乳记事（开发）：分娩、嗑药进水、身上挂的泌乳症添了卸了</EM.LactationLog>
+    <EM.LactationPoolTickLog>每约一呼一吸记一笔：扣营养、池里涨多少、回缩、谁叼了奶（开发）</EM.LactationPoolTickLog>
+    <EM.MilkingActionLog>挤奶动作细账（开发）：手动/机械挤奶入口与扣池量</EM.MilkingActionLog>
+    <EM.LactationDrugIntakeLog>嗑药进水细账（开发）：每次药劲化开时，记劲道变了多少、池里进了多少、还剩几时生效</EM.LactationDrugIntakeLog>
+    <EM.OptionalModsSectionTitle>可选联动模组</EM.OptionalModsSectionTitle>
+    <EM.OptionalModsSectionTip>本 mod 能对接的常见外部模组。未找到仅表示当前列表未启用该包；没有它们许多功能仍会照常工作。</EM.OptionalModsSectionTip>
+    <EM.ModStatusDetected>已检测到</EM.ModStatusDetected>
+    <EM.ModStatusNotFound>未找到</EM.ModStatusNotFound>
+    <EM.OptionalMod_RJW>RimJobWorld（RJW）</EM.OptionalMod_RJW>
+    <EM.OptionalMod_DBH>Dubs Bad Hygiene（卫生）</EM.OptionalMod_DBH>
+    <EM.OptionalMod_VEFCore>Vanilla Expanded Framework（核心，管道等）</EM.OptionalMod_VEFCore>
+    <EM.OptionalMod_RJWGenes>RJW Genes</EM.OptionalMod_RJWGenes>
+    <EM.OptionalMod_BallzGonads>RJW 睾丸与卵巢（性腺）</EM.OptionalMod_BallzGonads>
     <EM.MilkOverflowMote>奶水溢出</EM.MilkOverflowMote>
     <EM.FullPoolLetterTitle>需要挤奶</EM.FullPoolLetterTitle>
     <EM.FullPoolLetterText>{0} 的奶池已满超过一天，建议挤奶以免不适或溢出。</EM.FullPoolLetterText>
-    <EM.AlertLactatingButFluidZero>泌乳期但 RJW 胸部流体倍率为 0，无法产奶；请用开发模式 =&gt; RJW：编辑部件 修复。</EM.AlertLactatingButFluidZero>
-    <!-- 水池模型 hediff 悬停 -->
+    <EM.EnableFullPoolLetter>满池过久时发送提醒信</EM.EnableFullPoolLetter>
+    <EM.EnableFullPoolLetterDesc>开启后，殖民地小人的奶池持续满池超过约一天会收到提醒信。下方冷却天数限制同一小人再次触发信件的最短间隔。</EM.EnableFullPoolLetterDesc>
+    <EM.FullPoolLetterCooldownDays>满池信件冷却（天）：{0}</EM.FullPoolLetterCooldownDays>
+    <EM.FullPoolLetterCooldownDaysDesc>同一小人两次提醒信的最短间隔天数。默认 2。</EM.FullPoolLetterCooldownDaysDesc>
+    <EM.AlertLactatingButFluidZero>明明在泌乳，RJW 却把胸里那道「流奶倍率」拧成 0，奶出不来。开开发模式进 RJW 部件编辑，把流奶倍率救回来。</EM.AlertLactatingButFluidZero>
+    <Fluid_Multiplier_Zero>流体倍率为零</Fluid_Multiplier_Zero>
+    <!-- 健康页乳池悬停 -->
     <EM.PoolRemainingDays>剩余天数</EM.PoolRemainingDays>
-    <EM.PoolDaysPrefix>天数：</EM.PoolDaysPrefix>
+    <EM.PoolDaysPrefix>泌乳期天数：</EM.PoolDaysPrefix>
+    <EM.PoolDaysSuffix>日</EM.PoolDaysSuffix>
     <EM.EquivalentDose>等效剂量：{0}</EM.EquivalentDose>
     <EM.EquivalentDoseColumn>等效剂量</EM.EquivalentDoseColumn>
     <EM.ItemProducer>产主：{0}</EM.ItemProducer>
     <EM.ItemAllowedConsumersOwnerOnly>允许使用：仅产主本人</EM.ItemAllowedConsumersOwnerOnly>
     <EM.ItemAllowedConsumers>允许使用：{0}</EM.ItemAllowedConsumers>
     <EM.LactatingStateProducing>产奶中</EM.LactatingStateProducing>
-    <EM.LactatingStateFullness>池满度：{0}</EM.LactatingStateFullness>
     <EM.LactatingStateFullShrinking>池满回缩中（吸收补充饱食度）</EM.LactatingStateFullShrinking>
     <EM.LactatingStateFull>池满（建议挤奶）</EM.LactatingStateFull>
-    <EM.MilkFlowStoppedFull>池已满，无流速</EM.MilkFlowStoppedFull>
-    <EM.PoolCurrentLactation>当前泌乳量</EM.PoolCurrentLactation>
-    <EM.MilkFlowPerDay>流速：{0}/天</EM.MilkFlowPerDay>
-    <EM.MilkFlowValuePercent>流速：{0}({1})/天</EM.MilkFlowValuePercent>
-    <EM.MilkFlowValuePercentLine>总流速：{0} / 天 （{1}）</EM.MilkFlowValuePercentLine>
-    <EM.MilkFlowFactors>  {0}</EM.MilkFlowFactors>
-    <EM.MilkFlowDrive>驱动</EM.MilkFlowDrive>
+    <EM.MilkFlowPressureWhenFull>（满池时受压力抑制，仍微量进水）</EM.MilkFlowPressureWhenFull>
+    <EM.MilkFlowDrive>泌乳素水平</EM.MilkFlowDrive>
     <EM.MilkFlowHunger>饥饿</EM.MilkFlowHunger>
     <EM.MilkFlowConditions>状态</EM.MilkFlowConditions>
-    <EM.MilkFlowGenes>基因</EM.MilkFlowGenes>
-    <EM.MilkFlowSetting>设置</EM.MilkFlowSetting>
-    <EM.MilkFlowRjw>左右乳</EM.MilkFlowRjw>
+    <EM.MilkFlowSetting>营规</EM.MilkFlowSetting>
     <EM.MilkFlowPressure>压力</EM.MilkFlowPressure>
-    <EM.MilkFlowLetdown>喷乳反射</EM.MilkFlowLetdown>
-    <EM.MilkFlowFactorItem>{0}×{1}</EM.MilkFlowFactorItem>
-    <EM.PoolPairFlowLine>{0} 流速：{1}（左：{2}；右：{3}）</EM.PoolPairFlowLine>
-    <EM.PoolLeftFlowLine>左乳流速：{0} / 天</EM.PoolLeftFlowLine>
-    <EM.PoolRightFlowLine>右乳流速：{0} / 天</EM.PoolRightFlowLine>
+    <EM.MilkFlowLetdown>喷乳反射（催产素）</EM.MilkFlowLetdown>
     <EM.ReabsorbedNutritionPerDay>回缩吸收：+{0} 营养/天</EM.ReabsorbedNutritionPerDay>
     <EM.ReabsorbNutritionEnabled>回缩时吸收营养（补充饱食度）</EM.ReabsorbNutritionEnabled>
     <EM.ReabsorbNutritionEfficiencyLabel>回缩吸收效率：{0}</EM.ReabsorbNutritionEfficiencyLabel>
+    <EM.PoolBreastTooltipSiblingPairHint>本块：与当前乳房行「同父部位」下的同胞乳叶（左/右池）；另一对乳房不会并入此悬停。</EM.PoolBreastTooltipSiblingPairHint>
+    <EM.PoolBreastTooltipHealthHint>健康模型（简化）：「胀满」多为奶水过满的生理性不适；「瘀积」偏排出不畅/久满风险；「乳腺炎」是风险叠乘，并非完整细菌感染模拟。规律排空可降低瘀积相关判定与多数乳腺炎掷骰。</EM.PoolBreastTooltipHealthHint>
+    <EM.PoolBreastAmbiguousSide>未标注解剖侧</EM.PoolBreastAmbiguousSide>
     <EM.PoolLeftBreast>左乳</EM.PoolLeftBreast>
     <EM.PoolRightBreast>右乳</EM.PoolRightBreast>
-    <EM.BreastParentLabel>乳房</EM.BreastParentLabel>
-    <EM.PoolTotalMilkCapacity>奶量：{0} / 容量：{1}</EM.PoolTotalMilkCapacity>
-    <EM.PoolTotalMilkCapacityFull>总奶量：{0} ({1}) / 总容量 {2}({3})</EM.PoolTotalMilkCapacityFull>
-    <EM.PoolTotalMilkCapacityFullLine>总奶量：{0} / {1} （扩展容量：{2}）</EM.PoolTotalMilkCapacityFullLine>
-    <EM.PoolBreastMilkCap>奶量：{0} ({1}) / 容量 {2}({3})</EM.PoolBreastMilkCap>
-    <EM.PoolBreastFlowEfficiency>左乳流速：{0}({1})/天 右乳流速：{2}({3})/天</EM.PoolBreastFlowEfficiency>
-    <EM.PoolPairEfficiencyHeader>该对流速：{0}({1}%)/天</EM.PoolPairEfficiencyHeader>
-    <EM.PoolLeftEfficiencyHeader>左乳流速：{0}({1}%)/天</EM.PoolLeftEfficiencyHeader>
-    <EM.PoolRightEfficiencyHeader>右乳流速：{0}({1}%)/天</EM.PoolRightEfficiencyHeader>
-    <EM.PoolEfficiencyFactorsBracket>（{0}）</EM.PoolEfficiencyFactorsBracket>
     <EM.PoolBreastSectionHeader>【{0}】</EM.PoolBreastSectionHeader>
+    <EM.PoolBreastSingleRowDetail>{0}（单条乳池）</EM.PoolBreastSingleRowDetail>
+    <EM.PoolBreastChestSinglePoolTitle>{0}（胸位单池：乳房挂在胸部、无独立左/右乳解剖叶，仅一条乳池）</EM.PoolBreastChestSinglePoolTitle>
     <EM.PoolSectionStorage>储量</EM.PoolSectionStorage>
     <EM.PoolSectionFlow>流速</EM.PoolSectionFlow>
-    <EM.PoolSectionProduct>产物</EM.PoolSectionProduct>
     <EM.PoolSectionConsumption>消耗</EM.PoolSectionConsumption>
     <EM.PoolSectionCycle>周期</EM.PoolSectionCycle>
-    <EM.PoolBreastSummaryLabel>总计</EM.PoolBreastSummaryLabel>
     <EM.PoolBreastTotalMilkLine>总奶量：{0} / {1}（{2}）</EM.PoolBreastTotalMilkLine>
     <EM.PoolBreastStretchCapLine>扩展容量：{0}</EM.PoolBreastStretchCapLine>
     <EM.PoolBreastTotalFlowLine>总流速：{0} / 天</EM.PoolBreastTotalFlowLine>
-    <EM.PoolBreastPairSummaryLine1>奶量：{0} / {1}（扩展：{2}）</EM.PoolBreastPairSummaryLine1>
-    <EM.PoolBreastPairSummaryLine2>流速：{0} / 天</EM.PoolBreastPairSummaryLine2>
-    <EM.PoolBreastDevModeOnly>只有 DevMode 才显示</EM.PoolBreastDevModeOnly>
+    <EM.PoolBreastDevModeOnly>仅开发模式可见</EM.PoolBreastDevModeOnly>
     <EM.PoolBreastMechanismLabel>生产机制:</EM.PoolBreastMechanismLabel>
-    <EM.MilkFlowBreastVolume>乳房体积</EM.MilkFlowBreastVolume>
-    <EM.PoolBreastPairSummary>总：奶量 {0} / 容量 {1}({2}) / 流速 {3}/天</EM.PoolBreastPairSummary>
-    <EM.PoolBreastSideMilk>奶量：{0} ({1})</EM.PoolBreastSideMilk>
+    <EM.PoolFlowEstrogenNote>（容量与产奶效率受乳腺发育等因素影响，含雌激素等生理因素。）</EM.PoolFlowEstrogenNote>
+    <EM.MilkFlowBreastVolume>RJW 流体量倍率（GetFluidMultiplier）</EM.MilkFlowBreastVolume>
     <EM.PoolBreastSideMilkLine>奶量：{0} / {1}（{2}）</EM.PoolBreastSideMilkLine>
-    <EM.PoolBreastSideCap>容量：{0}({1})</EM.PoolBreastSideCap>
     <EM.PoolBreastSideCapMax>容量上限：{0}</EM.PoolBreastSideCapMax>
-    <EM.PoolBreastSideFlow>流速：{0}/天</EM.PoolBreastSideFlow>
     <EM.PoolBreastSideFlowLine>流速：{0} / 天</EM.PoolBreastSideFlowLine>
-    <EM.PoolBreastFactorsLabel>修正：</EM.PoolBreastFactorsLabel>
     <EM.MilkFlowFactorLine>{0} ×{1}</EM.MilkFlowFactorLine>
-    <EM.PoolBreastLabelSuffix>：</EM.PoolBreastLabelSuffix>
-    <EM.MilkQuality>乳汁质量：{0}</EM.MilkQuality>
-    <EM.LactatingProductRate>产物倍率：{0} x{1}</EM.LactatingProductRate>
-    <EM.LactatingProductLine>{0}：x{1}</EM.LactatingProductLine>
-    <EM.LactatingExtraNutrition>额外营养消耗：{0} / 天</EM.LactatingExtraNutrition>
     <EM.LactatingExtraNutritionShort>额外营养：{0} / 天</EM.LactatingExtraNutritionShort>
-    <EM.PoolRemainingDaysLine>剩余天数：{0}</EM.PoolRemainingDaysLine>
     <EM.AbsorptionDelayRemaining>剩余时间：{0}</EM.AbsorptionDelayRemaining>
     <EM.AbsorptionDelayMinutes>{0} 分钟</EM.AbsorptionDelayMinutes>
     <EM.AbsorptionDelayHours>{0} 小时</EM.AbsorptionDelayHours>
@@ -213,11 +355,63 @@
     <EM_CumBucket_SelectBed>选择要关联的床</EM_CumBucket_SelectBed>
     <EM_CumBucket_BedsInRoom>同房间内的床</EM_CumBucket_BedsInRoom>
     <EM_CumBucket_BedsElsewhere>其他床</EM_CumBucket_BedsElsewhere>
-    <EM.Milk_Dev>泌乳（开发）</EM.Milk_Dev>
     <EM.Milk_SealCum>塞住</EM.Milk_SealCum>
     <EM.Milk_SealCumTip>是否塞住，防止精液自然泄漏。仅人形成人且有阴道时显示。</EM.Milk_SealCumTip>
     <EM.Milk_AllowDeflate>允许泄精</EM.Milk_AllowDeflate>
-    <EM.Milk_AllowDeflateTip>是否允许该小人去做泄精 Job（泄到桶/清洁/随地）。关则不会自动泄精。</EM.Milk_AllowDeflateTip>
+    <EM.Milk_AllowDeflateTip>准不准这人自己去找桶、找扫帚或就地泄掉胀住的精。关则不会自动去泄。</EM.Milk_AllowDeflateTip>
     <EM.DefaultSetting_CanBeFed>允许被自动喂食</EM.DefaultSetting_CanBeFed>
     <EM.DefaultSetting_CanBeFedTip>作为婴儿/幼体时，是否允许保育员自动来哺乳我。关则不会成为自动哺乳的对象。</EM.DefaultSetting_CanBeFedTip>
+    <EM.AdaptationSlowTheta>慢重塑增长 theta：{0}</EM.AdaptationSlowTheta>
+    <EM.AdaptationSlowOmega>慢重塑衰减 omega：{0}</EM.AdaptationSlowOmega>
+    <EM.InflowEventSubsteps>事件进水亚步长：{0}</EM.InflowEventSubsteps>
+    <EM.InflowEventBurstDurationTicks>事件爆发持续 ticks：{0}</EM.InflowEventBurstDurationTicks>
+    <EM.DuctHopPenaltyPerEdge>导管跳点惩罚：{0}</EM.DuctHopPenaltyPerEdge>
+    <EM.DuctInflowInflammationResistance>进水炎症阻力：{0}</EM.DuctInflowInflammationResistance>
+    <EM.DuctDrainInflammationResistanceManual>手动排空炎症阻力：{0}</EM.DuctDrainInflammationResistanceManual>
+    <EM.DuctDrainInflammationResistanceMachine>机器排空炎症阻力：{0}</EM.DuctDrainInflammationResistanceMachine>
+    <EM.DuctMachineSuctionBonus>机器吸力加成：{0}</EM.DuctMachineSuctionBonus>
+    <EM.DuctDrainPressureBase>排空压力基值：{0}</EM.DuctDrainPressureBase>
+    <EM.DuctDrainPressureScale>排空压力缩放：{0}</EM.DuctDrainPressureScale>
+    <EM.DuctConductanceMin>导管导通下限：{0}</EM.DuctConductanceMin>
+    <EM.DuctConductanceMax>导管导通上限：{0}</EM.DuctConductanceMax>
+    <EM.AdaptationSlowThetaDesc>慢相重塑的增长系数。越高表示在持续高满度下，长期结构容量增长越快。</EM.AdaptationSlowThetaDesc>
+    <EM.AdaptationSlowOmegaDesc>慢相重塑的回落系数。越高表示刺激变弱后，长期结构容量回落越快。</EM.AdaptationSlowOmegaDesc>
+    <EM.InflowEventSubstepsDesc>事件爆发期间，把每 60 tick 的进水拆成 N 个亚步长，进水与压力反馈更平滑。</EM.InflowEventSubstepsDesc>
+    <EM.InflowEventBurstDurationTicksDesc>刺激事件（哺乳/挤奶/高潮）触发后，事件驱动爆发模式持续的 ticks。</EM.InflowEventBurstDurationTicksDesc>
+    <EM.InflowSharedMammaryBudget>单一泌乳轴（跨侧共享总预算）</EM.InflowSharedMammaryBudget>
+    <EM.InflowSharedMammaryBudgetDesc>存在多个乳池键（左右或多叶）时，小人级泌乳进水有两种哲学；本选项勾选＝「单一轴」模式。\n\n• 开启 —「单一泌乳轴」：drive、饱食、种族流速倍率、昼夜/代谢门控等先合成每 60tick 的一份总进水预算，再按各侧相对「通道权重」（RJW 流速倍率×状态×压力×喷乳×导管×顺应性）比例分配。多一侧主要是抢份额，总吞吐不会随侧数近似倍增。\n\n• 关闭 —「并行独立侧」（历史行为）：每一侧都把同一套小人标度从头到尾乘一遍自己的通道因子；侧数越多，总进水近似叠高，更像多路独立泵。\n\n偏一套身体的叙事用开启；偏高产或街机节奏可关。</EM.InflowSharedMammaryBudgetDesc>
+    <EM.DuctHopPenaltyPerEdgeDesc>每跨一个网络边的跳点惩罚。越高表示深层池到出口越难导通。</EM.DuctHopPenaltyPerEdgeDesc>
+    <EM.DuctInflowInflammationResistanceDesc>炎症对进水导通的抑制强度。</EM.DuctInflowInflammationResistanceDesc>
+    <EM.DuctDrainInflammationResistanceManualDesc>炎症对手动吸奶/排空的阻力强度。</EM.DuctDrainInflammationResistanceManualDesc>
+    <EM.DuctDrainInflammationResistanceMachineDesc>炎症对机器抽吸的阻力强度。</EM.DuctDrainInflammationResistanceMachineDesc>
+    <EM.DuctMachineSuctionBonusDesc>机器抽吸相对手动的额外吸力倍率。</EM.DuctMachineSuctionBonusDesc>
+    <EM.DuctDrainPressureBaseDesc>排空模型中的基础压力项，与当前满度压力无关。</EM.DuctDrainPressureBaseDesc>
+    <EM.DuctDrainPressureScaleDesc>排空模型中的压力增益项。越高表示高压池排空越快。</EM.DuctDrainPressureScaleDesc>
+    <EM.DuctConductanceMinDesc>导通/扣量因子的下限，避免完全锁死。</EM.DuctConductanceMinDesc>
+    <EM.DuctConductanceMaxDesc>导通/扣量因子的上限，避免排空速度失控。</EM.DuctConductanceMaxDesc>
+    <EM.Realism.Section>生理拟真（可选）</EM.Realism.Section>
+    <EM.Realism.SectionDesc>SYS-01～10 与 SYS-02c 独立开关；多数项新安装默认全开；已在 Mod 设置里保存的值会保留。SYS-10 泌乳建立默认关闭。导管脉冲长度、导通、组织 θ/ω 等在「数值平衡」→「导管与模型」，不在本页。详见模组记忆库设计文档。</EM.Realism.SectionDesc>
+    <EM.Realism.ComplianceInflow>SYS-01 非线性顺应性进水</EM.Realism.ComplianceInflow>
+    <EM.Realism.StretchBuffer>SYS-02a 形变缓冲（单侧额外可蓄比例）</EM.Realism.StretchBuffer>
+    <EM.Realism.RjwStretchMilestone>SYS-02b RJW 撑大阶梯里程碑</EM.Realism.RjwStretchMilestone>
+    <EM.Realism.RjwStretchPerSideSync>SYS-02c RJW 胀大按乳池键同步（单侧郁积）</EM.Realism.RjwStretchPerSideSync>
+    <EM.Realism.MetabolicGate>SYS-03 代谢门控（饥饿/口渴）</EM.Realism.MetabolicGate>
+    <EM.Realism.PoolFedSelf>SYS-03 池内自给（低饱食）</EM.Realism.PoolFedSelf>
+    <EM.Realism.ReflexLeak>SYS-04 可解释高压漏奶→溢出</EM.Realism.ReflexLeak>
+    <EM.Realism.EmptyStasisCoupling>SYS-05 排空—淤积耦合</EM.Realism.EmptyStasisCoupling>
+    <EM.Realism.StimulusSource>SYS-06 婴/机泌乳素刺激倍率</EM.Realism.StimulusSource>
+    <EM.Realism.StressLetdown>SYS-07 疼痛/心情抑制射乳</EM.Realism.StressLetdown>
+    <EM.Realism.WeaningCurve>SYS-08 断奶慢变（实验性）</EM.Realism.WeaningCurve>
+    <EM.Realism.Circadian>SYS-09 昼夜进水节律</EM.Realism.Circadian>
+    <EM.Realism.LactationEstablishment>SYS-10 人类泌乳建立（进水渐增）</EM.Realism.LactationEstablishment>
+    <EM.Realism.LactationEstablishmentDesc>开启后，人类自出现「泌乳」Hediff 起，若干游戏日内每日进水自较低倍率线性升至满倍（按 Hediff 存在时长计）。永久泌乳基因与非人形不套用。</EM.Realism.LactationEstablishmentDesc>
+    <EM.Realism.EstablishmentDays>建立天数（至进水满倍）：{0}</EM.Realism.EstablishmentDays>
+    <EM.Realism.EstablishmentMinMult>首日进水相对满倍比例：{0}</EM.Realism.EstablishmentMinMult>
+    <EM.Realism.ComplianceExponent>顺应性指数：{0}</EM.Realism.ComplianceExponent>
+    <EM.Realism.StretchExtraFraction>相对基容额外可蓄：{0}</EM.Realism.StretchExtraFraction>
+    <EM.Realism.PoolFedTarget>自给目标饱食：{0}</EM.Realism.PoolFedTarget>
+    <EM.Realism.WeaningHalfLifeDays>断奶半衰期（日）：{0}</EM.Realism.WeaningHalfLifeDays>
+    <EM.Realism.CircadianAmplitude>昼夜振幅：{0}</EM.Realism.CircadianAmplitude>
+    <EM.MilkPoolFull>奶池已满。</EM.MilkPoolFull>
+    <EM.SettingsLoadError>设置加载失败，已使用默认值。</EM.SettingsLoadError>
 </LanguageData>

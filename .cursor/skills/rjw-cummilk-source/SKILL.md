@@ -29,7 +29,7 @@ description: Apply rjw-cummilk (Equal Milking) C# source conventions when editin
 
 - 补丁类放在 `MilkCum.Milk.HarmonyPatches` 或集成模块对应目录（如 RJW 相关在 `MilkCum.RJW`）。
 - 使用 `[HarmonyPatch(typeof(TargetType))]`、`[HarmonyPatch("MethodName")]` 或 `[HarmonyPatch(nameof(T.Method))]`；Prefix/Postfix 为 `public static`，参数与 Harmony 约定一致（`__instance`、`__result` 等）。
-- 每个 Patch 方法用 `/// <summary>` 简要说明意图；若涉及设计文档（如「规格」「水池模型」）或版本行为（如 7.8、10.8-6），在注释中注明，便于与 `Docs/` 对应。
+- 每个 Patch 方法用 `/// <summary>` 简要说明意图；若涉及设计文档（如「规格」「水池模型」）或版本行为（如 7.8、10.8-6），在注释中注明，便于与 `记忆库/docs/` 对应。
 - 优先**挂接**原版/RJW 逻辑（替换 driver/comp class、在事件前后追加逻辑），避免重写整段游戏逻辑；与《游戏已接管变量与机制清单》一致。
 
 ## 5. 设置与存档
@@ -38,20 +38,20 @@ description: Apply rjw-cummilk (Equal Milking) C# source conventions when editin
 - **存档键**使用 `"EM.XXX"` 形式并保持稳定；修改键会破坏旧存档兼容，需注释说明或做迁移。
 - UI 中需要显示的设置文案使用 Keyed 键（如 `EM.LactatingGainDesc`），不在 C# 里写死长句。
 
-## 6. 与 Docs 的对应
+## 6. 与记忆库/docs 的对应
 
 - **《游戏已接管变量与机制清单》**：原版/RJW 已接管的机制（Lactating Def、JobDef.Milk、ChemicalDef、Need_Chemical、耐受/成瘾由 XML 与游戏驱动等）**不再在 C# 中重算**；只读或挂接，不重复实现。
 - **《参数联动表》**：高级设置中参数的影响与联动以该表为准；新增或修改参数时更新表或在该文档中注明，并在代码注释中引用参数名。
-- **《泌乳系统逻辑图》**：泌乳端到端流程、L/双池/耐受/进水/衰减/选侧等逻辑的唯一文档；涉及池、流速、公式时与之一致，注释可写「见 Docs/泌乳系统逻辑图」。
-- **《药品Def变量参考》《参数联动表》**：药品 Def 字段、设置参数影响与联动；新增或修改时同步更新对应 Docs。
+- **《泌乳系统逻辑图》**：泌乳端到端流程、L/双池/耐受/进水/衰减/选侧等逻辑的唯一文档；涉及池、流速、公式时与之一致，注释可写「见 记忆库/docs/泌乳系统逻辑图」。
+- **《药品Def变量参考》《参数联动表》**：药品 Def 字段、设置参数影响与联动；新增或修改时同步更新 记忆库/docs 对应文档。
 
 ## 7. 检查清单（编辑后）
 
 - [ ] 命名空间与文件路径、EMDefOf 使用正确
 - [ ] 新增/修改的 Keyed 键在 English 与 ChineseSimplified 中已同步
 - [ ] Harmony 仅做必要挂接，未重复实现游戏已接管逻辑
-- [ ] 设置与 Scribe 键稳定、与 Docs 参数命名一致
-- [ ] 重要设计决策在注释中引用 Docs 或规格
+- [ ] 设置与 Scribe 键稳定、与 记忆库/docs 参数命名一致
+- [ ] 重要设计决策在注释中引用 记忆库/docs 或规格
 
 ## 补充参考
 
